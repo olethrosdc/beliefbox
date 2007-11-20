@@ -1,0 +1,26 @@
+/* -*- Mode: C++; -*- */
+/* VER: $Id: DiscretePolicy.h,v 1.1 2006/10/23 08:33:32 olethros Exp cdimitrakakis $*/
+// copyright (c) 2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+#ifndef DISCRETE_POLICY_H
+#define DISCRETE_POLICY_H
+
+#include "AbstractPolicy.h"
+
+
+class DiscretePolicy : public AbstractPolicy<int, int>
+{
+	virtual ~DiscretePolicy() {}
+	virtual int SelectAction() = 0;
+	virtual void Observe (int previous_state, int action, real r, int next_state) = 0;
+	virtual void Reset() = 0;
+};
+
+#endif
