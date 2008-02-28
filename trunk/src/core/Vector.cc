@@ -106,6 +106,16 @@ Vector& Vector::operator= (const Vector& rhs)
     return *this;
 }
 
+/// Sum of all in vector
+real Vector::Sum()
+{
+    real sum = 0;
+    for (int i=0; i<n; ++i) {
+	sum += x[i];
+    }
+    return sum;
+}
+
 /// Addition
 Vector Vector::operator+ (const Vector& rhs)
 {
