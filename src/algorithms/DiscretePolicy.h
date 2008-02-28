@@ -17,10 +17,22 @@
 
 class DiscretePolicy : public AbstractPolicy<int, int>
 {
+public:
 	virtual ~DiscretePolicy() {}
 	virtual int SelectAction() = 0;
 	virtual void Observe (int previous_state, int action, real r, int next_state) = 0;
 	virtual void Reset() = 0;
+};
+
+class FixedDiscretePolicy : public DiscretePolicy
+{
+public:
+    Vector p;
+    FixedDiscretePolicy (Vector p);
+    virtual ~FixedDiscretePolicy();
+    virtual int SelectAction();
+    virtual void Observe (int previous_state, int action, real r, int next_state);
+    virtual void Reset();
 };
 
 #endif

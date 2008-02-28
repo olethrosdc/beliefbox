@@ -8,7 +8,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
+#if 0
 #include "SparseMarkovChain.h"
 #include "Random.h"
 
@@ -315,3 +315,4 @@ int SparseMarkovChain::ShowTransitions () {
 	return 0;
 }
 
+#endif

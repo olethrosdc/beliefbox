@@ -10,6 +10,40 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "AbstractPolicy.h"
-#include "MDPDistribution.h"
+#include "DiscretePolicy.h"
+//#include "MDPDistribution.h"
 
+#include "Random.h"
+#include <cmath>
+
+FixedDiscretePolicy::FixedDiscretePolicy (Vector p)
+{
+    this->p = p;
+    assert (fabs(this->p.Sum() - 1.0) < 0.00001);
+}
+
+FixedDiscretePolicy::~FixedDiscretePolicy()
+{
+}
+
+int FixedDiscretePolicy::SelectAction()
+{
+    int n = p.Size();
+    real x = urandom();
+    real s = 0.0;
+    for (int a=0; a<n; ++a) {
+	s += p[a];
+	if (s>x) {
+	    return a;
+	}
+    }
+    return n-1;
+}
+
+void FixedDiscretePolicy::Observe (int previous_state, int action, real r, int next_state)
+{
+}
+
+void FixedDiscretePolicy::Reset()
+{
+}

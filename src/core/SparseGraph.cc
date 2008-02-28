@@ -25,6 +25,7 @@
 #include <list>
 #include <exception>
 #include <stdexcept>
+#include <cassert>
 
 /// Constructor, initialises the data structures.
 SparseGraph::SparseGraph(int N, bool directional) : Graph(N, directional)
