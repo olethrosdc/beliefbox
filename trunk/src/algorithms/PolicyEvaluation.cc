@@ -10,14 +10,17 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "PolicyEstimation.h"
+#include "PolicyEvaluation.h"
 #include "real.h"
 #include "MathFunctions.h"
 #include "Vector.h"
 #include <cmath>
 #include <cassert>
 
-PolicyEstimation::PolicyEstimation(DiscreteMDP* mdp, real gamma, real baseline)
+PolicyEvaluation::PolicyEvaluation(DiscretePolicy* p,
+				   DiscreteMDP* mdp, 
+				   real gamma,
+				   real baseline)
 {
     assert (mdp);
     assert (gamma>=0 && gamma <=1);
@@ -30,7 +33,7 @@ PolicyEstimation::PolicyEstimation(DiscreteMDP* mdp, real gamma, real baseline)
     Reset();
 }
 
-void PolicyEstimation::Reset()
+void PolicyEvaluation::Reset()
 {
     int N = n_states * n_actions;
     p->Reset();
@@ -46,14 +49,14 @@ void PolicyEstimation::Reset()
     }
 }
 
-PolicyEstimation::~PolicyEstimation()
+PolicyEvaluation::~PolicyEvaluation()
 {
 }
 
-void PolicyEstimation::ComputeStateValues(real threshold, int max_iter)
+void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
 {
-	Vector pV(V.size());
-	Vector dV(V.size());
+    Vector pV(V.size());
+    Vector dV(V.size());
 
     do {
         Delta = 0.0;
@@ -74,11 +77,11 @@ void PolicyEstimation::ComputeStateValues(real threshold, int max_iter)
                 }
             }
             V[s] = Q_a_max;
-			dV[s] = pV[s] - V[s];
-			pV[s] = V[s];
+	    dV[s] = pV[s] - V[s];
+	    pV[s] = V[s];
             //Delta = std::max(Delta, (real) fabs(v - V[s]));
         }
-		Delta = Max(&dV) - Min(&dV);
+	Delta = Max(&dV) - Min(&dV);
         if (max_iter > 0) {
             max_iter--;
         }
@@ -96,15 +99,15 @@ void PolicyEstimation::ComputeStateValues(real threshold, int max_iter)
     threshold - exit when difference in Q is smaller than the threshold
     max_iter - exit when the number of iterations reaches max_iter
 
- */
+*/
 
-void PolicyEstimation::ComputeStateActionValues(real threshold, int max_iter)
+void PolicyEvaluation::ComputeStateActionValues(real threshold, int max_iter)
 {
     int N = n_states * n_actions;
-	std::vector<float*> dQ(n_states);
-	std::vector<float> dQ_data(N);
-	std::vector<float*> pQ(n_states);
-	std::vector<float> pQ_data(N);
+    std::vector<float*> dQ(n_states);
+    std::vector<float> dQ_data(N);
+    std::vector<float*> pQ(n_states);
+    std::vector<float> pQ_data(N);
     for (int s=0; s<n_states; s++) {
         dQ[s] = &dQ_data[s*n_actions];
         pQ[s] = &pQ_data[s*n_actions];
@@ -128,8 +131,8 @@ void PolicyEstimation::ComputeStateActionValues(real threshold, int max_iter)
 
                 }
                 Q[s][a] = sum;
-				dQ[s][a] = pQ[s][a] - sum;
-				pQ[s][a] = sum;
+		dQ[s][a] = pQ[s][a] - sum;
+		pQ[s][a] = sum;
                 //Delta = std::max(Delta, (real) fabs(q - Q[s][a]));
                 //if (Delta > threshold) {
                 //	printf ("Q[%d][%d] = %f -> %f\n", s, a, q, Q[s][a]);
@@ -137,7 +140,7 @@ void PolicyEstimation::ComputeStateActionValues(real threshold, int max_iter)
             }
         }
 		
-		Delta = Max(N, &dQ_data[0]) - Min(N, &dQ_data[0]);
+	Delta = Max(N, &dQ_data[0]) - Min(N, &dQ_data[0]);
 			
         if (max_iter > 0) {
             max_iter--;
@@ -150,13 +153,13 @@ void PolicyEstimation::ComputeStateActionValues(real threshold, int max_iter)
     //}		
 }
 
-real PolicyEstimation::getValue (int state, int action)
+real PolicyEvaluation::getValue (int state, int action)
 {
     return Q[state][action];
 }
 
 
-real PolicyEstimation::getValue (int state)
+real PolicyEvaluation::getValue (int state)
 {
     return V[state];
 }
