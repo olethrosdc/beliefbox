@@ -1,0 +1,15 @@
+Environments includes mainly simulated environments,
+but also complete MDP specifications of some environments.
+
+The simulation of environment 'name' is usually called
+
+name_sim.cc, name_sim.h
+
+while the MDP specification is called
+
+name_mdp.cc, name_mdp.h
+
+There is usually also
+
+name.h
+
