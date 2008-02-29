@@ -10,15 +10,15 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef POLICY_ESTIMATION_H
-#define POLICY_ESTIMATION_H
+#ifndef POLICY_EVALUATION_H
+#define POLICY_EVALUATION_H
 
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
 #include "real.h"
 #include <vector>
 
-class PolicyEstimation
+class PolicyEvaluation
 {
 public:
     DiscreteMDP* mdp;
@@ -31,11 +31,11 @@ public:
     std::vector<real> Q_data;
     real Delta;
     real baseline;
-    PolicyEstimation(DiscretePolicy* p,
+    PolicyEvaluation(DiscretePolicy* p,
 		     DiscreteMDP* mdp,
 		     real gamma,
 		     real baseline);
-    ~PolicyEstimation();
+    ~PolicyEvaluation();
     void Reset();
     void ComputeStateValues(real threshold, int max_iter=-1);
     void ComputeStateActionValues(real threshold, int max_iter=-1);
