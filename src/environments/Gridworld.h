@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -10,36 +10,37 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef POLICY_EVALUATION_H
-#define POLICY_EVALUATION_H
+#ifndef GRIDWORLD_H
+#define GRIDWORLD_H
 
 #include "DiscreteMDP.h"
-#include "DiscretePolicy.h"
-#include "real.h"
+#include <string>
 #include <vector>
 
-class PolicyEvaluation
-{
+enum MapElement {
+    GRID, WALL, GOAL, PIT
+};
+
+class Gridworld {
+protected:
+    uint height;
+    uint width;
+    uint n_actions;
+    real random;
+    real pit;
+    std::vector< std::vector<MapElement> > grid;
+    real** transitions;
+    real* P_data;
+    Distribution** rewards;
 public:
     DiscreteMDP* mdp;
-    DiscretePolicy* policy;
-    real gamma;
-    int n_states;
-    int n_actions;
-    std::vector<real> V;
-    real Delta;
-    real baseline;
-    PolicyEvaluation(DiscretePolicy* policy,
-		     DiscreteMDP* mdp,
-		     real gamma,
-		     real baseline);
-    ~PolicyEvaluation();
-    void Reset();
-    void ComputeStateValues(real threshold, int max_iter=-1);
-    void ComputeStateActionValues(real threshold, int max_iter=-1);
-    real getValue (int state, int action);
-    real getValue (int state);
+    Gridworld(char* fname,
+	      uint height_,
+	      uint width_,
+	      uint n_actions_=4,
+	      real random_=0.0,
+	      real pit_=-100.0);
+    
 };
 
 #endif
-

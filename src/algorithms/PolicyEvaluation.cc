@@ -17,14 +17,14 @@
 #include <cmath>
 #include <cassert>
 
-PolicyEvaluation::PolicyEvaluation(DiscretePolicy* p,
+PolicyEvaluation::PolicyEvaluation(DiscretePolicy* policy,
 				   DiscreteMDP* mdp, 
 				   real gamma,
 				   real baseline)
 {
     assert (mdp);
     assert (gamma>=0 && gamma <=1);
-    this->p = p;
+    this->policy = policy;
     this->mdp = mdp;
     this->gamma = gamma;
     this->baseline = baseline;
@@ -35,17 +35,11 @@ PolicyEvaluation::PolicyEvaluation(DiscretePolicy* p,
 
 void PolicyEvaluation::Reset()
 {
-    int N = n_states * n_actions;
-    p->Reset();
+    policy->Reset();
     V.resize(n_states);
-    Q.resize(n_states);
-    Q_data.resize(N);
     for (int s=0; s<n_states; s++) {
         V[s] = 0.0;
-        Q[s] = &Q_data[s*n_actions];
-        for (int a=0; a<n_actions; a++) {
-            Q[s][a] = 0.0;
-        }
+	
     }
 }
 
@@ -103,44 +97,26 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
 
 void PolicyEvaluation::ComputeStateActionValues(real threshold, int max_iter)
 {
-    int N = n_states * n_actions;
-    std::vector<float*> dQ(n_states);
-    std::vector<float> dQ_data(N);
-    std::vector<float*> pQ(n_states);
-    std::vector<float> pQ_data(N);
+    std::vector<real> dV(n_states);
+    std::vector<real> pV(n_states);
     for (int s=0; s<n_states; s++) {
-        dQ[s] = &dQ_data[s*n_actions];
-        pQ[s] = &pQ_data[s*n_actions];
-        for (int a=0; a<n_actions; a++) {
-            dQ[s][a] = 0.0;
-        }
+        dV[s] = 0.0;
     }
     do {
         Delta = 0.0;
         for (int s0=0; s0<n_states; s0++) {
             int s = s0;
+	    pV[s] =0.0;
             for (int a=0; a<n_actions; a++) {
-                //real q = Q[s][a];
-                real sum = 0.0;
-
-                for (int s2=0; s2<n_states; s2++) {
-                    real P = mdp->getTransitionProbability(s, a, s2);
-                    real R = mdp->getExpectedReward(s, a) - baseline;
-                    real Q_a_max = Max(n_actions, Q[s2]);
-                    sum += P*(R + gamma*Q_a_max);
-
-                }
-                Q[s][a] = sum;
-		dQ[s][a] = pQ[s][a] - sum;
-		pQ[s][a] = sum;
-                //Delta = std::max(Delta, (real) fabs(q - Q[s][a]));
-                //if (Delta > threshold) {
-                //	printf ("Q[%d][%d] = %f -> %f\n", s, a, q, Q[s][a]);
-                //}
+		pV[s] += policy->getActionProbability(s, a) * getValue(s, a);
             }
+	    dV[s] = V[s] - pV[s];
         }
+	for (int s=0; s<n_states; s++) {
+	    V[s] = pV[s];
+	}
 		
-	Delta = Max(N, &dQ_data[0]) - Min(N, &dQ_data[0]);
+	Delta = Max(n_states, &dV[0]) - Min(n_states, &dV[0]);
 			
         if (max_iter > 0) {
             max_iter--;
@@ -155,7 +131,13 @@ void PolicyEvaluation::ComputeStateActionValues(real threshold, int max_iter)
 
 real PolicyEvaluation::getValue (int state, int action)
 {
-    return Q[state][action];
+    real sum_over_states = 0.0;
+    for (int s2=0; s2<n_states; s2++) {
+	real P = mdp->getTransitionProbability(state, action, s2);
+	real R = mdp->getExpectedReward(state, action) - baseline;
+	sum_over_states += P*(R + gamma*V[s2]);
+    }
+    return sum_over_states;
 }
 
 
