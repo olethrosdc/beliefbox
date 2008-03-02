@@ -114,3 +114,26 @@ float BetaInc(float x, float a, float b)
     }
 }
 
+unsigned long binomial (int n, int k)
+{
+    if (n <= 0 || k < 0 || k > n)
+        return 0;
+
+    if (k > n/2)
+        k = n-k; // faster
+
+    //long long n_minus_k = n-k;
+    long double accum = 1;
+    int k2 = k;
+    for (int i = 1; i++ < k2;) {
+        //accum = accum * (n_minus_k+i) / i;
+        accum *= n / k;
+        n--;
+        k--;
+    }
+
+    return accum + 0.5; // avoid rounding error
+}
+
+
+
