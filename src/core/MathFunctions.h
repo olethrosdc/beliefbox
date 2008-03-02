@@ -13,6 +13,7 @@
 #define MATH_FUNCTIONS_H
 
 #include "real.h"
+#include <vector>
 
 /**
    \defgroup MathGroup Mathematical functions
@@ -77,6 +78,7 @@ int ArgMax (int n, T* x)
 template<typename T>
 int ArgMin (std::vector<T>& x)
 {
+    int n = x.size();
     T min = x[0];
     int arg_min = 0;
     for (int i=1; i<n; i++) {
@@ -91,6 +93,7 @@ int ArgMin (std::vector<T>& x)
 template<typename T>
 int ArgMax (std::vector<T>& x)
 {
+    int n = x.size();
     T max = x[0];
     int arg_max = 0;
     for (int i=1; i<n; i++) {

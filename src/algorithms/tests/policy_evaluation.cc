@@ -42,8 +42,16 @@ int main (void)
     PolicyEvaluation policy_evaluation(policy, mdp, gamma);
 
     policy_evaluation.ComputeStateValues(0.01, 1000);
+    std::vector<float> Q(n_actions);
     for (int s=0; s<n_states; s++) {
-        std::cout << s << " : " << getValue(s) << std::endl;
+        for (int a=0; a<n_actions; a++) {
+            Q[a] = policy_evaluation.getValue(s,a);
+        }
+        int a_max = ArgMax(Q);
+        std::cout << s << " : " << policy_evaluation.getValue(s)
+                  << " | "
+                  << a_max << ":" << Q[a_max]
+                  << std::endl;
     }
     
 }
