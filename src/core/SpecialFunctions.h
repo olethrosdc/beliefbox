@@ -50,5 +50,7 @@ real Beta(Vector& x);
 float betacf(float a, float b, float x);
 float BetaInc(float x, float a, float b);
 
+unsigned long binomial (int n, int k);
+
 
 #endif
