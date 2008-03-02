@@ -46,6 +46,7 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
         for (int i=0; i<N; i++) {
             R[i] = initial_rewards[i];
             ER[i] = R[i]->getMean();
+            //printf ("%d %f\n", i, ER[i]);
         }
     }
 
@@ -74,6 +75,7 @@ void DiscreteMDP::setRewardDistribution(int s, int a, Distribution* reward)
     int ID = getID (s, a);
     R[ID] = reward;
     ER[ID] = reward->getMean();
+    //printf ("%d %f\n", ID, ER[ID]);
 }
 
 void DiscreteMDP::ShowModel() const
@@ -90,7 +92,7 @@ void DiscreteMDP::ShowModel() const
 
     for (int i=0; i<N; i++) {
         std::cout << "R[" << i
-                  << "] = " << R[i] << std::endl; 
+                  << "] = " << ER[i] << std::endl; 
     }
 }
 

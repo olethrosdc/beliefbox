@@ -47,8 +47,8 @@ PolicyEvaluation::~PolicyEvaluation()
 
 /** ComputeStateValues
    
-    threshold - exit when difference in Q is smaller than the threshold
-    max_iter - exit when the number of iterations reaches max_iter
+threshold - exit when difference in Q is smaller than the threshold
+max_iter - exit when the number of iterations reaches max_iter
 
 */
 
@@ -63,36 +63,33 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
         Delta = 0.0;
         for (int s0=0; s0<n_states; s0++) {
             int s = s0;
-	    pV[s] =0.0;
+            pV[s] =0.0;
             for (int a=0; a<n_actions; a++) {
-		pV[s] += policy->getActionProbability(s, a) * getValue(s, a);
+                pV[s] += policy->getActionProbability(s, a) * getValue(s, a);
+                //printf ("R(%d,%d)=%f\n", s,a, getValue(s,a));
             }
-	    dV[s] = V[s] - pV[s];
+            dV[s] = V[s] - pV[s];
         }
-	for (int s=0; s<n_states; s++) {
-	    V[s] = pV[s];
-	}
+        for (int s=0; s<n_states; s++) {
+            V[s] = pV[s];
+        }
 		
-	Delta = Max(n_states, &dV[0]) - Min(n_states, &dV[0]);
+        Delta = Max(n_states, &dV[0]) - Min(n_states, &dV[0]);
 			
         if (max_iter > 0) {
             max_iter--;
-            //	printf ("left: %d\n", max_iter);
         }
     } while((Delta >= threshold)  && max_iter);
     
-    //if (!max_iter) {
-    //   fprintf (stderr, "warning - delta %f >= %f\n", Delta, threshold);
-    //}		
 }
 
 real PolicyEvaluation::getValue (int state, int action)
 {
     real sum_over_states = 0.0;
     for (int s2=0; s2<n_states; s2++) {
-	real P = mdp->getTransitionProbability(state, action, s2);
-	real R = mdp->getExpectedReward(state, action) - baseline;
-	sum_over_states += P*(R + gamma*V[s2]);
+        real P = mdp->getTransitionProbability(state, action, s2);
+        real R = mdp->getExpectedReward(state, action) - baseline;
+        sum_over_states += P*(R + gamma*V[s2]);
     }
     return sum_over_states;
 }

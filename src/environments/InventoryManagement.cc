@@ -30,7 +30,8 @@ InventoryManagement::InventoryManagement(int period_,
     
     dist.resize(period + 1);
     for (int i=0; i<=period; i++) {
-        dist[i] = new BinomialDistribution(period, i, -1);
+        dist[i] = new BinomialDistribution(period, i, 1);
+        //printf("%d: %f\n", i, dist[i]->getMean());
     }
 
 

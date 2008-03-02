@@ -17,7 +17,7 @@
 #include <cmath>
 #include <cassert>
 
-ValueIteration::ValueIteration(DiscreteMDP* mdp, real gamma, real baseline)
+ValueIteration::ValueIteration(const DiscreteMDP* mdp, real gamma, real baseline)
 {
     assert (mdp);
     assert (gamma>=0 && gamma <=1);

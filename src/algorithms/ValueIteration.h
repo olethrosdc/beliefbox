@@ -20,7 +20,7 @@
 class ValueIteration
 {
 public:
-    DiscreteMDP* mdp;
+    const DiscreteMDP* mdp;
     real gamma;
     int n_states;
     int n_actions;
@@ -29,7 +29,7 @@ public:
     std::vector<real> Q_data;
     real Delta;
     real baseline;
-    ValueIteration(DiscreteMDP* mdp, real gamma, real baseline);
+    ValueIteration(const DiscreteMDP* mdp, real gamma, real baseline=0.0);
     ~ValueIteration();
     void Reset();
     void ComputeStateValues(real threshold, int max_iter=-1);

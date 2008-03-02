@@ -40,6 +40,9 @@ public:
 	      uint n_actions_=4,
 	      real random_=0.0,
 	      real pit_=-100.0);
+    const DiscreteMDP* getMDP() {
+        return mdp;
+    }
     
 };
 
