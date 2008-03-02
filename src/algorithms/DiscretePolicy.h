@@ -29,8 +29,6 @@ public:
 
 class FixedDiscretePolicy : public DiscretePolicy
 {
-protected:
-    int current_state;
 public:
     std::vector<Vector> p;
     FixedDiscretePolicy (std::vector<Vector> p);

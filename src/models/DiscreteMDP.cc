@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2005 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2005-2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -76,7 +76,7 @@ void DiscreteMDP::setRewardDistribution(int s, int a, Distribution* reward)
     ER[ID] = reward->getMean();
 }
 
-void DiscreteMDP::ShowModel()
+void DiscreteMDP::ShowModel() const
 {
     for (int i=0; i<N; i++) {
         std::cout << i << ":";
@@ -94,13 +94,13 @@ void DiscreteMDP::ShowModel()
     }
 }
 
-real DiscreteMDP::generateReward (int s, int a)
+real DiscreteMDP::generateReward (int s, int a) const
 {
     int ID = getID (s, a);
     return R[ID]->generate();
 }
 
-int DiscreteMDP::generateState (int s, int a)
+int DiscreteMDP::generateState (int s, int a) const
 {
     int ID = getID (s,a);
     real* Ps=P[ID];
@@ -118,20 +118,20 @@ int DiscreteMDP::generateState (int s, int a)
     return select;
 }
 
-real DiscreteMDP::getTransitionProbability (int s, int a, int s2)
+real DiscreteMDP::getTransitionProbability (int s, int a, int s2) const
 {
     int ID = getID (s, a);                
     assert (s2>=0 && s2<n_states);
     return P[ID][s2];
 }
 
-real DiscreteMDP::getExpectedReward (int s, int a)
+real DiscreteMDP::getExpectedReward (int s, int a) const
 {
     int ID = getID (s, a);
     return ER[ID];
 }
 
-void DiscreteMDP::Check()
+void DiscreteMDP::Check() const
 {
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {

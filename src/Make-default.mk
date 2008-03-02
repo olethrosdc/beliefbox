@@ -21,8 +21,8 @@ MYINCS = -I$(INCS_EXPORT)
 
 ## Use DBG to compile a debug version.
 
-#DBG_OPT=DBG
-DBG_OPT=OPT
+DBG_OPT=DBG
+#DBG_OPT=OPT
 
 # Add -pg flag for profiling
 CFLAGS_DBG = -fPIC -g -Wall -pedantic
@@ -39,7 +39,6 @@ OBJ_DIR_DBG=objs_dbg
 OBJ_DIR_OPT=objs
 OBJ_DIR_NAME=$(OBJ_DIR_$(DBG_OPT))
 
-LIB_OPT_DIR=$(LIB_DBG)
 
 
 ##SMPL_DIR := $(shell pwd)

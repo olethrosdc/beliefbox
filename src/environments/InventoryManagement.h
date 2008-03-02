@@ -29,7 +29,7 @@ protected:
 public:
     InventoryManagement(int period_, int max_items_, real demand_);
     ~InventoryManagement();
-    DiscreteMDP* GetMDP() {return mdp;}
+    DiscreteMDP* getMDP() {return mdp;}
 };
 
 #endif

@@ -5,6 +5,8 @@ SUBDIRS += $(PACKAGES)
 
 all: 
 	@echo $SMPL_DIR
+	@mkdir -p ${LIBS_DIR}
+	@mkdir -p ${OBJS_DIR}
 	@mkdir -p ${LIBS_EXPORT}
 	@mkdir -p ${INCS_EXPORT}
 	@for subdir in ${SUBDIRS}; do ( cd $$subdir ; ${MAKE} $@) || exit 10; done
