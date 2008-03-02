@@ -16,10 +16,14 @@
 #include "Random.h"
 #include <cmath>
 
-FixedDiscretePolicy::FixedDiscretePolicy (Vector p)
+FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector> p)
+    : DiscretePolicy()
 {
+    current_state = 0;
     this->p = p;
-    assert (fabs(this->p.Sum() - 1.0) < 0.00001);
+    for (uint i=0; i<p.size(); i++) {
+        assert (fabs(this->p[i].Sum() - 1.0) < 0.00001);
+    }
 }
 
 FixedDiscretePolicy::~FixedDiscretePolicy()
@@ -28,22 +32,40 @@ FixedDiscretePolicy::~FixedDiscretePolicy()
 
 int FixedDiscretePolicy::SelectAction()
 {
-    int n = p.Size();
+    
+    int n = p[current_state].Size();
     real x = urandom();
     real s = 0.0;
     for (int a=0; a<n; ++a) {
-	s += p[a];
-	if (s>x) {
-	    return a;
-	}
+        s += p[s][a];
+        if (s>x) {
+            return a;
+        }
     }
     return n-1;
 }
 
 void FixedDiscretePolicy::Observe (int previous_state, int action, real r, int next_state)
 {
+    current_state = next_state;
 }
+
 
 void FixedDiscretePolicy::Reset()
 {
+    current_state = 0;
 }
+
+real FixedDiscretePolicy::getActionProbability(int action)
+{
+	return p[current_state][action];
+}
+
+
+real FixedDiscretePolicy::getActionProbability(int state, int action)
+{
+	return p[state][action];
+}
+
+
+
