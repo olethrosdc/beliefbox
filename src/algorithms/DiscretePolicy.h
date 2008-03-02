@@ -18,15 +18,19 @@
 class DiscretePolicy : public AbstractPolicy<int, int>
 {
 public:
+    DiscretePolicy() {}
     virtual ~DiscretePolicy() {}
     virtual int SelectAction() = 0;
     virtual void Observe (int previous_state, int action, real r, int next_state) = 0;
     virtual void Reset() = 0;
+    virtual real getActionProbability(int action) = 0;
     virtual real getActionProbability(int state, int action) = 0;
 };
 
 class FixedDiscretePolicy : public DiscretePolicy
 {
+protected:
+    int current_state;
 public:
     std::vector<Vector> p;
     FixedDiscretePolicy (std::vector<Vector> p);
@@ -34,10 +38,8 @@ public:
     virtual int SelectAction();
     virtual void Observe (int previous_state, int action, real r, int next_state);
     virtual void Reset();
-    virtual real getActionProbability(int state, int action)
-    {
-	return p[state][action];
-    }
+    virtual real getActionProbability(int action);
+    virtual real getActionProbability(int state, int action);
 };
 
 #endif

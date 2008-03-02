@@ -12,9 +12,18 @@
 
 #ifdef MAKE_MAIN
 #include "PolicyEvaluation.h"
+#include "Gridworld.h"
+#include "InventoryManagement.h"
+#include "DiscretePolicy.h"
 
 int main (void)
 {
+    int period = 30;
+    int max_items = 10;
+    real demand = 0.1;
+    InventoryManagement inventory_management (period, max_items, demand);
+    
+    
     
 }
 
