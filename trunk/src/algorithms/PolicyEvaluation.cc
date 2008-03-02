@@ -17,17 +17,15 @@
 #include <cmath>
 #include <cassert>
 
-PolicyEvaluation::PolicyEvaluation(DiscretePolicy* policy,
-				   DiscreteMDP* mdp, 
-				   real gamma,
-				   real baseline)
+PolicyEvaluation::PolicyEvaluation(DiscretePolicy* policy_,
+                                   const DiscreteMDP* mdp_, 
+                                   real gamma_,
+                                   real baseline_) 
+    : policy(policy_), mdp(mdp_), gamma(gamma_), baseline(baseline_)
 {
     assert (mdp);
     assert (gamma>=0 && gamma <=1);
-    this->policy = policy;
-    this->mdp = mdp;
-    this->gamma = gamma;
-    this->baseline = baseline;
+
     n_actions = mdp->GetNActions();
     n_states = mdp->GetNStates();
     Reset();
@@ -47,55 +45,14 @@ PolicyEvaluation::~PolicyEvaluation()
 {
 }
 
-void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
-{
-    Vector pV(V.size());
-    Vector dV(V.size());
-
-    do {
-        Delta = 0.0;
-        for (int s=0; s<n_states; s++) {
-            //real v = V[s];
-            real Q_a_max = -RAND_MAX;
-            int a_max = 0;
-            for (int a=0; a<n_actions; a++) {
-                real S = 0.0;
-                for (int s2=0; s2<n_states; s2++) {
-                    real P = mdp->getTransitionProbability(s, a, s2);
-                    real R = mdp->getExpectedReward(s, a) + gamma * V[s2] - baseline;
-                    S += P * R;
-                }
-                if (a==0 || Q_a_max < S) {
-                    a_max = a;
-                    Q_a_max = S;
-                }
-            }
-            V[s] = Q_a_max;
-	    dV[s] = pV[s] - V[s];
-	    pV[s] = V[s];
-            //Delta = std::max(Delta, (real) fabs(v - V[s]));
-        }
-	Delta = Max(&dV) - Min(&dV);
-        if (max_iter > 0) {
-            max_iter--;
-        }
-		
-    } while(Delta >= threshold && max_iter);
-	
-    //if (!max_iter) {
-    //        fprintf (stderr, "warning - delta %f >= %f\n", Delta, threshold);
-    //    }
-}
-
-
-/** ComputeStateActionValues
+/** ComputeStateValues
    
     threshold - exit when difference in Q is smaller than the threshold
     max_iter - exit when the number of iterations reaches max_iter
 
 */
 
-void PolicyEvaluation::ComputeStateActionValues(real threshold, int max_iter)
+void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
 {
     std::vector<real> dV(n_states);
     std::vector<real> pV(n_states);

@@ -21,22 +21,21 @@
 class PolicyEvaluation
 {
 public:
-    DiscreteMDP* mdp;
     DiscretePolicy* policy;
+    const DiscreteMDP* mdp;
     real gamma;
     int n_states;
     int n_actions;
     std::vector<real> V;
     real Delta;
     real baseline;
-    PolicyEvaluation(DiscretePolicy* policy,
-		     DiscreteMDP* mdp,
-		     real gamma,
-		     real baseline);
+    PolicyEvaluation(DiscretePolicy* policy_,
+                     const DiscreteMDP* mdp_,
+                     real gamma_,
+                     real baseline_ = 0.0);
     ~PolicyEvaluation();
     void Reset();
     void ComputeStateValues(real threshold, int max_iter=-1);
-    void ComputeStateActionValues(real threshold, int max_iter=-1);
     real getValue (int state, int action);
     real getValue (int state);
 };

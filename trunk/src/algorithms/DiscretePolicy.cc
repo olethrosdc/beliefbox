@@ -19,7 +19,7 @@
 FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector> p)
     : DiscretePolicy()
 {
-    current_state = 0;
+    state = 0;
     this->p = p;
     for (uint i=0; i<p.size(); i++) {
         assert (fabs(this->p[i].Sum() - 1.0) < 0.00001);
@@ -33,7 +33,7 @@ FixedDiscretePolicy::~FixedDiscretePolicy()
 int FixedDiscretePolicy::SelectAction()
 {
     
-    int n = p[current_state].Size();
+    int n = p[state].Size();
     real x = urandom();
     real s = 0.0;
     for (int a=0; a<n; ++a) {
@@ -47,18 +47,18 @@ int FixedDiscretePolicy::SelectAction()
 
 void FixedDiscretePolicy::Observe (int previous_state, int action, real r, int next_state)
 {
-    current_state = next_state;
+    state = next_state;
 }
 
 
 void FixedDiscretePolicy::Reset()
 {
-    current_state = 0;
+    state = 0;
 }
 
 real FixedDiscretePolicy::getActionProbability(int action)
 {
-	return p[current_state][action];
+	return p[state][action];
 }
 
 
