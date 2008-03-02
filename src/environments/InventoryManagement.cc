@@ -42,6 +42,9 @@ InventoryManagement::InventoryManagement(int period_,
             }
             for (int s2=0; s2<n_states; s2++) {
                 int d = s + order - s2;
+                if (d < 0) {
+                    d = 0;
+                }
                 mdp->setTransitionProbability(s, a, s2, binomial(period, d)*pow(demand, d)*pow(1-demand, period - d));
                 mdp->setRewardDistribution(s, a, dist[d]);
             }
