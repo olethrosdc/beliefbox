@@ -74,6 +74,35 @@ int ArgMax (int n, T* x)
     return arg_max;
 }
 
+template<typename T>
+int ArgMin (std::vector<T>& x)
+{
+    T min = x[0];
+    int arg_min = 0;
+    for (int i=1; i<n; i++) {
+        if (min>x[i]) {
+            min = x[i];
+            arg_min = i;
+        }
+    }
+    return arg_min;
+}
+/// Return the index of the maximum number in an array
+template<typename T>
+int ArgMax (std::vector<T>& x)
+{
+    T max = x[0];
+    int arg_max = 0;
+    for (int i=1; i<n; i++) {
+        if (max<x[i]) {
+            max = x[i];
+            arg_max = i;
+        }
+    }
+    return arg_max;
+}
+
+
 
 void SoftMax (int n, real* Q, real* p, real beta);
 void SoftMin (int n, real* Q, real* p, real beta);

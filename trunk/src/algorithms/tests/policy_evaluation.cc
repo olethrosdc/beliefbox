@@ -31,6 +31,7 @@ int main (void)
     
     std::vector<Vector> p(n_states);
     for (int s=0; s<n_states; s++) {
+        p[s].Resize(n_actions);
         for (int a=0; a<n_actions; a++) {
             p[s][a] = 1.0 / (real) n_actions;
         }
@@ -42,7 +43,7 @@ int main (void)
 
     policy_evaluation.ComputeStateValues(0.01, 1000);
     for (int s=0; s<n_states; s++) {
-        std::cout << s << " : " << "\n";
+        std::cout << s << " : " << getValue(s) << std::endl;
     }
     
 }
