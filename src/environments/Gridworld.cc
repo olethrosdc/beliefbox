@@ -21,9 +21,11 @@ Gridworld::Gridworld(char* fname,
                      uint width_,
                      uint n_actions_,
                      real random_,
-                     real pit_)
+                     real pit_,
+		     real goal_,
+		     real step_)
     :  height(height_), width(width_), n_actions(n_actions_),
-       random(random_), pit(pit_)
+       random(random_), pit_value(pit_), goal_value(goal_), step_value(step_)
 {
     uint n_states = width * height + 1; // plus a terminal state
 
@@ -54,10 +56,10 @@ Gridworld::Gridworld(char* fname,
     mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
 
     // set up rewards		
-    SingularDistribution step_reward(-1.0);
-    SingularDistribution pit_reward(0.0);
+    SingularDistribution step_reward(step_value);
+    SingularDistribution pit_reward(pit_value);
     SingularDistribution zero_reward(0.0);
-    SingularDistribution goal_reward(0.0);
+    SingularDistribution goal_reward(goal_value);
     
     // first the terminal state rewards
     for (uint a=0; a<n_actions; ++a) {
@@ -193,7 +195,7 @@ Gridworld::Gridworld(char* fname,
             }
         }
     }
-    mdp->Check();
+    //mdp->Check();
 }
 
 void Gridworld::Show()
@@ -201,6 +203,15 @@ void Gridworld::Show()
     for (uint x=0; x<width; ++x) {
 	for (uint y=0; y<height; ++y) {
 	    MapElement e = whatIs(x, y);
+	    switch (e) {
+	    case INVALID: std::cout << "!"; break;
+	    case GRID: std::cout << "."; break;
+	    case WALL: std::cout << "#"; break;
+	    case GOAL: std::cout << "X"; break;
+	    case PIT: std::cout << "O"; break;
+	    default: std::cout << "?"; break;
+	    }
 	}
+	std::cout << std::endl;
     }
 }

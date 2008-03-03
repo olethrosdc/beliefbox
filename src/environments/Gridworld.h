@@ -31,16 +31,18 @@ public:
     Gridworld(char* fname,
 	      uint height_,
 	      uint width_,
-	      uint n_actions_=4,
-	      real random_=0.0,
-	      real pit_=-100.0);
+	      uint n_actions_ = 4,
+	      real random_ = 0.0,
+	      real pit_ = -100.0,
+	      real goal_ = 0.0,
+	      real step_ = -1.0);
     const DiscreteMDP* getMDP()
     {
         return mdp;
     }
     MapElement whatIs(int x, int y)
     {
-	if (x>=0 && y >=0 && x<width && y < height) {
+	if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
 	    return grid[x][y];
 	} else {
 	    return INVALID;
@@ -49,7 +51,7 @@ public:
     void Show();
     int getState(int x, int y)
     {
-	if (x>=0 && y >=0 && x<width && y < height) {
+	if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
 	    return x + y*width;
 	}
 	return -1;
@@ -59,7 +61,9 @@ protected:
     uint width;
     uint n_actions;
     real random;
-    real pit;
+    real pit_value;
+    real goal_value;
+    real step_value;
     std::vector< std::vector<MapElement> > grid;
     real** transitions;
     real* P_data;
