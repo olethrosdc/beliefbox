@@ -55,7 +55,7 @@ Gridworld::Gridworld(char* fname,
 
     // set up rewards		
     SingularDistribution step_reward(-1.0);
-    SingularDistribution pit_reward(-9.0);
+    SingularDistribution pit_reward(0.0);
     SingularDistribution zero_reward(0.0);
     SingularDistribution goal_reward(0.0);
     
@@ -67,8 +67,8 @@ Gridworld::Gridworld(char* fname,
     for (uint x=0; x<width; ++x) {
         for (uint y=0; y<height; ++y) {
             for (uint a=0; a<n_actions; ++a) {
-                int s = x+y*width;
-                switch(grid[x][y]) {
+                int s = getState(x,y);
+                switch(whatIs(x,y)) {
                 case GRID:
                     mdp->setRewardDistribution(s, a, &step_reward);
                     break;
@@ -95,6 +95,7 @@ Gridworld::Gridworld(char* fname,
         mdp->setTransitionProbability (n_states-1, a, n_states-1, 1.0);
         for (uint s=0; s<n_states - 1; s++) {
             mdp->setTransitionProbability (n_states-1, a, s, 0.0);
+            mdp->setTransitionProbability (s, a, n_states-1, 0.0);
         }
     }
 
@@ -111,19 +112,23 @@ Gridworld::Gridworld(char* fname,
     // Step 2: fill
     for (uint x=0; x<width; ++x) {
         for (uint y=0; y<height; ++y) {
-            uint s = x + y*width;
-
-            if (grid[x][y] == WALL)  {
+            uint s = getState(x, y);
+	    MapElement element = whatIs(x, y);
+	    if (element == WALL) {
                 for (uint a=0; a<n_actions; ++a) {
                     mdp->setTransitionProbability (s, a, s, 1.0);
                 }
                 continue;
-            } else if (grid[x][y] == GOAL || grid[x][y] == PIT) {
+            } else if (element == GOAL || element == PIT) {
+	    std::cout << "TERMINATE: " << s << std::endl;
                 for (uint a=0; a<n_actions; ++a) {
                     mdp->setTransitionProbability (s, a, n_states-1, 1.0);
                 }
                 continue;
-            }
+            } else if (element == INVALID) {
+		std::cerr << "Invalid element\n";
+		exit(-1);
+	    }
 
             int num = 4;
             // the hardest part is checking walls
@@ -131,29 +136,32 @@ Gridworld::Gridworld(char* fname,
             bool Sd = true;
             bool Wd = true;
             bool Ed = true;
-            if (x==0 || grid[x-1][y] == WALL)  {
+            int Es = getState(x + 1, y);
+            int Ws = getState(x - 1, y);
+            int Ns = getState(x, y - 1);
+            int Ss = getState(x, y + 1);
+
+            if (x==0 || whatIs(x-1, y) == WALL)  {
+		Ws = s;
                 Wd = false;
                 num--;
             } 
-            if (x==width-1 || grid[x+1][y] == WALL)  {
+            if (x==width-1 || whatIs(x+1, y) == WALL)  {
+		Es = s;
                 Ed = false;
                 num--;
             } 
-            if (y==0 || grid[x][y-1] == WALL)  {
+            if (y==0 || whatIs(x, y-1) == WALL)  {
+		Ns = s;
                 Nd = false;
                 num--;
             } 
-            if (y==height-1 || grid[x][y+1] == WALL)  {
+            if (y==height-1 || whatIs(x, y+1) == WALL)  {
+		Ss = s;
                 Sd = false;
                 num--;
             } 
-	    
 
-            uint Es = x+1 + y*width;
-            uint Ws = x-1 + y*width;
-            uint Ns = x + (y-1)*width;
-            uint Ss = x + (y+1)*width;
-            uint s2;
             real theta = random / (real) num;
             for (uint a=0; a<n_actions; ++a) {
                 if (Ed) {
@@ -169,29 +177,30 @@ Gridworld::Gridworld(char* fname,
                     mdp->setTransitionProbability (s, a, Ss, theta);
                 }
                 switch(a) {
-                case 0:
-                    if (Nd) {
-                        mdp->setTransitionProbability (s, a, Ns, 1 - random + theta);
-                    }
+                case NORTH:
+		    mdp->setTransitionProbability (s, a, Ns, 1 - random + theta);
                     break;
-                case 1:
-                    if (Sd) {
-                        mdp->setTransitionProbability (s, a, Ss, 1 - random + theta);
-                    }
+                case SOUTH:
+		    mdp->setTransitionProbability (s, a, Ss, 1 - random + theta);
                     break;
-                case 2:
-                    if (Ed) {
-                        mdp->setTransitionProbability (s, a, Es, 1 - random + theta);
-                    }
+                case EAST:
+		    mdp->setTransitionProbability (s, a, Es, 1 - random + theta);
                     break;
-                case 3:
-                    if (Wd) {
-                        mdp->setTransitionProbability (s, a, Ws, 1 - random + theta);
-                    }
+                case WEST:
+		    mdp->setTransitionProbability (s, a, Ws, 1 - random + theta);
                     break;
                 }
             }
         }
     }
+    mdp->Check();
 }
 
+void Gridworld::Show()
+{
+    for (uint x=0; x<width; ++x) {
+	for (uint y=0; y<height; ++y) {
+	    MapElement e = whatIs(x, y);
+	}
+    }
+}
