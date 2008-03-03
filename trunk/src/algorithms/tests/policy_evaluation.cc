@@ -31,7 +31,7 @@ int main (void)
     uint height = 8;
     InventoryManagement inventory_management (period, max_items, demand);
 
-    Gridworld grid_world("maze1", width, height, 4, random, pit, goal, step);
+    Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
     //const DiscreteMDP* mdp = inventory_management.getMDP();
     const DiscreteMDP* mdp = grid_world.getMDP();
     
@@ -49,7 +49,7 @@ int main (void)
 
     DiscretePolicy* policy = new FixedDiscretePolicy(p);
 
-#if 0
+#if 1
     PolicyEvaluation policy_evaluation(policy, mdp, gamma);
 
 #else
@@ -119,7 +119,7 @@ int main (void)
         //printf ("\n");
     }
     policy_evaluation.ComputeStateValues(0.001, 1);
-    policy_evaluation.ComputeStateActionValues(0.001, 1);
+    //policy_evaluation.ComputeStateActionValues(0.001, 1);
     }
 #endif
     grid_world.Show();
