@@ -17,11 +17,43 @@
 #include <string>
 #include <vector>
 
-enum MapElement {
-    GRID, WALL, GOAL, PIT
-};
+
 
 class Gridworld {
+public:
+    enum MapDirection {
+	NORTH=0, SOUTH, EAST, WEST
+    };
+    enum MapElement {
+	INVALID=-1, GRID, WALL, GOAL, PIT
+    };
+    DiscreteMDP* mdp;
+    Gridworld(char* fname,
+	      uint height_,
+	      uint width_,
+	      uint n_actions_=4,
+	      real random_=0.0,
+	      real pit_=-100.0);
+    const DiscreteMDP* getMDP()
+    {
+        return mdp;
+    }
+    MapElement whatIs(int x, int y)
+    {
+	if (x>=0 && y >=0 && x<width && y < height) {
+	    return grid[x][y];
+	} else {
+	    return INVALID;
+	}
+    }
+    void Show();
+    int getState(int x, int y)
+    {
+	if (x>=0 && y >=0 && x<width && y < height) {
+	    return x + y*width;
+	}
+	return -1;
+    };
 protected:
     uint height;
     uint width;
@@ -32,18 +64,6 @@ protected:
     real** transitions;
     real* P_data;
     Distribution** rewards;
-public:
-    DiscreteMDP* mdp;
-    Gridworld(char* fname,
-	      uint height_,
-	      uint width_,
-	      uint n_actions_=4,
-	      real random_=0.0,
-	      real pit_=-100.0);
-    const DiscreteMDP* getMDP() {
-        return mdp;
-    }
-    
 };
 
 #endif

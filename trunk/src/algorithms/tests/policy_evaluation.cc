@@ -25,11 +25,11 @@ int main (void)
     real demand = 0.1;
     real random = 0.0;
     real pit = -100.0;
-    uint width=8;
-    uint height=8;
+    uint width=4;
+    uint height=4;
     InventoryManagement inventory_management (period, max_items, demand);
 
-    Gridworld grid_world("maze1", width, height, 4, random, pit);
+    Gridworld grid_world("maze0", width, height, 4, random, pit);
     //const DiscreteMDP* mdp = inventory_management.getMDP();
     const DiscreteMDP* mdp = grid_world.getMDP();
     
@@ -41,15 +41,20 @@ int main (void)
         p[s].Resize(n_actions);
         for (int a=0; a<n_actions; a++) {
             p[s][a] = 1.0 / (real) n_actions;
+	    printf ("R(%d,%d) = %f\n", s, a, mdp->getExpectedReward(s, a));
         }
     }
 
     DiscretePolicy* policy = new FixedDiscretePolicy(p);
 
+#if 1
     PolicyEvaluation policy_evaluation(policy, mdp, gamma);
-    //ValueIteration policy_evaluation(mdp, gamma);
 
-    policy_evaluation.ComputeStateValues(0.001, 1000);
+#else
+    ValueIteration policy_evaluation(mdp, gamma);
+    policy_evaluation.ComputeStateActionValues(0.001, 1000);
+#endif
+
     std::vector<real> Q(n_actions);
 #if 0
     for (int s=0; s<n_states; s++) {
@@ -63,6 +68,8 @@ int main (void)
                   << std::endl;
     }
 #else
+    for (int iter=0; iter < 10; iter++) {
+	printf ("ITER: %d\n", iter);
     for (int y=0; y<height; y++) {
         for (int x=0; x<width; x++) {
             int s= x + y*width;
@@ -76,8 +83,28 @@ int main (void)
         }
         printf ("\n");
     }
+
+
+    for (int y=0; y<height; y++) {
+        for (int x=0; x<width; x++) {
+            int s= x + y*width;
+            for (int a=0; a<n_actions; a++) {
+                Q[a] = policy_evaluation.getValue(s,a);
+            }
+            int a_max = ArgMax(Q);
+	    switch (a_max) {
+	    case Gridworld::NORTH: printf ("^"); break;
+	    case Gridworld::SOUTH: printf ("v"); break;
+	    case Gridworld::EAST: printf (">"); break;
+	    case Gridworld::WEST: printf ("<"); break;
+	    }
+        }
+        printf ("\n");
+    }
+    policy_evaluation.ComputeStateValues(0.001, 1);
+    }
 #endif
-    
+    grid_world.Show();
 }
 
 
