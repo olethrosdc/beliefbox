@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <list>
 #include <vector>
+#include <set>
 #include "real.h"
 
 /** Structure holding an edge
@@ -37,6 +38,12 @@ struct HalfEdge
 
 typedef std::list<HalfEdge> HalfEdgeList;
 typedef HalfEdgeList::iterator HalfEdgeListIterator;
+
+typedef std::list<int> NodeList;
+typedef NodeList::iterator NodeListIterator;
+
+typedef std::set<int> NodeSet;
+typedef NodeSet::iterator NodeSetIterator;
 
 #define GRAPH_DEBUG_LEVEL 50
 

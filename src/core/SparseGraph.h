@@ -26,11 +26,11 @@ protected:
     virtual bool rCalculateDistance_iter(real* dist, int j, int* C=NULL);
     virtual bool hasCycles_iter (std::vector<bool>& mark, int n);
 public:
-	SparseGraph(int N, bool directional);
-	virtual ~SparseGraph() {}
+    SparseGraph(int N, bool directional);
+    virtual ~SparseGraph() {}
     bool AddEdge(Edge e, bool clear = false);
-	virtual bool edge (int src, int dst); ///< Returns true if there is an edge from \c src to \c dst.
-	virtual real distance (int src, int dst); ///< Distance between two nodes. Note that in some applications this would have the meaning of an edge weight rather than a distance.
+    virtual bool edge (int src, int dst); ///< Returns true if there is an edge from \c src to \c dst.
+    virtual real distance (int src, int dst); ///< Distance between two nodes. Note that in some applications this would have the meaning of an edge weight rather than a distance.
     virtual HalfEdgeListIterator getFirstParent(int node);
     virtual HalfEdgeListIterator getFirstChild(int node);
     virtual int n_parents(int node);
