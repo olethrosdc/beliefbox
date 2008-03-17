@@ -11,22 +11,6 @@
  ***************************************************************************/
 
 #include "BackwardsInduction.h"
+//#include <list>
 
-#include <list>
-
-BackwardsInduction::BackwardsInduction(Vector& N_, Graph& G_)
-    : N(N_), G(G_)
-{}
-
-void BackwardsInduction::calculate()
-{
-    if G.hasCycles() {
-        throw std::domain_error("Graph has loops, cannot use run\n");
-    }
-    std::vector<list> T = N;
-    
-    while(1) {
-        
-        
-    }
-}
+// No code, as we are using templates.
