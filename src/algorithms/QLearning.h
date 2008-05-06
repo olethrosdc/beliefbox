@@ -33,7 +33,7 @@ protected:
     Matrix Q;
     Matrix el;
 
-    int s; ///< current state
+    int state; ///< current state
 
 public:
     QLearning(int n_states_,
@@ -45,8 +45,8 @@ public:
               real baseline_ = 0.0);
     ~QLearning();
     void Reset();
-    int Act (int next_state, real reward);
-    real getValue (int state, int action);
+    int Observe (int action, int next_state, real reward);
+    real getValue (int s, int a);
     
 };
 

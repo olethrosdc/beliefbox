@@ -27,6 +27,7 @@ protected:
     real gamma; ///< discount factor
     real lambda; ///< eligibility trace decay rate
     real alpha; ///< learning rate 
+    ExplorationPolicy& exploration_policy; ///< exploration policy
     real initial_value; ///< initial value for Q values
     real baseline; ///< baseline reward
 
@@ -40,7 +41,8 @@ public:
           int n_actions_,
           real gamma_,
           real lambda_,
-          real alpha_ = 0.1,
+          real alpha_,
+	  ExplorationPolicy& exploration_policy_,
           real initial_value_= 0.0,
           real baseline_ = 0.0);
     ~Sarsa();

@@ -38,11 +38,31 @@ QLearning::QLearning(int n_states_,
     }
 }
 
-real QLearning::observe (int a, int ns, real r)
+real QLearning::Observe (int action, int next_state, real reward)
 {
-    real p_r = Q(state, action); // predicted reward
-    real TD = (r - baseline) - p_r; // prediction error
+    int a_max = 0;
+    real Qa_max = Q(ns, na);
+    // select next action
+    for (int i=1; i<n_actions; ++i) {
+	if (Q(next_state, i) > Qa_max) {
+	    Qa_max = Q(next_state, i);
+	    a_max = i;
+	}
+    }
 
+    real n_R = (reward - baseline)
+	+ gamma*Q(next_state, a_max); // partially observed return
+    real p_R = Q(state, action); // predicted return
+    real TD = n_R - p_R;
+
+    for (int i=0; i<n_states; ++i) {
+	for (int j=0; j<n_actions; ++j ) {
+	    el(i,j) *= lambda;
+	}
+    }
+    el(s, a) = 0;
     Q(s, a) = p_r + alpha * TD;
-    
+	 
+
+    s = ns; // fall back next state;
 }

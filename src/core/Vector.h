@@ -95,6 +95,8 @@ real EuclideanNorm (Vector* lhs, Vector* rhs);
 real SquareNorm (Vector* lhs, Vector* rhs);
 real Max(Vector* v);
 real Min(Vector* v);
+int ArgMax(Vector* v);
+int ArgMin(Vector* v);
 
 /*@}*/
 
