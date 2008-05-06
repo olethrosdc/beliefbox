@@ -343,3 +343,15 @@ real Min(Vector* v)
     return Min(v->Size(), v->x);
 }
 
+/// Get maximum element
+int ArgMax(Vector* v)
+{
+    return ArgMax(v->Size(), v->x);
+}
+
+/// Get minimum element
+int ArgMin(Vector* v)
+{
+    return ArgMin(v->Size(), v->x);
+}
+

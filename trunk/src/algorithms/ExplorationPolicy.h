@@ -15,6 +15,7 @@
 
 #include <cassert>
 #include "Matrix.h"
+#include "Random.h"
 
 class ExplorationPolicy
 {
@@ -28,11 +29,13 @@ public:
 class EpsilonGreedy
 {
 protected:
+    int n_actions;
     real epsilon;
 public:
-    ExplorationPolicy(real epsilon_) :
-        epsilon(epsilon_)
+    EpsilonGreedy(int n_actions_, real epsilon_) :
+        n_actions(n_actions_), epsilon(epsilon_)
     {
+	assert(n_actions > 0);
         assert(epsilon >= 0 && epsilon <= 1);
     }
     real getEpsilon()
@@ -44,11 +47,28 @@ public:
         epsilon = epsilon_;
         assert(epsilon >= 0 && epsilon <= 1);
     }
-    virtual int getAction(Matrix Q& m) 
+    virtual int getAction(Vector Q& m) 
     {
+	if (urandom() < epsilon) {
+	    return floor(urandom(0, n_actions));
+	}
+	return ArgMax(Q);
     }
     virtual int getAction(Matrix Q& v, int state) 
     {
+	if (urandom() < epsilon) {
+	    return floor(urandom(0, n_actions));
+	}
+	int argmax = 0;
+	real max = Q(state, a);
+	for (int a=1; a<n_actions; ++a) {
+	    real Qsa = Q(state, a);
+	    if (Qsa > max) {
+		max = Qsa;
+		argmax = a;
+	    }
+	}
+	return argmax;
     }
     virtual ~ExplorationPolicy()
     {
