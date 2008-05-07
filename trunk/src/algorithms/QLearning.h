@@ -45,7 +45,7 @@ public:
               real baseline_ = 0.0);
     ~QLearning();
     void Reset();
-    int Observe (int action, int next_state, real reward);
+    real Observe (int action, int next_state, real reward);
     real getValue (int s, int a);
     
 };
