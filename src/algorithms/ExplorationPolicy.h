@@ -22,8 +22,8 @@ class ExplorationPolicy
 public:
     virtual ~ExplorationPolicy()
     {}
-    virtual int getAction(Vector Q& v) = 0;
-    virtual int getAction(Matrix Q& v, int state) = 0;
+    virtual int getAction(Vector& Q) = 0;
+    virtual int getAction(Matrix& Q, int state) = 0;
 };
 
 class EpsilonGreedy
@@ -38,6 +38,11 @@ public:
 	assert(n_actions > 0);
         assert(epsilon >= 0 && epsilon <= 1);
     }
+
+    virtual ~EpsilonGreedy()
+    {
+    }
+
     real getEpsilon()
     {
         return epsilon;
@@ -47,20 +52,21 @@ public:
         epsilon = epsilon_;
         assert(epsilon >= 0 && epsilon <= 1);
     }
-    virtual int getAction(Vector Q& m) 
+    virtual int getAction(Vector& Q) 
     {
 	if (urandom() < epsilon) {
-	    return floor(urandom(0, n_actions));
+	    return (int) floor(urandom(0, n_actions));
 	}
-	return ArgMax(Q);
+	return ArgMax(&Q);
     }
-    virtual int getAction(Matrix Q& v, int state) 
+
+    virtual int getAction(Matrix& Q, int state) 
     {
 	if (urandom() < epsilon) {
-	    return floor(urandom(0, n_actions));
+	    return (int) floor(urandom(0.0, n_actions));
 	}
 	int argmax = 0;
-	real max = Q(state, a);
+	real max = Q(state, argmax);
 	for (int a=1; a<n_actions; ++a) {
 	    real Qsa = Q(state, a);
 	    if (Qsa > max) {
@@ -69,9 +75,6 @@ public:
 	    }
 	}
 	return argmax;
-    }
-    virtual ~ExplorationPolicy()
-    {
     }
 };
 #endif

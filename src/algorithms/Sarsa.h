@@ -15,6 +15,7 @@
 
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
+#include "ExplorationPolicy.h"
 #include "Matrix.h"
 #include "real.h"
 #include <vector>
@@ -34,7 +35,8 @@ protected:
     Matrix Q;
     Matrix el;
 
-    int s; ///< current state
+    int state; ///< current state
+    int action; ///< current action
 
 public:
     Sarsa(int n_states_,
@@ -47,7 +49,10 @@ public:
           real baseline_ = 0.0);
     ~Sarsa();
     void Reset();
-    real Observe (real r, int ns);
+    real Observe (inst state, int action, real reward, int next_state, int next_action);
+    real Observe (real reward, int next_state, int next_action);
+    int Act(real reward, int next_state);
+
     real getValue (int state, int action)
     {
         return Q(state, action);
