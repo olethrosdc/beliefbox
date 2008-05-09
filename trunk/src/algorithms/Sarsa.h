@@ -49,8 +49,12 @@ public:
           real baseline_ = 0.0);
     ~Sarsa();
     void Reset();
-    real Observe (inst state, int action, real reward, int next_state, int next_action);
+    /// Full SARSA observation (no eligibility traces)
+    real Observe (int state, int action, real reward, int next_state, int next_action);
+    /// Partial SARSA observation (can be used with eligibility traces)
     real Observe (real reward, int next_state, int next_action);
+    /// Get an action using the current exploration policy.
+    /// it calls Observe as a side-effect.
     int Act(real reward, int next_state);
 
     real getValue (int state, int action)
