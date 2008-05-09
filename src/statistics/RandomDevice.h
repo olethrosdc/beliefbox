@@ -10,24 +10,17 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef MERSENNE_TWISTER_H
-#define MERSENNE_TWISTER_H
+#ifndef RANDOM_DEVICE_H
+#define RANDOM_DEVICE_H
 
 #include "real.h"
 #include "RandomNumberGenerator.h"
 
-class MersenneTwister  {
+class RandomDevice : public RandomNumberGenerator  {
 protected:
-	static unsigned long initial_seed;
-    static const int n;
-    static const int m;
-    static unsigned long state[]; /* the array for the state vector  */
-    static int left;
-    static int initf;
-    static unsigned long *next;
-    static void nextState();
+    blocking
 public:
-    ~MersenneTwister();
+    virtual ~RandomDevice() {};
     /// Initializes the random number generator with the computer clock.
     static void seed();
     /// Initializes the random number generator with the given long "the_seed_".

@@ -10,15 +10,19 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "Gridworld.h"
+#include "RandomMDP.h"
 #include "Distribution.h"
+#include "Random.h"
 #include <string>
 #include <iostream>
 #include <fstream>
 
-RandomMDP::RandomMDP(int n_actions,
-                     int n_states,
-                     real randomness)
+RandomMDP::RandomMDP(uint n_actions,
+                     uint n_states,
+                     real randomness,
+		     real step_value,
+		     real pit_value,
+		     real goal_value)
 {
     
     // set up the mdp
@@ -34,153 +38,47 @@ RandomMDP::RandomMDP(int n_actions,
     for (uint a=0; a<n_actions; ++a) {
         mdp->setRewardDistribution(n_states - 1, a, &zero_reward);
     }
-    // then the others.
-    for (uint x=0; x<width; ++x) {
-        for (uint y=0; y<height; ++y) {
-            for (uint a=0; a<n_actions; ++a) {
-                int s = getState(x,y);
-                switch(whatIs(x,y)) {
-                case GRID:
-                    mdp->setRewardDistribution(s, a, &step_reward);
-                    break;
-                case WALL:
-                    mdp->setRewardDistribution(s, a, &zero_reward);
-                    break;
-                case GOAL:
-                    mdp->setRewardDistribution(s, a, &goal_reward);
-                    break;
-                case PIT:
-                    mdp->setRewardDistribution(s, a, &pit_reward);
-                    break;
-                default:
-                    std::cerr << "Unknown grid point type\n";
-                    exit(-1);
-                }
-            }
-        }
+
+    for (uint s=0; s<n_states; s++) { 
+	for (uint a=0; a<n_actions; ++a) {
+	    mdp->setRewardDistribution(s, a, &step_reward);
+	}
     }
-    
-    // set up transitions
-    // first the terminal state
+    int pit_state = (int) floor(((real) n_states) * true_random());
+    int goal_state = (int) floor(((real) n_states) * true_random());
+
     for (uint a=0; a<n_actions; ++a) {
-        mdp->setTransitionProbability (n_states-1, a, n_states-1, 1.0);
-        for (uint s=0; s<n_states - 1; s++) {
-            mdp->setTransitionProbability (n_states-1, a, s, 0.0);
-            mdp->setTransitionProbability (s, a, n_states-1, 0.0);
-        }
+	mdp->setRewardDistribution(pit_state, a, &pit_reward);
+	mdp->setRewardDistribution(goal_state, a, &goal_reward);
     }
 
-    // then all the other states
     // Step 1: clear
     for (uint s=0; s<n_states -1; s++) {   
         for (uint a=0; a<n_actions; ++a) {
             for (uint s2=0; s2<n_states - 1; s2++) {
-                mdp->setTransitionProbability (s, a, s2, 0.0);
+                mdp->setTransitionProbability (s, a, s2, randomness);
             }
         }
     }
-
-    // Step 2: fill
-    for (uint x=0; x<width; ++x) {
-        for (uint y=0; y<height; ++y) {
-            uint s = getState(x, y);
-	    MapElement element = whatIs(x, y);
-	    if (element == WALL) {
-                for (uint a=0; a<n_actions; ++a) {
-                    mdp->setTransitionProbability (s, a, s, 1.0);
-                }
-                continue;
-            } else if (element == GOAL || element == PIT) {
-	    std::cout << "TERMINATE: " << s << std::endl;
-                for (uint a=0; a<n_actions; ++a) {
-                    mdp->setTransitionProbability (s, a, n_states-1, 1.0);
-                }
-                continue;
-            } else if (element == INVALID) {
-		std::cerr << "Invalid element\n";
-		exit(-1);
-	    }
-
-            int num = 4;
-            // the hardest part is checking walls
-            bool Nd = true;
-            bool Sd = true;
-            bool Wd = true;
-            bool Ed = true;
-            int Es = getState(x + 1, y);
-            int Ws = getState(x - 1, y);
-            int Ns = getState(x, y - 1);
-            int Ss = getState(x, y + 1);
-
-            if (x==0 || whatIs(x-1, y) == WALL)  {
-		Ws = s;
-                Wd = false;
-                num--;
-            } 
-            if (x==width-1 || whatIs(x+1, y) == WALL)  {
-		Es = s;
-                Ed = false;
-                num--;
-            } 
-            if (y==0 || whatIs(x, y-1) == WALL)  {
-		Ns = s;
-                Nd = false;
-                num--;
-            } 
-            if (y==height-1 || whatIs(x, y+1) == WALL)  {
-		Ss = s;
-                Sd = false;
-                num--;
-            } 
-
-            real theta = random / (real) num;
-            for (uint a=0; a<n_actions; ++a) {
-                if (Ed) {
-                    mdp->setTransitionProbability (s, a, Es, theta);
-                }
-                if (Wd) {
-                    mdp->setTransitionProbability (s, a, Ws, theta);
-                }
-                if (Nd) {
-                    mdp->setTransitionProbability (s, a, Ns, theta);
-                }
-                if (Sd) {
-                    mdp->setTransitionProbability (s, a, Ss, theta);
-                }
-                switch(a) {
-                case NORTH:
-		    mdp->setTransitionProbability (s, a, Ns, 1 - random + theta);
-                    break;
-                case SOUTH:
-		    mdp->setTransitionProbability (s, a, Ss, 1 - random + theta);
-                    break;
-                case EAST:
-		    mdp->setTransitionProbability (s, a, Es, 1 - random + theta);
-                    break;
-                case WEST:
-		    mdp->setTransitionProbability (s, a, Ws, 1 - random + theta);
-                    break;
-                }
-            }
+    
+    // Step 2: add target states
+    for (uint s=0; s<n_states -1; s++) {   
+        for (uint a=0; a<n_actions; ++a) {
+	    int s2 = (int) floor(((real) n_states) * true_random());
+	    mdp->setTransitionProbability (s, a, s2, 1.0);
         }
     }
-    //mdp->Check();
+
+    // Step 3: add prior and normalize
+    for (uint s=0; s<n_states -1; s++) {   
+        for (uint a=0; a<n_actions; ++a) {
+	    int s2 = (int) floor(((real) n_states) * true_random());
+	    mdp->setTransitionProbability (s, a, s2, 1.0);
+        }
+    }
+
+
+    mdp->Check();
 }
 
-void Gridworld::Show()
-{
-    for (uint x=0; x<width; ++x) {
-	for (uint y=0; y<height; ++y) {
-	    MapElement e = whatIs(x, y);
-	    switch (e) {
-	    case INVALID: std::cout << "!"; break;
-	    case GRID: std::cout << "."; break;
-	    case WALL: std::cout << "#"; break;
-	    case GOAL: std::cout << "X"; break;
-	    case PIT: std::cout << "O"; break;
-	    default: std::cout << "?"; break;
-	    }
-	}
-	std::cout << std::endl;
-    }
-}
+

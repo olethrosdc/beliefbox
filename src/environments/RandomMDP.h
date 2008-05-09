@@ -21,9 +21,12 @@
 
 class RandomMDP {
 public:
-    RandomMDP(int n_actions,
-              int n_states,
-              real randomness);
+    RandomMDP(uint n_actions,
+              uint n_states,
+              real randomness,
+	      real step_value,
+	      real pit_value,
+	      real goal_value);
     const DiscreteMDP* getMDP()
     {
         return mdp;

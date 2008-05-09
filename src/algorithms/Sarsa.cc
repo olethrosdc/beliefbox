@@ -53,7 +53,7 @@ void Sarsa::Reset()
 real Sarsa::Observe (int state, int action, real reward, int next_state, int next_action)
 {
     real n_R = (reward - baseline) + gamma*Q(next_state, next_action); // partially observed return
-    real p_R = Q(s,a); // predicted return
+    real p_R = Q(state, action); // predicted return
     real TD = n_R - p_R;
 
     Q(state, action) += alpha * TD;
@@ -66,7 +66,7 @@ real Sarsa::Observe (int state, int action, real reward, int next_state, int nex
 real Sarsa::Observe (real reward, int next_state, int next_action)
 {
     real n_R = (reward - baseline) + gamma*Q(next_state, next_action); // partially observed return
-    real p_R = Q(s,a); // predicted return
+    real p_R = Q(state, action); // predicted return
     real TD = n_R - p_R;
 
     for (int i=0; i<n_states; ++i) {
@@ -94,5 +94,6 @@ real Sarsa::Observe (real reward, int next_state, int next_action)
 int Sarsa::Act(real reward, int next_state)
 {
     int next_action = exploration_policy.getAction(Q, next_state);
-    Observe(reward, next_state, next_state);
+    Observe(reward, next_state, next_action);
+    return next_action;
 }
