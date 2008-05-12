@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -14,12 +14,15 @@
 #define RANDOM_MDP_H
 
 #include "DiscreteMDP.h"
+#include "Environment.h"
+
 #include <string>
 #include <vector>
 
 
 
-class RandomMDP {
+class RandomMDP : public DiscreteEnvironment
+{
 public:
     RandomMDP(uint n_actions,
               uint n_states,
@@ -27,10 +30,17 @@ public:
               real step_value,
               real pit_value,
               real goal_value);
+
     const DiscreteMDP* getMDP()
     {
         return mdp;
     }
+
+    /// put the environment in its natural state
+    virtual void Reset();
+
+    /// returns true if the action succeeds
+    virtual bool Act(int action);
 protected:
     DiscreteMDP* mdp;
     real** transitions;

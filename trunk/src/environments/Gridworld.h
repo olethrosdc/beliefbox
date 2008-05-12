@@ -20,7 +20,7 @@
 
 
 
-class Gridworld : public Environment {
+class Gridworld : public Environment<int, int> {
 public:
     enum MapDirection {
 	NORTH=0, SOUTH, EAST, WEST
@@ -41,10 +41,12 @@ public:
     virtual ~Gridworld()
     {
     }
-    const DiscreteMDP* getMDP();
+
+    const DiscreteMDP* getMDP()
     {
         return mdp;
     }
+
     MapElement whatIs(int x, int y)
     {
 	if (x>=0 && y >=0 && x< (int) width && y < (int) height) {

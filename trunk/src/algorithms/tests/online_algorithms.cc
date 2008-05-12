@@ -40,29 +40,33 @@ int main (void)
 
     ExplorationPolicy* exploration_policy = NULL;
 
-    RandomMDP random_mdp(n_actions,
-                         n_states,
-                         randomness,
-                         step_value,
-                         pit_value,
-                         goal_value);
 
-    const DiscreteMDP* mdp = random_mdp.getMDP();
+
     
-    assert(n_states == mdp->GetNStates());
-    assert(n_actions == mdp->GetNActions());
+
     
     exploration_policy = new EpsilonGreedy(n_actions, epsilon);
 
-    Sarsa sarsa(n_states,
-                n_actions,
-                gamma,
-                lambda,
-                alpha,
-                *exploration_policy);
     
     OnlineAlgorithm<int, int>* algorithm;
+    algorithm = new Sarsa(n_states,
+                          n_actions,
+                          gamma,
+                          lambda,
+                          alpha,
+                          exploration_policy);
+
     DiscreteEnvironment* environment;
+    environment = new RandomMDP (n_actions,
+                                 n_states,
+                                 randomness,
+                                 step_value,
+                                 pit_value,
+                                 goal_value);
+
+    //const DiscreteMDP* mdp = environment->getMDP();
+    //assert(n_states == mdp->GetNStates());
+    //assert(n_actions == mdp->GetNActions());
 
     EvaluateAlgorithm(n_iterations, algorithm, environment);
     return 0;
@@ -72,7 +76,8 @@ real EvaluateAlgorithm(int n_iterations,
                        OnlineAlgorithm<int, int>* algorithm,
                        DiscreteEnvironment* environment)
 {
-    environment->Reset();
+ 
+   environment->Reset();
     for (int iter=0; iter < n_iterations; ++iter) {
         int state = environment->getState();
         real reward = environment->getReward();
@@ -81,6 +86,7 @@ real EvaluateAlgorithm(int n_iterations,
         if (!action_ok) {
             environment->Reset();
         }
+        std::cout << "# iter: " << iter << std::endl;
     }
     return 0.0;
 }
