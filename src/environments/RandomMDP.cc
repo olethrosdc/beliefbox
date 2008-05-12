@@ -82,3 +82,14 @@ RandomMDP::RandomMDP(uint n_actions,
 }
 
 
+
+/// put the environment in its natural state
+void RandomMDP::Reset()
+{
+    
+}
+
+/// returns true if the action succeeds
+bool RandomMDP::Act(A action)
+{
+}
