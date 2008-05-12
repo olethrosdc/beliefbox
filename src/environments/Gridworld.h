@@ -14,12 +14,13 @@
 #define GRIDWORLD_H
 
 #include "DiscreteMDP.h"
+#include "Environment.h"
 #include <string>
 #include <vector>
 
 
 
-class Gridworld {
+class Gridworld : public Environment {
 public:
     enum MapDirection {
 	NORTH=0, SOUTH, EAST, WEST
@@ -28,6 +29,7 @@ public:
 	INVALID=-1, GRID, WALL, GOAL, PIT
     };
     DiscreteMDP* mdp;
+
     Gridworld(char* fname,
 	      uint height_,
 	      uint width_,
@@ -36,7 +38,10 @@ public:
 	      real pit_ = -100.0,
 	      real goal_ = 0.0,
 	      real step_ = -1.0);
-    const DiscreteMDP* getMDP()
+    virtual ~Gridworld()
+    {
+    }
+    const DiscreteMDP* getMDP();
     {
         return mdp;
     }

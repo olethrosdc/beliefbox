@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -10,32 +10,29 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef RANDOM_MDP_H
-#define RANDOM_MDP_H
+#ifndef ONLINE_ALGORITHM_H
+#define ONLINE_ALGORITHM_H
 
-#include "DiscreteMDP.h"
-#include <string>
-#include <vector>
-
-
-
-class RandomMDP {
+template <typename A, typename S>
+class OnlineAlgorithm
+{
 public:
-    RandomMDP(uint n_actions,
-              uint n_states,
-              real randomness,
-              real step_value,
-              real pit_value,
-              real goal_value);
-    const DiscreteMDP* getMDP()
+    OnlineAlgorithm()
     {
-        return mdp;
     }
-protected:
-    DiscreteMDP* mdp;
-    real** transitions;
-    real* P_data;
-    Distribution** rewards;
+    virtual ~OnlineAlgorithm()
+    {
+    }
+    // set at the end of the episode.
+    virtual void Reset()
+    {
+    }
+    /// Partial SARSA observation (can be used with eligibility traces)
+    virtual real Observe (real reward, S next_state, A next_action) = 0;
+    /// Get an action using the current exploration policy.
+    /// it calls Observe as a side-effect.
+    virtual A Act(real reward, S next_state) = 0;
+    virtual real getValue (S state, A action) = 0;
 };
 
 #endif

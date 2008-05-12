@@ -13,117 +13,76 @@
 #ifdef MAKE_MAIN
 #include "PolicyEvaluation.h"
 #include "ValueIteration.h"
-#include "Gridworld.h"
+#include "RandomMDP.h"
 #include "InventoryManagement.h"
 #include "DiscretePolicy.h"
+#include "Environment.h"
+#include "ExplorationPolicy.h"
+#include "Sarsa.h"
+
+real EvaluateAlgorithm(int n_iterations,
+                       OnlineAlgorithm<int,int>* algorithm,
+                       DiscreteEnvironment* environment);
 
 int main (void)
 {
-    int period = 30;
-    int max_items = 10;
-    real gamma = 1.0;
-    real demand = 0.1;
-    real random = 0.0;
-    real pit = -100.0;
-    real goal = 0.0;
-    real step = -0.1;
-    uint width = 8;
-    uint height = 8;
-    InventoryManagement inventory_management (period, max_items, demand);
+    int n_actions = 4;
+    int n_states = 16;
+    real gamma = 0.99;
+    real lambda = 0.9;
+    real alpha = 0.1;
+    real randomness = 0.0;
+    real pit_value = -100.0;
+    real goal_value = 0.0;
+    real step_value = -0.1;
+    real epsilon = 0.1;
+    int n_iterations;
 
-    Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
-    //const DiscreteMDP* mdp = inventory_management.getMDP();
-    const DiscreteMDP* mdp = grid_world.getMDP();
+    ExplorationPolicy* exploration_policy = NULL;
+
+    RandomMDP random_mdp(n_actions,
+                         n_states,
+                         randomness,
+                         step_value,
+                         pit_value,
+                         goal_value);
+
+    const DiscreteMDP* mdp = random_mdp.getMDP();
     
-    int n_states = mdp->GetNStates();
-    int n_actions = mdp->GetNActions();
+    assert(n_states == mdp->GetNStates());
+    assert(n_actions == mdp->GetNActions());
     
-    std::vector<Vector> p(n_states);
-    for (int s=0; s<n_states; s++) {
-        p[s].Resize(n_actions);
-        for (int a=0; a<n_actions; a++) {
-            p[s][a] = 1.0 / (real) n_actions;
-	    //printf ("R(%d,%d) = %f\n", s, a, mdp->getExpectedReward(s, a));
-        }
-    }
+    exploration_policy = new EpsilonGreedy(n_actions, epsilon);
 
-    DiscretePolicy* policy = new FixedDiscretePolicy(p);
+    Sarsa sarsa(n_states,
+                n_actions,
+                gamma,
+                lambda,
+                alpha,
+                *exploration_policy);
+    
+    OnlineAlgorithm<int, int>* algorithm;
+    DiscreteEnvironment* environment;
 
-#if 1
-    PolicyEvaluation policy_evaluation(policy, mdp, gamma);
-
-#else
-    ValueIteration policy_evaluation(mdp, gamma);
-    //policy_evaluation.ComputeStateActionValues(0.001, 1000);
-#endif
-
-    std::vector<real> Q(n_actions);
-#if 0
-    for (int s=0; s<n_states; s++) {
-        for (int a=0; a<n_actions; a++) {
-            Q[a] = policy_evaluation.getValue(s,a);
-        }
-        int a_max = ArgMax(Q);
-        std::cout << s << " : " << policy_evaluation.getValue(s)
-                  << " | "
-                  << a_max << ":" << Q[a_max]
-                  << std::endl;
-    }
-#else
-    for (int iter=0; iter < 100; iter++) {
-	printf ("ITER: %d\n", iter);
-    for (uint y=0; y<height; y++) {
-        for (uint x=0; x<width; x++) {
-            int s= x + y*width;
-            for (int a=0; a<n_actions; a++) {
-                Q[a] = policy_evaluation.getValue(s,a);
-            }
-            //int a_max = ArgMax(Q);
-            //real Q_max = Q[a_max];
-            real V = policy_evaluation.getValue(s);
-	    Gridworld::MapElement element = grid_world.whatIs(x, y);
-	    if (x) printf ("&");
-	    if (element == Gridworld::WALL) {
-		printf ("\\bsqr ");
-	    } else {
-		printf ("%+.1f ", V);
-	    }
-        }
-        printf ("\\\\\\hline\n");
-    }
-
-
-    for (uint y=0; y<height; y++) {
-        for (uint x=0; x<width; x++) {
-	    int s = grid_world.getState(x, y);
-	    Gridworld::MapElement element = grid_world.whatIs(x, y);
-		  if (x) printf ("&");
-
-	    if (element == Gridworld::WALL) {
-		//printf ("#");
-		printf ("\\msqr ");
-	    } else {
-		for (int a=0; a<n_actions; a++) {
-		    Q[a] = policy_evaluation.getValue(s,a);
-		}
-		int a_max = ArgMax(Q);
-		switch (a_max) {
-		case Gridworld::NORTH: printf ("$\\uparrow$ "); break;
-		case Gridworld::SOUTH: printf ("$\\downarrow$ "); break;
-		case Gridworld::EAST:  printf ("$\\rightarrow$ "); break;
-		case Gridworld::WEST:  printf ("$\\leftarrow$ "); break;
-		}
-	    }
-        }
-        printf ("\\\\\\hline\n");
-        //printf ("\n");
-    }
-    policy_evaluation.ComputeStateValues(0.001, 1);
-    //policy_evaluation.ComputeStateActionValues(0.001, 1);
-    }
-#endif
-    grid_world.Show();
+    EvaluateAlgorithm(n_iterations, algorithm, environment);
+    return 0;
 }
 
+real EvaluateAlgorithm(int n_iterations,
+                       OnlineAlgorithm<int, int>* algorithm,
+                       DiscreteEnvironment* environment)
+{
+    environment->Reset();
+    for (int iter=0; iter < n_iterations; ++iter) {
+        int state = environment->getState();
+        real reward = environment->getReward();
+        int action = algorithm->Act(reward, state);
+        bool action_ok = environment->Act(action);
+        if (!action_ok) {
+            environment->Reset();
+        }
+    }
+    return 0.0;
+}
 
 #endif

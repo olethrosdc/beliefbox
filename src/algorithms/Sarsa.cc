@@ -34,20 +34,31 @@ Sarsa::Sarsa(int n_states_,
     assert (lambda >= 0 && lambda <= 1);
     assert (alpha >= 0 && alpha <= 1);
     assert (gamma >=0 && gamma <= 1);
-    state = -1;
-    action = 0;
+
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             Q(s, a) = initial_value;
-            el(s,a) = 0.0;
         }
     }
+    Reset();
 }
+
+
+Sarsa::~Sarsa() 
+{
+}
+
 
 void Sarsa::Reset()
 {
     state = -1;
     action = -1;
+    for (int s=0; s<n_states; s++) {
+        for (int a=0; a<n_actions; a++) {
+            el(s,a) = 0.0;
+        }
+    }
+
 }
 
 real Sarsa::Observe (int state, int action, real reward, int next_state, int next_action)

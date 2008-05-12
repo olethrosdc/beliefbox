@@ -10,17 +10,18 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef Q_LEARNING_H
-#define Q_LEARNING_H
+#ifndef SARSA_H
+#define SARSA_H
 
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
 #include "ExplorationPolicy.h"
 #include "Matrix.h"
 #include "real.h"
+#include "OnlineAlgorithm.h"
 #include <vector>
 
-class Sarsa
+class Sarsa : public OnlineAlgorithm<int, int>
 {
 protected:
     const int n_states; ///< number of states
@@ -47,7 +48,7 @@ public:
 	  ExplorationPolicy& exploration_policy_,
           real initial_value_= 0.0,
           real baseline_ = 0.0);
-    ~Sarsa();
+    virtual ~Sarsa();
     void Reset();
     /// Full SARSA observation (no eligibility traces)
     real Observe (int state, int action, real reward, int next_state, int next_action);
