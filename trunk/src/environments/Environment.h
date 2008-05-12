@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -10,32 +10,41 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef RANDOM_MDP_H
-#define RANDOM_MDP_H
+#ifndef ENVIRONMENT_H
+#define ENVIRONMENT_H
 
-#include "DiscreteMDP.h"
-#include <string>
-#include <vector>
-
-
-
-class RandomMDP {
-public:
-    RandomMDP(uint n_actions,
-              uint n_states,
-              real randomness,
-              real step_value,
-              real pit_value,
-              real goal_value);
-    const DiscreteMDP* getMDP()
-    {
-        return mdp;
-    }
+template <typename A, typename S>
+class Environment
+{
 protected:
-    DiscreteMDP* mdp;
-    real** transitions;
-    real* P_data;
-    Distribution** rewards;
+    S state;
+    real reward;
+public:
+    virtual ~Environment() 
+    {
+    }
+
+    /// put the environment in its natural state
+    virtual void Reset() = 0;
+
+    /// returns true if the action succeeds
+    virtual bool Act(A action) = 0;
+
+    /// returns the current state
+    S getState()
+    {
+        return state;
+    }
+
+    /// returns the current reward
+    real getReward()
+    {
+        return reward;
+    }
+
 };
+
+typedef Environment<int, int> DiscreteEnvironment;
+
 
 #endif

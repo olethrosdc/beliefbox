@@ -26,7 +26,7 @@ public:
     virtual int getAction(Matrix& Q, int state) = 0;
 };
 
-class EpsilonGreedy
+class EpsilonGreedy : public ExplorationPolicy
 {
 protected:
     int n_actions;
