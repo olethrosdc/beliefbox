@@ -95,18 +95,8 @@ public:
     virtual void setVariance (real var) {}; ///< ignore variance
     virtual void setMean (real mean); ///< set the mean
     virtual real getMean ();
-    virtual real generate()
-    {
-        return m;
-    }
-    virtual real pdf(real x)
-    {
-        if (x==m) {
-            return 1.0f;
-        } else {
-            return 0.0f;
-        }
-    }
+    virtual real generate();
+    virtual real pdf(real x);
 };
 
 

@@ -25,7 +25,7 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
 
     P = new real* [N];
     P_data = new real[N*n_states];
-	state = 0;
+    state = 0;
 
     for (int i=0; i<N; i++) {
         P[i] = &P_data[i*n_states];
@@ -46,7 +46,12 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
         for (int i=0; i<N; i++) {
             R[i] = initial_rewards[i];
             ER[i] = R[i]->getMean();
-            //printf ("%d %f\n", i, ER[i]);
+            printf ("#D(%d): E[] = %f, ~ %f\n", i, ER[i], R[i]->generate());
+        }
+    } else {
+        for (int i=0; i<N; i++) {
+            R[i] = NULL;
+            ER[i] = 0xBADFEED;
         }
     }
 
@@ -75,6 +80,7 @@ void DiscreteMDP::setRewardDistribution(int s, int a, Distribution* reward)
     int ID = getID (s, a);
     R[ID] = reward;
     ER[ID] = reward->getMean();
+    printf ("#D(%d): E[] = %f, ~ %f : %p\n", ID, ER[ID], R[ID]->generate(), R[ID]);
     //printf ("%d %f\n", ID, ER[ID]);
 }
 
@@ -99,7 +105,10 @@ void DiscreteMDP::ShowModel() const
 real DiscreteMDP::generateReward (int s, int a) const
 {
     int ID = getID (s, a);
-    return R[ID]->generate();
+    assert (R[ID]);
+    printf ("ID: %d : %p\n", ID, R[ID]);
+    return ER[ID];
+    //    return R[ID]->generate();
 }
 
 int DiscreteMDP::generateState (int s, int a) const
@@ -143,7 +152,7 @@ void DiscreteMDP::Check() const
             for (int s2=0; s2<n_states; s2++) {
                 real p = getTransitionProbability(s, a, s2);
 		if (p>=threshold) {
-		    printf ("P[s'=%d| s=%d, a=%d] = %f\n", s2, s, a, p);
+		    //printf ("P[s'=%d| s=%d, a=%d] = %f\n", s2, s, a, p);
 		}
                 sum += p;
             }

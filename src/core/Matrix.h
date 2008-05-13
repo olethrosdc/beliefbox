@@ -17,6 +17,7 @@
 #include "Vector.h"
 #include <exception>
 #include <stdexcept>
+#include <iostream>
 #include <vector>
 
 /// \brief An n-by-m dimensional matrix.
@@ -107,6 +108,9 @@ real& Matrix::operator() (int i, int j)
                  
     if (checking_bounds) {
         if (i<0 || j<0 || i>=rows || j>=columns) {
+	    fprintf(stderr, "bad access: (%d, %d) on a %d x %d matrix\n",
+		    i, j, rows, columns);
+	    fflush (stderr);
             throw std::out_of_range("matrix index out of range");
         }
     }
@@ -124,6 +128,9 @@ const real& Matrix::operator() (int i, int j) const
                  
     if (checking_bounds) {
         if (i<0 || j<0 || i>=rows || j>=columns) {
+	    fprintf(stderr, "bad access: (%d, %d) on a %d x %d matrix\n",
+		    i, j, rows, columns);
+	    fflush (stderr);
             throw std::out_of_range("matrix index out of range");
         }
     }

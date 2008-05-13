@@ -20,8 +20,8 @@ template<>
 class MDP<int, int> {
 protected:
     int state;
-    int n_states; ///< number of states (or dimensionality of state space)
-    int n_actions; ///< number of actions (or dimensionality of action space)
+    uint n_states; ///< number of states (or dimensionality of state space)
+    uint n_actions; ///< number of actions (or dimensionality of action space)
     real** P; ///< transition distribution
     real* P_data; ///< transition distribution data
     Distribution** R; ///< reward distribution
@@ -49,7 +49,6 @@ public:
     virtual real generateReward (int s, int a) const;
     virtual int generateState (int s, int a) const;
     virtual real getTransitionProbability (int s, int a, int s2) const;
-    //	virtual real getRewardProbability (int s, int a);
     virtual real getExpectedReward (int s, int a) const;
     virtual void setTransitionProbability(int s, int a, int s2, real p);
     virtual void setRewardDistribution(int s, int a, Distribution* reward);
