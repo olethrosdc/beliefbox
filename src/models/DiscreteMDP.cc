@@ -106,7 +106,7 @@ real DiscreteMDP::generateReward (int s, int a) const
 {
     int ID = getID (s, a);
     assert (R[ID]);
-    printf ("ID: %d : %p\n", ID, R[ID]);
+    //printf ("ID: %d : %p\n", ID, R[ID]);
     return ER[ID];
     //    return R[ID]->generate();
 }
@@ -148,7 +148,7 @@ void DiscreteMDP::Check() const
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             real sum = 0.0;
-	    printf ("E[r|s=%d, a=%d] = %f\n", s, a, getExpectedReward(s, a));
+	    //printf ("E[r|s=%d, a=%d] = %f\n", s, a, getExpectedReward(s, a));
             for (int s2=0; s2<n_states; s2++) {
                 real p = getTransitionProbability(s, a, s2);
 		if (p>=threshold) {
