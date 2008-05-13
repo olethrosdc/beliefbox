@@ -54,7 +54,7 @@ int main (void)
                           gamma,
                           lambda,
                           alpha,
-                          exploration_policy);
+                          *exploration_policy);
 
     DiscreteEnvironment* environment;
     environment = new RandomMDP (n_actions,

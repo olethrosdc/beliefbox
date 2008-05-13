@@ -37,7 +37,7 @@ int FixedDiscretePolicy::SelectAction()
     real x = urandom();
     real s = 0.0;
     for (int a=0; a<n; ++a) {
-        s += p[s][a];
+        s += p[state][a];
         if (s>x) {
             return a;
         }

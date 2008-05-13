@@ -17,12 +17,14 @@
 #include <iostream>
 #include <fstream>
 
-RandomMDP::RandomMDP(uint n_actions,
-                     uint n_states,
+RandomMDP::RandomMDP(uint n_actions_,
+                     uint n_states_,
                      real randomness,
 		     real step_value,
 		     real pit_value,
-		     real goal_value)
+		     real goal_value) :
+    n_actions(n_actions_),
+    n_states(n_states_)
 {
     
     // set up the mdp
@@ -86,10 +88,13 @@ RandomMDP::RandomMDP(uint n_actions,
 /// put the environment in its natural state
 void RandomMDP::Reset()
 {
-    
+    state = (int) floor(urandom(0, n_states));
+    reward = 0;
 }
 
-/// returns true if the action succeeds
-bool RandomMDP::Act(A action)
+/// returns true if the action succeeds, false if we are in a terminal state
+bool RandomMDP::Act(int action)
 {
+    state = mdp->generateState(state, action);
+    return true;
 }
