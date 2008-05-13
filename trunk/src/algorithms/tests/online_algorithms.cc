@@ -34,46 +34,45 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 					  DiscreteEnvironment* environment,
 					  real gamma);
 
-int main (void)
+int main (int argc, char** argv)
 {
     int n_actions = 4;
     int n_states = 4;
-    real gamma = 0.99;
+    real gamma = 0.9;
     real lambda = 0.9;
-    real alpha = 0.1;
-    real randomness = 0.0;
-    real pit_value = -100.0;
-    real goal_value = 10.0;
+    real alpha = 0.01;
+    real randomness = 0.1;
+    real pit_value = -1.0;
+    real goal_value = 0.0;
     real step_value = -0.1;
     real epsilon = 0.1;
-    int n_runs = 100;
-    int n_episodes = 100;
+    int n_runs = 1000;
+    int n_episodes = 10000;
     int n_steps = 1000;
+
+    if (argc != 6) {
+	std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness\n";
+	return -1;
+    }
+    n_states = atoi(argv[1]);
+    assert (n_states > 0);
+
+    n_actions = atoi(argv[2]);
+    assert (n_actions > 0);
+
+    gamma = atof(argv[3]);
+    assert (gamma > 0 && gamma <= 1);
+
+    lambda = atof(argv[4]);
+    assert (lambda >= 0 && lambda <= 1);
+
+    randomness = atof(argv[5]);
+    assert (randomness >= 0 && randomness <= 1);
+    
 
     std::cout << "Starting test program" << std::endl;
     
-    std::cout << "Creating exploration policy" << std::endl;
-    ExplorationPolicy* exploration_policy = NULL;
-    exploration_policy = new EpsilonGreedy(n_actions, epsilon);
-    
-    
-    std::cout << "Creating online algorithm" << std::endl;
-    OnlineAlgorithm<int, int>* algorithm = NULL;
-    algorithm = new Sarsa(n_states,
-                          n_actions,
-                          gamma,
-                          lambda,
-                          alpha,
-                          exploration_policy);
 
-    std::cout << "Creating environment" << std::endl;
-    DiscreteEnvironment* environment = NULL;
-    environment = new RandomMDP (n_actions,
-                                 n_states,
-                                 randomness,
-                                 step_value,
-                                 pit_value,
-                                 goal_value);
 
     //const DiscreteMDP* mdp = environment->getMDP();
     //assert(n_states == mdp->GetNStates());
@@ -83,18 +82,54 @@ int main (void)
     std::cout << "Starting evaluation" << std::endl;
 
     // remember to use n_runs
+    std::vector<Statistics> statistics(n_episodes);
+    for (uint run=0; run<n_runs; ++run) {
+	//std::cout << "Creating exploration policy" << std::endl;
+	ExplorationPolicy* exploration_policy = NULL;
+	exploration_policy = new EpsilonGreedy(n_actions, epsilon);
+    
+    
+	//std::cout << "Creating online algorithm" << std::endl;
+	OnlineAlgorithm<int, int>* algorithm = NULL;
+	algorithm = new Sarsa(n_states,
+			      n_actions,
+			      gamma,
+			      lambda,
+			      alpha,
+			      exploration_policy);
 
-    std::vector<Statistics> statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
+	//std::cout << "Creating environment" << std::endl;
+	DiscreteEnvironment* environment = NULL;
+	environment = new RandomMDP (n_actions,
+				     n_states,
+				     randomness,
+				     step_value,
+				     pit_value,
+				     goal_value);
+	std::cerr << "run : " << run << std::endl;
+	std::vector<Statistics> run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
+	for (uint i=0; i<statistics.size(); ++i) {
+	    statistics[i].total_reward += run_statistics[i].total_reward;
+	    statistics[i].discounted_reward += run_statistics[i].discounted_reward;
+	    statistics[i].steps += run_statistics[i].steps;
+	}
+	delete environment;
+	delete algorithm;
+	delete exploration_policy;
+    }
+    
+
     for (uint i=0; i<statistics.size(); ++i) {
+	statistics[i].total_reward /= (float) n_runs;
+	statistics[i].discounted_reward /= (float) n_runs;
+	statistics[i].steps /= n_runs;
 	std::cout << statistics[i].total_reward << " "
 		  << statistics[i].discounted_reward << "# REWARD"
 		  << std::endl;
     }
     std::cout << "Done" << std::endl;
 
-    delete environment;
-    delete algorithm;
-    delete exploration_policy;
+
     
     return 0;
 }
@@ -118,7 +153,7 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 	for (int t=0; t < n_steps; ++t) {
 	    int state = environment->getState();
 	    real reward = environment->getReward();
-	    std::cout << state << " " << reward << std::endl;
+	    //std::cout << state << " " << reward << std::endl;
 	    statistics[episode].total_reward += reward;
 	    statistics[episode].discounted_reward += discount * reward;
 	    discount *= gamma;
