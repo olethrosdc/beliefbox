@@ -23,6 +23,9 @@
 
 class RandomMDP : public DiscreteEnvironment
 {
+protected:
+    int n_states;
+    int n_actions;
 public:
     RandomMDP(uint n_actions,
               uint n_states,
