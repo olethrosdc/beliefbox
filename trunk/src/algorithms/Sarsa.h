@@ -29,7 +29,7 @@ protected:
     real gamma; ///< discount factor
     real lambda; ///< eligibility trace decay rate
     real alpha; ///< learning rate 
-    ExplorationPolicy& exploration_policy; ///< exploration policy
+    ExplorationPolicy* exploration_policy; ///< exploration policy
     real initial_value; ///< initial value for Q values
     real baseline; ///< baseline reward
 
@@ -45,7 +45,7 @@ public:
           real gamma_,
           real lambda_,
           real alpha_,
-	  ExplorationPolicy& exploration_policy_,
+	  ExplorationPolicy* exploration_policy_,
           real initial_value_= 0.0,
           real baseline_ = 0.0);
     virtual ~Sarsa();

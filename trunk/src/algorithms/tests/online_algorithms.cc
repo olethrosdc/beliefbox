@@ -27,7 +27,7 @@ real EvaluateAlgorithm(int n_iterations,
 int main (void)
 {
     int n_actions = 4;
-    int n_states = 16;
+    int n_states = 4;
     real gamma = 0.99;
     real lambda = 0.9;
     real alpha = 0.1;
@@ -38,25 +38,24 @@ int main (void)
     real epsilon = 0.1;
     int n_iterations;
 
+    std::cout << "Starting test program" << std::endl;
+    
+    std::cout << "Creating exploration policy" << std::endl;
     ExplorationPolicy* exploration_policy = NULL;
-
-
-
-    
-
-    
     exploration_policy = new EpsilonGreedy(n_actions, epsilon);
-
     
-    OnlineAlgorithm<int, int>* algorithm;
+    
+    std::cout << "Creating online algorithm" << std::endl;
+    OnlineAlgorithm<int, int>* algorithm = NULL;
     algorithm = new Sarsa(n_states,
                           n_actions,
                           gamma,
                           lambda,
                           alpha,
-                          *exploration_policy);
+                          exploration_policy);
 
-    DiscreteEnvironment* environment;
+    std::cout << "Creating environment" << std::endl;
+    DiscreteEnvironment* environment = NULL;
     environment = new RandomMDP (n_actions,
                                  n_states,
                                  randomness,
@@ -67,8 +66,11 @@ int main (void)
     //const DiscreteMDP* mdp = environment->getMDP();
     //assert(n_states == mdp->GetNStates());
     //assert(n_actions == mdp->GetNActions());
-
+    
+    
+    std::cout << "Starting evaluation" << std::endl;
     EvaluateAlgorithm(n_iterations, algorithm, environment);
+    std::cout << "Done" << std::endl;
     return 0;
 }
 
@@ -76,8 +78,9 @@ real EvaluateAlgorithm(int n_iterations,
                        OnlineAlgorithm<int, int>* algorithm,
                        DiscreteEnvironment* environment)
 {
+    std:: cout << "Evaluating..." << std::endl;
  
-   environment->Reset();
+    environment->Reset();
     for (int iter=0; iter < n_iterations; ++iter) {
         int state = environment->getState();
         real reward = environment->getReward();
