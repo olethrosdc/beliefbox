@@ -20,9 +20,19 @@
 #include "ExplorationPolicy.h"
 #include "Sarsa.h"
 
-real EvaluateAlgorithm(int n_iterations,
-                       OnlineAlgorithm<int,int>* algorithm,
-                       DiscreteEnvironment* environment);
+struct Statistics
+{
+    real total_reward;
+    real discounted_reward;
+    int steps;
+};
+
+
+std::vector<Statistics> EvaluateAlgorithm(int n_steps,
+					  int n_episodes,
+					  OnlineAlgorithm<int,int>* algorithm,
+					  DiscreteEnvironment* environment,
+					  real gamma);
 
 int main (void)
 {
@@ -33,10 +43,12 @@ int main (void)
     real alpha = 0.1;
     real randomness = 0.0;
     real pit_value = -100.0;
-    real goal_value = 0.0;
+    real goal_value = 10.0;
     real step_value = -0.1;
     real epsilon = 0.1;
-    int n_iterations;
+    int n_runs = 100;
+    int n_episodes = 100;
+    int n_steps = 1000;
 
     std::cout << "Starting test program" << std::endl;
     
@@ -69,29 +81,57 @@ int main (void)
     
     
     std::cout << "Starting evaluation" << std::endl;
-    EvaluateAlgorithm(n_iterations, algorithm, environment);
+
+    // remember to use n_runs
+
+    std::vector<Statistics> statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
+    for (uint i=0; i<statistics.size(); ++i) {
+	std::cout << statistics[i].total_reward << " "
+		  << statistics[i].discounted_reward << "# REWARD"
+		  << std::endl;
+    }
     std::cout << "Done" << std::endl;
+
+    delete environment;
+    delete algorithm;
+    delete exploration_policy;
+    
     return 0;
 }
 
-real EvaluateAlgorithm(int n_iterations,
-                       OnlineAlgorithm<int, int>* algorithm,
-                       DiscreteEnvironment* environment)
+std::vector<Statistics> EvaluateAlgorithm(int n_steps,
+					  int n_episodes,
+					  OnlineAlgorithm<int, int>* algorithm,
+					  DiscreteEnvironment* environment,
+					  real gamma)
 {
     std:: cout << "Evaluating..." << std::endl;
  
-    environment->Reset();
-    for (int iter=0; iter < n_iterations; ++iter) {
-        int state = environment->getState();
-        real reward = environment->getReward();
-        int action = algorithm->Act(reward, state);
-        bool action_ok = environment->Act(action);
-        if (!action_ok) {
-            environment->Reset();
-        }
-        std::cout << "# iter: " << iter << std::endl;
+    std::vector<Statistics> statistics(n_episodes);
+
+    for (int episode = 0; episode < n_episodes; ++episode) {
+	statistics[episode].total_reward = 0.0;
+	statistics[episode].discounted_reward = 0.0;
+	statistics[episode].steps = 0;
+	real discount = 1.0;
+	environment->Reset();
+	for (int t=0; t < n_steps; ++t) {
+	    int state = environment->getState();
+	    real reward = environment->getReward();
+	    std::cout << state << " " << reward << std::endl;
+	    statistics[episode].total_reward += reward;
+	    statistics[episode].discounted_reward += discount * reward;
+	    discount *= gamma;
+	    statistics[episode].steps = t;
+	    int action = algorithm->Act(reward, state);
+	    bool action_ok = environment->Act(action);
+	    if (!action_ok) {
+		break;
+	    }
+	}
+
     }
-    return 0.0;
+    return statistics;
 }
 
 #endif

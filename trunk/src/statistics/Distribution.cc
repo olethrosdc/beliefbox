@@ -47,6 +47,19 @@ real SingularDistribution::getMean()
 {
 	return m;
 }
+real SingularDistribution::generate()
+{
+    return m;
+}
+real SingularDistribution::pdf(real x)
+{
+        if (x==m) {
+            return 1.0f;
+        } else {
+            return 0.0f;
+        }
+}
+
 
 BernoulliDistribution::BernoulliDistribution(real p)
 {

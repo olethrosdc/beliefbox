@@ -34,6 +34,8 @@ public:
               real pit_value,
               real goal_value);
 
+    virtual ~RandomMDP();
+
     const DiscreteMDP* getMDP()
     {
         return mdp;
@@ -48,7 +50,7 @@ protected:
     DiscreteMDP* mdp;
     real** transitions;
     real* P_data;
-    Distribution** rewards;
+    std::vector<Distribution*> rewards;
 };
 
 #endif
