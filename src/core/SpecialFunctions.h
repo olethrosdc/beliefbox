@@ -17,34 +17,45 @@
 #include "real.h"
 #include <cmath>
 
-/// General distributions package. Currently statistical estimation
-/// is only provided through gradient descent methods for minimisation.
-
+/** The gamma function.
+    
+    \f$Gamma(x) = \int_0^\infty t^{x-1} e^{-t} \, dt\f$.
+ */
 inline float Gamma(float x)
 {
     return tgammaf(x);
 }
 
+/** The gamma function, double version.
+ */
 inline double Gamma(double x)
 {
     return tgamma(x);
 }
 
 
+/** The log gamma function.
+ */
 inline float logGamma(float x)
 {
     return lgammaf(x);
 }
 
+/** The log gamma function, double version.
+ */
 inline double logGamma(double x)
 {
     return lgamma(x);
 }
 
+/** The log two-variable Beta function */
 real logBeta(real x, real y);
+/** The two-variable Beta function */
 real Beta(real x, real y);
 
+/** The lector Beta function */
 real logBeta(Vector& x);
+/** The vector Beta function */
 real Beta(Vector& x);
 
 float betacf(float a, float b, float x);
