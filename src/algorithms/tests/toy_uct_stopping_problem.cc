@@ -14,27 +14,51 @@
 #include "PolicyEvaluation.h"
 #include "BetaDistribution.h"
 
+#include <list>
+
+// We start with an initial belief and then we expand all its possible
+// observations.  So, each belief node has to have some
+// characteristics.
+
+class BeliefNode
+{
+public:
+    virtual ~BeliefNode()
+    {
+    }
+};
+
+class BetaVectorBeliefNode : public BeliefNode
+{
+public:
+    std::vector<BetaDistribution> posterior = prior;
+    virtual ~BetaBeliefNode()
+    {
+    }
+};
 
 
 /// A toy UCT stopping problem
 class BeliefExpansionAlgorithm 
 {
 public:
-    std::vector<ConjugatePrior> prior; /// prior for all actions
+    std::vector<BetaDistribution> prior; /// prior for all actions
     uint n_actions;
     BeliefExpansionAlgorithm(std::vector<ConjugatePrior> prior_)
-	: prior(prior_)
+        : prior(prior_)
     {
-	n_actions = prior.size();
+        n_actions = prior.size();
     }
     virtual ~BeliefExpansionAlgorithm
     {
     }
     void Observe(int action, real reward)
     {
-	assert (action>= 0 && action < n_actions);
-	real x = (real) (((int) reward) * 2 - 1);
-	prior[action].calculatePosterior(x);
+        assert (action>= 0 && action < n_actions);
+        real x = (real) (((int) reward) * 2 - 1);
+        std::vector<BetaDistribution> posterior = prior;
+        posterior[action].calculatePosterior(x);
+        
     }
 };
 
@@ -71,7 +95,8 @@ int main (int argc, char** argv)
 
 void EvaluateAlgorithm(UCTAlgorithm* algorithm, real mean_r)
 {
-    algorith
+    
+    // blah
 }
 
 #endif
