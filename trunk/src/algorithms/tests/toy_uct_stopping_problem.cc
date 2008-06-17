@@ -12,8 +12,11 @@
 #ifdef MAKE_MAIN
 #include "PolicyEvaluation.h"
 #include "BetaDistribution.h"
+#include "Random.h"
 
 #include <list>
+
+
 
 // We start with an initial belief and then we expand all its possible
 // observations.  So, each belief node has to have some
@@ -30,9 +33,21 @@ public:
 class BetaVectorBeliefNode : public BeliefNode
 {
 public:
-    std::vector<BetaDistribution> posterior = prior;
-    virtual ~BetaBeliefNode()
+    std::vector<BetaDistribution> belief;
+    BetaVectorBeliefNode(int n)
+	: belief(n)
     {
+    }
+    BetaVectorBeliefNode(std::vector<BetaDistribution> belief_)
+	: belief(belief_)
+    {
+    }
+    virtual ~BetaVectorBeliefNode()
+    {
+    }
+    uint size()
+    {
+	return belief.size();
     }
 };
 
@@ -41,22 +56,24 @@ public:
 class BeliefExpansionAlgorithm 
 {
 public:
-    std::vector<BetaDistribution> prior; /// prior for all actions
+    BetaVectorBeliefNode prior; /// prior for all actions
+    std::vector<BetaVectorBeliefNode> posteriors;
     uint n_actions;
-    BeliefExpansionAlgorithm(std::vector<ConjugatePrior> prior_)
+    BeliefExpansionAlgorithm(BetaVectorBeliefNode prior_)
         : prior(prior_)
     {
-        n_actions = prior.size();
+	n_actions = prior.size();
     }
-    virtual ~BeliefExpansionAlgorithm
+    virtual ~BeliefExpansionAlgorithm()
     {
     }
     void Observe(int action, real reward)
     {
         assert (action>= 0 && action < n_actions);
         real x = (real) (((int) reward) * 2 - 1);
-        std::vector<BetaDistribution> posterior = prior;
-        posterior[action].calculatePosterior(x);
+        BetaVectorBeliefNode posterior = prior;
+        posterior.belief[action].calculatePosterior(x);
+	posteriors.push_back(posterior);
     }
 };
 
@@ -64,34 +81,34 @@ public:
 class UCTBeliefExpansion : BeliefExpansionAlgorithm
 {
 public:
-    BeliefExpansionAlgorithm()
-
-    virtual ~UCTBeliefExpansion
+    virtual ~UCTBeliefExpansion()
     {
     }
     int Act()
     {
 	
     }
-    void Observe(reward);
+    void Observe(real reward);
 };
 
+
+void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r);
 
 
 int main (int argc, char** argv)
 {
     real alpha = 0;
     real beta = 0;
-    ConjugatePrior* prior = new BetaDistribution(alpha, beta);
+    //ConjugatePrior* prior = new BetaDistribution(alpha, beta);
 
     real mean_r = urandom(-1, 1);
     
-    EvaluateAlgorithm(algorithm, mean_r);
+    //EvaluateAlgorithm(algorithm, mean_r);
     
     return 0;
 }
 
-void EvaluateAlgorithm(UCTAlgorithm* algorithm, real mean_r)
+void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r)
 {
     
     // blah
