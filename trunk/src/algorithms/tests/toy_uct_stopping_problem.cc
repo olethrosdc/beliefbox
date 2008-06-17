@@ -1,6 +1,5 @@
-/* -*- Mode: C++; -*- */
-/* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// -*- Mode: C++; -*-
+// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -58,7 +57,6 @@ public:
         real x = (real) (((int) reward) * 2 - 1);
         std::vector<BetaDistribution> posterior = prior;
         posterior[action].calculatePosterior(x);
-        
     }
 };
 
