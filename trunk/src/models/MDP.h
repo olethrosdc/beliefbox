@@ -36,7 +36,7 @@ protected:
     RewardDistribution<StateType, ActionType>& reward_distribution;
 public:
     MDP(TransitionDistribution<StateType, ActionType>& transition_distribution_, RewardDistribution<StateType, ActionType>& reward_distribution_)
-	: transition_distribution(transition_distribution_), reward_distribution(reward_distribution_) {}
+        : transition_distribution(transition_distribution_), reward_distribution(reward_distribution_) {}
     virtual ~MDP() {}
     virtual real getTransitionProbability (StateType& s, ActionType& a, StateType& s2) const
     {
@@ -53,22 +53,22 @@ public:
 	
     virtual StateType generateState(StateType& s, ActionType& a) const
     {
-	return transition_distribution.generate(s, a);
+        return transition_distribution.generate(s, a);
     }
     virtual real generateReward(StateType& s, ActionType& a) const
     {
-	return reward_distribution.generate(s, a);
+        return reward_distribution.generate(s, a);
     }
     // generate a new state given the current state and action, then set the current state to be the new state.
     real Act (ActionType& a)
     {
-	real r = generateReward(state, a);
-	state = generateState(state, a);
-	return r;
+        real r = generateReward(state, a);
+        state = generateState(state, a);
+        return r;
     }
     StateType generateState(ActionType& a)
     {
-	return generateState(state, a);
+        return generateState(state, a);
     }
 };
 

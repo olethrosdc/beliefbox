@@ -73,7 +73,7 @@ public:
         real x = (real) (((int) reward) * 2 - 1);
         BetaVectorBeliefNode posterior = prior;
         posterior.belief[action].calculatePosterior(x);
-	posteriors.push_back(posterior);
+        posteriors.push_back(posterior);
     }
 };
 
