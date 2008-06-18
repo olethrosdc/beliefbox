@@ -16,6 +16,16 @@
 #include <list>
 
 
+typedef std::list<HalfEdge> HalfEdgeList;
+typedef HalfEdgeList::iterator HalfEdgeListIterator;
+
+typedef std::list<int> NodeList;
+typedef NodeList::iterator NodeListIterator;
+
+typedef std::set<int> NodeSet;
+typedef NodeSet::iterator NodeSetIterator;
+
+
 class SparseGraph : public Graph
 {
 protected:
@@ -38,9 +48,6 @@ public:
 };
 
 
-//class GeneralGraph : public SparseGraph
-//{
-//   
-//};
+
 
 #endif

@@ -77,6 +77,8 @@ public:
     }
 };
 
+
+
 /// A toy UCT stopping problem
 class UCTBeliefExpansion : BeliefExpansionAlgorithm
 {

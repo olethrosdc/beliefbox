@@ -23,8 +23,9 @@ RandomMDP::RandomMDP(uint n_actions_,
 		     real step_value,
 		     real pit_value,
 		     real goal_value) :
-    n_actions(n_actions_),
-    n_states(n_states_)
+    n_states(n_states_),
+    n_actions(n_actions_)
+
 {
     
     // set up the mdp
@@ -74,7 +75,7 @@ RandomMDP::RandomMDP(uint n_actions_,
 
     //std::cout << "Assigning transition probabilities\n";
     // Step 1: set prior
-    for (uint s=0; s<n_states -1; s++) {   
+    for (uint s=0; s<n_states -1; ++s) {   
         for (uint a=0; a<n_actions; ++a) {
             for (uint s2=0; s2<n_states - 1; s2++) {
                 mdp->setTransitionProbability (s, a, s2, randomness);
