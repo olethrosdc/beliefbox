@@ -20,8 +20,8 @@
 class DirichletDistribution : public VectorDistribution
 {
 protected:
-    int n;
-    Vector a;
+    int n; ///< size of multinomial distribution
+    Vector a; ///< size of vector
 public:
     DirichletDistribution(int n);
     virtual ~DirichletDistribution();

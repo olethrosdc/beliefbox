@@ -19,18 +19,18 @@
 /// A graph implemented as a connectivity matrix.
 class ConnectivityMatrix : public Graph
 {
- protected:
-	int** C; ///< connection matrix
-	real** D; ///< distance matrix
- public:
-	/** \brief Create a matrix with N nodes, directional, with an optional list of prior connections and optional inversion of directions.
-	 */
-	ConnectivityMatrix(int N, bool directional, int** c = NULL, bool invert=false, real** d = NULL);
+protected:
+    int** C; ///< connection matrix
+    real** D; ///< distance matrix
+public:
+    /** \brief Create a matrix with N nodes, directional, with an optional list of prior connections and optional inversion of directions.
+     */
+    ConnectivityMatrix(int N, bool directional, int** c = NULL, bool invert=false, real** d = NULL);
     ConnectivityMatrix(SparseGraph& G);
-	~ConnectivityMatrix();
-	virtual bool edge (int src, int dst);
-	virtual real distance (int src, int dst);
-	virtual bool CheckSymmetry (); ///< Check whether graph is symmetric
+    ~ConnectivityMatrix();
+    virtual bool edge (int src, int dst);
+    virtual real distance (int src, int dst);
+    virtual bool CheckSymmetry (); ///< Check whether graph is symmetric
 };
 
 #endif

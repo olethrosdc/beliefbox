@@ -44,7 +44,7 @@ public:
 
 };
 
-typedef Environment<int, int> DiscreteEnvironment;
+typedef Environment<uint, uint> DiscreteEnvironment;
 
 
 #endif

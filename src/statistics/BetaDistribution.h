@@ -18,8 +18,9 @@
 class BetaDistribution : public ConjugatePrior
 {
 public:
-    real alpha;
-    real beta;
+    real alpha; ///< number of ones obsered
+    real beta; ///< number of zeros observed
+
     /// Beta distribution default constructor: alpha,beta=1, the
     /// uniform distribution
     BetaDistribution()

@@ -27,29 +27,29 @@
 
 
 /** 
-	\brief Create a new graph.
+    \brief Create a new graph.
 	
-	\arg \c N number of nodes.
-	\arg \c directional whether the graph should be directional.
+    \arg \c N number of nodes.
+    \arg \c directional whether the graph should be directional.
 */
 Graph::Graph(int N, bool directional)
 {
-	SMART_ASSERT (N>0)(N);
-	this->N = N;
-	this->directional = directional;
+    SMART_ASSERT (N>0)(N);
+    this->N = N;
+    this->directional = directional;
 #if GRAPH_DEBUG_LEVEL > 90
-	if (directional) {
-		printf("Making directional graph\n");
-	} else {
-		printf("Making undirected graph\n");
-	}
+    if (directional) {
+        printf("Making directional graph\n");
+    } else {
+        printf("Making undirected graph\n");
+    }
 #endif
 }
 
 Graph::~Graph()
 {
 #if GRAPH_DEBUG_LEVEL > 90
-	printf("Destroying Graph\n");
+    printf("Destroying Graph\n");
 #endif
 }
 
@@ -68,31 +68,31 @@ Graph::~Graph()
 */
 bool Graph::CalculateDistances (float* dist, int j, int* C)
 {
-	for (int n=0; n<N; n++) {
-		dist[n] = -1.0;
-	}
-	dist[j] = 0.0;
-	rCalculateDistance_iter(dist, j, C);
-	return true;
+    for (int n=0; n<N; n++) {
+        dist[n] = -1.0;
+    }
+    dist[j] = 0.0;
+    rCalculateDistance_iter(dist, j, C);
+    return true;
 }
 
 /// Recursive implementation of Dijkstra's algorithm.
 bool Graph::rCalculateDistance_iter (float* dist, int j, int* C)
 {
-	float current_dist = dist[j];
-	for (int n=0; n<N; n++) {
-		if ((C==NULL)||(C[n]==0)) { 
-			if ((n!=j)&&(edge(n,j))) {
-				float d = distance(n,j) + current_dist;
-				if ((dist[n]<0.0)||(d<dist[n])) {
-					dist[n] = d;
-					//printf ("D[%d]=%f\n", n, d);
-					rCalculateDistance_iter(dist, n, C);
-				}
-			}
-		}
-	}
-	return true;
+    float current_dist = dist[j];
+    for (int n=0; n<N; n++) {
+        if ((C==NULL)||(C[n]==0)) { 
+            if ((n!=j)&&(edge(n,j))) {
+                float d = distance(n,j) + current_dist;
+                if ((dist[n]<0.0)||(d<dist[n])) {
+                    dist[n] = d;
+                    //printf ("D[%d]=%f\n", n, d);
+                    rCalculateDistance_iter(dist, n, C);
+                }
+            }
+        }
+    }
+    return true;
 }
 
 /// Detecting cylces
@@ -111,7 +111,7 @@ bool Graph::hasCycles_iter (std::vector<bool>& mark, int n)
         }
     }
     // if no children are marked or have cycles
-	return false;
+    return false;
 }
 
 
@@ -137,25 +137,25 @@ bool Graph::hasCycles ()
                 mark_init[i] = mark_init[i] || mark[i];
             }
         }
-	}
-	return false;
+    }
+    return false;
 }
 
 /// Calculate whether j is reachable from all nodes.
 bool Graph::isReachable (int j, int* C)
 {
-	bool flag = true;
-	float* D = new float [N];
-	CalculateDistances (D, j);
-	for (int i=0; i<N; i++) {
-		//printf ("D[%d] = %f\n", i, D[i]);
-		if (D[i]<0.0) {
-			flag = false;
-		}
-	}
+    bool flag = true;
+    float* D = new float [N];
+    CalculateDistances (D, j);
+    for (int i=0; i<N; i++) {
+        //printf ("D[%d] = %f\n", i, D[i]);
+        if (D[i]<0.0) {
+            flag = false;
+        }
+    }
 
-	delete [] D;
-	return flag;
+    delete [] D;
+    return flag;
 }
 
 /// \brief Check whether nodes i and j are k-connected.
@@ -170,48 +170,48 @@ bool Graph::isReachable (int j, int* C)
 /// the value N-2. 
 int Graph::kConnectivity(int i, int j, int* C)
 {
-	/// \note We assume that two nodes connected with an edge are
-	/// (N-2)-connected.  Also, that i and j are k-connected if and only if
-	/// either i and j are connected with an arc or there are at least
-	/// k node-disjoint paths connecting i and j
-	if (i==j) return N-2;
-	if (edge(i,j)) {
+    /// \note We assume that two nodes connected with an edge are
+    /// (N-2)-connected.  Also, that i and j are k-connected if and only if
+    /// either i and j are connected with an arc or there are at least
+    /// k node-disjoint paths connecting i and j
+    if (i==j) return N-2;
+    if (edge(i,j)) {
 #if GRAPH_DEBUG_LEVEL >= 99
-		printf ("(%d,%d)=edge\n", i,j);
+        printf ("(%d,%d)=edge\n", i,j);
 #endif
-		return N-2;
-	} //i.e. must delete all nodes and at least one of i, j
-	int* G;
-	G = new int [N];
+        return N-2;
+    } //i.e. must delete all nodes and at least one of i, j
+    int* G;
+    G = new int [N];
 
-	if (C) {
-		for (int a=0; a<N; a++) {
-			G[a] = C[a];
-		}
-	} else {
-		for (int a=0; a<N; a++) {
-			G[a] = 0;
-		}
-	}
+    if (C) {
+        for (int a=0; a<N; a++) {
+            G[a] = C[a];
+        }
+    } else {
+        for (int a=0; a<N; a++) {
+            G[a] = 0;
+        }
+    }
 
-	float* dist = new float [N];
-	int k = 0;
-	if (G[j]) {
-		printf ("Err\n");
-		return 0;
-	}
-	CalculateDistances (dist, j, G);
+    float* dist = new float [N];
+    int k = 0;
+    if (G[j]) {
+        printf ("Err\n");
+        return 0;
+    }
+    CalculateDistances (dist, j, G);
 
-	while (MarkShortestPath (dist, G, G, i, j)) {
-		k++;
-		//printf ("%d\n", k);
-	}
-	delete [] dist;
-	delete [] G;
+    while (MarkShortestPath (dist, G, G, i, j)) {
+        k++;
+        //printf ("%d\n", k);
+    }
+    delete [] dist;
+    delete [] G;
 #if GRAPH_DEBUG_LEVEL >= 99
-	printf ("(%d,%d)=%d\n", i,j,k);
+    printf ("(%d,%d)=%d\n", i,j,k);
 #endif
-	return k;
+    return k;
 }
 
 /// \brief Mark shortest path P, from i to j given constraints and distances.
@@ -221,51 +221,51 @@ int Graph::kConnectivity(int i, int j, int* C)
 /// If there exist many paths of equal length, the first one found is marked.
 bool Graph::MarkShortestPath (float* dist, int* C, int* P, int i, int j)
 {
-	int n = i;
-	float min_dist = dist[i];
-	int arg_min_dist = i;
-	//printf ("[%d]",n);
-	for (int m=0; m<N; m++) {
-		if (!C[m]) { //don't go to forbidden nodes
-			if (edge(n,m)) {
-				if (m==j) {
-					return true;
-				}
-				if (dist[m] < min_dist) {
-					min_dist = dist[m];
- 					arg_min_dist = m;
-				}
-			}
-		}
-	}
-	if (arg_min_dist == n) {
-		//printf ("!");
-		return false;
-	}
-	P[arg_min_dist] = 1;
-	return MarkShortestPath (dist, C, P, arg_min_dist, j);
+    int n = i;
+    float min_dist = dist[i];
+    int arg_min_dist = i;
+    //printf ("[%d]",n);
+    for (int m=0; m<N; m++) {
+        if (!C[m]) { //don't go to forbidden nodes
+            if (edge(n,m)) {
+                if (m==j) {
+                    return true;
+                }
+                if (dist[m] < min_dist) {
+                    min_dist = dist[m];
+                    arg_min_dist = m;
+                }
+            }
+        }
+    }
+    if (arg_min_dist == n) {
+        //printf ("!");
+        return false;
+    }
+    P[arg_min_dist] = 1;
+    return MarkShortestPath (dist, C, P, arg_min_dist, j);
 }
 
 /// Determine the connectivity of node i
 int Graph::kConnectivity(int i, int* C)
 {
-	int k = N-2;
-	for (int j=0; j<N; j++) {
-		if ((C==NULL)||(C[j])==0) {
-			if (j!=i) {
-				int kij = kConnectivity (i, j, C);
-				//printf ("kij %d %d=%d\n", i,j, kij);
-				if (kij < k) {
-					k = kij;
-				}
-			}
-		}
-	}
-	if (k>N-2) k = 0;
+    int k = N-2;
+    for (int j=0; j<N; j++) {
+        if ((C==NULL)||(C[j])==0) {
+            if (j!=i) {
+                int kij = kConnectivity (i, j, C);
+                //printf ("kij %d %d=%d\n", i,j, kij);
+                if (kij < k) {
+                    k = kij;
+                }
+            }
+        }
+    }
+    if (k>N-2) k = 0;
 #if GRAPH_DEBUG_LEVEL >= 99
-	printf ("\t<%d>=%d\n", i, k);
+    printf ("\t<%d>=%d\n", i, k);
 #endif
-	return k;
+    return k;
 }
 
 /// \brief Check whether graph is k-connected.
@@ -280,60 +280,60 @@ int Graph::kConnectivity(int i, int* C)
 /// nodes.
 int Graph::kConnectivity()
 {
-	int* C = new int [N];
-	int k = N;
-	for (int a=0; a<N; a++) {
-		C[a] = 0;
-	}
-	//Naive implementation
-	for (int n=0; n<N; n++) {
-		int kn = kConnectivity(n);//,C);
-		if (kn < k) {
-			k = kn;
-		}
-	}
+    int* C = new int [N];
+    int k = N;
+    for (int a=0; a<N; a++) {
+        C[a] = 0;
+    }
+    //Naive implementation
+    for (int n=0; n<N; n++) {
+        int kn = kConnectivity(n);//,C);
+        if (kn < k) {
+            k = kn;
+        }
+    }
 #if GRAPH_DEBUG_LEVEL >= 99
-	printf ("Naive K:%d\n", k);
+    printf ("Naive K:%d\n", k);
 #endif
 #if 0
-	k = N-2;
-	for (int n=0; n<N; n++) {
-		int kn = kConnectivity(n,C);
-		if ((kn==0)||(kn>N-2)) {
-			return k-1;
-		}
-		printf ("(%d)", kn);
-		if (kn + n < k) {
-			k = kn + n;
-		}
-		C[n] = 1; //'delete' node
-	}
+    k = N-2;
+    for (int n=0; n<N; n++) {
+        int kn = kConnectivity(n,C);
+        if ((kn==0)||(kn>N-2)) {
+            return k-1;
+        }
+        printf ("(%d)", kn);
+        if (kn + n < k) {
+            k = kn + n;
+        }
+        C[n] = 1; //'delete' node
+    }
 #endif
-	delete [] C;
-	return k;
+    delete [] C;
+    return k;
 }
 
 /// Number of outgoing edges from node i
 int Graph::n_out_edges(int i) {
-	int cnt = 0;
-	for (int j=0; j<N; j++){
-		if (edge(i,j)) cnt++;
-	}
-	return cnt;
+    int cnt = 0;
+    for (int j=0; j<N; j++){
+        if (edge(i,j)) cnt++;
+    }
+    return cnt;
 }
 
 /// Number of incoming edges to node i
 int Graph::n_in_edges(int i) {
-	int cnt = 0;
-	for (int j=0; j<N; j++){
-		if (edge(j,i)) cnt++;
-	}
-	return cnt;
+    int cnt = 0;
+    for (int j=0; j<N; j++){
+        if (edge(j,i)) cnt++;
+    }
+    return cnt;
 }
 
 /// Total number of edges for node i
 int Graph::n_edges(int i) {
-	return n_edges(1);
+    return n_edges(1);
 }
 
 
