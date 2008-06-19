@@ -57,17 +57,21 @@ public:
 };
 
 
-struct StructuralNode
-{
-    std::list<StructuralEdge&> out_edges;
-    std::list<StructuralEdge&> in_edges;
-};
+struct StructuralNode;
 
 struct StructuralEdge
 {
-    Node& src;
-    Node& dst;
+    StructuralNode* src;
+    StructuralNode* dst;
 };
+
+struct StructuralNode
+{
+    std::list<StructuralEdge*> out_edges;
+    std::list<StructuralEdge*> in_edges;
+};
+
+
 
 template <typename V, typename Q>
 class TemplatedGraph : public AbstractGraph
@@ -86,12 +90,6 @@ public:
         StructuralEdge edge;
         Q q;
     };
-protected:
-    std::vector<HalfEdgeList> parents;
-    std::vector<HalfEdgeList> children;
-    HalfEdge& getParentHalfEdge(int src, int dst);
-    HalfEdge& getChildHalfEdge(int src, int dst);
-    virtual bool hasCycles_iter (std::vector<bool>& mark, int n);
 public:
     /// Returns true if there is an edge from \c src to \c dst.
     virtual bool edge (int src, int dst) = 0; 
