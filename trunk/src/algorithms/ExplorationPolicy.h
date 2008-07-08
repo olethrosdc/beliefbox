@@ -17,23 +17,30 @@
 #include "Matrix.h"
 #include "Random.h"
 
-class ExplorationPolicy
+/// Value-function-based exploration policy
+///
+/// Examples: epsilon-greedy, softmax
+class VFExplorationPolicy
 {
 public:
     virtual ~ExplorationPolicy()
     {}
-    virtual int getAction(Vector& Q) = 0;
-    virtual int getAction(Matrix& Q, int state) = 0;
+    virtual void Observe(real reward, int state) = 0;
+    virtual int SelectAction() = 0;
+    virtual void setValueMatrix(Matrix* Q) = 0;
+    virtual DiscretePolicy* getFixedPolicy() = 0;
 };
 
-class EpsilonGreedy : public ExplorationPolicy
+class EpsilonGreedy : public VFExplorationPolicy
 {
 protected:
     int n_actions;
     real epsilon;
+    int state;
+    Matrix* Q;
 public:
     EpsilonGreedy(int n_actions_, real epsilon_) :
-        n_actions(n_actions_), epsilon(epsilon_)
+        n_actions(n_actions_), epsilon(epsilon_), Q(NULL)
     {
 	assert(n_actions > 0);
         assert(epsilon >= 0 && epsilon <= 1);
@@ -52,23 +59,20 @@ public:
         epsilon = epsilon_;
         assert(epsilon >= 0 && epsilon <= 1);
     }
-    virtual int getAction(Vector& Q) 
+    virtual int setValueMatrix(Matrix* Q_)
     {
-	if (urandom() < epsilon) {
-	    return (int) floor(urandom(0, n_actions));
-	}
-	return ArgMax(&Q);
+        Q = Q_;
     }
 
-    virtual int getAction(Matrix& Q, int state) 
+    virtual int SelectAction() 
     {
 	if (urandom() < epsilon) {
 	    return (int) floor(urandom(0.0, n_actions));
 	}
 	int argmax = 0;
-	real max = Q(state, argmax);
+	real max = (*Q)(state, argmax);
 	for (int a=1; a<n_actions; ++a) {
-	    real Qsa = Q(state, a);
+	    real Qsa = (*Q)(state, a);
 	    if (Qsa > max) {
 		max = Qsa;
 		argmax = a;

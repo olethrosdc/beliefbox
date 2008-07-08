@@ -106,7 +106,7 @@ int main (int argc, char** argv)
 				     step_value,
 				     pit_value,
 				     goal_value);
-	std::cerr << "run : " << run << std::endl;
+	//std::cerr << "run : " << run << std::endl;
 	std::vector<Statistics> run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
 	for (uint i=0; i<statistics.size(); ++i) {
 	    statistics[i].total_reward += run_statistics[i].total_reward;
