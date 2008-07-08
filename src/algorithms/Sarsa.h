@@ -51,14 +51,14 @@ public:
     virtual ~Sarsa();
     void Reset();
     /// Full SARSA observation (no eligibility traces)
-    real Observe (int state, int action, real reward, int next_state, int next_action);
+    virtual real Observe (int state, int action, real reward, int next_state, int next_action);
     /// Partial SARSA observation (can be used with eligibility traces)
-    real Observe (real reward, int next_state, int next_action);
+    virtual real Observe (real reward, int next_state, int next_action);
     /// Get an action using the current exploration policy.
     /// it calls Observe as a side-effect.
-    int Act(real reward, int next_state);
+    virtual int Act(real reward, int next_state);
 
-    real getValue (int state, int action)
+    virtual real getValue (int state, int action)
     {
         return Q(state, action);
     }

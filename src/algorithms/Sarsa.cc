@@ -108,7 +108,8 @@ real Sarsa::Observe (real reward, int next_state, int next_action)
 
 int Sarsa::Act(real reward, int next_state)
 {
-    int next_action = exploration_policy->getAction(Q, next_state);
+    exploration_policy->Observe(reward, nextt_state);
+    int next_action = exploration_policy->getAction();//Q, next_state);
     Observe(reward, next_state, next_action);
     return next_action;
 }
