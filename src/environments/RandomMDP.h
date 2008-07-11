@@ -45,7 +45,7 @@ public:
     virtual void Reset();
 
     /// returns true if the action succeeds
-    virtual bool Act(int action);
+    virtual bool Act(uint action);
 protected:
     DiscreteMDP* mdp;
     real** transitions;
