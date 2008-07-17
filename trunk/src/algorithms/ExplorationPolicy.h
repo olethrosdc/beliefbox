@@ -23,7 +23,7 @@
 class VFExplorationPolicy
 {
 public:
-    virtual ~ExplorationPolicy()
+    virtual ~VFExplorationPolicy()
     {}
     virtual void Observe(real reward, int state) = 0;
     virtual int SelectAction() = 0;
@@ -59,7 +59,7 @@ public:
         epsilon = epsilon_;
         assert(epsilon >= 0 && epsilon <= 1);
     }
-    virtual int setValueMatrix(Matrix* Q_)
+    virtual void setValueMatrix(Matrix* Q_)
     {
         Q = Q_;
     }

@@ -45,7 +45,7 @@ int FixedDiscretePolicy::SelectAction()
     return n-1;
 }
 
-void FixedDiscretePolicy::Observe (int previous_state, int action, real r, int next_state)
+void FixedDiscretePolicy::Observe (real r, int next_state)
 {
     state = next_state;
 }

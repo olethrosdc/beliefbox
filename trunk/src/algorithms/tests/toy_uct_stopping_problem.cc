@@ -17,84 +17,43 @@
 #include <list>
 
 
-
-// We start with an initial belief and then we expand all its possible
-// observations.  So, each belief node has to have some
-// characteristics.
-
-class BeliefNode
+template <typename B>
+class BeliefTree
 {
 public:
-    virtual ~BeliefNode()
+    class Edge;
+    class Node
     {
-    }
-};
+    public:
+        B belief;
+        int state;
+        std::list<Edge&> edges;
+    };
+    
+    class Edge
+    {
+    public:
+        Node& src;
+        Node& dst;
+    };
 
-class BetaVectorBeliefNode : public BeliefNode
-{
-public:
-    std::vector<BetaDistribution> belief;
-    BetaVectorBeliefNode(int n)
-	: belief(n)
+    std::vector<Node> N;
+    std::vector<Edge> E;
+    /// Return 
+    int Expand(int i, int a, real r, int s)
     {
     }
-    BetaVectorBeliefNode(std::vector<BetaDistribution> belief_)
-	: belief(belief_)
-    {
-    }
-    virtual ~BetaVectorBeliefNode()
-    {
-    }
-    uint size()
-    {
-	return belief.size();
-    }
-};
-
-
-/// A toy UCT stopping problem
-class BeliefExpansionAlgorithm 
-{
-public:
-    BetaVectorBeliefNode prior; /// prior for all actions
-    std::vector<BetaVectorBeliefNode> posteriors;
-    uint n_actions;
-    BeliefExpansionAlgorithm(BetaVectorBeliefNode prior_)
-        : prior(prior_)
-    {
-	n_actions = prior.size();
-    }
-    virtual ~BeliefExpansionAlgorithm()
-    {
-    }
-    void Observe(int action, real reward)
-    {
-        assert (action>= 0 && action < n_actions);
-        real x = (real) (((int) reward) * 2 - 1);
-        BetaVectorBeliefNode posterior = prior;
-        posterior.belief[action].calculatePosterior(x);
-        posteriors.push_back(posterior);
-    }
+    
 };
 
 
 
 /// A toy UCT stopping problem
-class UCTBeliefExpansion : BeliefExpansionAlgorithm
-{
-public:
-    virtual ~UCTBeliefExpansion()
-    {
-    }
-    int Act()
-    {
-	
-    }
-    void Observe(real reward);
-};
 
 
-void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r);
+
+
+//void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r);
 
 
 int main (int argc, char** argv)
@@ -110,10 +69,5 @@ int main (int argc, char** argv)
     return 0;
 }
 
-void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r)
-{
-    
-    // blah
-}
 
 #endif

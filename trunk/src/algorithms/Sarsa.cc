@@ -17,7 +17,7 @@ Sarsa::Sarsa(int n_states_,
 	     real gamma_,
 	     real lambda_,
 	     real alpha_,
-	     ExplorationPolicy* exploration_policy_,
+	     VFExplorationPolicy* exploration_policy_,
 	     real initial_value_,
 	     real baseline_)
     : n_states(n_states_),
@@ -108,8 +108,8 @@ real Sarsa::Observe (real reward, int next_state, int next_action)
 
 int Sarsa::Act(real reward, int next_state)
 {
-    exploration_policy->Observe(reward, nextt_state);
-    int next_action = exploration_policy->getAction();//Q, next_state);
+    exploration_policy->Observe(reward, next_state);
+    int next_action = exploration_policy->SelectAction();//Q, next_state);
     Observe(reward, next_state, next_action);
     return next_action;
 }
