@@ -40,8 +40,20 @@ public:
     std::vector<Node> N;
     std::vector<Edge> E;
     /// Return 
-    int Expand(int i, int a, real r, int s)
+    Node& Expand(int i, int a, real r, int s)
     {
+        Node next;
+        next.belief = N[i].belief;
+        next.state = s;
+        next.belief.update(N[i].s, a, r, s);
+        Node& node_ref = N.push_back(next);
+        Edge edge;
+        edge.src = N[i];
+        edge.dst = node_ref;
+        Edge edge_ref=  E.push_back(edge);
+        N[i].edges.push_back(edge_ref);
+
+        return node_ref;
     }
     
 };
