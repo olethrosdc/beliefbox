@@ -59,6 +59,18 @@ public:
         return 1.0;
     }
     
+    real getGreedyReturn(int state, real gamma)
+    {
+        if (state == 0) {
+            real p = prior.getMean();
+            real R = p*r2 + (1.0 - p)*r1;
+            real U = R / (1.0 - gamma);
+            if (U > 0) {
+                return U;
+            } 
+        } 
+        return 0.0;
+    }
 };
 
 template <typename B>
@@ -91,8 +103,8 @@ public:
         }
     };
 
-    std::vector<Node> nodes;
-    std::vector<Edge> edges;
+    std::vector<Node*> nodes;
+    std::vector<Edge*> edges;
     
     int n_states;
     int n_actions;
@@ -104,10 +116,10 @@ public:
         n_states(n_states_),
         n_actions(n_actions_)
     {
-        Node root;
-        root.belief = prior;
-        root.state = state;
-        root.index = 0;
+        Node* root = new Node;
+        root->belief = prior;
+        root->state = state;
+        root->index = 0;
         nodes.push_back(root);
     }
 
@@ -121,44 +133,44 @@ public:
     /// Return 
     Node* ExpandAction(int i, int a, real r, int s)
     {
-        Node next;
-        next.belief = nodes[i].belief;
-        next.state = s;
-        next.index = nodes.size();
-        real p = nodes[i].belief.getProbability(nodes[i].state, a, r, s);
-        next.belief.update(nodes[i].state, a, r, s);
+        Node* next = new Node;
+        next->belief = nodes[i]->belief;
+        next->state = s;
+        next->index = nodes.size();
+        real p = nodes[i]->belief.getProbability(nodes[i]->state, a, r, s);
+        next->belief.update(nodes[i]->state, a, r, s);
 
         
-        edges.push_back(Edge(&nodes[i],
-                             &nodes[nodes.size()-1],
+        edges.push_back(new Edge(nodes[i],
+                             nodes[nodes.size()-1],
                              a, r, p));
         printf ("Added edge %d : %d --(%d %f %f)-> %d\n",
-                edges.size() - 1,
+                (int) edges.size() - 1,
                 i,
                 a, r, p,
-                nodes.size() - 1);
+                (int) nodes.size() - 1);
 
         int k = edges.size() - 1;
         printf ("Added edge %d : %d --(%d %f %f)-> %d\n",
                 k,
-                edges[k].src->index,
-                edges[k].a,
-                edges[k].r,
-                edges[k].p,
-                edges[k].dst->index);
+                edges[k]->src->index,
+                edges[k]->a,
+                edges[k]->r,
+                edges[k]->p,
+                edges[k]->dst->index);
                 
-        nodes[i].outs.push_back(&(edges[k]));
+        nodes[i]->outs.push_back(edges[k]);
 
         nodes.push_back(next);
-        return &nodes.back();
+        return nodes.back();
     }
 
     /// Return 
     //    std::vector<Node&> Expand(int i)
     void Expand(int i)
     {
-        //B belief = nodes[i].belief;
-        int state = nodes[i].state;
+        //B belief = nodes[i]->belief;
+        int state = nodes[i]->state;
         //std::vector<Node*> node_set;
         if (state==1) { 
             // terminal state, all actions do nothing whatsoever.            
@@ -174,32 +186,44 @@ public:
         //return node_set;
     }
 
-    std::vector<Node>& getNodes()
+    std::vector<Node*>& getNodes()
     {
         return nodes;
     }
 
-    DiscreteMDP CreateMDP()
+    DiscreteMDP CreateMDP(real gamma)
     {
         int n_nodes = nodes.size();
         DiscreteMDP mdp(n_nodes, 2, NULL, NULL);
         for (int i=0; i<n_nodes; i++) {
-            int n_edges = nodes[i].outs.size();
+            int n_edges = nodes[i]->outs.size();
             for (int j=0; j<n_edges; j++) {
-                Edge* edge = nodes[i].outs[j];
+                Edge* edge = nodes[i]->outs[j];
                 Distribution* reward_density = 
-                    new SingularDistribution(0.0);//edge->r);
+                    new SingularDistribution(edge->r);
                 
                 densities.push_back(reward_density);
                 mdp.setTransitionProbability(i,
                                              edge->a,
                                              edge->dst->index,
                                              edge->p);
-
+                
                 mdp.setRewardDistribution(i,
                                           edge->a,
                                           reward_density);
-                
+            }
+            
+            if (!n_edges) {
+                real mean_reward = nodes[i]->belief.getGreedyReturn(nodes[i]->state, gamma);
+                for (int a=0; a<n_actions; a++) {
+                    mdp.setTransitionProbability(i, a, i, 1.0);
+
+                    Distribution* reward_density = 
+                        new SingularDistribution(mean_reward);
+                    densities.push_back(reward_density);
+                    mdp.setRewardDistribution(i, a, reward_density);
+                }
+
             }
         }
         return mdp;
@@ -218,21 +242,23 @@ public:
 
 int main (int argc, char** argv)
 {
-    real alpha = 0;
-    real beta = 0;
+    real alpha = 1.0;
+    real beta = 1.0;
+    real gamma = 0.9;
+
     real actual_probability = urandom(0, 1);
-    
-    SimpleBelief prior(1, 1, -1.0, 1.0);
+
+    SimpleBelief prior(alpha, beta, -1.0, 1.0);
 
     BeliefTree<SimpleBelief> tree(prior, 0, 2, 2);
-    std::vector<BeliefTree<SimpleBelief>::Node>& node_set = tree.getNodes();
+    std::vector<BeliefTree<SimpleBelief>::Node*> node_set = tree.getNodes();
 
     for (int iter=0; iter<1; iter++) {
         int edgeless_nodes = 0;
         int edge_nodes = 0;
         int node_index = -1;
-        for (int i=0; i<node_set.size(); ++i) {
-            if (node_set[i].outs.size()==0) {
+        for (uint i=0; i<node_set.size(); ++i) {
+            if (node_set[i]->outs.size()==0) {
                 edgeless_nodes++;
                 if (node_index == -1) {
                     node_index = i;
@@ -250,9 +276,9 @@ int main (int argc, char** argv)
         tree.Expand(node_index); // VALGRIND
     }
 
-    DiscreteMDP mdp = tree.CreateMDP(); // VALGRIND
+    DiscreteMDP mdp = tree.CreateMDP(gamma); // VALGRIND
 
-
+    mdp.ShowModel();
 
     return 0;
 }
