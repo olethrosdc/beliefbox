@@ -26,7 +26,7 @@ protected:
     real r2;
 public:
     /// Create a belief
-    SimpleBelief(real alpha, real beta, real r1_, real r2_)
+    SimpleBelief(real alpha = 1.0, real beta=1.0, real r1_=0.0, real r2_=1.0)
         : prior(alpha, beta), r1(r1_), r2(r2_)
     {
     }
@@ -71,14 +71,14 @@ public:
     public:
         B belief;
         int state;
-        std::list<Edge&> edges;
+        std::list<Edge*> edges;
     };
     
     class Edge
     {
     public:
-        Node& src;
-        Node& dst;
+        Node* src;
+        Node* dst;
         real r;
         real p;
     };
@@ -88,9 +88,18 @@ public:
     
     int n_states;
     int n_actions;
-    BeliefTree(int n_states_, int n_actions_)
-        : n_states(n_states_), n_actions(n_actions_)
+    BeliefTree(SimpleBelief prior,
+               int state,
+               int n_states_,
+               int n_actions_)
+        :
+        n_states(n_states_),
+        n_actions(n_actions_)
     {
+        Node root;
+        root.belief = prior;
+        root.state = state;
+        nodes.push_back(root);
     }
     /// Return 
     Node& ExpandAction(int i, int a, real r, int s)
@@ -156,7 +165,9 @@ int main (int argc, char** argv)
     real beta = 0;
     real actual_probability = urandom(0, 1);
     
-        
+    SimpleBelief prior(1, 1, -1.0, 1.0);
+
+    BeliefTree<SimpleBelief> test(prior, 0, 2, 2);
     return 0;
 }
 
