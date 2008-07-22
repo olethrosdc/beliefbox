@@ -47,6 +47,12 @@ real SingularDistribution::getMean()
 {
 	return m;
 }
+
+real SingularDistribution::getVariance()
+{
+    return 0.0;
+}
+
 real SingularDistribution::generate()
 {
     return m;
