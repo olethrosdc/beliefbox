@@ -11,6 +11,7 @@
 
 #ifdef MAKE_MAIN
 #include "PolicyEvaluation.h"
+#include "ValueIteration.h"
 #include "BetaDistribution.h"
 #include "Random.h"
 
@@ -125,9 +126,18 @@ public:
 
     ~BeliefTree()
     {
-        std::cout << "D: " << densities.size() << std::endl;
-        for (int i=densities.size(); i>=0; --i) {
-            std::cout << i << std::endl;
+        //std::cout << "D: " << densities.size() << std::endl;
+        for (int i=densities.size() - 1; i>=0; --i) {
+            //std::cout << i << std::endl;
+            delete densities[i];
+        }
+
+        for (int i=nodes.size() - 1; i>=0; --i) {
+            delete nodes[i];
+        }
+
+        for (int i=edges.size() - 1; i>=0; --i) {
+            delete edges[i];
         }
     }
     /// Return 
@@ -251,9 +261,9 @@ int main (int argc, char** argv)
     SimpleBelief prior(alpha, beta, -1.0, 1.0);
 
     BeliefTree<SimpleBelief> tree(prior, 0, 2, 2);
-    std::vector<BeliefTree<SimpleBelief>::Node*> node_set = tree.getNodes();
 
     for (int iter=0; iter<1; iter++) {
+        std::vector<BeliefTree<SimpleBelief>::Node*> node_set = tree.getNodes();
         int edgeless_nodes = 0;
         int edge_nodes = 0;
         int node_index = -1;
@@ -272,14 +282,23 @@ int main (int argc, char** argv)
                   << edge_nodes << " non-leaf nodes, "
                   << "expanding node " << node_index
                   << std::endl;
-        
-        tree.Expand(node_index); // VALGRIND
+        if (node_index>=0) {
+            tree.Expand(node_index); // VALGRIND
+        } else {
+            std::cout << "Warning: no nodes could be expanded\n";
+        }
     }
 
     DiscreteMDP mdp = tree.CreateMDP(gamma); // VALGRIND
-
+    ValueIteration value_iteration(&mdp, gamma);
     mdp.ShowModel();
 
+    value_iteration.ComputeStateValues(0.01);
+    for (int s=0; s<mdp.GetNStates(); s++) {
+        std::cout << "V[" << s << "]"
+                  << " = " << value_iteration.getValue(s)
+                  << std::endl;
+    }
     return 0;
 }
 
