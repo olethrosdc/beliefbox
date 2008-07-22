@@ -152,8 +152,8 @@ public:
 
         
         edges.push_back(new Edge(nodes[i],
-                             nodes[nodes.size()-1],
-                             a, r, p));
+                                 nodes[nodes.size()-1],
+                                 a, r, p));
         printf ("Added edge %d : %d --(%d %f %f)-> %d\n",
                 (int) edges.size() - 1,
                 i,
@@ -204,7 +204,9 @@ public:
     DiscreteMDP CreateMDP(real gamma)
     {
         int n_nodes = nodes.size();
-        DiscreteMDP mdp(n_nodes, 2, NULL, NULL);
+        int terminal = n_nodes;
+
+        DiscreteMDP mdp(n_nodes + 1, 2, NULL, NULL);
         for (int i=0; i<n_nodes; i++) {
             int n_edges = nodes[i]->outs.size();
             for (int j=0; j<n_edges; j++) {
@@ -226,16 +228,24 @@ public:
             if (!n_edges) {
                 real mean_reward = nodes[i]->belief.getGreedyReturn(nodes[i]->state, gamma);
                 for (int a=0; a<n_actions; a++) {
-                    mdp.setTransitionProbability(i, a, i, 1.0);
+                    mdp.setTransitionProbability(i, a, terminal, 1.0);
 
                     Distribution* reward_density = 
                         new SingularDistribution(mean_reward);
                     densities.push_back(reward_density);
                     mdp.setRewardDistribution(i, a, reward_density);
                 }
-
             }
         }
+
+        for (int a=0; a<n_actions; a++) {
+            Distribution* reward_density = 
+                new SingularDistribution(0.0);
+            densities.push_back(reward_density);
+            mdp.setTransitionProbability(terminal, a, terminal, 1.0);
+            mdp.setRewardDistribution(terminal, a, reward_density);
+        }
+        
         return mdp;
     }
 };
