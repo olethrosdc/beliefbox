@@ -64,6 +64,8 @@ public:
 template <typename B>
 class BeliefTree
 {
+protected:
+    std::vector<Distribution*> densities;
 public:
     class Edge;
     class Node
@@ -71,16 +73,22 @@ public:
     public:
         B belief;
         int state;
-        std::list<Edge*> edges;
+        std::vector<Edge*> outs;
+        int index;
     };
     
     class Edge
     {
     public:
-        Node* src;
-        Node* dst;
-        real r;
-        real p;
+        Node* src; ///< source node
+        Node* dst; ///< destination node
+        int a; ///< action taken
+        real r; ///< reward received
+        real p; ///< probability of path
+        Edge (Node* src_, Node* dst_, int a_, real r_, real p_)
+            : src(src_), dst(dst_), a(a_), r(r_), p(p_)
+        {
+        }
     };
 
     std::vector<Node> nodes;
@@ -99,53 +107,102 @@ public:
         Node root;
         root.belief = prior;
         root.state = state;
+        root.index = 0;
         nodes.push_back(root);
     }
+
+    ~BeliefTree()
+    {
+        std::cout << "D: " << densities.size() << std::endl;
+        for (int i=densities.size(); i>=0; --i) {
+            std::cout << i << std::endl;
+        }
+    }
     /// Return 
-    Node& ExpandAction(int i, int a, real r, int s)
+    Node* ExpandAction(int i, int a, real r, int s)
     {
         Node next;
         next.belief = nodes[i].belief;
         next.state = s;
-        real p = nodes[i].belief.getProbability(nodes[i].s, a, r, s);
-        next.belief.update(nodes[i].s, a, r, s);
-        Node& node_ref = nodes.push_back(next);
-        Edge edge;
-        edge.src = nodes[i];
-        edge.dst = node_ref;
-        edge.p = p;
-        Edge edge_ref=  edges.push_back(edge);
-        nodes[i].edges.push_back(edge_ref);
-        return node_ref;
+        next.index = nodes.size();
+        real p = nodes[i].belief.getProbability(nodes[i].state, a, r, s);
+        next.belief.update(nodes[i].state, a, r, s);
+
+        
+        edges.push_back(Edge(&nodes[i],
+                             &nodes[nodes.size()-1],
+                             a, r, p));
+        printf ("Added edge %d : %d --(%d %f %f)-> %d\n",
+                edges.size() - 1,
+                i,
+                a, r, p,
+                nodes.size() - 1);
+
+        int k = edges.size() - 1;
+        printf ("Added edge %d : %d --(%d %f %f)-> %d\n",
+                k,
+                edges[k].src->index,
+                edges[k].a,
+                edges[k].r,
+                edges[k].p,
+                edges[k].dst->index);
+                
+        nodes[i].outs.push_back(&(edges[k]));
+
+        nodes.push_back(next);
+        return &nodes.back();
     }
 
     /// Return 
-    std::set<Node&> Expand(int i)
+    //    std::vector<Node&> Expand(int i)
+    void Expand(int i)
     {
-        B belief = nodes[i].belief;
+        //B belief = nodes[i].belief;
         int state = nodes[i].state;
-        std::set<Node&> node_set;
-
+        //std::vector<Node*> node_set;
         if (state==1) { 
             // terminal state, all actions do nothing whatsoever.            
-            node_set.push_back(ExpandAction(i, 0, 0.0, 1));
-            node_set.push_back(ExpandAction(i, 1, 0.0, 1));
+            ExpandAction(i, 0, 0.0, 1);
+            ExpandAction(i, 1, 0.0, 1);
         } else if (state==0) {
             // If we play, there are two possibilities
-            node_set.push_back(ExpandAction(i, 0, 1.0, 0));
-            node_set.push_back(ExpandAction(i, 0, -1.0, 0));
+            ExpandAction(i, 0, 1.0, 0);
+            ExpandAction(i, 0, -1.0, 0); // VALGRIND
             // if we move to the terminal state nothing happens
-            node_set.push_back(ExpandAction(i, 1, 0.0, 1));
+            ExpandAction(i, 1, 0.0, 1);
         }
-        return node_set;
+        //return node_set;
     }
 
+    std::vector<Node>& getNodes()
+    {
+        return nodes;
+    }
 
     DiscreteMDP CreateMDP()
     {
-        int current_node = nodes[0];
         int n_nodes = nodes.size();
-        DiscreteMDP (n_nodes, 2, NULL);
+        DiscreteMDP mdp(n_nodes, 2, NULL, NULL);
+        for (int i=0; i<n_nodes; i++) {
+            int n_edges = nodes[i].outs.size();
+            for (int j=0; j<n_edges; j++) {
+                Edge* edge = nodes[i].outs[j];
+                Distribution* reward_density = 
+                    new SingularDistribution(0.0);//edge->r);
+                
+                densities.push_back(reward_density);
+                mdp.setTransitionProbability(i,
+                                             edge->a,
+                                             edge->dst->index,
+                                             edge->p);
+
+                mdp.setRewardDistribution(i,
+                                          edge->a,
+                                          reward_density);
+                
+            }
+        }
+        return mdp;
     }
 };
 
@@ -167,7 +224,36 @@ int main (int argc, char** argv)
     
     SimpleBelief prior(1, 1, -1.0, 1.0);
 
-    BeliefTree<SimpleBelief> test(prior, 0, 2, 2);
+    BeliefTree<SimpleBelief> tree(prior, 0, 2, 2);
+    std::vector<BeliefTree<SimpleBelief>::Node>& node_set = tree.getNodes();
+
+    for (int iter=0; iter<1; iter++) {
+        int edgeless_nodes = 0;
+        int edge_nodes = 0;
+        int node_index = -1;
+        for (int i=0; i<node_set.size(); ++i) {
+            if (node_set[i].outs.size()==0) {
+                edgeless_nodes++;
+                if (node_index == -1) {
+                    node_index = i;
+                }
+            } else {
+                edge_nodes++;
+            }
+        }
+
+        std::cout << edgeless_nodes << " leaf nodes, "
+                  << edge_nodes << " non-leaf nodes, "
+                  << "expanding node " << node_index
+                  << std::endl;
+        
+        tree.Expand(node_index); // VALGRIND
+    }
+
+    DiscreteMDP mdp = tree.CreateMDP(); // VALGRIND
+
+
+
     return 0;
 }
 
