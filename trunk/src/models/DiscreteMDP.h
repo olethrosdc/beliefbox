@@ -15,17 +15,18 @@
 
 #include "SmartAssert.h"
 #include "MDP.h"
+#include <vector>
 
 template<>
 class MDP<int, int> {
 protected:
     int state;
-    uint n_states; ///< number of states (or dimensionality of state space)
-    uint n_actions; ///< number of actions (or dimensionality of action space)
+    int n_states; ///< number of states (or dimensionality of state space)
+    int n_actions; ///< number of actions (or dimensionality of action space)
     real** P; ///< transition distribution
     real* P_data; ///< transition distribution data
-    Distribution** R; ///< reward distribution
-    real* ER; ///< expected reward
+    std::vector<Distribution*> R; ///< reward distribution
+    std::vector<real> ER; ///< expected reward
     int N;
     int getID (int s, int a) const
     {

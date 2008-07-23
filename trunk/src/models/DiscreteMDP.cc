@@ -16,6 +16,15 @@
 #include "SmartAssert.h"
 #include <iostream>
 
+
+#if 0
+#define lprint (void)
+#define dprint (void)
+#else
+#define lprint printf ("# "); printf
+#define dprint printf ("# "); printf
+#endif
+
 DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distribution** initial_rewards) 
 {   
     this->n_states = n_states;
@@ -40,13 +49,13 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
         }
     }
 
-    ER = new real [N];
-    R = new Distribution* [N];
+    ER.resize(N);
+    R.resize(N);
     if (initial_rewards) {
         for (int i=0; i<N; i++) {
             R[i] = initial_rewards[i];
             ER[i] = R[i]->getMean();
-            printf ("#D(%d): E[] = %f, ~ %f\n", i, ER[i], R[i]->generate());
+            dprint ("#D(%d): E[] = %f, ~ %f\n", i, ER[i], R[i]->generate());
         }
     } else {
         for (int i=0; i<N; i++) {
@@ -62,8 +71,8 @@ DiscreteMDP::~MDP()
 {
     delete [] P_data;
     delete [] P;
-    delete [] R;
-	delete [] ER;
+    //    delete [] R;
+	// delete [] ER;
 }
 
 
@@ -80,25 +89,33 @@ void DiscreteMDP::setRewardDistribution(int s, int a, Distribution* reward)
     int ID = getID (s, a);
     R[ID] = reward;
     ER[ID] = reward->getMean();
-    printf ("#D(%d): E[] = %f, ~ %f : %p\n", ID, ER[ID], R[ID]->generate(), R[ID]);
-    //printf ("%d %f\n", ID, ER[ID]);
+    dprint ("#D(%d): E[] = %f, ~ %f : %p\n",
+            ID, ER[ID], R[ID]->generate(), (void*) R[ID]);
+    //dprint ("%d %f\n", ID, ER[ID]);
 }
 
 void DiscreteMDP::ShowModel() const
 {
-    for (int i=0; i<N; i++) {
-        std::cout << i << ":";
-        for (int j=0; j<n_states; j++) {
-            real p = P[i][j];
-            if (p<0.01) p =0.0f;
-            std::cout << p << " ";
+    for (int s=0; s<n_states; s++) {
+        for (int a=0; a<n_actions; a++) {
+            int i = getID(s,a);
+            std::cout << "(" << s << "," << a << ") :";
+            for (int j=0; j<n_states; j++) {
+                real p = P[i][j];
+                if (p>0.01) {
+                    std::cout << j << " (" << p << ") ";
+                }
+            }
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
     }
 
-    for (int i=0; i<N; i++) {
-        std::cout << "R[" << i
-                  << "] = " << ER[i] << std::endl; 
+    for (int s=0; s<n_states; s++) {
+        for (int a=0; a<n_actions; a++) {
+            int i = getID(s,a);
+            std::cout << "R[" << s << "," << a << "] = "
+                      << ER[i] << std::endl; 
+        }
     }
 }
 
@@ -106,7 +123,7 @@ real DiscreteMDP::generateReward (int s, int a) const
 {
     int ID = getID (s, a);
     assert (R[ID]);
-    //printf ("ID: %d : %p\n", ID, R[ID]);
+    //dprint ("ID: %d : %p\n", ID, R[ID]);
     return ER[ID];
     //    return R[ID]->generate();
 }
@@ -148,12 +165,12 @@ void DiscreteMDP::Check() const
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             real sum = 0.0;
-	    //printf ("E[r|s=%d, a=%d] = %f\n", s, a, getExpectedReward(s, a));
+            //dprint ("E[r|s=%d, a=%d] = %f\n", s, a, getExpectedReward(s, a));
             for (int s2=0; s2<n_states; s2++) {
                 real p = getTransitionProbability(s, a, s2);
-		if (p>=threshold) {
-		    //printf ("P[s'=%d| s=%d, a=%d] = %f\n", s2, s, a, p);
-		}
+                if (p>=threshold) {
+                    //dprint ("P[s'=%d| s=%d, a=%d] = %f\n", s2, s, a, p);
+                }
                 sum += p;
             }
             SMART_ASSERT(fabs(sum - 1.0f) <= threshold)(s)(a)(sum);
