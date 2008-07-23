@@ -14,6 +14,7 @@
 #include "ValueIteration.h"
 #include "BetaDistribution.h"
 #include "Random.h"
+#include "EasyClock.h"
 
 #include <list>
 #include <vector>
@@ -154,11 +155,6 @@ public:
         edges.push_back(new Edge(nodes[i],
                                  nodes[nodes.size()-1],
                                  a, r, p));
-        printf ("Added edge %d : %d --(%d %f %f)-> %d\n",
-                (int) edges.size() - 1,
-                i,
-                a, r, p,
-                (int) nodes.size() - 1);
 
         int k = edges.size() - 1;
         printf ("Added edge %d : %d --(%d %f %f)-> %d\n",
@@ -207,8 +203,17 @@ public:
         int terminal = n_nodes;
 
         DiscreteMDP mdp(n_nodes + 1, 2, NULL, NULL);
+        for (int i=0; i<n_nodes + 1; i++) {
+            for (int a=0; a < n_actions; a++) {
+                for (int j=0; j<n_nodes+1; j++) {
+                    mdp.setTransitionProbability(i, a, j, 0.0);
+                }
+                //mdp.setTransitionProbability(i, a, i, 0.0);
+            }
+        }
         for (int i=0; i<n_nodes; i++) {
             int n_edges = nodes[i]->outs.size();
+            printf ("Node %d has %d outgoing edges\n", i, n_edges);
             for (int j=0; j<n_edges; j++) {
                 Edge* edge = nodes[i]->outs[j];
                 Distribution* reward_density = 
@@ -219,7 +224,7 @@ public:
                                              edge->a,
                                              edge->dst->index,
                                              edge->p);
-                
+                printf ("%d: - a=%d - r=%f - p=%f ->%d\n", i, edge->a, edge->r, edge->p, edge->dst->index);
                 mdp.setRewardDistribution(i,
                                           edge->a,
                                           reward_density);
@@ -255,8 +260,6 @@ public:
 /// A toy UCT stopping problem
 
 
-
-
 //void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r);
 
 
@@ -264,7 +267,7 @@ int main (int argc, char** argv)
 {
     real alpha = 1.0;
     real beta = 1.0;
-    real gamma = 0.9;
+    real gamma = 0.99;
 
     real actual_probability = urandom(0, 1);
 
@@ -272,7 +275,7 @@ int main (int argc, char** argv)
 
     BeliefTree<SimpleBelief> tree(prior, 0, 2, 2);
 
-    for (int iter=0; iter<1; iter++) {
+    for (int iter=0; iter<10; iter++) {
         std::vector<BeliefTree<SimpleBelief>::Node*> node_set = tree.getNodes();
         int edgeless_nodes = 0;
         int edge_nodes = 0;
@@ -300,14 +303,36 @@ int main (int argc, char** argv)
     }
 
     DiscreteMDP mdp = tree.CreateMDP(gamma); // VALGRIND
+    mdp.Check();
     ValueIteration value_iteration(&mdp, gamma);
     mdp.ShowModel();
 
-    value_iteration.ComputeStateValues(0.01);
+    
+    double start_time = 0.0;
+    double end_time = 0.0;
+
+    start_time = GetCPU();
+    value_iteration.ComputeStateValues(0.001, 100000);
+    end_time = GetCPU();
+    std::cout << "CPU " << end_time - start_time << std::endl;
+
     for (int s=0; s<mdp.GetNStates(); s++) {
         std::cout << "V[" << s << "]"
                   << " = " << value_iteration.getValue(s)
                   << std::endl;
+    }
+
+    start_time = GetCPU();
+    value_iteration.ComputeStateActionValues(0.001, 100000);
+    end_time = GetCPU();
+    std::cout << "CPU " << end_time - start_time << std::endl;
+
+    for (int s=0; s<mdp.GetNStates(); s++) {
+        for (int a=0; a<mdp.GetNActions(); a++) {
+            std::cout << "Q[" << s << ", " << a << "]"
+                      << " = " << value_iteration.getValue(s,a)
+                      << std::endl;
+        }
     }
     return 0;
 }
