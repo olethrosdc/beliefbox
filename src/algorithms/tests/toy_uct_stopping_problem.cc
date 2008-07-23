@@ -269,10 +269,14 @@ public:
 //void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r);
 
 
+int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations);
 int main (int argc, char** argv)
 {
     real alpha = 1.0;
     real beta = 1.0;
+    int n_states = 2;
+    int n_actions = 2;
+    int n_experiments = 1000;
 
     real gamma = 0.99;
     if (argc > 1) {
@@ -289,16 +293,80 @@ int main (int argc, char** argv)
         verbose = atoi(argv[3]);
     }
 
-    int value_iterations = n_iter + 1;
+    int horizon = 2.0/(1.0 - gamma);
     if (argc > 4) {
-        value_iterations = atoi(argv[4]);
+        horizon = atoi(argv[4]);
     }
-    real actual_probability = urandom(0, 1);
 
-    SimpleBelief prior(alpha, beta, -1.0, 1.0);
+    int value_iterations = n_iter + 1;
+    if (argc > 5) {
+        value_iterations = atoi(argv[5]);
+    }
 
-    BeliefTree<SimpleBelief> tree(prior, 0, 2, 2);
 
+
+    std::vector<real> rewards(horizon);
+    for (int t=0; t<horizon; t++) {
+        rewards[t] = 0.0;
+    }
+
+    
+    real average_oracle_return = 0.0;
+    for (int experiment=0; experiment<n_experiments; experiment++) {
+        real actual_probability = true_random(false); //urandom(0, 1);
+        SimpleBelief belief(alpha, beta, -1.0, 1.0);
+        int state = 0;
+        for (int t=0; t<horizon; t++) {
+            int action = MakeDecision(n_states, n_actions, belief, state, gamma, n_iter, verbose, value_iterations);
+            real reward = 0.0;
+            
+            if (state == 0 && action == 0) {
+                if (urandom() < actual_probability) {
+                    reward = 1.0;
+                } else {
+                reward = -1.0;
+                }
+            }
+            
+            rewards[t] += reward;
+            int next_state = 0;
+            if (action == 1) {
+                next_state = 1;
+            }
+            
+            belief.update(state, action, reward, next_state);
+            state = next_state;
+        }
+        
+        real oracle_return = 0.0;
+        if (actual_probability > 0.5) {
+            oracle_return = (2.0 * actual_probability - 1.0)/(1.0 - gamma);
+        }
+        average_oracle_return += oracle_return;
+    }
+
+    real inv_exp = 1.0 / (real) n_experiments;
+    real total_reward = 0;
+    real discount = 1.0;
+    for (int t=0; t<horizon; t++) {
+        rewards[t] *= inv_exp;
+        total_reward += discount * rewards[t];
+        discount *= gamma;
+    }
+    average_oracle_return *= inv_exp;
+
+    printf("%f %d %f %f\n",
+           gamma,
+           n_iter,
+           total_reward,
+           average_oracle_return);
+    return 0;
+}
+
+int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations)
+{
+    BeliefTree<SimpleBelief> tree(prior, state, n_states, n_actions);
+    
     for (int iter=0; iter<n_iter; iter++) {
         std::vector<BeliefTree<SimpleBelief>::Node*> node_set = tree.getNodes();
         int edgeless_nodes = 0;
@@ -371,7 +439,17 @@ int main (int argc, char** argv)
             }
         }
     }
-    return 0;
+
+    int a_max = 0;
+    real Q_a_max = value_iteration.getValue(0, a_max);
+    for (int a=1; a<n_actions; a++) {
+        real Q_a = value_iteration.getValue(0, a);
+        if (Q_a > Q_a_max) {
+            a_max = a;
+            Q_a_max = Q_a;
+        }
+    }
+    return a_max;
 }
 
 
