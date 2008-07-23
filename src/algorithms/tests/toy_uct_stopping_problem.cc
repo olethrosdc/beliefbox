@@ -276,7 +276,7 @@ int main (int argc, char** argv)
     real beta = 1.0;
     int n_states = 2;
     int n_actions = 2;
-    int n_experiments = 1000;
+    int n_experiments = 10000;
 
     real gamma = 0.99;
     if (argc > 1) {
