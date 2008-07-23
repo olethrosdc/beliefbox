@@ -142,7 +142,7 @@ public:
         }
     }
     /// Return 
-    Node* ExpandAction(int i, int a, real r, int s)
+    Node* ExpandAction(int i, int a, real r, int s, int verbose = 0)
     {
         Node* next = new Node;
         next->belief = nodes[i]->belief;
@@ -157,13 +157,15 @@ public:
                                  a, r, p));
 
         int k = edges.size() - 1;
-        printf ("Added edge %d : %d --(%d %f %f)-> %d\n",
-                k,
-                edges[k]->src->index,
-                edges[k]->a,
-                edges[k]->r,
-                edges[k]->p,
-                edges[k]->dst->index);
+        if (verbose >= 100) {
+            printf ("Added edge %d : %d --(%d %f %f)-> %d\n",
+                    k,
+                    edges[k]->src->index,
+                    edges[k]->a,
+                    edges[k]->r,
+                    edges[k]->p,
+                    edges[k]->dst->index);
+        }
                 
         nodes[i]->outs.push_back(edges[k]);
 
@@ -197,7 +199,7 @@ public:
         return nodes;
     }
 
-    DiscreteMDP CreateMDP(real gamma)
+    DiscreteMDP CreateMDP(real gamma, int verbose = 0)
     {
         int n_nodes = nodes.size();
         int terminal = n_nodes;
@@ -213,7 +215,9 @@ public:
         }
         for (int i=0; i<n_nodes; i++) {
             int n_edges = nodes[i]->outs.size();
-            printf ("Node %d has %d outgoing edges\n", i, n_edges);
+            if (verbose >= 90) {
+                printf ("Node %d has %d outgoing edges\n", i, n_edges);
+            }
             for (int j=0; j<n_edges; j++) {
                 Edge* edge = nodes[i]->outs[j];
                 Distribution* reward_density = 
@@ -224,7 +228,9 @@ public:
                                              edge->a,
                                              edge->dst->index,
                                              edge->p);
-                printf ("%d: - a=%d - r=%f - p=%f ->%d\n", i, edge->a, edge->r, edge->p, edge->dst->index);
+                if (verbose >= 90) {
+                    printf ("%d: - a=%d - r=%f - p=%f ->%d\n", i, edge->a, edge->r, edge->p, edge->dst->index);
+                }
                 mdp.setRewardDistribution(i,
                                           edge->a,
                                           reward_density);
@@ -267,15 +273,33 @@ int main (int argc, char** argv)
 {
     real alpha = 1.0;
     real beta = 1.0;
-    real gamma = 0.99;
 
+    real gamma = 0.99;
+    if (argc > 1) {
+        gamma = atof(argv[1]);
+    }
+
+    int n_iter = 2;
+    if (argc > 2) {
+        n_iter = atoi(argv[2]);
+    }
+
+    int verbose = 0;
+    if (argc > 3) {
+        verbose = atoi(argv[3]);
+    }
+
+    int value_iterations = n_iter + 1;
+    if (argc > 4) {
+        value_iterations = atoi(argv[4]);
+    }
     real actual_probability = urandom(0, 1);
 
     SimpleBelief prior(alpha, beta, -1.0, 1.0);
 
     BeliefTree<SimpleBelief> tree(prior, 0, 2, 2);
 
-    for (int iter=0; iter<100; iter++) {
+    for (int iter=0; iter<n_iter; iter++) {
         std::vector<BeliefTree<SimpleBelief>::Node*> node_set = tree.getNodes();
         int edgeless_nodes = 0;
         int edge_nodes = 0;
@@ -291,10 +315,13 @@ int main (int argc, char** argv)
             }
         }
 
-        std::cout << edgeless_nodes << " leaf nodes, "
-                  << edge_nodes << " non-leaf nodes, "
-                  << "expanding node " << node_index
-                  << std::endl;
+        if (verbose >= 100) {
+            std::cout << edgeless_nodes << " leaf nodes, "
+                      << edge_nodes << " non-leaf nodes, "
+                      << "expanding node " << node_index
+                      << std::endl;
+        }
+
         if (node_index>=0) {
             tree.Expand(node_index); // VALGRIND
         } else {
@@ -305,33 +332,43 @@ int main (int argc, char** argv)
     DiscreteMDP mdp = tree.CreateMDP(gamma); // VALGRIND
     mdp.Check();
     ValueIteration value_iteration(&mdp, gamma);
-    mdp.ShowModel();
+    if (verbose >= 75) {
+        mdp.ShowModel();
+    }
 
     
     double start_time = 0.0;
     double end_time = 0.0;
 
     start_time = GetCPU();
-    value_iteration.ComputeStateValues(0.001, 100000);
+    value_iteration.ComputeStateValues(0.001, value_iterations);
     end_time = GetCPU();
-    std::cout << "CPU " << end_time - start_time << std::endl;
+    if (verbose) {
+        std::cout << "# CPU " << end_time - start_time << std::endl;
+    }
 
-    for (int s=0; s<mdp.GetNStates(); s++) {
-        std::cout << "V[" << s << "]"
-                  << " = " << value_iteration.getValue(s)
-                  << std::endl;
+    if (verbose >= 60) {
+        for (int s=0; s<mdp.GetNStates(); s++) {
+            std::cout << "V[" << s << "]"
+                      << " = " << value_iteration.getValue(s)
+                      << std::endl;
+        }
     }
 
     start_time = GetCPU();
-    value_iteration.ComputeStateActionValues(0.001, 100000);
+    value_iteration.ComputeStateActionValues(0.001, value_iterations);
     end_time = GetCPU();
-    std::cout << "CPU " << end_time - start_time << std::endl;
+    if (verbose) {
+        std::cout << "# CPU " << end_time - start_time << std::endl;
+    }
 
-    for (int s=0; s<mdp.GetNStates(); s++) {
-        for (int a=0; a<mdp.GetNActions(); a++) {
-            std::cout << "Q[" << s << ", " << a << "]"
-                      << " = " << value_iteration.getValue(s,a)
+    if (verbose >= 10) {
+        for (int s=0; s<mdp.GetNStates(); s++) {
+            for (int a=0; a<mdp.GetNActions(); a++) {
+                std::cout << "Q[" << s << ", " << a << "]"
+                          << " = " << value_iteration.getValue(s,a)
                       << std::endl;
+            }
         }
     }
     return 0;
