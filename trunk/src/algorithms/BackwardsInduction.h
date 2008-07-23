@@ -21,12 +21,14 @@
 
 class InductionOperator
 {
+public:
     virtual real Induct(real x, real y)= 0;
     virtual ~InductionOperator() {}
 };
 
 class MaxInduction : public InductionOperator
 {
+public:
     virtual real Induct(real x, real y)
     {
 	return std::max(x, y);
@@ -35,6 +37,7 @@ class MaxInduction : public InductionOperator
 
 class AddInduction : public InductionOperator
 {
+public:
     virtual real Induct(real x, real y)
     {
 	return x + y;
@@ -51,9 +54,9 @@ template <class VectorType, class GraphType, class InductionType>
 class BackwardsInduction
 {
 protected:
-    GraphType& G;
     VectorType& V; ///< A vector where to hold the values
-    InductionType& J;
+    GraphType& G; ///< The graph on which to do it
+    InductionType& J; ///< The type of induction to perform
 public:
     BackwardsInduction(VectorType& V_, GraphType& G_, InductionType& J_) :
 	V(V_), G(G_), J(J_)

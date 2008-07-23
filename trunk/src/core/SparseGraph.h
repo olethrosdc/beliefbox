@@ -15,7 +15,6 @@
 #include <vector>
 #include <list>
 
-
 typedef std::list<HalfEdge> HalfEdgeList;
 typedef HalfEdgeList::iterator HalfEdgeListIterator;
 

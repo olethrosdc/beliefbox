@@ -153,7 +153,7 @@ public:
 
         
         edges.push_back(new Edge(nodes[i],
-                                 nodes[nodes.size()-1],
+                                 next, //nodes[nodes.size()-1],
                                  a, r, p));
 
         int k = edges.size() - 1;
@@ -275,7 +275,7 @@ int main (int argc, char** argv)
 
     BeliefTree<SimpleBelief> tree(prior, 0, 2, 2);
 
-    for (int iter=0; iter<10; iter++) {
+    for (int iter=0; iter<100; iter++) {
         std::vector<BeliefTree<SimpleBelief>::Node*> node_set = tree.getNodes();
         int edgeless_nodes = 0;
         int edge_nodes = 0;
