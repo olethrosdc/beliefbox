@@ -17,7 +17,7 @@
 #include <iostream>
 
 
-#if 0
+#if 1
 #define lprint (void)
 #define dprint (void)
 #else
