@@ -47,6 +47,7 @@ public:
     }
     virtual ~MDP<int, int>();
     virtual void ShowModel() const;
+    virtual void dotModel(FILE* fout) const;
     virtual real generateReward (int s, int a) const;
     virtual int generateState (int s, int a) const;
     virtual real getTransitionProbability (int s, int a, int s2) const;

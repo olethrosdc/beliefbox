@@ -17,7 +17,7 @@
 #include <iostream>
 
 
-#if 1
+#if 0
 #define lprint (void)
 #define dprint (void)
 #else
@@ -89,8 +89,8 @@ void DiscreteMDP::setRewardDistribution(int s, int a, Distribution* reward)
     int ID = getID (s, a);
     R[ID] = reward;
     ER[ID] = reward->getMean();
-    dprint ("#D(%d): E[] = %f, ~ %f : %p\n",
-            ID, ER[ID], R[ID]->generate(), (void*) R[ID]);
+    dprint ("#R(%d,%d): E[] = %f, ~ %f : %p\n",
+            s, a, ER[ID], R[ID]->generate(), (void*) R[ID]);
     //dprint ("%d %f\n", ID, ER[ID]);
 }
 
@@ -118,6 +118,36 @@ void DiscreteMDP::ShowModel() const
         }
     }
 }
+
+void DiscreteMDP::dotModel(FILE* fout) const
+{
+    char* colour[] ={
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan",
+        "black"};
+
+    for (int s=0; s<n_states; s++) {
+        for (int a=0; a<n_actions; a++) {
+            int colour_id = a % 7;
+            int i = getID(s,a);
+            for (int j=0; j<n_states; j++) {
+                real p = P[i][j];
+                if (p>0.01) {
+                    fprintf (fout,
+                             "s%d -> s%d [label = \" p=%.2f, r=%.1f\", color=%s];\n",
+                             s, j, p, ER[i], colour[colour_id]);
+                }
+            }
+        }
+    }
+
+}
+
+
 
 real DiscreteMDP::generateReward (int s, int a) const
 {
