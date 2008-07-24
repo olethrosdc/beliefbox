@@ -175,21 +175,21 @@ public:
 
     /// Return 
     //    std::vector<Node&> Expand(int i)
-    void Expand(int i)
+    void Expand(int i, int verbose = 0)
     {
         //B belief = nodes[i]->belief;
         int state = nodes[i]->state;
         //std::vector<Node*> node_set;
         if (state==1) { 
             // terminal state, all actions do nothing whatsoever.            
-            ExpandAction(i, 0, 0.0, 1);
-            ExpandAction(i, 1, 0.0, 1);
+            ExpandAction(i, 0, 0.0, 1, verbose);
+            ExpandAction(i, 1, 0.0, 1, verbose);
         } else if (state==0) {
             // If we play, there are two possibilities
-            ExpandAction(i, 0, 1.0, 0);
-            ExpandAction(i, 0, -1.0, 0); // VALGRIND
+            ExpandAction(i, 0, 1.0, 0, verbose);
+            ExpandAction(i, 0, -1.0, 0, verbose); // VALGRIND
             // if we move to the terminal state nothing happens
-            ExpandAction(i, 1, 0.0, 1);
+            ExpandAction(i, 1, 0.0, 1, verbose);
         }
         //return node_set;
     }
@@ -213,6 +213,17 @@ public:
                 //mdp.setTransitionProbability(i, a, i, 0.0);
             }
         }
+        // no reward in the first state
+        {
+            Distribution* reward_density = 
+                new SingularDistribution(0.0);
+            for (int a=0; a<n_actions; a++) {
+                mdp.setRewardDistribution(0,
+                                          a,
+                                          reward_density);
+                }
+        }
+
         for (int i=0; i<n_nodes; i++) {
             int n_edges = nodes[i]->outs.size();
             if (verbose >= 90) {
@@ -231,9 +242,11 @@ public:
                 if (verbose >= 90) {
                     printf ("%d: - a=%d - r=%f - p=%f ->%d\n", i, edge->a, edge->r, edge->p, edge->dst->index);
                 }
-                mdp.setRewardDistribution(i,
-                                          edge->a,
-                                          reward_density);
+                for (int a=0; a<n_actions; a++) {
+                    mdp.setRewardDistribution(edge->dst->index,
+                                              a,
+                                              reward_density);
+                }
             }
             
             if (!n_edges) {
@@ -269,14 +282,14 @@ public:
 //void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r);
 
 
-int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations);
+int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations, FILE* fout = NULL);
+
 int main (int argc, char** argv)
 {
     real alpha = 1.0;
     real beta = 1.0;
     int n_states = 2;
     int n_actions = 2;
-    int n_experiments = 10000;
 
     real gamma = 0.99;
     if (argc > 1) {
@@ -293,22 +306,28 @@ int main (int argc, char** argv)
         verbose = atoi(argv[3]);
     }
 
-    int horizon = 2.0/(1.0 - gamma);
+    int n_experiments = 1000;
     if (argc > 4) {
-        horizon = atoi(argv[4]);
+        n_experiments = atoi(argv[4]);
+    }
+
+    int horizon = 2.0/(1.0 - gamma);
+    if (argc > 5) {
+        horizon = atoi(argv[5]);
     }
 
     int value_iterations = n_iter + 1;
-    if (argc > 5) {
-        value_iterations = atoi(argv[5]);
+    if (argc > 6) {
+        value_iterations = atoi(argv[6]);
     }
 
-
+    
 
     std::vector<real> rewards(horizon);
     for (int t=0; t<horizon; t++) {
         rewards[t] = 0.0;
     }
+
 
     
     real average_oracle_return = 0.0;
@@ -317,7 +336,21 @@ int main (int argc, char** argv)
         SimpleBelief belief(alpha, beta, -1.0, 1.0);
         int state = 0;
         for (int t=0; t<horizon; t++) {
-            int action = MakeDecision(n_states, n_actions, belief, state, gamma, n_iter, verbose, value_iterations);
+            FILE* fout = NULL;
+            if (n_experiments == 1) {
+                char buffer[1024];
+                sprintf(buffer, "test%d.dot", t);
+                fout = fopen (buffer, "w");
+                fprintf (fout, "digraph Lookahead {\n");
+                fprintf (fout, "ranksep=2; rankdir=LR; \n");
+            }
+
+            int action = MakeDecision(n_states, n_actions, belief, state, gamma, n_iter, verbose, value_iterations, fout);
+
+            if (fout) {
+                fprintf (fout, "}\n");
+                fclose (fout);
+            }
             real reward = 0.0;
             
             if (state == 0 && action == 0) {
@@ -354,7 +387,9 @@ int main (int argc, char** argv)
         discount *= gamma;
     }
     average_oracle_return *= inv_exp;
+    
 
+    
     printf("%f %d %f %f\n",
            gamma,
            n_iter,
@@ -363,7 +398,7 @@ int main (int argc, char** argv)
     return 0;
 }
 
-int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations)
+int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations, FILE* fout)
 {
     BeliefTree<SimpleBelief> tree(prior, state, n_states, n_actions);
     
@@ -391,13 +426,13 @@ int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, rea
         }
 
         if (node_index>=0) {
-            tree.Expand(node_index); // VALGRIND
+            tree.Expand(node_index, verbose); // VALGRIND
         } else {
             std::cout << "Warning: no nodes could be expanded\n";
         }
     }
 
-    DiscreteMDP mdp = tree.CreateMDP(gamma); // VALGRIND
+    DiscreteMDP mdp = tree.CreateMDP(gamma, verbose); // VALGRIND
     mdp.Check();
     ValueIteration value_iteration(&mdp, gamma);
     if (verbose >= 75) {
@@ -408,8 +443,9 @@ int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, rea
     double start_time = 0.0;
     double end_time = 0.0;
 
+#if 1
     start_time = GetCPU();
-    value_iteration.ComputeStateValues(0.001, value_iterations);
+    value_iteration.ComputeStateValues(0.00001, value_iterations);
     end_time = GetCPU();
     if (verbose) {
         std::cout << "# CPU " << end_time - start_time << std::endl;
@@ -423,8 +459,17 @@ int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, rea
         }
     }
 
+    if (fout) {
+        for (int s=0; s<mdp.GetNStates(); s++) {
+            fprintf (fout,
+                     "s%d [label = %2.f];\n",
+                     s, value_iteration.getValue(s));
+        }
+    }
+#endif
+
     start_time = GetCPU();
-    value_iteration.ComputeStateActionValues(0.001, value_iterations);
+    value_iteration.ComputeStateActionValues(0.00001, value_iterations);
     end_time = GetCPU();
     if (verbose) {
         std::cout << "# CPU " << end_time - start_time << std::endl;
@@ -440,6 +485,10 @@ int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, rea
         }
     }
 
+    if (fout) {
+        mdp.dotModel(fout);
+    }
+    
     int a_max = 0;
     real Q_a_max = value_iteration.getValue(0, a_max);
     for (int a=1; a<n_actions; a++) {
@@ -449,6 +498,7 @@ int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, rea
             Q_a_max = Q_a;
         }
     }
+
     return a_max;
 }
 
