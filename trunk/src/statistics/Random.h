@@ -27,7 +27,7 @@
 /*@{*/
 
 void setRandomSeed(unsigned int seed);
-
+unsigned long lrandom();
 real urandom();
 real urandom(real min, real max);
 
@@ -35,5 +35,7 @@ real urandom(real min, real max);
 /// When blocking is true, then that takes 2-3 s per number.
 /// When blocking is alse, then that takse 12 us per number
 real true_random(bool blocking=true);
+
+unsigned long true_random_bits(bool blocking=true);
 
 #endif

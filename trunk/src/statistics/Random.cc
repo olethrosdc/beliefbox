@@ -24,6 +24,11 @@ void setRandomSeed(unsigned int seed)
 	MersenneTwister::manualSeed(seed);
 }
 
+unsigned long lrandom()
+{
+    return MersenneTwister::random();
+}
+
 real urandom2()
 {
     return MersenneTwister::uniform();
@@ -38,6 +43,11 @@ real urandom()
     return x;
 }
 
+
+real urandom(real min, real max)
+{
+    return min + ((max-min)*urandom());
+}
 
 real true_random(bool blocking)
 {
@@ -65,9 +75,24 @@ real true_random(bool blocking)
 	return urandom();
 }
 
-
-
-real urandom(real min, real max)
+unsigned long true_random_bits(bool blocking)
 {
-    return min + ((max-min)*urandom());
+	unsigned long x;
+	FILE* rand_device;
+	static bool warned = false;
+	if (blocking) {
+		rand_device = fopen ("/dev/random", "r");
+	} else {
+		rand_device = fopen ("/dev/urandom", "r");
+	}
+	if (rand_device) {
+        fread(&x, sizeof(unsigned long), 1, rand_device);
+		fclose (rand_device);
+		return x;
+	} else if (!warned) {
+		fprintf (stderr, "Warning: true random device not available.  Using random() instead\n");
+		warned = true;
+	}
+	
+	return random();
 }

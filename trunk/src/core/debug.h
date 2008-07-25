@@ -8,15 +8,6 @@
 #define logmsg printf ("# "); printf
 #define dbgmsg printf ("# "); printf
 
-#define ReadFile(f,fs) ((fs=fopen(f,"r"))!=NULL)
-#define WriteFile(f,fs) ((fs=fopen(f,"w"))!=NULL)
-#define CloseFile(f) {assert(f); fclose(f); f = NULL;}
-
-#define AllocM(type,x) ((type *) malloc (sizeof(type)*(x)))
-#define FreeM(address) if (address) {free(address); address = NULL;} else fprintf(stderr,"ERROR: pointer already freed\n");
-
-#define ObjCopy(new_obj,cl_nam) (memcpy (new_obj, &cl_nam ## _class, sizeof(cl_nam)))
-
 
 /* Some cool error codes to use */
 #define DEC_MEM_ERROR    0x0001
