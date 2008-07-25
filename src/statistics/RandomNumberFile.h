@@ -1,5 +1,5 @@
 /* -*- Mode: C++; -*- */
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -9,29 +9,38 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef RANDOM_NUMBER_GENERATOR_H
-#define RANDOM_NUMBER_GENERATOR_H
+#ifndef RANDOM_NUMBER_FILE_H
 
-#include "real.h"
+#include <string>
+#include <vector>
+#include "RandomNumberGenerator.h"
 
-/// Maybe this class is a bit useless.
-class  RandomNumberGenerator {
+class RandomNumberFile : RandomNumberGenerator {
+protected:
+    std::vector<ulong> pool;
+    uint position;
 public:
-    virtual ~RandomNumberGenerator() {}
+    RandomNumberFile(std::string filename);
+    virtual ~RandomNumberFile() {}
 
     /// Initializes the random number generator with the computer clock.
-    virtual void seed() = 0;
+    virtual void seed() {}
     /// Initializes the random number generator with the given long "the_seed_".
-    virtual void manualSeed(unsigned long the_seed_) = 0;
+    virtual void manualSeed(ulong the_seed_) {}
 
     /// Returns the starting seed used.
-    virtual unsigned long getInitialSeed()  = 0;
-	
+    virtual ulong getInitialSeed()
+    {
+        return 0;
+    }
+
     /// Generates a uniform 32 bits integer.
-    virtual unsigned long random() = 0;
+    virtual ulong random();
 
     /// Generates a uniform random number on [0,1[.
-    virtual real uniform() = 0;
+    virtual real uniform();
 };
+
+
 
 #endif

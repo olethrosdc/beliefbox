@@ -11,7 +11,7 @@
 
 #ifdef MAKE_MAIN
 
-#include "toy_uct_shopping_problem.h"
+#include "toy_uct_stopping_problem.h"
 
 /// A toy UCT stopping problem
 
@@ -67,7 +67,7 @@ int main (int argc, char** argv)
     
     real average_oracle_return = 0.0;
     for (int experiment=0; experiment<n_experiments; experiment++) {
-        real actual_probability = true_random(false); //urandom(0, 1);
+        real actual_probability = urandom(0,1); //true_random(false); //urandom(0, 1);
         SimpleBelief belief(alpha, beta, -1.0, 1.0);
         int state = 0;
         for (int t=0; t<horizon; t++) {
@@ -205,9 +205,9 @@ int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, rea
                 beta = belief.beta;
             }
             fprintf (fout,
-                     "s%d [label = %.2f (%f %f)];\n",
+                     "s%d [label = \"%.2f %d %d\"];\n",
                      s, value_iteration.getValue(s),
-                     alpha, beta);
+                     (int) alpha, (int) beta);
             //belief.alpha,
             //       belief.beta);
         }
