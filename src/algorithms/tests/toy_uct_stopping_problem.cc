@@ -104,6 +104,10 @@ int main (int argc, char** argv)
             
             belief.update(state, action, reward, next_state);
             state = next_state;
+
+            if (state==1) {
+                break;
+            }
         }
         
         real oracle_return = 0.0;
