@@ -33,7 +33,7 @@ int main()
     fprintf (stderr, "Rand int: %ld\n", rng.random());
     fprintf (stderr, "Rand real: %f\n", rng.uniform());
     //ulong max_long = 0;
-    for (int i=0; i<100000; i++) {
+    for (int i=0; i<10000; i++) {
         //ulong x = rng.random();
         //if (x > max_long) {
         //    max_long = x;

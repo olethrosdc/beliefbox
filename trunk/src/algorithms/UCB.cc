@@ -56,6 +56,16 @@ int UCB1Policy::SelectAction()
 	return ArgMax(n_actions, &U[0]);
 }
 
+void UCB1Policy::SetTimes(int a, int times_)
+{
+    times[a] = times_;
+}
+
+void UCB1Policy::SetReward(int a, real reward)
+{
+    Er[a] = reward;
+}
+
 
 UCB2Policy::UCB2Policy(int n_actions_) : n_actions(n_actions_)
 {

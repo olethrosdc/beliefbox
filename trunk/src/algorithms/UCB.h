@@ -30,8 +30,9 @@ public:
     virtual ~UCB1Policy();
     virtual void Reset();
     virtual void Observe(int a, real r);
-
     virtual int SelectAction();
+    void SetTimes(int a, int times_);
+    void SetReward(int a, real reward);
 };
 
 class UCB2Policy : public DiscreteBanditPolicy
