@@ -222,6 +222,7 @@ public:
         {
             Distribution* reward_density = 
                 new SingularDistribution(0.0);
+            densities.push_back(reward_density);
             for (int a=0; a<n_actions; a++) {
                 mdp.setRewardDistribution(0,
                                           a,
