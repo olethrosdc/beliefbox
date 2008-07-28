@@ -20,10 +20,10 @@
 class UCB1Policy : public DiscreteBanditPolicy
 {
 protected:
-	std::vector<int> times;
-	std::vector<real> Er;
-	std::vector<real> U;
-	int t;
+    std::vector<int> times;
+    std::vector<real> Er;
+    std::vector<real> U;
+    int t;
     int n_actions;
 public:
     UCB1Policy (int n_actions_);
@@ -35,13 +35,32 @@ public:
     void SetReward(int a, real reward);
 };
 
+class UCBgPolicy : public DiscreteBanditPolicy
+{
+protected:
+    std::vector<int> times;
+    std::vector<real> Er;
+    std::vector<real> U;
+    int t;
+    int n_actions;
+    real gamma;
+public:
+    UCBgPolicy (int n_actions_, real gamma_);
+    virtual ~UCBgPolicy();
+    virtual void Reset();
+    virtual void Observe(int a, real r);
+    virtual int SelectAction();
+    void SetTimes(int a, int times_);
+    void SetReward(int a, real reward);
+};
+
 class UCB2Policy : public DiscreteBanditPolicy
 {
 protected:
-	std::vector<int> times;
-	std::vector<real> Er;
-	std::vector<real> U;
-	int t;
+    std::vector<int> times;
+    std::vector<real> Er;
+    std::vector<real> U;
+    int t;
     int n_actions;
 public:
     UCB2Policy (int n_actions_);
@@ -51,5 +70,7 @@ public:
 
     virtual int SelectAction();
 };
+
+
 
 #endif
