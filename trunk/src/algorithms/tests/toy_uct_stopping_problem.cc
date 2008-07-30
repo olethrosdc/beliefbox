@@ -118,21 +118,24 @@ int main (int argc, char** argv)
     }
 
     real inv_exp = 1.0 / (real) n_experiments;
-    real total_reward = 0;
+    real total_reward = 0.0;
+    real discounted_reward = 0.0;
     real discount = 1.0;
     for (int t=0; t<horizon; t++) {
-        rewards[t] *= inv_exp;
-        total_reward += discount * rewards[t];
+        //rewards[t] *= inv_exp;
+        discounted_reward += discount * rewards[t];
+        total_reward += rewards[t];
         discount *= gamma;
     }
     average_oracle_return *= inv_exp;
-    
+    discounted_reward *= inv_exp;
+    total_reward *= inv_exp;
 
-    
-    printf("%f %d %f %f\n",
+    printf("%f %d %f %f %f\n",
            gamma,
            n_iter,
            total_reward,
+           discounted_reward,
            average_oracle_return);
     return 0;
 }
