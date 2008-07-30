@@ -19,11 +19,33 @@ function X = Sample(N)
   X = normal_rnd(0, 1, N, 1);
 end
 
-x = [-100:100]/10;
-plot(x, Value(x), ";value;", x, Density(x), ";density;", x, Value(x).*Density(x), ";ED;");
+x = [-100000:100000]/10000;
+Vx = Value(x);
+Px = Density(x);
+SPx = sum(Px);
 
-N=1000;
+#EVx = Vx .* Px;
+figure(1);
+plot(x, Vx, ";value;", x, Px, ";density;", [-10, 10], Vx*Px'*[1 1]/SPx, ";EV;");
+
+N=10000;
 X = Sample(N);
 P = Density(X);
-EV = X.*Value(X);
+V = Value(X);
+#EV = X.*Value(X);
 
+vi = [-25:100]/100;
+vn = length(vi);
+
+cdf = zeros(vn,1);
+
+SP = sum(P);
+for i=1:vn
+  v = vi(i);
+  cdf(i) = sum(Px(Vx > v)) / SPx;
+  cdf_b(i) = sum(V > v) / length(V);
+  cdf_bw(i) = sum(P(V > v)) / SP;
+endfor
+
+figure(2);
+semilogy(vi, cdf, ";cdf;", vi, cdf_b, ";MC;", vi, cdf_bw, ";MC IS;")
