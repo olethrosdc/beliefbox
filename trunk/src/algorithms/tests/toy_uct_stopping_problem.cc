@@ -26,33 +26,41 @@ int main (int argc, char** argv)
     int n_states = 2;
     int n_actions = 2;
 
-    real gamma = 0.99;
+
+    enum ExpansionMethod expansion_method = SerialExpansion;
     if (argc > 1) {
-        gamma = atof(argv[1]);
+        expansion_method = atoi(argv[1]);
+    } else {
+        printf ("Usage: toy_uct_stopping_problem method gamma n_iter verbose experiments horizon value_iterations\n");
+    }
+    
+    real gamma = 0.99;
+    if (argc > 2) {
+        gamma = atof(argv[2]);
     }
 
     int n_iter = 2;
-    if (argc > 2) {
-        n_iter = atoi(argv[2]);
+    if (argc > 3) {
+        n_iter = atoi(argv[3]);
     }
 
     int verbose = 0;
-    if (argc > 3) {
-        verbose = atoi(argv[3]);
+    if (argc > 4) {
+        verbose = atoi(argv[4]);
     }
 
     int n_experiments = 1000;
-    if (argc > 4) {
+    if (argc > 5) {
         n_experiments = atoi(argv[4]);
     }
 
     int horizon = 2.0/(1.0 - gamma);
-    if (argc > 5) {
+    if (argc > 6) {
         horizon = atoi(argv[5]);
     }
 
     int value_iterations = n_iter + 1;
-    if (argc > 6) {
+    if (argc > 7) {
         value_iterations = atoi(argv[6]);
     }
 
@@ -80,7 +88,12 @@ int main (int argc, char** argv)
                 fprintf (fout, "ranksep=2; rankdir=LR; \n");
             }
 
-            int action = MakeDecision(n_states, n_actions, belief, state, gamma, n_iter, verbose, value_iterations, fout);
+            int action;
+            switch (expansion_method) {
+            case SerialExpansion:
+            default:
+                MakeDecision(n_states, n_actions, belief, state, gamma, n_iter, verbose, value_iterations, fout);
+            }
 
             if (fout) {
                 fprintf (fout, "}\n");
@@ -131,7 +144,10 @@ int main (int argc, char** argv)
     discounted_reward *= inv_exp;
     total_reward *= inv_exp;
 
-    printf("%f %d %f %f %f\n",
+
+
+    printf("%d %f %d %f %f %f\n",
+           expansion_method,
            gamma,
            n_iter,
            total_reward,
@@ -140,7 +156,7 @@ int main (int argc, char** argv)
     return 0;
 }
 
-int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations, FILE* fout)
+int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations, FILE* fout)
 {
     BeliefTree<SimpleBelief> tree(prior, state, n_states, n_actions);
     

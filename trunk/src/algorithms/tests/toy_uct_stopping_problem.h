@@ -281,7 +281,14 @@ public:
 };
 
 
-int MakeDecision(int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations, FILE* fout = NULL);
+enum ExpansionMethod {
+    SerialExpansion = 0,
+    RandomExpansion,
+    HighProbabilityBranch,
+    UpperBoundOnLeaves
+};
+
+int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations, FILE* fout = NULL);
 
 
 #endif
