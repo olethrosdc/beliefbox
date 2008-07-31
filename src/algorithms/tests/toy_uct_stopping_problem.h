@@ -66,6 +66,7 @@ public:
         return 1.0;
     }
     
+    /// Gives the greedy return starting from a particular state
     real getGreedyReturn(int state, real gamma)
     {
         if (state == 0) {
@@ -94,6 +95,7 @@ public:
         int state;
         std::vector<Edge*> outs;
         int index;
+        int depth;
     };
     
     class Edge
@@ -127,6 +129,8 @@ public:
         root->belief = prior;
         root->state = state;
         root->index = 0;
+        root->depth = 0;
+
         nodes.push_back(root);
     }
 
@@ -153,6 +157,8 @@ public:
         next->belief = nodes[i]->belief;
         next->state = s;
         next->index = nodes.size();
+        next->depth = nodes[i]->depth + 1;
+
         real p = nodes[i]->belief.getProbability(nodes[i]->state, a, r, s);
         next->belief.update(nodes[i]->state, a, r, s);
 
@@ -284,11 +290,11 @@ public:
 enum ExpansionMethod {
     SerialExpansion = 0,
     RandomExpansion,
-    HighProbabilityBranch,
-    UpperBoundOnLeaves
+    HighestMeanValue,
+    HighestDiscountedMeanValue
 };
 
-int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations, FILE* fout = NULL);
+int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int max_value_iterations, FILE* fout = NULL);
 
 
 #endif

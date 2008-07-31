@@ -29,9 +29,9 @@ int main (int argc, char** argv)
 
     enum ExpansionMethod expansion_method = SerialExpansion;
     if (argc > 1) {
-        expansion_method = atoi(argv[1]);
+        expansion_method = (enum ExpansionMethod) atoi(argv[1]);
     } else {
-        printf ("Usage: toy_uct_stopping_problem method gamma n_iter verbose experiments horizon value_iterations\n");
+        printf ("Usage: toy_uct_stopping_problem method gamma n_iter verbose experiments horizon max_value_iterations\n");
     }
     
     real gamma = 0.99;
@@ -51,17 +51,17 @@ int main (int argc, char** argv)
 
     int n_experiments = 1000;
     if (argc > 5) {
-        n_experiments = atoi(argv[4]);
+        n_experiments = atoi(argv[5]);
     }
 
     int horizon = 2.0/(1.0 - gamma);
     if (argc > 6) {
-        horizon = atoi(argv[5]);
+        horizon = atoi(argv[6]);
     }
 
-    int value_iterations = n_iter + 1;
+    int max_value_iterations = n_iter + 1;
     if (argc > 7) {
-        value_iterations = atoi(argv[6]);
+        max_value_iterations = atoi(argv[7]);
     }
 
     
@@ -88,12 +88,17 @@ int main (int argc, char** argv)
                 fprintf (fout, "ranksep=2; rankdir=LR; \n");
             }
 
-            int action;
-            switch (expansion_method) {
-            case SerialExpansion:
-            default:
-                MakeDecision(n_states, n_actions, belief, state, gamma, n_iter, verbose, value_iterations, fout);
-            }
+            int action = MakeDecision(expansion_method,
+                                      n_states,
+                                      n_actions,
+                                      belief,
+                                      state,
+                                      gamma,
+                                      n_iter,
+                                      verbose,
+                                      max_value_iterations,
+                                      fout);
+
 
             if (fout) {
                 fprintf (fout, "}\n");
@@ -156,29 +161,49 @@ int main (int argc, char** argv)
     return 0;
 }
 
-int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int value_iterations, FILE* fout)
+int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int max_value_iterations, FILE* fout)
 {
     BeliefTree<SimpleBelief> tree(prior, state, n_states, n_actions);
     
     for (int iter=0; iter<n_iter; iter++) {
         std::vector<BeliefTree<SimpleBelief>::Node*> node_set = tree.getNodes();
-        int edgeless_nodes = 0;
-        int edge_nodes = 0;
+        int n_edge_nodes = 0;
         int node_index = -1;
+        std::vector<int> leaf_nodes;
         for (uint i=0; i<node_set.size(); ++i) {
             if (node_set[i]->outs.size()==0) {
-                edgeless_nodes++;
-                if (node_index == -1) {
-                    node_index = i;
-                }
+                leaf_nodes.push_back(i);
             } else {
-                edge_nodes++;
+                n_edge_nodes++;
             }
         }
-
+        
+        int n_leaf_nodes = (int) leaf_nodes.size();
+        
+        if (expansion_method == SerialExpansion) {
+            node_index = leaf_nodes[0];
+        } else if (expansion_method == RandomExpansion) {
+            int X =  floor(urandom()*((real) leaf_nodes.size()));
+            node_index = leaf_nodes[X];
+        } else if (expansion_method == HighestMeanValue) {
+            std::vector<real> U(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                BeliefTree<SimpleBelief>::Node* node = node_set[leaf_nodes[i]];
+                U[i] = node->belief.getGreedyReturn(node->state, gamma);
+            }
+            node_index = leaf_nodes[ArgMax(U)];
+        } else if (expansion_method == HighestDiscountedMeanValue) {
+            std::vector<real> U(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                BeliefTree<SimpleBelief>::Node* node = node_set[leaf_nodes[i]];
+                U[i] = pow(gamma, (real) node->depth) * node->belief.getGreedyReturn(node->state, gamma);
+            }
+            node_index = leaf_nodes[ArgMax(U)];
+        }
+        
         if (verbose >= 100) {
-            std::cout << edgeless_nodes << " leaf nodes, "
-                      << edge_nodes << " non-leaf nodes, "
+            std::cout << n_leaf_nodes << " leaf nodes, "
+                      << n_edge_nodes << " edge nodes, "
                       << "expanding node " << node_index
                       << std::endl;
         }
@@ -203,7 +228,7 @@ int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, 
 
 #if 1
     start_time = GetCPU();
-    value_iteration.ComputeStateValues(0.00001, value_iterations);
+    value_iteration.ComputeStateValues(0.00001, max_value_iterations);
     end_time = GetCPU();
     if (verbose) {
         std::cout << "# CPU " << end_time - start_time << std::endl;
@@ -238,7 +263,7 @@ int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, 
 #endif
 
     start_time = GetCPU();
-    value_iteration.ComputeStateActionValues(0.00001, value_iterations);
+    value_iteration.ComputeStateActionValues(0.00001, max_value_iterations);
     end_time = GetCPU();
     if (verbose) {
         std::cout << "# CPU " << end_time - start_time << std::endl;
