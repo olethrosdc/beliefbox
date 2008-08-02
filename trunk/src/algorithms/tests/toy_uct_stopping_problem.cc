@@ -12,6 +12,7 @@
 #ifdef MAKE_MAIN
 
 #include "toy_uct_stopping_problem.h"
+#include "RandomNumberFile.h"
 
 /// A toy UCT stopping problem
 
@@ -74,8 +75,11 @@ int main (int argc, char** argv)
 
     
     real average_oracle_return = 0.0;
+    
+    RandomNumberFile rng("./dat/r1e7.bin");
+
     for (int experiment=0; experiment<n_experiments; experiment++) {
-        real actual_probability = urandom(0,1); //true_random(false); //urandom(0, 1);
+        real actual_probability = rng.uniform();//urandom(0,1); //true_random(false); //urandom(0, 1);
         SimpleBelief belief(alpha, beta, -1.0, 1.0);
         int state = 0;
         for (int t=0; t<horizon; t++) {

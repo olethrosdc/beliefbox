@@ -29,7 +29,7 @@ int main()
     fprintf (stderr, "LONG_INT_MAX: %ld\n", LONG_INT_MAX);
     fprintf (stderr, "ULONG_INT_MAX: %ld\n", 2*LONG_INT_MAX - 1);
 
-    RandomNumberFile rng("r1e7.bin");
+    RandomNumberFile rng("../../../dat/r1e7.bin");
     fprintf (stderr, "Rand int: %ld\n", rng.random());
     fprintf (stderr, "Rand real: %f\n", rng.uniform());
     //ulong max_long = 0;
