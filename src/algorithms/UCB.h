@@ -17,7 +17,20 @@
 #include "real.h"
 #include "DiscreteBanditPolicy.h"
 
-class UCB1Policy : public DiscreteBanditPolicy
+class UCBPolicy : public DiscreteBanditPolicy
+{
+public:
+    virtual ~UCBPolicy()
+    {
+    }
+    virtual void Reset() = 0;
+    virtual void Observe(int a, real r) = 0;
+    virtual int SelectAction() = 0;
+    virtual void SetTimes(int a, int times_) = 0;
+    virtual void SetReward(int a, real reward) = 0;
+};
+
+class UCB1Policy : public UCBPolicy
 {
 protected:
     std::vector<int> times;
@@ -31,11 +44,11 @@ public:
     virtual void Reset();
     virtual void Observe(int a, real r);
     virtual int SelectAction();
-    void SetTimes(int a, int times_);
-    void SetReward(int a, real reward);
+    virtual void SetTimes(int a, int times_);
+    virtual void SetReward(int a, real reward);
 };
 
-class UCBgPolicy : public DiscreteBanditPolicy
+class UCBgPolicy : public UCBPolicy
 {
 protected:
     std::vector<int> times;
@@ -50,8 +63,8 @@ public:
     virtual void Reset();
     virtual void Observe(int a, real r);
     virtual int SelectAction();
-    void SetTimes(int a, int times_);
-    void SetReward(int a, real reward);
+    virtual void SetTimes(int a, int times_);
+    virtual void SetReward(int a, real reward);
 };
 
 class UCB2Policy : public DiscreteBanditPolicy
@@ -67,7 +80,6 @@ public:
     virtual ~UCB2Policy();
     virtual void Reset();
     virtual void Observe(int a, real r);
-
     virtual int SelectAction();
 };
 
