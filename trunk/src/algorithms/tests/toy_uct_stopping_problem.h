@@ -79,6 +79,20 @@ public:
         } 
         return 0.0;
     }
+
+    /// Gives the Thompson return
+    real sampleReturn(int state, real gamma)
+    {
+        if (state == 0) {
+            real p = prior.generate();
+            real R = p*r2 + (1.0 - p)*r1;
+            real U = R / (1.0 - gamma);
+            if (U > 0) {
+                return U;
+            }
+        }
+        return 0.0;
+    }
 };
 
 template <typename B>
@@ -289,12 +303,25 @@ public:
 
 enum ExpansionMethod {
     SerialExpansion = 0,
-    RandomExpansion,
-    HighestMeanValue,
-    HighestDiscountedMeanValue
+    RandomExpansion,  //1
+    HighestMeanValue, //2
+    HighestDiscountedMeanValue, //3
+    ThompsonSampling, // 4
+    DiscountedThompsonSampling, //5
+    ThompsonBound, // 6
+    DiscountedThompsonBound //7
 };
 
-int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int max_value_iterations, FILE* fout = NULL);
+int MakeDecision(ExpansionMethod expansion_method,
+                 int n_states,
+                 int n_actions,
+                 SimpleBelief prior,
+                 int state,
+                 real gamma,
+                 int n_iter,
+                 int verbose,
+                 int max_value_iterations,
+                 FILE* fout = NULL);
 
 
 #endif
