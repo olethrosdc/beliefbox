@@ -165,7 +165,16 @@ int main (int argc, char** argv)
     return 0;
 }
 
-int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, SimpleBelief prior, int state, real gamma, int n_iter, int verbose, int max_value_iterations, FILE* fout)
+int MakeDecision(ExpansionMethod expansion_method,
+                 int n_states,
+                 int n_actions,
+                 SimpleBelief prior,
+                 int state,
+                 real gamma,
+                 int n_iter,
+                 int verbose,
+                 int max_value_iterations,
+                 FILE* fout)
 {
     BeliefTree<SimpleBelief> tree(prior, state, n_states, n_actions);
     
@@ -200,11 +209,58 @@ int MakeDecision(ExpansionMethod expansion_method, int n_states, int n_actions, 
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTree<SimpleBelief>::Node* node = node_set[leaf_nodes[i]];
-                U[i] = pow(gamma, (real) node->depth) * node->belief.getGreedyReturn(node->state, gamma);
+                U[i] = ((real) node->depth) * log(gamma)
+                    + log(node->belief.getGreedyReturn(node->state, gamma));
             }
             node_index = leaf_nodes[ArgMax(U)];
+        } else if (expansion_method == ThompsonSampling) {
+            std::vector<real> U(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                BeliefTree<SimpleBelief>::Node* node = node_set[leaf_nodes[i]];
+                U[i] = node->belief.sampleReturn(node->state, gamma);
+            }
+            node_index = leaf_nodes[ArgMax(U)];
+        } else if (expansion_method == DiscountedThompsonSampling) {
+            std::vector<real> U(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                BeliefTree<SimpleBelief>::Node* node = node_set[leaf_nodes[i]];
+                U[i] = ((real) node->depth) * log(gamma)
+                    + log(node->belief.sampleReturn(node->state, gamma));
+            }
+            node_index = leaf_nodes[ArgMax(U)];
+        } else if (expansion_method == ThompsonBound) {
+            std::vector<real> U(leaf_nodes.size());
+            //std::vector<real> L(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                BeliefTree<SimpleBelief>::Node* node = node_set[leaf_nodes[i]];
+                real Ui = node->belief.sampleReturn(node->state, gamma);
+                real Li = node->belief.getGreedyReturn(node->state, gamma);
+                if (Ui < Li) {
+                    Ui = Li;
+                }
+                U[i] = Ui;
+                //L[i] = Li;
+            }
+            node_index = leaf_nodes[ArgMax(U)];
+        }  else if (expansion_method == DiscountedThompsonBound) {
+            std::vector<real> U(leaf_nodes.size());
+            //std::vector<real> L(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                BeliefTree<SimpleBelief>::Node* node = node_set[leaf_nodes[i]];
+                real Ui = node->belief.sampleReturn(node->state, gamma);
+                real Li = node->belief.getGreedyReturn(node->state, gamma);
+                if (Ui < Li) {
+                    Ui = Li;
+                }
+                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
+                //L[i] = Li;
+            }
+            node_index = leaf_nodes[ArgMax(U)];
+        } else {
+            std::cerr << "Unknown method " << expansion_method << std::endl;
+            exit(-1);
         }
-        
+
         if (verbose >= 100) {
             std::cout << n_leaf_nodes << " leaf nodes, "
                       << n_edge_nodes << " edge nodes, "
