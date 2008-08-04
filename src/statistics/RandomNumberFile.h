@@ -39,6 +39,9 @@ public:
 
     /// Generates a uniform random number on [0,1[.
     virtual real uniform();
+    int pool_size() {
+        return pool.size();
+    }
 };
 
 
