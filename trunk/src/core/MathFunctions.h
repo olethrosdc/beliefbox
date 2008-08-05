@@ -105,6 +105,32 @@ int ArgMax (std::vector<T>& x)
     return arg_max;
 }
 
+template<typename T>
+real Min (std::vector<T>& x)
+{
+    int n = x.size();
+    T min = x[0];
+    for (int i=1; i<n; i++) {
+        if (min>x[i]) {
+            min = x[i];
+        }
+    }
+    return min;
+}
+/// Return the index of the maximum number in an array
+template<typename T>
+real Max (std::vector<T>& x)
+{
+    int n = x.size();
+    T max = x[0];
+    for (int i=1; i<n; i++) {
+        if (max<x[i]) {
+            max = x[i];
+        }
+    }
+    return max;
+}
+
 
 
 void SoftMax (int n, real* Q, real* p, real beta);
