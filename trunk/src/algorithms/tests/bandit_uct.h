@@ -117,7 +117,7 @@ public:
     }
 };
 
-template <typename B>
+template <typename BanditBelief>
 class BeliefTree
 {
 protected:
@@ -127,7 +127,7 @@ public:
     class Node
     {
     public:
-        B belief;
+        BanditBelief belief;
         int state;
         std::vector<Edge*> outs;
         int index;
