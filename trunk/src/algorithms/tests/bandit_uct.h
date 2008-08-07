@@ -260,7 +260,7 @@ public:
         int n_nodes = nodes.size();
         int terminal = n_nodes;
 
-        DiscreteMDP mdp(n_nodes + 1, 2, NULL, NULL);
+        DiscreteMDP mdp(n_nodes + 1, n_actions, NULL, NULL);
         for (int i=0; i<n_nodes + 1; i++) {
             for (int a=0; a < n_actions; a++) {
                 for (int j=0; j<n_nodes+1; j++) {
