@@ -29,7 +29,14 @@ int main (int argc, char** argv)
     real beta = 1.0;
     //int n_states = 1;
 
+
+    if (argc <=1) {
+        fprintf (stderr, "Usage: bandit_uct method gamma n_iter n_actions verbose n_experiments horizon\n");
+        exit(-1);
+    }
+
     ExpansionMethod method = SerialExpansion;
+
     if (argc > 1) {
         method = (ExpansionMethod) atoi(argv[1]);
     }

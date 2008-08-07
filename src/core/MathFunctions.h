@@ -13,6 +13,7 @@
 #define MATH_FUNCTIONS_H
 
 #include "real.h"
+#include <cmath>
 #include <vector>
 
 /**
@@ -140,6 +141,11 @@ real EuclideanNorm (real* a, real* b, int n);
 real SquareNorm (real* a, real* b, int n);
 real LNorm (real* a, real* b, int n, real p);
 real Sum (real* a, int n);
+
+inline bool approx_eq(real x, real y, real acc=10e-6)
+{
+    return (fabs(x - y) <= acc);
+}
 
 /// Get the sign of a number.
 template<class T>
