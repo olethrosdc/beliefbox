@@ -24,10 +24,30 @@
 
 class BanditPrior {
 public:
-    std::vector<BetaDistribution*> prior;
-    BanditPrior(std::vector<BetaDistribution*> prior_)
+    std::vector<BetaDistribution> prior;
+    BanditPrior()
+    {
+    }
+    BanditPrior(std::vector<BetaDistribution> prior_)
         : prior(prior_)
     {}
+
+    BanditPrior(int n_actions, real alpha, real beta)
+    {
+        for (int i=0; i<n_actions; i++) {
+            prior.push_back(BetaDistribution(alpha, beta));
+        }
+    }
+    BetaDistribution getActionReward(int action)
+    {
+        assert(action >= 0 && action < (int) prior.size());
+        return prior[action];
+    }
+    BetaDistribution& ActionReward(int action)
+    {
+        assert(action >= 0 && action < (int) prior.size());
+        return prior[action];
+    }
 };
 
 /// a prior distribution on the number of arms
@@ -35,38 +55,40 @@ class BanditBelief
 {
 protected:
     int n_actions;
-    std::vector<BetaDistribution*> prior;
+    BanditPrior prior;
 public:
-    /// Create a belief
-    BanditBelief(int n_actions_ = 2, real alpha=1.0, real beta=1.0)
-        : n_actions(n_actions_),
-          prior(n_actions)
+    BanditBelief()
     {
-        for (int i=0; i<n_actions; i++) {
-            prior[i] = new BetaDistribution(alpha, beta);
-        }
+        n_actions = 0;
+    }
+    /// Create a belief
+    BanditBelief(int n_actions_, real alpha, real beta)
+        : n_actions(n_actions_),
+          prior(n_actions, alpha, beta)
+    {
     }
     ~BanditBelief()
     {
         for (int i=0; i<n_actions; i++) {
-            delete prior[i];
+            //    delete prior[i];
         }
     }
-    std::vector<BetaDistribution*> getPrior()
+    BanditPrior getPrior()
     {
+        assert(n_actions > 0);
         return prior;
     }
     void update(int state, int action, real reward, int next_state)
     {
         assert (action >= 0 && action < n_actions);
         assert (approx_eq(reward, 0.0) || approx_eq(reward, 1.0));
-        prior[action]->calculatePosterior(reward);
+        prior.ActionReward(action).calculatePosterior(reward);
     }
 
     real getProbability(int state, int action, real reward, int next_state)
     {
         assert (action >= 0 && action < n_actions);
-        real p = prior[action]->getMean();
+        real p = prior.ActionReward(action).getMean();
         if (approx_eq(reward, 0.0)) {
                 return 1.0 - p;
         } else if (approx_eq(reward, 1.0)) {
@@ -84,7 +106,7 @@ public:
         std::vector<real> p(n_actions);
         int arg_max = 0;
         for (int i=0; i<n_actions; i++) {
-            p[i] = prior[i]->getMean();
+            p[i] = prior.ActionReward(i).getMean();
             if (p[i] > p[arg_max]) {
                 arg_max = i;
             }
@@ -101,7 +123,7 @@ public:
         std::vector<real> p(n_actions);
         int arg_max = 0;
         for (int i=0; i<n_actions; i++) {
-            p[i] = prior[i]->generate();
+            p[i] = prior.ActionReward(i).generate();
             if (p[i] > p[arg_max]) {
                 arg_max = i;
             }
