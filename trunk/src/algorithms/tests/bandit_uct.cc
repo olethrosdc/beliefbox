@@ -173,8 +173,9 @@ int main (int argc, char** argv)
     total_reward *= inv_exp;
 
     // show statistics
-    printf("%d %f %d %f %f %f %f\n",
+    printf("%d %d %f %d %f %f %f %f\n",
            method,
+           n_iter,
            gamma,
            n_actions,
            total_reward,
