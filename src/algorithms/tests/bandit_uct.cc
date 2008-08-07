@@ -67,7 +67,7 @@ int main (int argc, char** argv)
         n_experiments = atoi(argv[6]);
     }
 
-    int horizon = 2.0/(1.0 - gamma);
+    int horizon = (int) floor(2.0/(1.0 - gamma));
     if (argc > 7) {
         horizon = atoi(argv[7]);
     }
@@ -84,17 +84,32 @@ int main (int argc, char** argv)
 
     RandomNumberFile rng("./dat/r1e7.bin");
     int n_states  = 0;
-    int state = 0;
 
+    // perform experiments
     for (int experiment=0; experiment<n_experiments; experiment++) {
+        
         std::vector<real> Er(n_actions);
 
         for (int i=0; i<n_actions; i++) {
             Er[i] = rng.uniform();
         }
         
+        // initial state and belief
+        int state = 0;
         BanditBelief belief(n_actions, alpha, beta);
+                                                
+        // looop over time
         for (int t=0; t<horizon; t++) {
+            // write graph to a file if we are only doing one experiment
+            FILE* fout = NULL;
+            if (n_experiments == 1) {
+                char buffer[1024];
+                sprintf(buffer, "test%d.dot", t);
+                fout = fopen (buffer, "w");
+                fprintf (fout, "digraph Lookahead {\n");
+                fprintf (fout, "ranksep=2; rankdir=LR; \n");
+            }
+
             int action = MakeDecision(method,
                                       n_states,
                                       n_actions,
@@ -103,8 +118,15 @@ int main (int argc, char** argv)
                                       gamma,
                                       n_iter,
                                       verbose,
-                                      max_value_iterations);
-                                      
+                                      max_value_iterations,
+                                      fout);
+
+            // close file
+            if (fout) {
+                fprintf (fout, "}\n");
+                fclose (fout);
+            }
+
             // calculate reward
             real reward = 0.0;
             if (urandom() < Er[action]) {
