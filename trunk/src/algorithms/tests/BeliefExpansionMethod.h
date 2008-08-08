@@ -44,7 +44,8 @@ public:
     virtual int Expand() = 0;
 };
 
-class SerialExpansion : public BeliefExpansionMethod
+template <class T, class B>
+class SerialExpansion : public BeliefExpansionMethod<T, B>
 {
     virtual ~SerialExpansion()
     {
@@ -59,7 +60,8 @@ class SerialExpansion : public BeliefExpansionMethod
 };
 
 
-class RandomExpansion : public BeliefExpansionMethod
+template <class T, class B>
+class RandomExpansion : public BeliefExpansionMethod<T, B>
 {
     virtual ~RandomExpansion()
     {
@@ -74,7 +76,8 @@ class RandomExpansion : public BeliefExpansionMethod
 };
 
 
-class MeanValueExpansion : public BeliefExpansionMethod
+template <class T, class B>
+class MeanValueExpansion : public BeliefExpansionMethod<T, B>
 {
     virtual ~MeanValueExpansion()
     {
@@ -92,7 +95,8 @@ class MeanValueExpansion : public BeliefExpansionMethod
     }
 };
 
-class DiscountedMeanValueExpansion : public BeliefExpansionMethod
+template <class T, class B>
+class DiscountedMeanValueExpansion : public BeliefExpansionMethod<T, B>
 {
     virtual ~DiscountedMeanValueExpansion()
     {
@@ -112,7 +116,8 @@ class DiscountedMeanValueExpansion : public BeliefExpansionMethod
     }
 };
 
-class ThompsonSamplingExpansion : public BeliefExpansionMethod
+template <class T, class B>
+class ThompsonSamplingExpasnion : public BeliefExpansionMethod<T, B>
 {
     virtual ~ThompsonSamplingExpansion()
     {
@@ -130,7 +135,8 @@ class ThompsonSamplingExpansion : public BeliefExpansionMethod
     }
 };
 
-class DiscountedThompsonSamplingExpansion : public BeliefExpansionMethod
+template <class T, class B>
+class DiscountedThompsonSamplingExpansion : public BeliefExpansionMethod<T,B>
 {
     virtual ~DiscountedThompsonSamplingExpansion()
     {
@@ -149,8 +155,8 @@ class DiscountedThompsonSamplingExpansion : public BeliefExpansionMethod
     }
 };
 
-
-class ThompsonBoundExpansion : public BeliefExpansionMethod
+template <class T, class B>
+class ThompsonBoundExpansion : public BeliefExpansionMethod<T,B>
 {
     virtual ~ThompsonBoundExpansion()
     {
@@ -175,8 +181,8 @@ class ThompsonBoundExpansion : public BeliefExpansionMethod
     }
 };
 
-
-class DiscountedThompsonBoundExpansion : public BeliefExpansionMethod
+template <class T, class B>
+class DiscountedThompsonBoundExpansion : public BeliefExpansionMethod<T,B>
 {
     virtual ~ThompsonBoundExpansion()
     {
