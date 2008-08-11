@@ -154,6 +154,7 @@ public:
         std::vector<Edge*> outs;
         int index;
         int depth;
+        std::vector<real> U;
     };
     
     class Edge
@@ -340,7 +341,9 @@ enum ExpansionMethod {
     ThompsonSampling, // 4
     DiscountedThompsonSampling, //5
     ThompsonBound, // 6
-    DiscountedThompsonBound //7
+    DiscountedThompsonBound, //7
+    HighProbabilityBound, // 8
+    DiscountedHighProbabilityBound // 9
 };
 
 int MakeDecision(ExpansionMethod expansion_method,
