@@ -185,6 +185,10 @@ int main (int argc, char** argv)
     return 0;
 }
 
+static bool sort_using_greater_than(real u, real v)
+{
+    return u > v;
+}
 
 int MakeDecision(ExpansionMethod expansion_method,
                  int n_states,
@@ -278,6 +282,26 @@ int MakeDecision(ExpansionMethod expansion_method,
                 //L[i] = Li;
             }
             node_index = leaf_nodes[ArgMax(U)];
+        } else if (expansion_method == HighProbabilityBoundOnly) {
+            std::vector<real> U(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                int n = leaf_nodes[i];
+                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
+                real Ui = Max(node_set[n]->U);
+                U[i] =  log(Ui);
+            }
+            node_index = leaf_nodes[ArgMax(U)];
+        } else if (expansion_method == DiscountedHighProbabilityBoundOnly) {
+            std::vector<real> U(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                int n = leaf_nodes[i];
+                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
+                real Ui = Max(node_set[n]->U);
+                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
+            }
+            node_index = leaf_nodes[ArgMax(U)]; 
         } else if (expansion_method == HighProbabilityBound) {
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
@@ -305,6 +329,35 @@ int MakeDecision(ExpansionMethod expansion_method,
                 }
                 U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
             }
+            node_index = leaf_nodes[ArgMax(U)]; 
+        } else if (expansion_method == DiscountedStrictHighProbabilityBound) {
+            std::vector<real> U(leaf_nodes.size());
+#if 1
+            for (int i=0; i<n_leaf_nodes; i++) {
+                int n = leaf_nodes[i];
+                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                std::vector<real> &Ub = node_set[n]->U;
+                for (int k=0; k<100; k++) {
+                    Ub.push_back(node->belief.sampleReturn(node->state, gamma));
+                }
+                std::sort(Ub.begin(),
+                          Ub.end(),
+                          sort_using_greater_than);
+                real Ui = Ub[Ub.size()-1];
+                real Li = node->belief.getGreedyReturn(node->state, gamma);
+                //if (Ui < Li) {
+                //    Ui = Li;
+                //}
+                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
+            }
+#else
+            for (int i=0; i<n_leaf_nodes; i++) {
+                BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
+                real Li = node->belief.getGreedyReturn(node->state, gamma);
+                U[i] = ((real) node->depth) * log(gamma)
+                    + log(Li);
+            }
+#endif
             node_index = leaf_nodes[ArgMax(U)]; 
         } else {
             std::cerr << "Unknown method " << expansion_method << std::endl;
