@@ -198,7 +198,8 @@ int MakeDecision(ExpansionMethod expansion_method,
                  FILE* fout)
 {
     BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions);
-    
+    std::vector<BeliefTree<BanditBelief>::Node*> node_set = tree.getNodes();
+
     for (int iter=0; iter<n_iter; iter++) {
         std::vector<BeliefTree<BanditBelief>::Node*> node_set = tree.getNodes();
         int n_edge_nodes = 0;
@@ -277,6 +278,34 @@ int MakeDecision(ExpansionMethod expansion_method,
                 //L[i] = Li;
             }
             node_index = leaf_nodes[ArgMax(U)];
+        } else if (expansion_method == HighProbabilityBound) {
+            std::vector<real> U(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                int n = leaf_nodes[i];
+                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
+                real Ui = Max(node_set[n]->U);
+                real Li = node->belief.getGreedyReturn(node->state, gamma);
+                if (Ui < Li) {
+                    Ui = Li;
+                }
+                U[i] =  log(Ui);
+            }
+            node_index = leaf_nodes[ArgMax(U)];
+        } else if (expansion_method == DiscountedHighProbabilityBound) {
+            std::vector<real> U(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                int n = leaf_nodes[i];
+                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
+                real Ui = Max(node_set[n]->U);
+                real Li = node->belief.getGreedyReturn(node->state, gamma);
+                if (Ui < Li) {
+                    Ui = Li;
+                }
+                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
+            }
+            node_index = leaf_nodes[ArgMax(U)]; 
         } else {
             std::cerr << "Unknown method " << expansion_method << std::endl;
             exit(-1);
