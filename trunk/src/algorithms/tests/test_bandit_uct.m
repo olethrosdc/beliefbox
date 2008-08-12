@@ -2,10 +2,10 @@
 
 lw=4;
 
-X=load("results/belief_uct/bandit/uct.out");
+X=load("results/belief_uct/bandit/uct2.out");
 Y=load("results/belief_uct/bandit/ucb.out");
-gamma = 0.99;
-n_arms=2;
+gamma = 0.9;
+n_arms=4;
 hold off;
 idx = Y(:,2)==gamma & Y(:,1)==0 & Y(:,3)== n_arms; plot([1 22], [1 1]*(Y(idx,6)-Y(idx,4)), "0@-;ucb;", "linewidth", lw);
 hold on;

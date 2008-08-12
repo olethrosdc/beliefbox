@@ -222,7 +222,7 @@ int MakeDecision(ExpansionMethod expansion_method,
         if (expansion_method == SerialExpansion) {
             node_index = leaf_nodes[0];
         } else if (expansion_method == RandomExpansion) {
-            int X =  floor(urandom()*((real) leaf_nodes.size()));
+            int X =  (int) floor(urandom()*((real) leaf_nodes.size()));
             node_index = leaf_nodes[X];
         } else if (expansion_method == HighestMeanValue) {
             std::vector<real> U(leaf_nodes.size());
@@ -332,32 +332,38 @@ int MakeDecision(ExpansionMethod expansion_method,
             node_index = leaf_nodes[ArgMax(U)]; 
         } else if (expansion_method == DiscountedStrictHighProbabilityBound) {
             std::vector<real> U(leaf_nodes.size());
-#if 1
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
                 BeliefTree<BanditBelief>::Node* node = node_set[n];
                 std::vector<real> &Ub = node_set[n]->U;
-                for (int k=0; k<100; k++) {
+                int n_samples=10;
+                for (int k=0; k<n_samples; k++) {
                     Ub.push_back(node->belief.sampleReturn(node->state, gamma));
                 }
                 std::sort(Ub.begin(),
                           Ub.end(),
                           sort_using_greater_than);
-                real Ui = Ub[Ub.size()-1];
+                real Ui = Ub[Ub.size()/2];
                 real Li = node->belief.getGreedyReturn(node->state, gamma);
-                //if (Ui < Li) {
-                //    Ui = Li;
-                //}
-                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
-            }
-#else
-            for (int i=0; i<n_leaf_nodes; i++) {
-                BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
-                real Li = node->belief.getGreedyReturn(node->state, gamma);
-                U[i] = ((real) node->depth) * log(gamma)
-                    + log(Li);
-            }
+                int n_smaller = 0;
+                real mean_Ub = 0.0;
+                for (int k=0; k<n_samples; k++) {
+                    if (Ub[k] < Li) {
+                        n_smaller++;
+                    }
+                    mean_Ub += Ub[k];
+                }
+                mean_Ub /= (real) n_samples;
+#if 0
+                printf ("%f %f %f %f %f\n",
+                        Min(Ub),
+                        mean_Ub,
+                        Max(Ub),
+                        (real) n_smaller / (real) n_samples,
+                        Li);
 #endif
+                U[i] =  ((real) node->depth) * log(gamma) + log(mean_Ub);
+            }
             node_index = leaf_nodes[ArgMax(U)]; 
         } else {
             std::cerr << "Unknown method " << expansion_method << std::endl;
