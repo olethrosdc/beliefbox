@@ -131,11 +131,7 @@ public:
         real p_max = p[arg_max];
         real R = p_max;
         real U = R / (1.0 - gamma);
-        if (U > 0) {
-            return U;
-        }
-
-        return 0.0;
+        return U;
     }
 };
 
