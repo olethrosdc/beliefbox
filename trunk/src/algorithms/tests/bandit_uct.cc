@@ -185,10 +185,12 @@ int main (int argc, char** argv)
     return 0;
 }
 
+#if 0
 static bool sort_using_greater_than(real u, real v)
 {
     return u > v;
 }
+#endif
 
 int MakeDecision(ExpansionMethod expansion_method,
                  int n_states,
@@ -283,6 +285,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == HighProbabilityBoundOnly) {
+            // returns the maximum of the current upper bounds
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
@@ -293,6 +296,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == DiscountedHighProbabilityBoundOnly) {
+            // returns the maximum of the current upper bounds
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
@@ -303,6 +307,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             }
             node_index = leaf_nodes[ArgMax(U)]; 
         } else if (expansion_method == HighProbabilityBound) {
+            // returns the maximum of the current upper bounds or the lower bound
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
@@ -317,6 +322,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == DiscountedHighProbabilityBound) {
+            // returns the maximum of the current upper bounds or the lower bound
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
@@ -330,39 +336,26 @@ int MakeDecision(ExpansionMethod expansion_method,
                 U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
             }
             node_index = leaf_nodes[ArgMax(U)]; 
-        } else if (expansion_method == DiscountedStrictHighProbabilityBound) {
+        } else if (expansion_method == DiscountedMeanHighProbabilityBound) {
+            // returns the mean high probability bound
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
                 BeliefTree<BanditBelief>::Node* node = node_set[n];
                 std::vector<real> &Ub = node_set[n]->U;
-                int n_samples=10;
+                int n_samples=1;
                 for (int k=0; k<n_samples; k++) {
                     Ub.push_back(node->belief.sampleReturn(node->state, gamma));
                 }
-                std::sort(Ub.begin(),
-                          Ub.end(),
-                          sort_using_greater_than);
-                real Ui = Ub[Ub.size()/2];
+                real Ui = Mean(Ub);
                 real Li = node->belief.getGreedyReturn(node->state, gamma);
-                int n_smaller = 0;
-                real mean_Ub = 0.0;
-                for (int k=0; k<n_samples; k++) {
-                    if (Ub[k] < Li) {
-                        n_smaller++;
-                    }
-                    mean_Ub += Ub[k];
+                if (Li > Ui) {
+                    Ui = Li;
                 }
-                mean_Ub /= (real) n_samples;
 #if 0
-                printf ("%f %f %f %f %f\n",
-                        Min(Ub),
-                        mean_Ub,
-                        Max(Ub),
-                        (real) n_smaller / (real) n_samples,
-                        Li);
+                printf ("%f %f\n", Ui, Li);
 #endif
-                U[i] =  ((real) node->depth) * log(gamma) + log(mean_Ub);
+                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
             }
             node_index = leaf_nodes[ArgMax(U)]; 
         } else {

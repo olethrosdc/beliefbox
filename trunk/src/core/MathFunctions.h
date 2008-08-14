@@ -132,6 +132,24 @@ real Max (std::vector<T>& x)
     return max;
 }
 
+template<typename T>
+real Sum (std::vector<T>& x)
+{
+    int n = x.size();
+    T sum = x[0];
+    for (int i=1; i<n; i++) {
+        sum += x[i];
+    }
+    return sum;
+}
+
+template<typename T>
+real Mean (std::vector<T>& x)
+{
+    return Sum(x) / (real) x.size();
+}
+
+
 
 
 void SoftMax (int n, real* Q, real* p, real beta);
