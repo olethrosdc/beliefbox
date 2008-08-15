@@ -335,7 +335,26 @@ int MakeDecision(ExpansionMethod expansion_method,
                 }
                 U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
             }
-            node_index = leaf_nodes[ArgMax(U)]; 
+            node_index = leaf_nodes[ArgMax(U)];
+        } else if (expansion_method == MeanHighProbabilityBound) {
+            // returns the mean high probability bound
+            std::vector<real> U(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                int n = leaf_nodes[i];
+                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                std::vector<real> &Ub = node_set[n]->U;
+                int n_samples=1;
+                for (int k=0; k<n_samples; k++) {
+                    Ub.push_back(node->belief.sampleReturn(node->state, gamma));
+                }
+                real Ui = Mean(Ub);
+                real Li = node->belief.getGreedyReturn(node->state, gamma);
+                if (Li > Ui) {
+                    Ui = Li;
+                }
+                U[i] = Ui;
+            }
+            node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == DiscountedMeanHighProbabilityBound) {
             // returns the mean high probability bound
             std::vector<real> U(leaf_nodes.size());
@@ -352,9 +371,6 @@ int MakeDecision(ExpansionMethod expansion_method,
                 if (Li > Ui) {
                     Ui = Li;
                 }
-#if 0
-                printf ("%f %f\n", Ui, Li);
-#endif
                 U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
             }
             node_index = leaf_nodes[ArgMax(U)]; 

@@ -342,7 +342,8 @@ enum ExpansionMethod {
     DiscountedHighProbabilityBound, // 9
     HighProbabilityBoundOnly, // 10
     DiscountedHighProbabilityBoundOnly, // 11
-    DiscountedMeanHighProbabilityBound // 12
+    MeanHighProbabilityBound, // 12
+    DiscountedMeanHighProbabilityBound // 13
 };
 
 int MakeDecision(ExpansionMethod expansion_method,
