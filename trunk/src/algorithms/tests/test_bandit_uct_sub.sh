@@ -10,7 +10,7 @@
 
 cd $HOME/projects/beliefbox/src/algorithms/tests
 
-rm -f $results
+# rm -f $results
 for gamma in  0.5 0.9 0.99 0.999 0.9999 0.99999
 do
     time ./bin/bandit_uct $method $gamma $iter $actions 0 $experiments  >>$results &
