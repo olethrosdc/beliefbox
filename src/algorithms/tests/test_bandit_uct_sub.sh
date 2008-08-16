@@ -9,6 +9,8 @@
 
 cd $HOME/projects/beliefbox/src/algorithms/tests
 
+echo "method: $method gamma: $gamma actions: $actions experiments $experiments"
+
 # rm -f $results
 for actions in 2 4
 do
