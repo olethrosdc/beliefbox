@@ -91,9 +91,11 @@ int main (int argc, char** argv)
         std::vector<real> Er(n_actions);
 
         for (int i=0; i<n_actions; i++) {
-            Er[i] = drand48();//rng.uniform();
+	  Er[i] = drand48();//rng.uniform();
+	  //printf ("%f ", Er[i]);
         }
-        
+        //printf("\n");
+
         // initial state and belief
         int state = 0;
         BanditBelief belief(n_actions, alpha, beta);
