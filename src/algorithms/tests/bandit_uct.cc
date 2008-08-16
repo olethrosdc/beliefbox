@@ -91,7 +91,7 @@ int main (int argc, char** argv)
         std::vector<real> Er(n_actions);
 
         for (int i=0; i<n_actions; i++) {
-            Er[i] = rng.uniform();
+            Er[i] = drand48();//rng.uniform();
         }
         
         // initial state and belief
