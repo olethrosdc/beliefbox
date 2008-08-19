@@ -82,7 +82,7 @@ int main (int argc, char** argv)
     real average_oracle_return = 0.0;
     real average_oracle_reward = 0.0;
 
-    RandomNumberFile rng("./datr/r1e7.bin");
+    //RandomNumberFile rng("./dat/r1e7.bin");
     int n_states  = 0;
 
     // perform experiments
