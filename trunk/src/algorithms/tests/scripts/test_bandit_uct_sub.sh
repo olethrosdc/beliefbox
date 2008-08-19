@@ -12,12 +12,12 @@ cd $HOME/experiments
 script_dir=$HOME/projects/beliefbox/src/algorithms/tests/scripts
 bin_dir=$HOME/projects/beliefbox/src/algorithms/tests/bin
 
-echo "method: $method gamma: $gamma actions: $actions experiments $experiments"
+echo "results dir: $results method: $method gamma: $gamma actions: $actions experiments $experiments"
 
 # rm -f $results
 for actions in 2 4
 do
-    time $bin_dir/bandit_uct $method $gamma $iter $actions 0 $experiments  >>$res_dir/a${actions}_$results &
+    time $bin_dir/bandit_uct $method $gamma $iter $actions 0 $experiments  >>$results/a${actions}_g${gamma}_m${method}_i${iter}_uct.out &
 done
 
 wait
