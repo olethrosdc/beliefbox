@@ -345,7 +345,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                 int n = leaf_nodes[i];
                 BeliefTree<BanditBelief>::Node* node = node_set[n];
                 std::vector<real> &Ub = node_set[n]->U;
-                int n_samples=1;
+                int n_samples=1000;
                 for (int k=0; k<n_samples; k++) {
                     Ub.push_back(node->belief.sampleReturn(node->state, gamma));
                 }

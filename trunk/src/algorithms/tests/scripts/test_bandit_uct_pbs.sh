@@ -16,7 +16,7 @@ for gamma in  0.5 0.9 0.99 #0.999 0.9999 0.99999
   do
   for iter in  0 1 2 3 4 5 6 7 8 #10 12 14 18 22 28 32 64
     do
-    for method in 0 1 2 3 4 5 6 7 8 9 10 11 12 13
+    for method in 0 1 #2 3 4 5 6 7 8 9 10 11 12 13
       do
       results=$res_dir
       qsub -v"method=$method","iter=$iter","gamma=$gamma","experiments=$experiments","results=$results"  $script_dir/test_bandit_uct_sub.sh
