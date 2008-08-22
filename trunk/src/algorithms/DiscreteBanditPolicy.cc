@@ -10,7 +10,8 @@
  *                                                                         *
  ***************************************************************************/
 
- #include "DiscreteBanditPolicy.h"
+#include "DiscreteBanditPolicy.h"
+#include "Random.h"
 
 /// Make e-greedy
 EpsilonGreedyPolicy::EpsilonGreedyPolicy(int n_actions, real epsilon, ActionValueEstimate* estimator)
@@ -37,7 +38,7 @@ EpsilonGreedyPolicy:: ~EpsilonGreedyPolicy() {}
 /// Select action: randomly with probability epsilon, otherwise greedily
 int EpsilonGreedyPolicy::SelectAction()
 {
-    if (drand48()<epsilon) {
+    if (urandom()<epsilon) {
         return rand()%n_actions;
     }
     return estimator->GetMax();

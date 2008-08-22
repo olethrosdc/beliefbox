@@ -16,6 +16,8 @@
 #include "UCB.h"
 #include "Random.h"
 #include "RandomNumberFile.h"
+#include "ActionValueEstimate.h"
+#include "DiscreteBanditPolicy.h"
 
 /// A toy UCT stopping problem
 
@@ -32,6 +34,8 @@ int main (int argc, char** argv)
     int method = 0;
     if (argc > 1) {
         method = atoi(argv[1]);
+    } else {
+        fprintf(stderr, "Usage: bandit_ucb method gamma actions verbose experiments horizon\n");
     }
 
     real gamma = 0.99;
@@ -55,7 +59,7 @@ int main (int argc, char** argv)
         n_experiments = atoi(argv[5]);
     }
 
-    int horizon = 2.0/(1.0 - gamma);
+    int horizon = (int) ceil(2.0/(1.0 - gamma));
     if (argc > 6) {
         horizon = atoi(argv[6]);
     }
@@ -69,19 +73,44 @@ int main (int argc, char** argv)
     real average_oracle_return = 0.0;
     real average_oracle_reward = 0.0;
 
-    RandomNumberFile rng("./dat/r1e7.bin");
+    //RandomNumberFile rng("./dat/r1e7.bin");
     for (int experiment=0; experiment<n_experiments; experiment++) {
         std::vector<real> Er(n_actions);
 
         for (int i=0; i<n_actions; i++) {
-            Er[i] = rng.uniform();
+            Er[i] = drand48(); //rng.uniform();
         }
 
-        UCBPolicy* policy = NULL;
-        if (method==0) {
+        DiscreteBanditPolicy* policy = NULL;
+        BernoulliEstimate bernoulli_estimator(n_actions, 1, 1, 1);
+        BernoulliEstimate biased_bernoulli_estimator(n_actions, 1, 1, 0);
+        PointEstimate point_estimator(n_actions, 10.0 / (real) horizon, 1.0, 0.0);
+        switch(method) {
+        case 0:
             policy = new UCB1Policy(n_actions); 
-        } else {
+            break;
+        case 1:
             policy = new UCBgPolicy(n_actions, gamma);
+            break;
+        case 2:
+            policy = new EpsilonGreedyPolicy(n_actions, 0.0, &bernoulli_estimator);
+            break;
+        case 3:
+            policy = new EpsilonGreedyPolicy(n_actions, 0.0, &biased_bernoulli_estimator);
+            break;
+        case 4:
+            policy = new EpsilonGreedyPolicy(n_actions, 0.0, &point_estimator);
+            break;
+        case 5:
+            policy = new EpsilonGreedyPolicy(n_actions, 0.01, &point_estimator);
+            break;
+        case 6:
+            policy = new EpsilonGreedyPolicy(n_actions, 0.1, &point_estimator);
+            break;
+
+        default:
+            fprintf(stderr, "Unknown method %d\n", method);
+            exit(-1);
         }
 
         for (int t=0; t<horizon; t++) {

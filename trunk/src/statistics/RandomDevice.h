@@ -18,7 +18,7 @@
 
 class RandomDevice : public RandomNumberGenerator  {
 protected:
-    blocking
+    bool blocking;
 public:
     virtual ~RandomDevice() {};
     /// Initializes the random number generator with the computer clock.
