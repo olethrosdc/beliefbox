@@ -33,10 +33,10 @@ public:
 class UCB1Policy : public UCBPolicy
 {
 protected:
-    std::vector<int> times;
+    std::vector<long> times;
     std::vector<real> Er;
     std::vector<real> U;
-    int t;
+    long t;
     int n_actions;
 public:
     UCB1Policy (int n_actions_);

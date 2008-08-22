@@ -12,6 +12,7 @@
 
 #include "ActionValueEstimate.h"
 #include "MathFunctions.h"
+#include "Random.h"
 
 PointEstimate::PointEstimate(int n_actions, real alpha, real min, real range)
 {
@@ -28,7 +29,7 @@ PointEstimate::PointEstimate(int n_actions, real alpha, real min, real range)
 void PointEstimate::Reset()
 {
     for (int i=0; i<n_actions; i++) {
-        q[i] = min + drand48() * range;
+        q[i] = min + urandom() * range;
     }
 }
 
@@ -220,16 +221,16 @@ AverageEstimate::AverageEstimate ()
     Reset();
 }
 
-AverageEstimate::AverageEstimate (real init)
+AverageEstimate::AverageEstimate (real init_, int N_)
 {
-    this->init = init;
-    N = 0;
+    init = init_;
+    N_init = N_;
     Reset();
 }
 
 void AverageEstimate::Reset() {
     Ex = init;
-    N = 0;
+    N = N_init;
 }
 
 void AverageEstimate::Observe (real X)
@@ -274,6 +275,7 @@ real BernoulliEstimate::GetMean (int a)
 {
     return prior[a].getMean();
 }
+
 /// Sample an action i with probability p(q[i] > q[j])
 int BernoulliEstimate::Sample ()
 {

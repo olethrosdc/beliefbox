@@ -110,13 +110,15 @@ public:
     real Ex;
     int N;
     real init;
+    int N_init;
     AverageEstimate ();
-    AverageEstimate (real init);
+    AverageEstimate (real init_, int N_ = 0);
     void Reset();
     void Observe (real X);
     real GetMean();
     int GetN();
 };
+
 
 /// This is a fully Bayesian estimate, yay
 class BernoulliEstimate : public ActionValueEstimate
