@@ -136,7 +136,7 @@ void DiscreteMDP::dotModel(FILE* fout) const
             int i = getID(s,a);
             for (int j=0; j<n_states; j++) {
                 real p = P[i][j];
-                if (p>0.01) {
+                if (p>0.000001) {
                     fprintf (fout,
                              "s%d -> s%d [label = \" p=%.2f, r=%.1f\", color=%s];\n",
                              s, j, p, ER[i], colour[colour_id]);
