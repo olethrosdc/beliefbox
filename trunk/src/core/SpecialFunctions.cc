@@ -132,7 +132,7 @@ unsigned long binomial (int n, int k)
         k--;
     }
 
-    return accum + 0.5; // avoid rounding error
+    return (unsigned long) round(accum + 0.5); // avoid rounding error
 }
 
 

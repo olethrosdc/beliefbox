@@ -66,7 +66,7 @@ Graph::~Graph()
    invert the graph. For undirected graphs, distances from and to any
    node are equal.
 */
-bool Graph::CalculateDistances (float* dist, int j, int* C)
+bool Graph::CalculateDistances (real* dist, int j, int* C)
 {
     for (int n=0; n<N; n++) {
         dist[n] = -1.0;
@@ -77,13 +77,13 @@ bool Graph::CalculateDistances (float* dist, int j, int* C)
 }
 
 /// Recursive implementation of Dijkstra's algorithm.
-bool Graph::rCalculateDistance_iter (float* dist, int j, int* C)
+bool Graph::rCalculateDistance_iter (real* dist, int j, int* C)
 {
-    float current_dist = dist[j];
+    real current_dist = dist[j];
     for (int n=0; n<N; n++) {
         if ((C==NULL)||(C[n]==0)) { 
             if ((n!=j)&&(edge(n,j))) {
-                float d = distance(n,j) + current_dist;
+                real d = distance(n,j) + current_dist;
                 if ((dist[n]<0.0)||(d<dist[n])) {
                     dist[n] = d;
                     //printf ("D[%d]=%f\n", n, d);
@@ -145,7 +145,7 @@ bool Graph::hasCycles ()
 bool Graph::isReachable (int j, int* C)
 {
     bool flag = true;
-    float* D = new float [N];
+    real* D = new real [N];
     CalculateDistances (D, j);
     for (int i=0; i<N; i++) {
         //printf ("D[%d] = %f\n", i, D[i]);
@@ -194,7 +194,7 @@ int Graph::kConnectivity(int i, int j, int* C)
         }
     }
 
-    float* dist = new float [N];
+    real* dist = new real [N];
     int k = 0;
     if (G[j]) {
         printf ("Err\n");
@@ -219,10 +219,10 @@ int Graph::kConnectivity(int i, int j, int* C)
 /// Given a distance measure over the set of nodes relative to j
 /// mark the shortest path from i to j nodes on P, given constraints C.
 /// If there exist many paths of equal length, the first one found is marked.
-bool Graph::MarkShortestPath (float* dist, int* C, int* P, int i, int j)
+bool Graph::MarkShortestPath (real* dist, int* C, int* P, int i, int j)
 {
     int n = i;
-    float min_dist = dist[i];
+    real min_dist = dist[i];
     int arg_min_dist = i;
     //printf ("[%d]",n);
     for (int m=0; m<N; m++) {
