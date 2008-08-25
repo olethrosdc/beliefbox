@@ -94,7 +94,7 @@ int main (int argc, char** argv)
             Er[i] = drand48();//rng.uniform();
             //printf ("%f ", Er[i]);
         }
-        //printf("\n");
+        //printf("#ER[] \n");
 
         // initial state and belief
         int state = 0;
@@ -142,6 +142,11 @@ int main (int argc, char** argv)
             // calculate next state
             int next_state = 0; // no change in state
 
+            
+            if ((n_experiments == 1) && (verbose >= 90)) {
+                printf("#SARS: %d %d -> %f %d\n",
+                       state, action, reward, next_state);
+            }
             // update belief
             belief.update(state, action, reward, next_state);
 

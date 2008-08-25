@@ -13,7 +13,7 @@ idx = Y(:,2)==gamma & Y(:,1)==0 & Y(:,3)== n_arms;
 plot([1 32], [1 1]*(Y(idx, 6 + disc) - Y(idx,4 + disc)), "0-;ucb;", "linewidth", lw);
 
 hold on;
-idx = Y(:,2)==gamma & Y(:,1)==6 & Y(:,3)== n_arms;
+idx = Y(:,2)==gamma & Y(:,1)==3 & Y(:,3)== n_arms;
 plot([1 32], [1 1]*(Y(idx, 6 + disc) - Y(idx,4 + disc)), "0@-;base;", "linewidth", lw);
 
 
@@ -24,7 +24,7 @@ sel_exp = X(:,3)==gamma & X(:,4)==n_arms;
 idx = sel_exp & X(:,1)==0; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "1-;serial;", "linewidth", lw);
 idx = sel_exp & X(:,1)==1; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "1@-;random;", "linewidth", lw);
 idx = sel_exp & X(:,1)==2; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "2-;LB;", "linewidth", lw);
-#idx = sel_exp & X(:,1)==3; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "2@-;LB gamma;", "linewidth", lw);
+idx = sel_exp & X(:,1)==3; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "2@-;LB gamma;", "linewidth", lw);
 idx = sel_exp & X(:,1)==6; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "3-;thompson;", "linewidth", lw);
 idx = sel_exp & X(:,1)==7; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "3@-;thompson gamma;", "linewidth", lw);
 idx = sel_exp & X(:,1)==8; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "4-;hp UB;", "linewidth", lw);
