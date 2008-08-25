@@ -74,9 +74,9 @@ bool SparseGraph::AddEdge(Edge e, bool clear)
 /// Recursive implementation of Dijkstra's algorithm.
 ///
 /// Rewritten to avoid the loop.
-bool SparseGraph::rCalculateDistance_iter (float* dist, int j, int* C)
+bool SparseGraph::rCalculateDistance_iter (real* dist, int j, int* C)
 {
-    float current_dist = dist[j];
+    real current_dist = dist[j];
     HalfEdgeList& parent_list = parents[j];
     for (HalfEdgeListIterator i=parent_list.begin();
          i!=parent_list.end();
@@ -84,7 +84,7 @@ bool SparseGraph::rCalculateDistance_iter (float* dist, int j, int* C)
         int n = i->node;
         if (C==NULL || C[n]==0) {
             if (n!=j) {
-                float d = i->w + current_dist;
+                real d = i->w + current_dist;
                 if (dist[n]<0.0 || d<dist[n]) {
 					dist[n] = d;
 					rCalculateDistance_iter(dist, n, C);
