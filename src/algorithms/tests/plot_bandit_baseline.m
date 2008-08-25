@@ -4,9 +4,7 @@ n_arms=2;
 
 iter = 14;
 
-X=load ("results/belief_uct/bandit/baseline_long_double.out");
-Y=load ("results/belief_uct/bandit/uct_complete.out");
-
+X=load ("results/belief_uct/bandit/baseline.out");
 Y=load ("results/belief_uct/bandit/uct_complete.out");
 hold off
 s=X(:,1)==0 & X(:,3)==n_arms;
@@ -29,7 +27,7 @@ loglog(1./(1-Y(s,3)), Y(s,7) - Y(s,5), '4@-;LB1;');
 s=Y(:,1)==3 & Y(:,2)==iter & Y(:,4)==n_arms;
 loglog(1./(1-Y(s,3)), Y(s,7) - Y(s,5), '5@-;LB2;');
 grid on;
-<<<<<<< .mine
+
 title(strcat("n_{arms} = ", num2str(n_arms),
              ", n_{iter} = ", num2str(iter)));
 print("bandit_baseline.eps");
