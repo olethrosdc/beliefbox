@@ -13,7 +13,7 @@ hold on
 s=X(:,1)==1 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'1')
 s=X(:,1)==2 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'2')
 s=X(:,1)==3 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'3')
-#axis([100,1000,1,100000]); grid on;
+axis([100,100000,1,10000]); grid on;
 title("n_{iter}=2");
 
 subplot(2,2,2);
@@ -24,7 +24,7 @@ hold on
 s=X(:,1)==1 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'1')
 s=X(:,1)==2 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'2')
 s=X(:,1)==3 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'3')
-#axis([100,1000,1,100000]); grid on; #rid("minor");
+axis([100,100000,1,10000]); grid on; #rid("minor");
 title("n_{iter}=3");
 
 subplot(2,2,3);
@@ -35,7 +35,7 @@ hold on
 s=X(:,1)==1 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'1')
 s=X(:,1)==2 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'2')
 s=X(:,1)==3 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'3')
-#axis([100,1000,1,100000]); grid on; #grid("minor");
+axis([100,100000,1,10000]); grid on; #grid("minor");
 title("n_{iter}=4");
 
 subplot(2,2,4);
@@ -46,7 +46,7 @@ hold on
 s=X(:,1)==1 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'1')
 s=X(:,1)==2 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'2')
 s=X(:,1)==3 & X(:,2)==iter & X(:,4)==2; loglog(X(s,9), X(s,7)-X(s,5),'3')
-#axis([100,1000,1,100000]); grid on; #grid("minor");
+axis([100,100000,1,10000]); grid on; #grid("minor");
 title("n_{iter}=5");
 
 legend("serial", "random", "LB1", "LB2")
