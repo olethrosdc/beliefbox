@@ -9,3 +9,6 @@ do
         tail quick_test.out
     done
 done
+
+### 5 iter 10^2 * 10^5 ~ 368 min -> 3.68 10^{-5} min per iteration
+
