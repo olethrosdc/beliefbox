@@ -2,9 +2,9 @@
 
 n_arms= 2;
 
-n_iter = 32;
+n_iter = 64;
 
-X=load ("results/belief_uct/bandit/baseline.out");
+X=load ("results/belief_uct/bandit/baseline_long_double.out");
 Y=load ("results/belief_uct/bandit/uct_complete.out");
 hold off
 s=X(:,1)==0 & X(:,3)==n_arms;

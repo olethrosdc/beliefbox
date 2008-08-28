@@ -3,8 +3,8 @@
 lw=2;
 
 X=load("results/belief_uct/bandit/uct_complete.out");
-Y=load("results/belief_uct/bandit/baseline.out");
-gamma = 0.9999;
+Y=load("results/belief_uct/bandit/baseline_long_double.out");
+gamma = 0.99;
 n_arms=2;
 disc = 0;
 
@@ -34,7 +34,7 @@ idx = sel_exp & X(:,1)==13; semilogy(X(idx,2), X(idx,oracle)-X(idx,uct), "5@-;me
 
 xlabel("number of expansions");
 ylabel("total regret");
-title("n=4, gamma=0.999");
+title(strcat("n_{arms}=", n_arms, "{\Sym gamma}=", gamma));
 legend("location", "northeast");
 legend("boxon");
 grid on

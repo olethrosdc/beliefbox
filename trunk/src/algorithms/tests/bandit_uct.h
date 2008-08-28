@@ -148,6 +148,7 @@ public:
         BanditBelief belief;
         int state;
         std::vector<Edge*> outs;
+        Edge* in_edge;
         int index;
         int depth;
         std::vector<real> U;
@@ -167,6 +168,8 @@ public:
         }
     };
 
+    Node* root;
+
     std::vector<Node*> nodes;
     std::vector<Edge*> edges;
     
@@ -180,11 +183,12 @@ public:
         n_states(n_states_),
         n_actions(n_actions_)
     {
-        Node* root = new Node;
+        root = new Node;
         root->belief = prior;
         root->state = state;
         root->index = 0;
         root->depth = 0;
+        root->in_edge = NULL;
 
         nodes.push_back(root);
     }
@@ -232,6 +236,8 @@ public:
         }
                 
         nodes[i]->outs.push_back(edges[k]);
+        
+        next->in_edge = edges[k];
 
         nodes.push_back(next);
         return nodes.back();
@@ -245,6 +251,20 @@ public:
             ExpandAction(i, a, 1.0, 0, verbose);
             ExpandAction(i, a, 0.0, 0, verbose); 
         }
+    }
+
+    int FindRootAction(Node* node)
+    {
+        int a = -1;
+        while (node->in_edge) {
+            a = node->in_edge->a;
+            if (node->in_edge->src) {
+                node = node->in_edge->src;
+            } else {
+                assert(node->in_edge->src == root);
+            }
+        }
+        return a;
     }
 
     std::vector<Node*>& getNodes()
@@ -343,7 +363,8 @@ enum ExpansionMethod {
     HighProbabilityBoundOnly, // 10
     DiscountedHighProbabilityBoundOnly, // 11
     MeanHighProbabilityBound, // 12
-    DiscountedMeanHighProbabilityBound // 13
+    DiscountedMeanHighProbabilityBound, // 13
+    GreedyBoundReduction // 14
 };
 
 int MakeDecision(ExpansionMethod expansion_method,
