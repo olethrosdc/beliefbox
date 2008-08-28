@@ -24,7 +24,7 @@
 
 /// Return the minimum number in an array
 template<typename T>
-T Min (int n, T* x)
+T Min (const int n, T* x)
 {
     T min = x[0];
     for (int i=1; i<n; i++) {
@@ -77,7 +77,7 @@ int ArgMax (int n, T* x)
 }
 
 template<typename T>
-int ArgMin (std::vector<T>& x)
+int ArgMin (const std::vector<T>& x)
 {
     int n = x.size();
     T min = x[0];
@@ -90,9 +90,10 @@ int ArgMin (std::vector<T>& x)
     }
     return arg_min;
 }
+
 /// Return the index of the maximum number in an array
 template<typename T>
-int ArgMax (std::vector<T>& x)
+int ArgMax (const std::vector<T>& x)
 {
     int n = x.size();
     T max = x[0];
@@ -107,7 +108,7 @@ int ArgMax (std::vector<T>& x)
 }
 
 template<typename T>
-real Min (std::vector<T>& x)
+real Min (const std::vector<T>& x)
 {
     int n = x.size();
     T min = x[0];
@@ -120,7 +121,7 @@ real Min (std::vector<T>& x)
 }
 /// Return the index of the maximum number in an array
 template<typename T>
-real Max (std::vector<T>& x)
+real Max (const std::vector<T>& x)
 {
     int n = x.size();
     T max = x[0];
@@ -133,7 +134,7 @@ real Max (std::vector<T>& x)
 }
 
 template<typename T>
-real Sum (std::vector<T>& x)
+real Sum (const std::vector<T>& x)
 {
     int n = x.size();
     T sum = x[0];
@@ -144,7 +145,7 @@ real Sum (std::vector<T>& x)
 }
 
 template<typename T>
-real Mean (std::vector<T>& x)
+real Mean (const std::vector<T>& x)
 {
     return Sum(x) / (real) x.size();
 }

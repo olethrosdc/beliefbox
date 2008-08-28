@@ -395,6 +395,7 @@ int MakeDecision(ExpansionMethod expansion_method,
         } else if (expansion_method == GreedyBoundReduction) {
             // returns the mean high probability bound
             std::vector<real> U(leaf_nodes.size());
+            std::vector<real> L(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
                 BeliefTree<BanditBelief>::Node* node = node_set[n];
@@ -405,12 +406,38 @@ int MakeDecision(ExpansionMethod expansion_method,
                 }
                 real Ui = Mean(Ub);
                 real Li = node->belief.getGreedyReturn(node->state, gamma);
+
                 if (Li > Ui) {
                     Ui = Li;
                 }
-                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
+
+                U[i] = Ui;
+                L[i] = Li;
             }
-            node_index = leaf_nodes[ArgMax(U)];
+
+            int argmax_L = ArgMax(L);
+            real max_L = L[argmax_L];
+            node_index = leaf_nodes[argmax_L];
+            int best_action = root_action[argmax_L];
+
+
+            // Find the highest upper bound
+            int argmax_U = -1;
+            real max_U;
+            for (uint i=0; i<U.size(); i++) {
+                if (root_action[i] != best_action) {
+                    if ((argmax_U == -1) || (max_U < U[i])) {
+                        max_U = U[i];
+                        argmax_U = i;
+                    }
+                }
+            }
+
+            // if highest upper bound beats highest lower bound..
+            if (max_U > max_L) {
+                
+            }
+
         } else {
             std::cerr << "Unknown method " << expansion_method << std::endl;
             exit(-1);
