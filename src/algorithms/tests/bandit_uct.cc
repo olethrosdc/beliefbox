@@ -423,7 +423,7 @@ int MakeDecision(ExpansionMethod expansion_method,
 
             // Find the highest upper bound
             int argmax_U = -1;
-            real max_U;
+            real max_U = -INF;
             for (uint i=0; i<U.size(); i++) {
                 if (root_action[i] != best_action) {
                     if ((argmax_U == -1) || (max_U < U[i])) {
@@ -433,9 +433,13 @@ int MakeDecision(ExpansionMethod expansion_method,
                 }
             }
 
-            // if highest upper bound beats highest lower bound..
+            // if highest upper bound beats highest lower bound
+            // then try to expand the highest upper bound
+            // otherwise try to expand the lower bound..
             if (max_U > max_L) {
-                
+                node_index = leaf_nodes[argmax_U];
+            } else {
+                node_index = leaf_nodes[argmax_L];
             }
 
         } else {
@@ -451,17 +455,23 @@ int MakeDecision(ExpansionMethod expansion_method,
         }
 
         if (node_index>=0) {
-            tree.Expand(node_index, verbose); // VALGRIND
+            tree.Expand(node_index, verbose);
         } else {
             std::cout << "Warning: no nodes could be expanded\n";
         }
     }
 
-    DiscreteMDP mdp = tree.CreateMDP(gamma, verbose); // VALGRIND
-    mdp.Check();
-    ValueIteration value_iteration(&mdp, gamma);
+    DiscreteMDP mean_mdp = tree.CreateMeanMDP(gamma, verbose);
+    mean_mdp.Check();
+
+    DiscreteMDP upper_mdp = tree.CreateUpperBoundMDP(gamma, verbose);
+    upper_mdp.Check();
+
+    ValueIteration value_iteration_lower(&mean_mdp, gamma);
+    ValueIteration value_iteration_upper(&upper_mdp, gamma);
     if (verbose >= 75) {
-        mdp.ShowModel();
+        mean_mdp.ShowModel();
+        upper_mdp.ShowModel();
     }
 
     
@@ -472,16 +482,19 @@ int MakeDecision(ExpansionMethod expansion_method,
 
 
     if (fout) {
-        value_iteration.ComputeStateValues(0.00001, max_value_iterations);
+        value_iteration_lower.ComputeStateValues(0.00001, max_value_iterations);
+        value_iteration_upper.ComputeStateValues(0.00001, max_value_iterations);
+        
         if (verbose >= 60) {
-            for (int s=0; s<mdp.GetNStates(); s++) {
+            for (int s=0; s<mean_mdp.GetNStates(); s++) {
                 std::cout << "V[" << s << "]"
-                          << " = " << value_iteration.getValue(s)
+                          << " = " << value_iteration_lower.getValue(s)
+                          << " ... " << value_iteration_upper.getValue(s)
                           << std::endl;
             }
         }
 
-        for (int s=0; s<mdp.GetNStates(); s++) {
+        for (int s=0; s<mean_mdp.GetNStates(); s++) {
             //BeliefTree<BanditBelief>::Node* node = tree->nodes[s];
             //real alpha = 0.0;
             //real beta = 0.0;
@@ -491,8 +504,10 @@ int MakeDecision(ExpansionMethod expansion_method,
             //   beta = belief.beta;
             //}
             fprintf (fout,
-                     "s%d [label = \"%.2f\"];\n",
-                     s, value_iteration.getValue(s));
+                     "s%d [label = \"%.2f - %.2f\"];\n",
+                     s,
+                     value_iteration_lower.getValue(s),
+                     value_iteration_upper.getValue(s));
             //belief.alpha,
             //       belief.beta);
         }
@@ -500,37 +515,53 @@ int MakeDecision(ExpansionMethod expansion_method,
 #endif
 
     start_time = GetCPU();
-    value_iteration.ComputeStateActionValues(0.00001, max_value_iterations);
+    value_iteration_upper.ComputeStateActionValues(0.00001, max_value_iterations);
+    value_iteration_lower.ComputeStateActionValues(0.00001, max_value_iterations);
     end_time = GetCPU();
     if (verbose) {
         std::cout << "# CPU " << end_time - start_time << std::endl;
     }
 
     if (verbose >= 10) {
-        for (int s=0; s<mdp.GetNStates(); s++) {
-            for (int a=0; a<mdp.GetNActions(); a++) {
+        for (int s=0; s<mean_mdp.GetNStates(); s++) {
+            for (int a=0; a<mean_mdp.GetNActions(); a++) {
                 std::cout << "Q[" << s << ", " << a << "]"
-                          << " = " << value_iteration.getValue(s,a)
+                          << " = " << value_iteration_lower.getValue(s,a)
+                          << " - " << value_iteration_upper.getValue(s,a)
                           << std::endl;
             }
         }
     }
 
     if (fout) {
-        mdp.dotModel(fout);
+        mean_mdp.dotModel(fout);
     }
     
-    int a_max = 0;
-    real Q_a_max = value_iteration.getValue(0, a_max);
+    int a_maxL = 0;
+    real Q_a_maxL = value_iteration_lower.getValue(0, a_maxL);
     for (int a=1; a<n_actions; a++) {
-        real Q_a = value_iteration.getValue(0, a);
-        if (Q_a > Q_a_max) {
-            a_max = a;
-            Q_a_max = Q_a;
+        real Q_a = value_iteration_lower.getValue(0, a);
+        if (Q_a > Q_a_maxL) {
+            a_maxL = a;
+            Q_a_maxL = Q_a;
         }
     }
 
-    return a_max;
+    int a_maxU = -1;
+    real Q_a_maxU = -INF;
+    for (int a=0; a<n_actions; a++) {
+        real Q_a = value_iteration_upper.getValue(0, a);
+        if ((a != a_maxL)
+            &&
+            ((Q_a > Q_a_maxU) || (a==0))
+            ) {
+            a_maxU = a;
+            Q_a_maxU = Q_a;
+        }
+    }
+
+    
+    return a_maxL;
 }
 
 
