@@ -272,7 +272,7 @@ public:
         return nodes;
     }
 
-    DiscreteMDP CreateMDP(real gamma, int verbose = 0)
+    DiscreteMDP CreateMeanMDP(real gamma, int verbose = 0)
     {
         int n_nodes = nodes.size();
         int terminal = n_nodes;
@@ -346,6 +346,92 @@ public:
         
         return mdp;
     }
+
+
+
+    DiscreteMDP CreateUpperBoundMDP(real gamma, int verbose = 0)
+    {
+        int n_nodes = nodes.size();
+        int terminal = n_nodes;
+
+        DiscreteMDP mdp(n_nodes + 1, n_actions, NULL, NULL);
+        for (int i=0; i<n_nodes + 1; i++) {
+            for (int a=0; a < n_actions; a++) {
+                for (int j=0; j<n_nodes+1; j++) {
+                    mdp.setTransitionProbability(i, a, j, 0.0);
+                }
+                //mdp.setTransitionProbability(i, a, i, 0.0);
+            }
+        }
+        // no reward in the first state
+        {
+            Distribution* reward_density = 
+                new SingularDistribution(0.0);
+            densities.push_back(reward_density);
+            for (int a=0; a<n_actions; a++) {
+                mdp.setRewardDistribution(0,
+                                          a,
+                                          reward_density);
+            }
+        }
+
+        for (int i=0; i<n_nodes; i++) {
+            int n_edges = nodes[i]->outs.size();
+            if (verbose >= 90) {
+                printf ("Node %d has %d outgoing edges\n", i, n_edges);
+            }
+            for (int j=0; j<n_edges; j++) {
+                Edge* edge = nodes[i]->outs[j];
+                Distribution* reward_density = 
+                    new SingularDistribution(edge->r);
+                
+                densities.push_back(reward_density);
+                mdp.setTransitionProbability(i,
+                                             edge->a,
+                                             edge->dst->index,
+                                             edge->p);
+                if (verbose >= 90) {
+                    printf ("%d: - a=%d - r=%f - p=%f ->%d\n", i, edge->a, edge->r, edge->p, edge->dst->index);
+                }
+                for (int a=0; a<n_actions; a++) {
+                    mdp.setRewardDistribution(edge->dst->index,
+                                              a,
+                                              reward_density);
+                }
+            }
+            
+            if (!n_edges) {
+                real mean_reward = nodes[i]->belief.getGreedyReturn(nodes[i]->state, gamma);
+                while (nodes[i]->U.size() <= 1000) {
+                    nodes[i]->U.push_back(nodes[i]->belief.sampleReturn(nodes[i]->state, gamma));
+                }
+                real Ub = Mean(nodes[i]->U);
+                if (0) { //(Ub < mean_reward) {
+                    Ub = mean_reward;
+                }
+
+                for (int a=0; a<n_actions; a++) {
+                    mdp.setTransitionProbability(i, a, terminal, 1.0);
+
+                    Distribution* reward_density = 
+                        new SingularDistribution(Ub);
+                    densities.push_back(reward_density);
+                    mdp.setRewardDistribution(i, a, reward_density);
+                }
+            }
+        }
+
+        for (int a=0; a<n_actions; a++) {
+            Distribution* reward_density = 
+                new SingularDistribution(0.0);
+            densities.push_back(reward_density);
+            mdp.setTransitionProbability(terminal, a, terminal, 1.0);
+            mdp.setRewardDistribution(terminal, a, reward_density);
+        }
+        
+        return mdp;
+    }
+
 };
 
 
