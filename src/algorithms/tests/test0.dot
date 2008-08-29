@@ -1,10 +1,10 @@
 digraph Lookahead {
 ranksep=2; rankdir=LR; 
-s0 [label = "5.25 - 6.03"];
-s1 [label = "6.67 - 7.47"];
-s2 [label = "5.00 - 5.80"];
-s3 [label = "6.67 - 7.46"];
-s4 [label = "5.00 - 5.93"];
+s0 [label = "5.25 - 6.50"];
+s1 [label = "6.67 - 6.67"];
+s2 [label = "5.00 - 5.66"];
+s3 [label = "6.67 - 9.45"];
+s4 [label = "5.00 - 5.00"];
 s5 [label = "0.00 - 0.00"];
 s0 -> s1 [label = " p=0.50, r=0.0", color=red];
 s0 -> s2 [label = " p=0.50, r=0.0", color=red];

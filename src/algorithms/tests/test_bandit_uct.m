@@ -4,7 +4,8 @@ lw=2;
 
 X=load("results/belief_uct/bandit/uct_complete.out");
 Y=load("results/belief_uct/bandit/baseline_long_double.out");
-gamma = 0.99;
+Z=load("uct_bnb.out");
+gamma = 0.999;
 n_arms=2;
 disc = 0;
 
@@ -25,12 +26,17 @@ idx = sel_exp & X(:,1)==0; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "1-;serial;"
 idx = sel_exp & X(:,1)==1; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "1@-;random;", "linewidth", lw);
 idx = sel_exp & X(:,1)==2; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "2-;LB;", "linewidth", lw);
 idx = sel_exp & X(:,1)==3; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "2@-;LB gamma;", "linewidth", lw);
-idx = sel_exp & X(:,1)==6; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "3-;thompson;", "linewidth", lw);
-idx = sel_exp & X(:,1)==7; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "3@-;thompson gamma;", "linewidth", lw);
+#idx = sel_exp & X(:,1)==6; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "3-;thompson;", "linewidth", lw);
+#idx = sel_exp & X(:,1)==7; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "3@-;thompson gamma;", "linewidth", lw);
 idx = sel_exp & X(:,1)==8; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "4-;hp UB;", "linewidth", lw);
 idx = sel_exp & X(:,1)==9; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "4@-;hp UB gamma;", "linewidth", lw);
-idx = sel_exp & X(:,1)==12; plot(X(idx,2), X(idx,oracle)-X(idx,uct), "5-;mean UB;", "linewidth", lw);
-idx = sel_exp & X(:,1)==13; semilogy(X(idx,2), X(idx,oracle)-X(idx,uct), "5@-;mean UB gamma;", "linewidth", lw);
+
+sel_exp = Z(:,3)==gamma & Z(:,4)==n_arms;
+
+
+idx = sel_exp & Z(:,1)==14; semilogy(Z(idx,2), Z(idx,oracle)-Z(idx,uct), "3@-;BB;", "linewidth", lw);
+
+idx = sel_exp & Z(:,1)==3; semilogy(Z(idx,2), Z(idx,oracle)-Z(idx,uct), "5@-;LB;", "linewidth", lw);
 
 xlabel("number of expansions");
 ylabel("total regret");
