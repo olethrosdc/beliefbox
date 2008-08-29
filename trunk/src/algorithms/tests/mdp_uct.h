@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef TOY_UCT_SHOPPING_PROBLEM_H
-#define TOY_UCT_SHOPPING_PROBLEM_H
+#ifndef MDP_UCT_PROBLEM_H
+#define MDP_UCT_PROBLEM_H
 
 #include "PolicyEvaluation.h"
 #include "ValueIteration.h"
@@ -22,17 +22,27 @@
 #include <vector>
 #include <set>
 
-class BanditPrior {
+
+/* This is a very simple MDP.
+ * 
+ * It has two actions and two states.
+ * Both states always give a reward of -1, 1 respectively.
+ * However, the transition distributions of the actions
+ * are unknown.
+ *  
+ */
+
+class EasyMDPPrior {
 public:
     std::vector<BetaDistribution> prior;
-    BanditPrior()
+    EasyMDPPrior()
     {
     }
-    BanditPrior(std::vector<BetaDistribution> prior_)
+    EasyMDPPrior(int n_actions, std::vector<BetaDistribution> prior_)
         : prior(prior_)
     {}
 
-    BanditPrior(int n_actions, real alpha, real beta)
+    EasyMDPPrior(int n_actions, real alpha, real beta)
     {
         for (int i=0; i<n_actions; i++) {
             prior.push_back(BetaDistribution(alpha, beta));
@@ -51,29 +61,29 @@ public:
 };
 
 /// a prior distribution on the number of arms
-class BanditBelief
+class EasyMDPBelief
 {
 protected:
     int n_actions;
-    BanditPrior prior;
+    EasyMDPPrior prior;
 public:
-    BanditBelief()
+    EasyMDPBelief()
     {
         n_actions = 0;
     }
     /// Create a belief
-    BanditBelief(int n_actions_, real alpha, real beta)
+    EasyMDPBelief(int n_actions_, real alpha, real beta)
         : n_actions(n_actions_),
           prior(n_actions, alpha, beta)
     {
     }
-    ~BanditBelief()
+    ~EasyMDPBelief()
     {
         for (int i=0; i<n_actions; i++) {
             //    delete prior[i];
         }
     }
-    BanditPrior getPrior()
+    EasyMDPPrior getPrior()
     {
         assert(n_actions > 0);
         return prior;
@@ -135,7 +145,7 @@ public:
     }
 };
 
-template <typename BanditBelief>
+template <typename EasyMDPBelief>
 class BeliefTree
 {
 protected:
@@ -145,7 +155,7 @@ public:
     class Node
     {
     public:
-        BanditBelief belief;
+        EasyMDPBelief belief;
         int state;
         std::vector<Edge*> outs;
         Edge* in_edge;
@@ -175,7 +185,7 @@ public:
     
     int n_states;
     int n_actions;
-    BeliefTree(BanditBelief prior,
+    BeliefTree(EasyMDPBelief prior,
                int state,
                int n_states_,
                int n_actions_)
@@ -456,7 +466,7 @@ enum ExpansionMethod {
 int MakeDecision(ExpansionMethod expansion_method,
                  int n_states,
                  int n_actions,
-                 BanditBelief prior,
+                 EasyMDPBelief prior,
                  int state,
                  real gamma,
                  int n_iter,

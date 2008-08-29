@@ -11,7 +11,7 @@
 
 #ifdef MAKE_MAIN
 
-#include "bandit_uct.h"
+#include "mdp_uct.h"
 
 #include "UCB.h"
 #include "Random.h"
@@ -31,7 +31,7 @@ int main (int argc, char** argv)
 
 
     if (argc <=1) {
-        fprintf (stderr, "Usage: bandit_uct method gamma n_iter n_actions verbose n_experiments horizon\n");
+        fprintf (stderr, "Usage: mdp_uct method gamma n_iter n_actions verbose n_experiments horizon\n");
         exit(-1);
     }
 
@@ -98,7 +98,7 @@ int main (int argc, char** argv)
 
         // initial state and belief
         int state = 0;
-        BanditBelief belief(n_actions, alpha, beta);
+        EasyMDPBelief belief(n_actions, alpha, beta);
                                                 
         // looop over time
         for (int t=0; t<horizon; t++) {
@@ -202,7 +202,7 @@ static bool sort_using_greater_than(real u, real v)
 
                     
                     
-int ChooseGreedyBranch(BeliefTree<BanditBelief>& tree, real gamma)
+int ChooseGreedyBranch(BeliefTree<EasyMDPBelief>& tree, real gamma)
 {
     DiscreteMDP mean_mdp = tree.CreateMeanMDP(gamma, 0);
     mean_mdp.Check();
@@ -219,7 +219,7 @@ int ChooseGreedyBranch(BeliefTree<BanditBelief>& tree, real gamma)
 int MakeDecision(ExpansionMethod expansion_method,
                  int n_states,
                  int n_actions,
-                 BanditBelief prior,
+                 EasyMDPBelief prior,
                  int state,
                  real gamma,
                  int n_iter,
@@ -227,11 +227,11 @@ int MakeDecision(ExpansionMethod expansion_method,
                  int max_value_iterations,
                  FILE* fout)
 {
-    BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions);
-    std::vector<BeliefTree<BanditBelief>::Node*> node_set = tree.getNodes();
+    BeliefTree<EasyMDPBelief> tree(prior, state, n_states, n_actions);
+    std::vector<BeliefTree<EasyMDPBelief>::Node*> node_set = tree.getNodes();
 
     for (int iter=0; iter<n_iter; iter++) {
-        std::vector<BeliefTree<BanditBelief>::Node*> node_set = tree.getNodes();
+        std::vector<BeliefTree<EasyMDPBelief>::Node*> node_set = tree.getNodes();
         int n_edge_nodes = 0;
         int node_index = -1;
         std::vector<int> leaf_nodes;
@@ -260,14 +260,14 @@ int MakeDecision(ExpansionMethod expansion_method,
         } else if (expansion_method == HighestMeanValue) {
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
-                BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[leaf_nodes[i]];
                 U[i] = node->belief.getGreedyReturn(node->state, gamma);
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == HighestDiscountedMeanValue) {
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
-                BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[leaf_nodes[i]];
                 real Ui = node->belief.getGreedyReturn(node->state, gamma);
                 U[i] =  pow(gamma, (real) node->depth) * Ui;
             }
@@ -275,14 +275,14 @@ int MakeDecision(ExpansionMethod expansion_method,
         } else if (expansion_method == ThompsonSampling) {
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
-                BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[leaf_nodes[i]];
                 U[i] = node->belief.sampleReturn(node->state, gamma);
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == DiscountedThompsonSampling) {
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
-                BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[leaf_nodes[i]];
                 real Ui = node->belief.sampleReturn(node->state, gamma);
                 U[i] =  pow(gamma, (real) node->depth) * Ui;
             }
@@ -291,7 +291,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> U(leaf_nodes.size());
             //std::vector<real> L(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
-                BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[leaf_nodes[i]];
                 real Ui = node->belief.sampleReturn(node->state, gamma);
                 real Li = node->belief.getGreedyReturn(node->state, gamma);
                 if (Ui < Li) {
@@ -305,7 +305,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> U(leaf_nodes.size());
             //std::vector<real> L(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
-                BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[leaf_nodes[i]];
                 real Ui = node->belief.sampleReturn(node->state, gamma);
                 real Li = node->belief.getGreedyReturn(node->state, gamma);
                 if (Ui < Li) {
@@ -320,7 +320,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
-                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[n];
                 node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
                 real Ui = Max(node_set[n]->U);
                 U[i] = Ui;
@@ -331,7 +331,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
-                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[n];
                 node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
                 real Ui = Max(node_set[n]->U);
                 U[i] = pow(gamma, (real) node->depth) * Ui;
@@ -342,7 +342,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
-                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[n];
                 node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
                 real Ui = Max(node_set[n]->U);
                 real Li = node->belief.getGreedyReturn(node->state, gamma);
@@ -357,7 +357,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
-                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[n];
                 node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
                 real Ui = Max(node_set[n]->U);
                 real Li = node->belief.getGreedyReturn(node->state, gamma);
@@ -372,7 +372,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
-                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[n];
                 std::vector<real> &Ub = node_set[n]->U;
                 int n_samples=1000;
                 for (int k=0; k<n_samples; k++) {
@@ -391,7 +391,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
-                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[n];
                 std::vector<real> &Ub = node_set[n]->U;
                 int n_samples=1;
                 for (int k=0; k<n_samples; k++) {
@@ -411,7 +411,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> L(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 int n = leaf_nodes[i];
-                BeliefTree<BanditBelief>::Node* node = node_set[n];
+                BeliefTree<EasyMDPBelief>::Node* node = node_set[n];
                 std::vector<real> &Ub = node_set[n]->U;
                 int n_samples=1;
                 for (int k=0; k<n_samples; k++) {
