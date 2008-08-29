@@ -90,12 +90,12 @@ public:
         assert (action >= 0 && action < n_actions);
         real p = prior.ActionReward(action).getMean();
         if (approx_eq(reward, 0.0)) {
-                return 1.0 - p;
+            return 1.0 - p;
         } else if (approx_eq(reward, 1.0)) {
             return p;
         } else {
-                fprintf (stderr, "Reward of %f is illegal for s,a=0,0\n", reward);
-                exit(-1);
+            fprintf (stderr, "Reward of %f is illegal for s,a=0,0\n", reward);
+            exit(-1);
         }
         return 0.0;
     }
@@ -402,11 +402,11 @@ public:
             
             if (!n_edges) {
                 real mean_reward = nodes[i]->belief.getGreedyReturn(nodes[i]->state, gamma);
-                while (nodes[i]->U.size() <= 1000) {
+                while (nodes[i]->U.size() <= 0) {
                     nodes[i]->U.push_back(nodes[i]->belief.sampleReturn(nodes[i]->state, gamma));
                 }
                 real Ub = Mean(nodes[i]->U);
-                if (0) { //(Ub < mean_reward) {
+                if (Ub < mean_reward) {
                     Ub = mean_reward;
                 }
 

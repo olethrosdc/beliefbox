@@ -1,12 +1,13 @@
-experiments=100
-rm -f quick_test.out
+experiments=1000
 horizon=100000
-for iter in 0 2 3 4 5
+method=$1
+for gamma in 0.5 0.9 0.99 0.999 0.9999 0.99999
 do
-    for method in 0 1 2 3
+    for iter in 0 1 2 3 4 5 8 #6 7 8 9 10 11 12
     do
-        time ./bin/bandit_uct_test $method 0.999999 $iter 2 0 $experiments $horizon >>quick_test.out
-        tail quick_test.out
+        ./bin/bandit_uct $method $gamma $iter 2 0 $experiments >>uct_bnb.out
+        tail uct_bnb.out
+        done
     done
 done
 

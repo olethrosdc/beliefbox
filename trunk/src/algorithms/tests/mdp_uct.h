@@ -90,12 +90,12 @@ public:
         assert (action >= 0 && action < n_actions);
         real p = prior.ActionReward(action).getMean();
         if (approx_eq(reward, 0.0)) {
-                return 1.0 - p;
+            return 1.0 - p;
         } else if (approx_eq(reward, 1.0)) {
             return p;
         } else {
-                fprintf (stderr, "Reward of %f is illegal for s,a=0,0\n", reward);
-                exit(-1);
+            fprintf (stderr, "Reward of %f is illegal for s,a=0,0\n", reward);
+            exit(-1);
         }
         return 0.0;
     }
@@ -148,6 +148,7 @@ public:
         BanditBelief belief;
         int state;
         std::vector<Edge*> outs;
+        Edge* in_edge;
         int index;
         int depth;
         std::vector<real> U;
@@ -167,6 +168,8 @@ public:
         }
     };
 
+    Node* root;
+
     std::vector<Node*> nodes;
     std::vector<Edge*> edges;
     
@@ -180,11 +183,12 @@ public:
         n_states(n_states_),
         n_actions(n_actions_)
     {
-        Node* root = new Node;
+        root = new Node;
         root->belief = prior;
         root->state = state;
         root->index = 0;
         root->depth = 0;
+        root->in_edge = NULL;
 
         nodes.push_back(root);
     }
@@ -232,6 +236,8 @@ public:
         }
                 
         nodes[i]->outs.push_back(edges[k]);
+        
+        next->in_edge = edges[k];
 
         nodes.push_back(next);
         return nodes.back();
@@ -247,12 +253,26 @@ public:
         }
     }
 
+    int FindRootAction(Node* node)
+    {
+        int a = -1;
+        while (node->in_edge) {
+            a = node->in_edge->a;
+            if (node->in_edge->src) {
+                node = node->in_edge->src;
+            } else {
+                assert(node->in_edge->src == root);
+            }
+        }
+        return a;
+    }
+
     std::vector<Node*>& getNodes()
     {
         return nodes;
     }
 
-    DiscreteMDP CreateMDP(real gamma, int verbose = 0)
+    DiscreteMDP CreateMeanMDP(real gamma, int verbose = 0)
     {
         int n_nodes = nodes.size();
         int terminal = n_nodes;
@@ -326,6 +346,92 @@ public:
         
         return mdp;
     }
+
+
+
+    DiscreteMDP CreateUpperBoundMDP(real gamma, int verbose = 0)
+    {
+        int n_nodes = nodes.size();
+        int terminal = n_nodes;
+
+        DiscreteMDP mdp(n_nodes + 1, n_actions, NULL, NULL);
+        for (int i=0; i<n_nodes + 1; i++) {
+            for (int a=0; a < n_actions; a++) {
+                for (int j=0; j<n_nodes+1; j++) {
+                    mdp.setTransitionProbability(i, a, j, 0.0);
+                }
+                //mdp.setTransitionProbability(i, a, i, 0.0);
+            }
+        }
+        // no reward in the first state
+        {
+            Distribution* reward_density = 
+                new SingularDistribution(0.0);
+            densities.push_back(reward_density);
+            for (int a=0; a<n_actions; a++) {
+                mdp.setRewardDistribution(0,
+                                          a,
+                                          reward_density);
+            }
+        }
+
+        for (int i=0; i<n_nodes; i++) {
+            int n_edges = nodes[i]->outs.size();
+            if (verbose >= 90) {
+                printf ("Node %d has %d outgoing edges\n", i, n_edges);
+            }
+            for (int j=0; j<n_edges; j++) {
+                Edge* edge = nodes[i]->outs[j];
+                Distribution* reward_density = 
+                    new SingularDistribution(edge->r);
+                
+                densities.push_back(reward_density);
+                mdp.setTransitionProbability(i,
+                                             edge->a,
+                                             edge->dst->index,
+                                             edge->p);
+                if (verbose >= 90) {
+                    printf ("%d: - a=%d - r=%f - p=%f ->%d\n", i, edge->a, edge->r, edge->p, edge->dst->index);
+                }
+                for (int a=0; a<n_actions; a++) {
+                    mdp.setRewardDistribution(edge->dst->index,
+                                              a,
+                                              reward_density);
+                }
+            }
+            
+            if (!n_edges) {
+                real mean_reward = nodes[i]->belief.getGreedyReturn(nodes[i]->state, gamma);
+                while (nodes[i]->U.size() <= 0) {
+                    nodes[i]->U.push_back(nodes[i]->belief.sampleReturn(nodes[i]->state, gamma));
+                }
+                real Ub = Mean(nodes[i]->U);
+                if (Ub < mean_reward) {
+                    Ub = mean_reward;
+                }
+
+                for (int a=0; a<n_actions; a++) {
+                    mdp.setTransitionProbability(i, a, terminal, 1.0);
+
+                    Distribution* reward_density = 
+                        new SingularDistribution(Ub);
+                    densities.push_back(reward_density);
+                    mdp.setRewardDistribution(i, a, reward_density);
+                }
+            }
+        }
+
+        for (int a=0; a<n_actions; a++) {
+            Distribution* reward_density = 
+                new SingularDistribution(0.0);
+            densities.push_back(reward_density);
+            mdp.setTransitionProbability(terminal, a, terminal, 1.0);
+            mdp.setRewardDistribution(terminal, a, reward_density);
+        }
+        
+        return mdp;
+    }
+
 };
 
 
@@ -343,7 +449,8 @@ enum ExpansionMethod {
     HighProbabilityBoundOnly, // 10
     DiscountedHighProbabilityBoundOnly, // 11
     MeanHighProbabilityBound, // 12
-    DiscountedMeanHighProbabilityBound // 13
+    DiscountedMeanHighProbabilityBound, // 13
+    GreedyBoundReduction // 14
 };
 
 int MakeDecision(ExpansionMethod expansion_method,

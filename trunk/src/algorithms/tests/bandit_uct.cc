@@ -202,6 +202,19 @@ static bool sort_using_greater_than(real u, real v)
 
                     
                     
+int ChooseGreedyBranch(BeliefTree<BanditBelief>& tree, real gamma)
+{
+    DiscreteMDP mean_mdp = tree.CreateMeanMDP(gamma, 0);
+    mean_mdp.Check();
+
+    DiscreteMDP upper_mdp = tree.CreateUpperBoundMDP(gamma, 0);
+    upper_mdp.Check();
+
+    ValueIteration value_iteration_lower(&mean_mdp, gamma);
+    ValueIteration value_iteration_upper(&upper_mdp, gamma);
+    
+    
+}
 
 int MakeDecision(ExpansionMethod expansion_method,
                  int n_states,
@@ -255,8 +268,8 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
-                U[i] = ((real) node->depth) * log(gamma)
-                    + log(node->belief.getGreedyReturn(node->state, gamma));
+                real Ui = node->belief.getGreedyReturn(node->state, gamma);
+                U[i] =  pow(gamma, (real) node->depth) * Ui;
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == ThompsonSampling) {
@@ -270,8 +283,8 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
-                U[i] = ((real) node->depth) * log(gamma)
-                    + log(node->belief.sampleReturn(node->state, gamma));
+                real Ui = node->belief.sampleReturn(node->state, gamma);
+                U[i] =  pow(gamma, (real) node->depth) * Ui;
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == ThompsonBound) {
@@ -298,7 +311,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                 if (Ui < Li) {
                     Ui = Li;
                 }
-                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
+                U[i] =  pow(gamma, (real) node->depth) * Ui;
                 //L[i] = Li;
             }
             node_index = leaf_nodes[ArgMax(U)];
@@ -310,7 +323,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                 BeliefTree<BanditBelief>::Node* node = node_set[n];
                 node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
                 real Ui = Max(node_set[n]->U);
-                U[i] =  log(Ui);
+                U[i] = Ui;
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == DiscountedHighProbabilityBoundOnly) {
@@ -321,7 +334,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                 BeliefTree<BanditBelief>::Node* node = node_set[n];
                 node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
                 real Ui = Max(node_set[n]->U);
-                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
+                U[i] = pow(gamma, (real) node->depth) * Ui;
             }
             node_index = leaf_nodes[ArgMax(U)]; 
         } else if (expansion_method == HighProbabilityBound) {
@@ -336,7 +349,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                 if (Ui < Li) {
                     Ui = Li;
                 }
-                U[i] =  log(Ui);
+                U[i] =  Ui;
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == DiscountedHighProbabilityBound) {
@@ -351,7 +364,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                 if (Ui < Li) {
                     Ui = Li;
                 }
-                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
+                U[i] = pow(gamma, (real) node->depth) * Ui;
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == MeanHighProbabilityBound) {
@@ -389,7 +402,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                 if (Li > Ui) {
                     Ui = Li;
                 }
-                U[i] =  ((real) node->depth) * log(gamma) + log(Ui);
+                U[i] = pow(gamma, (real) node->depth) * Ui;
             }
             node_index = leaf_nodes[ArgMax(U)]; 
         } else if (expansion_method == GreedyBoundReduction) {
@@ -404,8 +417,9 @@ int MakeDecision(ExpansionMethod expansion_method,
                 for (int k=0; k<n_samples; k++) {
                     Ub.push_back(node->belief.sampleReturn(node->state, gamma));
                 }
-                real Ui = Mean(Ub);
-                real Li = node->belief.getGreedyReturn(node->state, gamma);
+                real discount = pow(gamma, (real) node->depth);
+                real Ui = discount*Mean(Ub);
+                real Li = discount*node->belief.getGreedyReturn(node->state, gamma);
 
                 if (Li > Ui) {
                     Ui = Li;
@@ -426,9 +440,11 @@ int MakeDecision(ExpansionMethod expansion_method,
             real max_U = -INF;
             for (uint i=0; i<U.size(); i++) {
                 if (root_action[i] != best_action) {
-                    if ((argmax_U == -1) || (max_U < U[i])) {
-                        max_U = U[i];
-                        argmax_U = i;
+                    if (L[i] < max_L) {
+                        if ((argmax_U == -1) || (max_U < U[i])) {
+                            max_U = U[i];
+                            argmax_U = i;
+                        }
                     }
                 }
             }
@@ -436,7 +452,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             // if highest upper bound beats highest lower bound
             // then try to expand the highest upper bound
             // otherwise try to expand the lower bound..
-            if (max_U > max_L) {
+            if (0) {//max_U > max_L) {
                 node_index = leaf_nodes[argmax_U];
             } else {
                 node_index = leaf_nodes[argmax_L];
@@ -495,21 +511,11 @@ int MakeDecision(ExpansionMethod expansion_method,
         }
 
         for (int s=0; s<mean_mdp.GetNStates(); s++) {
-            //BeliefTree<BanditBelief>::Node* node = tree->nodes[s];
-            //real alpha = 0.0;
-            //real beta = 0.0;
-            //            if (s < mdp.GetNStates() - 1) {
-            //  std::vector<BetaDistribution*> belief = tree.nodes[s]->belief.getPrior();
-            //   alpha = belief.alpha;
-            //   beta = belief.beta;
-            //}
             fprintf (fout,
                      "s%d [label = \"%.2f - %.2f\"];\n",
                      s,
                      value_iteration_lower.getValue(s),
                      value_iteration_upper.getValue(s));
-            //belief.alpha,
-            //       belief.beta);
         }
     }
 #endif
