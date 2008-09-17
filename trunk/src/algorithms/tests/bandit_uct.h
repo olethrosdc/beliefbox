@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef TOY_UCT_SHOPPING_PROBLEM_H
-#define TOY_UCT_SHOPPING_PROBLEM_H
+#ifndef BANDIT_UCT_PROBLEM_H
+#define BANDIT_UCT_PROBLEM_H
 
 #include "PolicyEvaluation.h"
 #include "ValueIteration.h"
@@ -151,7 +151,8 @@ public:
         Edge* in_edge;
         int index;
         int depth;
-        std::vector<real> U;
+		std::vector<real> U; ///< upper bound
+		real L; ///< lower bound
     };
     
     class Edge
