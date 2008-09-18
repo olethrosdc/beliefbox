@@ -254,6 +254,24 @@ int MakeDecision(ExpansionMethod expansion_method,
 
         
 	if (expansion_method == SerialExpansion) {
+	  // returns the mean high probability bound
+	  std::vector<real> U(leaf_nodes.size());
+	  for (int i=0; i<n_leaf_nodes; i++) {
+		int n = leaf_nodes[i];
+		BeliefTree<BanditBelief>::Node* node = node_set[n];
+		std::vector<real> &Ub = node_set[n]->U;
+		int n_samples=100000;
+		for (int k=0; k<n_samples; k++) {
+		  Ub.push_back(node->belief.sampleReturn(node->state, gamma));
+		}
+		real Ui = Mean(Ub);
+		real Li = node->belief.getGreedyReturn(node->state, gamma);
+		node_set[n]->L = Li;
+		if (Li > Ui) {
+		  Ui = Li;
+		}
+		U[i] = Ui;
+	  }
 	  node_index = leaf_nodes[0];
 	} else if (expansion_method == RandomExpansion) {
 	  int X =  (int) floor(urandom()*((real) leaf_nodes.size()));
