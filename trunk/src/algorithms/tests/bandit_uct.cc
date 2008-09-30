@@ -85,6 +85,7 @@ int main (int argc, char** argv)
     //RandomNumberFile rng("./dat/r1e7.bin");
     int n_states  = 0;
 
+    srand48(3713426);
     // perform experiments
     for (int experiment=0; experiment<n_experiments; experiment++) {
         
@@ -508,8 +509,8 @@ int MakeDecision(ExpansionMethod expansion_method,
             std::cout << "Warning: no nodes could be expanded\n";
 	}
 
-	std::cout	<< node_set.size() << " total nodes"
-                        << std::endl;
+	//std::cout	<< node_set.size() << " total nodes"
+        //              << std::endl;
     }
     std::vector<BeliefTree<BanditBelief>::Node*> node_set = tree.getNodes();
 
@@ -580,7 +581,7 @@ int MakeDecision(ExpansionMethod expansion_method,
 	std::cout << "# CPU " << end_time - start_time << std::endl;
     }
 
-    if (verbose >= 10) {
+    if (verbose >= 20) {
 	for (int s=0; s<mean_mdp.GetNStates(); s++) {
             for (int a=0; a<mean_mdp.GetNActions(); a++) {
 		std::cout << "Q[" << s << ", " << a << "]"
@@ -589,6 +590,25 @@ int MakeDecision(ExpansionMethod expansion_method,
                           << std::endl;
             }
 	}
+    }
+
+    if (verbose >= 5) {
+        std::vector<real> VL(n_actions);
+        std::vector<real> VU(n_actions);
+        for (int i=0; i<n_actions; i++) {
+            VL[i] = value_iteration_lower.getValue(0, i);
+            VU[i] = value_iteration_upper.getValue(0, i);
+        }
+        int a_max = ArgMax(VL);
+        real max_VU = -INF;
+        int a_max2 = -1;
+        for (int i=0; i<n_actions; i++) {
+            if ((i != a_max) && ((a_max2 == -1) || (VU[i] > max_VU))) {
+                a_max2 = i;
+                max_VU = VU[i];
+            }
+        }
+        std::cout << "DQ = " << VL[a_max] - max_VU << std::endl;
     }
 
     if (fout) {
