@@ -1,9 +1,23 @@
 digraph Lookahead {
 ranksep=2; rankdir=LR; 
-s0 [label = "5000.00 - 5000.00"];
-s1 [label = "0.00 - 0.00"];
-s0 -> s1 [label = " p=1.00, r=5000.0", color=red];
-s0 -> s1 [label = " p=1.00, r=5000.0", color=green];
-s1 -> s1 [label = " p=1.00, r=0.0", color=red];
-s1 -> s1 [label = " p=1.00, r=0.0", color=green];
+s0 [label = "57.75 - 86.63"];
+s1 [label = "66.67 - 92.58"];
+s2 [label = "50.00 - 82.43"];
+s3 [label = "66.67 - 88.37"];
+s4 [label = "50.00 - 56.16"];
+s5 [label = "0.00 - 0.00"];
+s0 -> s1 [label = " p=0.50, r=0.0", color=red];
+s0 -> s2 [label = " p=0.50, r=0.0", color=red];
+s0 -> s3 [label = " p=0.50, r=0.0", color=green];
+s0 -> s4 [label = " p=0.50, r=0.0", color=green];
+s1 -> s5 [label = " p=1.00, r=66.7", color=red];
+s1 -> s5 [label = " p=1.00, r=66.5", color=green];
+s2 -> s5 [label = " p=1.00, r=49.8", color=red];
+s2 -> s5 [label = " p=1.00, r=50.0", color=green];
+s3 -> s5 [label = " p=1.00, r=66.5", color=red];
+s3 -> s5 [label = " p=1.00, r=66.7", color=green];
+s4 -> s5 [label = " p=1.00, r=50.0", color=red];
+s4 -> s5 [label = " p=1.00, r=49.8", color=green];
+s5 -> s5 [label = " p=1.00, r=0.0", color=red];
+s5 -> s5 [label = " p=1.00, r=0.0", color=green];
 }

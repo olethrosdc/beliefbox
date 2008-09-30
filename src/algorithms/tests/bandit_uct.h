@@ -101,11 +101,11 @@ public:
     }
     
 
-	/// Gives the reward starting from a particular state 
-	/// and playing action a
+    /// Gives the reward starting from a particular state 
+    /// and playing action a
     real getMeanReward(int state, int action)
     {
-		return prior.ActionReward(action).getMean();
+        return prior.ActionReward(action).getMean();
     }
 
     /// Gives the greedy return starting from a particular statea
@@ -159,8 +159,8 @@ public:
         Edge* in_edge;
         int index;
         int depth;
-		std::vector<real> U; ///< upper bound
-		real L; ///< lower bound
+        std::vector<real> U; ///< upper bound
+        real L; ///< lower bound
     };
     
     class Edge
@@ -286,7 +286,7 @@ public:
         int n_nodes = nodes.size();
         int terminal = n_nodes;
 		
-		// clear mean MDP
+        // clear mean MDP
         DiscreteMDP mdp(n_nodes + 1, n_actions, NULL, NULL);
         for (int i=0; i<n_nodes + 1; i++) {
             for (int a=0; a < n_actions; a++) {
@@ -309,14 +309,14 @@ public:
             }
         }
 
-		// NOTE - FIX ME
+        // NOTE - FIX ME
         for (int i=0; i<n_nodes; i++) {
             int n_edges = nodes[i]->outs.size();
             if (verbose >= 90) {
                 printf ("Node %d has %d outgoing edges\n", i, n_edges);
             }
 
-			// loop for internal nodes
+            // loop for internal nodes
             for (int j=0; j<n_edges; j++) {
                 Edge* edge = nodes[i]->outs[j];
                 Distribution* reward_density = 
@@ -337,15 +337,15 @@ public:
                 }
             }
            
-			// the leaf nodes
+            // the leaf nodes
             if (!n_edges) {
                 real mean_reward = nodes[i]->belief.getGreedyReturn(nodes[i]->state, gamma);
                 for (int a=0; a<n_actions; a++) {
                     mdp.setTransitionProbability(i, a, terminal, 1.0);
-					real r = nodes[i]->belief.getMeanReward(nodes[i]->state, a);
+                    real r = nodes[i]->belief.getMeanReward(nodes[i]->state, a);
                     Distribution* reward_density = 
                         new SingularDistribution(r + gamma*mean_reward);
-					//new SingularDistribution(mean_reward);
+                    //new SingularDistribution(mean_reward);
                     densities.push_back(reward_density);
                     mdp.setRewardDistribution(i, a, reward_density);
                 }
