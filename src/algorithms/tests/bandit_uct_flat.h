@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef BANDIT_UCT_PROBLEM_H
-#define BANDIT_UCT_PROBLEM_H
+#ifndef BANDIT_UCT_FLAT_H
+#define BANDIT_UCT_FLAT_H
 
 #include "PolicyEvaluation.h"
 #include "ValueIteration.h"
@@ -22,7 +22,6 @@
 #include <vector>
 #include <set>
 
-/// A prior 
 class BanditPrior {
 public:
     std::vector<BetaDistribution> prior;
@@ -160,9 +159,7 @@ public:
         Edge* in_edge;
         int index;
         int depth;
-        std::vector<real> U; ///< upper bound samples
-        real R; ///< reward received along path
-        real U_c; ///< current upper bound
+        std::vector<real> U; ///< upper bound
         real L; ///< lower bound
     };
     
