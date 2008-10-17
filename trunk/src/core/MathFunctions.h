@@ -15,6 +15,7 @@
 #include "real.h"
 #include <cmath>
 #include <vector>
+#include <limits>
 
 /**
    \defgroup MathGroup Mathematical functions
@@ -147,6 +148,10 @@ real Sum (const std::vector<T>& x)
 template<typename T>
 real Mean (const std::vector<T>& x)
 {
+    if (x.size() == 0) {
+        //return 0;
+        return std::numeric_limits<real>::quiet_NaN();
+    }
     return Sum(x) / (real) x.size();
 }
 
