@@ -547,6 +547,9 @@ int MakeDecision(ExpansionMethod expansion_method,
                 if (s < (int) node_set.size()) {
                     L_bound = node_set[s]->L;
                     U_bound = Mean(node_set[s]->U);
+                    if (isnan(U_bound)) {
+                        U_bound = INF;
+                    }
                     if (L_bound > value_iteration_lower.getValue(s)) {
                         std::cout << "+";
                     }
