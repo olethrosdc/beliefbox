@@ -164,6 +164,15 @@ public:
         real R; ///< reward received along path
         real U_c; ///< current upper bound
         real L; ///< lower bound
+        real p; ///< probability of reaching node
+        /// Constructor only sets up the probability
+        Node() : p(1.0)
+        {
+        }
+        real GetPathProbability()
+        {
+            return p;
+        }
     };
     
     class Edge
@@ -173,7 +182,11 @@ public:
         Node* dst; ///< destination node
         int a; ///< action taken
         real r; ///< reward received
-        real p; ///< probability of path
+        real p; ///< probability of path component
+        real GetEdgeProbability()
+        {
+            return p;
+        }
         Edge (Node* src_, Node* dst_, int a_, real r_, real p_)
             : src(src_), dst(dst_), a(a_), r(r_), p(p_)
         {
@@ -219,6 +232,7 @@ public:
             delete edges[i];
         }
     }
+
     /// Return 
     Node* ExpandAction(int i, int a, real r, int s, int verbose = 0)
     {
@@ -228,13 +242,20 @@ public:
         next->index = nodes.size();
         next->depth = nodes[i]->depth + 1;
 
+        // the probability of the next state and reward given the
+        // belief, state and action
         real p = nodes[i]->belief.getProbability(nodes[i]->state, a, r, s);
-        next->belief.update(nodes[i]->state, a, r, s);
-
+        real p_path = p * nodes[i]->GetPathProbability();
+        next->p = p_path; // fill in the total path probability
+        next->belief.update(nodes[i]->state, a, r, s); // update the belif
         
+        // save the edge connecting the previous node to the next
         edges.push_back(new Edge(nodes[i],
-                                 next, //nodes[nodes.size()-1],
-                                 a, r, p));
+                                 next, //was: nodes[nodes.size()-1],
+                                 a, // action taken
+                                 r, // reward observed
+                                 p // probability given previous node and action
+                                 ));
 
         int k = edges.size() - 1;
         if (verbose >= 100) {
@@ -247,11 +268,15 @@ public:
                     edges[k]->dst->index);
         }
                 
+        // save the edge to the list of output edges of the previous node
+        // and as an input edge of the next node
         nodes[i]->outs.push_back(edges[k]);
-        
         next->in_edge = edges[k];
-
+        
+        // save the node
         nodes.push_back(next);
+
+        // return it
         return nodes.back();
     }
 

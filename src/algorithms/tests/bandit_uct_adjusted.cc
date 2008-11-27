@@ -300,7 +300,8 @@ int MakeDecision(ExpansionMethod expansion_method,
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
                 real Ui = node->belief.getGreedyReturn(node->state, gamma);
-                U[i] = pow(gamma, (real) node->depth) * Ui;
+                real p = node->GetPathProbability();
+                U[i] = p*(node->R + pow(gamma, (real) node->depth) * Ui);
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == ThompsonSampling) {
@@ -315,7 +316,8 @@ int MakeDecision(ExpansionMethod expansion_method,
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
                 real Ui = node->belief.sampleReturn(node->state, gamma);
-                U[i] =  pow(gamma, (real) node->depth) * Ui;
+                real p = node->GetPathProbability();
+                U[i] = p*(node->R + pow(gamma, (real) node->depth) * Ui);
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == ThompsonBound) {
@@ -343,6 +345,8 @@ int MakeDecision(ExpansionMethod expansion_method,
                     Ui = Li;
                 }
                 U[i] =  pow(gamma, (real) node->depth) * Ui;
+               real p = node->GetPathProbability();
+                U[i] = p*(node->R + pow(gamma, (real) node->depth) * Ui);
                     //L[i] = Li;
             }
             node_index = leaf_nodes[ArgMax(U)];
@@ -365,7 +369,8 @@ int MakeDecision(ExpansionMethod expansion_method,
                 BeliefTree<BanditBelief>::Node* node = node_set[n];
                 node_set[n]->U.push_back(node->belief.sampleReturn(node->state, gamma));
                 real Ui = Max(node_set[n]->U);
-                U[i] = pow(gamma, (real) node->depth) * Ui;
+                real p = node->GetPathProbability();
+                U[i] = p*(node->R + pow(gamma, (real) node->depth) * Ui);
             }
             node_index = leaf_nodes[ArgMax(U)]; 
         } else if (expansion_method == HighProbabilityBound) {
