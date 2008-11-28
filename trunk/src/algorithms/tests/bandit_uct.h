@@ -200,13 +200,16 @@ public:
     
     int n_states;
     int n_actions;
+    real gamma;
     BeliefTree(BanditBelief prior,
                int state,
                int n_states_,
-               int n_actions_)
+               int n_actions_,
+               real gamma_)
         :
         n_states(n_states_),
-        n_actions(n_actions_)
+        n_actions(n_actions_),
+        gamma(gamma_)
     {
         root = new Node;
         root->belief = prior;
@@ -241,7 +244,7 @@ public:
         next->state = s;
         next->index = nodes.size();
         next->depth = nodes[i]->depth + 1;
-
+        next->R = nodes[i]->R + r * pow(gamma, next->depth);
         // the probability of the next state and reward given the
         // belief, state and action
         real p = nodes[i]->belief.getProbability(nodes[i]->state, a, r, s);
