@@ -239,7 +239,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                  int max_value_iterations,
                  FILE* fout)
 {
-    BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions);
+    BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions, gamma);
 
 
     for (int iter=0; iter<n_iter; iter++) {
