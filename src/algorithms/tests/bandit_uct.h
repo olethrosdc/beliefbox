@@ -173,6 +173,14 @@ public:
         {
             return p;
         }
+        real GetIncomingReward()
+        {
+            if (in_edge) {
+                return in_edge->r;
+            } else {
+                return 0.0;
+            }
+        }
     };
     
     class Edge
@@ -370,12 +378,15 @@ public:
            
             // the leaf nodes
             if (!n_edges) {
-                real mean_reward = nodes[i]->belief.getGreedyReturn(nodes[i]->state, gamma);
+                real mean_return = nodes[i]->belief.getGreedyReturn(nodes[i]->state, gamma);
+                
                 for (int a=0; a<n_actions; a++) {
                     mdp.setTransitionProbability(i, a, terminal, 1.0);
-                    real r = nodes[i]->belief.getMeanReward(nodes[i]->state, a);
+                    //real r = nodes[i]->belief.getMeanReward(nodes[i]->state, a);
+                    // the actions are fake, we only use the _previous_ reward!
+                    real r = nodes[i]->GetIncomingReward();
                     Distribution* reward_density = 
-                        new SingularDistribution(r + gamma*mean_reward);
+                        new SingularDistribution(r + gamma*mean_return);
                     //new SingularDistribution(mean_reward);
                     densities.push_back(reward_density);
                     mdp.setRewardDistribution(i, a, reward_density);
@@ -383,6 +394,8 @@ public:
             }
         }
 
+
+        // the terminal node
         for (int a=0; a<n_actions; a++) {
             Distribution* reward_density = 
                 new SingularDistribution(0.0);
@@ -459,9 +472,9 @@ public:
 
                 for (int a=0; a<n_actions; a++) {
                     mdp.setTransitionProbability(i, a, terminal, 1.0);
-
+                    real r = nodes[i]->GetIncomingReward();
                     Distribution* reward_density = 
-                        new SingularDistribution(Ub);
+                        new SingularDistribution(r + gamma * Ub);
                     densities.push_back(reward_density);
                     mdp.setRewardDistribution(i, a, reward_density);
                 }
@@ -483,21 +496,21 @@ public:
 
 
 enum ExpansionMethod {
-    SerialExpansion = 0,
+    SerialExpansion = 0, // (54.9)
     RandomExpansion,  //1
-    HighestMeanValue, //2
+    HighestMeanValue, //2 (53.5)
     HighestDiscountedMeanValue, //3
     ThompsonSampling, // 4
     DiscountedThompsonSampling, //5
     ThompsonBound, // 6
     DiscountedThompsonBound, //7
-    HighProbabilityBound, // 8
-    DiscountedHighProbabilityBound, // 9
-    HighProbabilityBoundOnly, // 10
+    HighProbabilityBound, // 8 (55.5)
+    DiscountedHighProbabilityBound, // 9 (53.8)
+    HighProbabilityBoundOnly, // 10 (54.0)
     DiscountedHighProbabilityBoundOnly, // 11
     MeanHighProbabilityBound, // 12
     DiscountedMeanHighProbabilityBound, // 13
-    GreedyBoundReduction // 14
+    GreedyBoundReduction // 14 (54.3)
 };
 
 int MakeDecision(ExpansionMethod expansion_method,
