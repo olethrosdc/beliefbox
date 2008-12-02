@@ -72,7 +72,7 @@ int main (int argc, char** argv)
         horizon = atoi(argv[7]);
     }
 
-    int max_value_iterations = n_iter + 10;
+    int max_value_iterations = n_iter + 1;
 
     std::vector<real> rewards(horizon);
     for (int t=0; t<horizon; t++) {
