@@ -523,7 +523,9 @@ int MakeDecision(ExpansionMethod expansion_method,
             //              << std::endl;
     }
     std::vector<BeliefTree<BanditBelief>::Node*> node_set = tree.getNodes();
-
+    for (int s=0; s<node_set.size(); s++) {
+        node_set[s]->L = node_set[s]->belief.getGreedyReturn(node_set[s]->state, gamma);
+    }
 
     DiscreteMDP mean_mdp = tree.CreateMeanMDP(gamma, verbose);
     mean_mdp.Check();
@@ -555,11 +557,16 @@ int MakeDecision(ExpansionMethod expansion_method,
                 real L_bound = -INF;
                 real U_bound = INF;
                 if (s < (int) node_set.size()) {
-                    L_bound = node_set[s]->L;
+                    //L_bound = node_set[s]->L;
+                    L_bound = node_set[s]->belief.getGreedyReturn(node_set[s]->state, gamma);
                     U_bound = Mean(node_set[s]->U);
+                    real d = (real) (1+node_set[s]->depth);
+                    real gd = pow(gamma, d);
                     if (isnan(U_bound)) {
                         U_bound = INF;
                     }
+                    L_bound *= gd;
+                    U_bound *= gd;
                     if (L_bound > value_iteration_lower.getValue(s)) {
                         std::cout << "+";
                     }
