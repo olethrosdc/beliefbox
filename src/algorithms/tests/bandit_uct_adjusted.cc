@@ -511,6 +511,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                 real Ui = node->belief.getGreedyReturn(node->state, gamma);
                 U[i] = node->R + gk * (Ui + 1.0/(1.0 - gamma));
             }
+            node_index = leaf_nodes[ArgMax(U)]; 
         } else {
             std::cerr << "Unknown method " << expansion_method << std::endl;
             exit(-1);
