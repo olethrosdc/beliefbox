@@ -300,8 +300,8 @@ int MakeDecision(ExpansionMethod expansion_method,
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
                 real Ui = node->belief.getGreedyReturn(node->state, gamma);
-                real p = node->GetPathProbability();
-                U[i] = p*(node->R + pow(gamma, (real) node->depth) * Ui);
+                //real p = node->GetPathProbability();
+                U[i] = (node->R + pow(gamma, (real) node->depth) * Ui);
             }
             node_index = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == ThompsonSampling) {
@@ -471,6 +471,9 @@ int MakeDecision(ExpansionMethod expansion_method,
                 L[i] = Li;
             }
 
+            node_index = leaf_nodes[ArgMax(U)];
+
+
             int argmax_L = ArgMax(L);
             real max_L = L[argmax_L];
             node_index = leaf_nodes[argmax_L];
@@ -500,6 +503,14 @@ int MakeDecision(ExpansionMethod expansion_method,
                 node_index = leaf_nodes[argmax_L];
             }
 
+        } else if (expansion_method == HighestImplicitUpperBound) {
+            std::vector<real> U(leaf_nodes.size());
+            for (int i=0; i<n_leaf_nodes; i++) {
+                BeliefTree<BanditBelief>::Node* node = node_set[leaf_nodes[i]];
+                real gk =  pow(gamma, (real) node->depth);
+                real Ui = node->belief.getGreedyReturn(node->state, gamma);
+                U[i] = node->R + gk * (Ui + 1.0/(1.0 - gamma));
+            }
         } else {
             std::cerr << "Unknown method " << expansion_method << std::endl;
             exit(-1);
@@ -523,7 +534,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             //              << std::endl;
     }
     std::vector<BeliefTree<BanditBelief>::Node*> node_set = tree.getNodes();
-    for (int s=0; s<node_set.size(); s++) {
+    for (uint s=0; s<node_set.size(); s++) {
         node_set[s]->L = node_set[s]->belief.getGreedyReturn(node_set[s]->state, gamma);
     }
 
