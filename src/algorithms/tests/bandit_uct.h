@@ -169,6 +169,12 @@ public:
         Node() : p(1.0)
         {
         }
+        Node* GetParent() {
+            if (in_edge) {
+                return in_edge->src;
+            }
+            return NULL;
+        }
         real GetPathProbability()
         {
             return p;
