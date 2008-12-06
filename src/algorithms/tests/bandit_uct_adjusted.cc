@@ -312,27 +312,10 @@ int MakeDecision(ExpansionMethod expansion_method,
             node_index = leaf_nodes[0];
             action_node_index = *action_leaf_nodes.begin();
         } else if (expansion_method == RandomExpansion) {
-            // returns the mean high probability bound
-            std::vector<real> U(leaf_nodes.size());
-            for (int i=0; i<n_leaf_nodes; i++) {
-                int n = leaf_nodes[i];
-                BeliefTree<BanditBelief>::Node* node = node_set[n];
-                std::vector<real> &Ub = node_set[n]->U;
-                int n_samples=1;
-                for (int k=0; k<n_samples; k++) {
-                    Ub.push_back(node->belief.sampleReturn(node->state, gamma));
-                }
-                real Ui = Mean(Ub);
-                real Li = node->belief.getGreedyReturn(node->state, gamma);
-                node_set[n]->L = Li;
-                if (Li > Ui) {
-                    Ui = Li;
-                }
-                U[i] = Ui;
-            }
-            node_index = leaf_nodes[0];
+            int X =  (int) floor(urandom()*((real) leaf_nodes.size()));
+            node_index = leaf_nodes[X];
 #if 0
-            int X =  (int) floor(urandom()*((real) action_leaf_nodes.size()));
+
             
             for (std::set<int>::iterator i=action_leaf_nodes.begin();
                  i!=action_leaf_nodes.end();
@@ -362,6 +345,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                 }
                 U[i] = Li;
             }
+
             node_index = leaf_nodes[ArgMax(U)];
 #if 0
             DiscreteMDP mean_mdp = tree.CreateMeanMDP(gamma, verbose);
