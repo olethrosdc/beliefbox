@@ -72,7 +72,7 @@ int main (int argc, char** argv)
     
     real average_oracle_return = 0.0;
     real average_oracle_reward = 0.0;
-
+    srand48(1228517343);
     //RandomNumberFile rng("./dat/r1e7.bin");
     for (int experiment=0; experiment<n_experiments; experiment++) {
         std::vector<real> Er(n_actions);
