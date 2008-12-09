@@ -37,25 +37,26 @@ protected:
 public:
     MDP(TransitionDistribution<StateType, ActionType>& transition_distribution_, RewardDistribution<StateType, ActionType>& reward_distribution_)
         : transition_distribution(transition_distribution_), reward_distribution(reward_distribution_) {}
-    virtual ~MDP() {}
-    virtual real getTransitionProbability (StateType& s, ActionType& a, StateType& s2) const
+  virtual ~MDP() {}
+    real getTransitionProbability (StateType& s, ActionType& a, StateType& s2) const
     {
         return transition_distribution.pdf(s, a, s2);
     }
-    virtual real getRewardProbability (StateType& s, ActionType& a, real r)
+    real getRewardProbability (StateType& s, ActionType& a, real r) const
     {
         return reward_distribution.pdf(s, a, r);
     }
-    virtual real getExpectedReward (StateType& s, ActionType& a)
+
+    real getExpectedReward (StateType& s, ActionType& a) const
     {
         return reward_distribution.expected(s, a);
     }
 	
-    virtual StateType generateState(StateType& s, ActionType& a) const
+    StateType generateState(StateType& s, ActionType& a) const
     {
         return transition_distribution.generate(s, a);
     }
-    virtual real generateReward(StateType& s, ActionType& a) const
+    real generateReward(StateType& s, ActionType& a) const
     {
         return reward_distribution.generate(s, a);
     }

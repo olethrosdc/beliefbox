@@ -69,20 +69,20 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
 
 DiscreteMDP::~MDP()
 {
-    delete [] P_data;
+    delete [] P_data; // TODO: Check why those are not std::vector
     delete [] P;
-    //    delete [] R;
-	// delete [] ER;
 }
 
 
+#if 0
 void DiscreteMDP::setTransitionProbability(int s, int a, int s2, real p)
 {
     int ID = getID (s, a);
     real* Ps=P[ID];
     SMART_ASSERT(s2>=0 && s2<n_states)(s2);
     Ps[s2] = p;
-}        
+}    
+#endif    
 
 void DiscreteMDP::setRewardDistribution(int s, int a, Distribution* reward)
 {   
@@ -176,10 +176,11 @@ int DiscreteMDP::generateState (int s, int a) const
     return select;
 }
 
+#if 0
 real DiscreteMDP::getTransitionProbability (int s, int a, int s2) const
 {
     int ID = getID (s, a);                
-    assert (s2>=0 && s2<n_states);
+        //assert (s2>=0 && s2<n_states);
     return P[ID][s2];
 }
 
@@ -188,6 +189,7 @@ real DiscreteMDP::getExpectedReward (int s, int a) const
     int ID = getID (s, a);
     return ER[ID];
 }
+#endif
 
 void DiscreteMDP::Check() const
 {

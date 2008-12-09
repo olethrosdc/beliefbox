@@ -30,8 +30,8 @@ protected:
     int N;
     int getID (int s, int a) const
     {
-        SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
-        SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
+            //SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
+            //SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
         return s*n_actions + a;
     }
 public:
@@ -48,13 +48,28 @@ public:
     virtual ~MDP<int, int>();
     virtual void ShowModel() const;
     virtual void dotModel(FILE* fout) const;
-    virtual real generateReward (int s, int a) const;
-    virtual int generateState (int s, int a) const;
-    virtual real getTransitionProbability (int s, int a, int s2) const;
-    virtual real getExpectedReward (int s, int a) const;
-    virtual void setTransitionProbability(int s, int a, int s2, real p);
-    virtual void setRewardDistribution(int s, int a, Distribution* reward);
-    virtual void Check() const;
+    real generateReward (int s, int a) const;
+    int generateState (int s, int a) const;
+    real getTransitionProbability (int s, int a, int s2) const
+    {
+        int ID = getID (s, a);                
+            //assert (s2>=0 && s2<n_states);
+        return P[ID][s2];
+    }
+    real getExpectedReward (int s, int a) const
+    {
+        int ID = getID (s, a);
+        return ER[ID];
+    }
+    void setTransitionProbability(int s, int a, int s2, real p)
+    {
+        int ID = getID (s, a);
+        real* Ps=P[ID];
+            //SMART_ASSERT(s2>=0 && s2<n_states)(s2);
+        Ps[s2] = p;
+    }
+    void setRewardDistribution(int s, int a, Distribution* reward);
+    void Check() const;
 };
 
 typedef MDP<int, int> DiscreteMDP;
