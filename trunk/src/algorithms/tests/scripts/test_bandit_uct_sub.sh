@@ -4,7 +4,7 @@
 #PBS -lnodes=1:ppn=2:cores2
 # job requires at most 10 hours, 0 minutes
 #     and 0 seconds wallclock time
-#PBS -lwalltime=01:00:00
+#PBS -lwalltime=96:00:00
 # cd to the directory where the program is to be called:
 
 cd $HOME/experiments

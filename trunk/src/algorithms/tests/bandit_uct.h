@@ -426,7 +426,6 @@ public:
                 for (int j=0; j<n_nodes+1; j++) {
                     mdp.setTransitionProbability(i, a, j, 0.0);
                 }
-                //mdp.setTransitionProbability(i, a, i, 0.0);
             }
         }
         // no reward in the first state
@@ -517,7 +516,7 @@ enum ExpansionMethod {
     MeanHighProbabilityBound, // 12
     DiscountedMeanHighProbabilityBound, // 13
     GreedyBoundReduction, // 14 (54.3)
-    HighestImplicitUpperBound // 15 
+    BAST // 15 
 };
 
 int MakeDecision(ExpansionMethod expansion_method,
@@ -531,5 +530,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                  int max_value_iterations,
                  FILE* fout = NULL);
 
+typedef BeliefTree<BanditBelief>::Node BeliefTreeNode;
+typedef BeliefTree<BanditBelief>::Edge BeliefTreeEdge;
 
 #endif
