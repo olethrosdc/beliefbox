@@ -33,13 +33,25 @@ void ValueIteration::Reset()
 {
     int N = n_states * n_actions;
     V.resize(n_states);
+    dV.resize(n_states);
+    pV.resize(n_states);
     Q.resize(n_states);
     Q_data.resize(N);
+    dQ.resize(n_states);
+    dQ_data.resize(N);
+    pQ.resize(n_states);
+    pQ_data.resize(N);
     for (int s=0; s<n_states; s++) {
         V[s] = 0.0;
+        dV[s] = 0.0;
+        pV[s] = 0.0;
         Q[s] = &Q_data[s*n_actions];
+        dQ[s] = &dQ_data[s*n_actions];
+        pQ[s] = &pQ_data[s*n_actions];
         for (int a=0; a<n_actions; a++) {
             Q[s][a] = 0.0;
+            dQ[s][a] = 0.0;
+            pQ[s][a] = 0.0;
         }
     }
 }
@@ -50,9 +62,9 @@ ValueIteration::~ValueIteration()
 
 void ValueIteration::ComputeStateValues(real threshold, int max_iter)
 {
-	Vector pV(V.size());
-	Vector dV(V.size());
-
+        //Vector pV(V.size());
+        //Vector dV(V.size());
+    
     do {
         Delta = 0.0;
         for (int s=0; s<n_states; s++) {
@@ -76,7 +88,7 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
 			pV[s] = V[s];
             //Delta = std::max(Delta, (real) fabs(v - V[s]));
         }
-		Delta = Max(&dV) - Min(&dV);
+		Delta = Max(dV) - Min(dV);
         if (max_iter > 0) {
             max_iter--;
         }
@@ -99,13 +111,13 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
 void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 {
     int N = n_states * n_actions;
-	std::vector<float*> dQ(n_states);
-	std::vector<float> dQ_data(N);
-	std::vector<float*> pQ(n_states);
-	std::vector<float> pQ_data(N);
+        //std::vector<float*> dQ(n_states);
+        //std::vector<float> dQ_data(N);
+//	std::vector<float*> pQ(n_states);
+//	std::vector<float> pQ_data(N);
     for (int s=0; s<n_states; s++) {
-        dQ[s] = &dQ_data[s*n_actions];
-        pQ[s] = &pQ_data[s*n_actions];
+//        dQ[s] = &dQ_data[s*n_actions];
+//        pQ[s] = &pQ_data[s*n_actions];
         for (int a=0; a<n_actions; a++) {
             dQ[s][a] = 0.0;
         }

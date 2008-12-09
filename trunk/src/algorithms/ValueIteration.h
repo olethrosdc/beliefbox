@@ -25,8 +25,14 @@ public:
     int n_states;
     int n_actions;
     std::vector<real> V;
+    std::vector<real> dV;
+    std::vector<real> pV;
     std::vector<real*> Q;
     std::vector<real> Q_data;
+    std::vector<real*> dQ;
+    std::vector<real> dQ_data;
+    std::vector<real*> pQ;
+    std::vector<real> pQ_data;
     real Delta;
     real baseline;
     ValueIteration(const DiscreteMDP* mdp, real gamma, real baseline=0.0);
