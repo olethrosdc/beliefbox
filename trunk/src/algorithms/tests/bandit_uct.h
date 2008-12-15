@@ -297,6 +297,19 @@ public:
         return nodes.back();
     }
 
+        /// Cut a tree, making node i the root
+    void MakeRoot(int i, int verbose = 0)
+    {
+        Node* parent = nodes[i]->GetParent();
+        if (!parent) {
+            if (verbose >= 50) {
+                printf("# warning: making root a node which is already root\n");
+            }
+            return; // node is already the root node
+        }
+        
+            // TODO: Complete this function
+    }
     /// Expand a node in the tree
     void Expand(int i, int verbose = 0)
     {
@@ -333,14 +346,16 @@ public:
 		
         // clear mean MDP
         DiscreteMDP mdp(n_nodes + 1, n_actions, NULL, NULL);
+#if 0
+            // no nead to clear probabilities
         for (int i=0; i<n_nodes + 1; i++) {
             for (int a=0; a < n_actions; a++) {
                 for (int j=0; j<n_nodes+1; j++) {
                     mdp.setTransitionProbability(i, a, j, 0.0);
                 }
-                //mdp.setTransitionProbability(i, a, i, 0.0);
             }
         }
+#endif
 
         // no reward in the first state
         {
@@ -354,13 +369,11 @@ public:
             }
         }
 
-        // NOTE - FIX ME
         for (int i=0; i<n_nodes; i++) {
             int n_edges = nodes[i]->outs.size();
             if (verbose >= 90) {
                 printf ("Node %d has %d outgoing edges\n", i, n_edges);
             }
-
             // loop for internal nodes
             for (int j=0; j<n_edges; j++) {
                 Edge* edge = nodes[i]->outs[j];
@@ -421,6 +434,8 @@ public:
         int terminal = n_nodes;
 
         DiscreteMDP mdp(n_nodes + 1, n_actions, NULL, NULL);
+#if 0
+            // assume MDP is cleared
         for (int i=0; i<n_nodes + 1; i++) {
             for (int a=0; a < n_actions; a++) {
                 for (int j=0; j<n_nodes+1; j++) {
@@ -428,6 +443,7 @@ public:
                 }
             }
         }
+#endif
         // no reward in the first state
         {
             Distribution* reward_density = 
@@ -519,7 +535,8 @@ enum ExpansionMethod {
     BAST // 15 
 };
 
-int MakeDecision(ExpansionMethod expansion_method,
+int MakeDecision(BeliefTree<BanditBelief>& tree,
+                 ExpansionMethod expansion_method,
                  int n_states,
                  int n_actions,
                  BanditBelief prior,
