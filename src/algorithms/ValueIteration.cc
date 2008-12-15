@@ -68,12 +68,17 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
     do {
         Delta = 0.0;
         for (int s=0; s<n_states; s++) {
-            //real v = V[s];
+                //real v = V[s];
             real Q_a_max = -RAND_MAX;
             int a_max = 0;
             for (int a=0; a<n_actions; a++) {
                 real S = 0.0;
-                for (int s2=0; s2<n_states; s2++) {
+                DiscreteStateSet next = mdp->getNextStates(s, a);
+//                for (int s2=0; s2<n_states; s2++) {
+                for (DiscreteStateSet::iterator i=next.begin();
+                     i!=next.end();
+                     ++i) {
+                    int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
                     real R = mdp->getExpectedReward(s, a) + gamma * V[s2] - baseline;
                     S += P * R;
@@ -84,20 +89,14 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
                 }
             }
             V[s] = Q_a_max;
-			dV[s] = pV[s] - V[s];
-			pV[s] = V[s];
-            //Delta = std::max(Delta, (real) fabs(v - V[s]));
+            dV[s] = pV[s] - V[s];
+            pV[s] = V[s];
         }
-		Delta = Max(dV) - Min(dV);
-        if (max_iter > 0) {
-            max_iter--;
-        }
-		
-    } while(Delta >= threshold && max_iter);
+        Delta = Max(dV) - Min(dV);
+        max_iter--;
+
+    } while(Delta >= threshold && max_iter > 0);
 	
-    //if (!max_iter) {
-    //        fprintf (stderr, "warning - delta %f >= %f\n", Delta, threshold);
-    //    }
 }
 
 
@@ -106,18 +105,13 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
     threshold - exit when difference in Q is smaller than the threshold
     max_iter - exit when the number of iterations reaches max_iter
 
- */
+*/
 
 void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 {
     int N = n_states * n_actions;
-        //std::vector<float*> dQ(n_states);
-        //std::vector<float> dQ_data(N);
-//	std::vector<float*> pQ(n_states);
-//	std::vector<float> pQ_data(N);
+
     for (int s=0; s<n_states; s++) {
-//        dQ[s] = &dQ_data[s*n_actions];
-//        pQ[s] = &pQ_data[s*n_actions];
         for (int a=0; a<n_actions; a++) {
             dQ[s][a] = 0.0;
         }
@@ -127,37 +121,31 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
         for (int s0=0; s0<n_states; s0++) {
             int s = s0;
             for (int a=0; a<n_actions; a++) {
-                //real q = Q[s][a];
                 real sum = 0.0;
 
-                for (int s2=0; s2<n_states; s2++) {
+                DiscreteStateSet next = mdp->getNextStates(s, a);
+                    //for (int s2=0; s2<n_states; s2++) {
+                for (DiscreteStateSet::iterator i=next.begin();
+                     i!=next.end();
+                     ++i) {
+                    int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
-                    real R = mdp->getExpectedReward(s, a) - baseline;
-                    real Q_a_max = Max(n_actions, Q[s2]);
-                    sum += P*(R + gamma*Q_a_max);
+                        //if (P > 0) {
+                        real R = mdp->getExpectedReward(s, a) - baseline;
+                        real Q_a_max = Max(n_actions, Q[s2]);
+                        sum += P*(R + gamma*Q_a_max);
+                            //}
 
                 }
                 Q[s][a] = sum;
-				dQ[s][a] = pQ[s][a] - sum;
-				pQ[s][a] = sum;
-                //Delta = std::max(Delta, (real) fabs(q - Q[s][a]));
-                //if (Delta > threshold) {
-                //	printf ("Q[%d][%d] = %f -> %f\n", s, a, q, Q[s][a]);
-                //}
+                dQ[s][a] = pQ[s][a] - sum;
+                pQ[s][a] = sum;
             }
         }
-		
-		Delta = Max(N, &dQ_data[0]) - Min(N, &dQ_data[0]);
-			
-        if (max_iter > 0) {
-            max_iter--;
-            //	printf ("left: %d\n", max_iter);
-        }
-    } while((Delta >= threshold)  && max_iter);
-    
-    //if (!max_iter) {
-    //   fprintf (stderr, "warning - delta %f >= %f\n", Delta, threshold);
-    //}		
+        
+        Delta = Max(N, &dQ_data[0]) - Min(N, &dQ_data[0]);			
+        max_iter--;
+    } while(Delta >= threshold && max_iter > 0);
 }
 
 real ValueIteration::getValue (int state, int action)

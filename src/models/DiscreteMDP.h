@@ -15,7 +15,11 @@
 
 #include "SmartAssert.h"
 #include "MDP.h"
+#include "Distribution.h"
 #include <vector>
+#include <set>
+
+typedef std::set<int> DiscreteStateSet;
 
 template<>
 class MDP<int, int> {
@@ -23,25 +27,28 @@ protected:
     int state;
     int n_states; ///< number of states (or dimensionality of state space)
     int n_actions; ///< number of actions (or dimensionality of action space)
-    real** P; ///< transition distribution
-    real* P_data; ///< transition distribution data
+    std::vector<real*> P; ///< transition distribution
+    std::vector<real> P_data; ///< transition distribution data
     std::vector<Distribution*> R; ///< reward distribution
     std::vector<real> ER; ///< expected reward
+    std::vector<DiscreteStateSet> next_states;
     int N;
-    int getID (int s, int a) const
+    inline int getID (int s, int a) const
     {
-            //SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
-            //SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
+#ifndef NDEBUG
+        SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
+        SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
+#endif
         return s*n_actions + a;
     }
 public:
     MDP<int, int> (int n_states, int n_actions, real** initial_transitions, Distribution** initial_rewards);
 
-    int GetNStates() const
+    inline int GetNStates() const
     {
         return n_states;
     }
-    int GetNActions() const
+    inline int GetNActions() const
     {
         return n_actions;
     }
@@ -50,25 +57,41 @@ public:
     virtual void dotModel(FILE* fout) const;
     real generateReward (int s, int a) const;
     int generateState (int s, int a) const;
-    real getTransitionProbability (int s, int a, int s2) const
+    inline real getTransitionProbability (int s, int a, int s2) const
     {
         int ID = getID (s, a);                
-            //assert (s2>=0 && s2<n_states);
+        assert (s2>=0 && s2<n_states);
         return P[ID][s2];
     }
-    real getExpectedReward (int s, int a) const
+    inline real getExpectedReward (int s, int a) const
     {
         int ID = getID (s, a);
         return ER[ID];
     }
-    void setTransitionProbability(int s, int a, int s2, real p)
+    inline void setTransitionProbability(int s, int a, int s2, real p)
     {
         int ID = getID (s, a);
         real* Ps=P[ID];
-            //SMART_ASSERT(s2>=0 && s2<n_states)(s2);
+        assert(s2>=0 && s2<n_states);
         Ps[s2] = p;
+        DiscreteStateSet& next = next_states[ID];
+        if (p==0) {
+            next.erase(s2);
+        } else {
+            next.insert(s2);
+        }
     }
-    void setRewardDistribution(int s, int a, Distribution* reward);
+    inline void setRewardDistribution(int s, int a, Distribution* reward)
+    {   
+        int ID = getID (s, a);
+        R[ID] = reward;
+        ER[ID] = reward->getMean();
+    }
+    inline DiscreteStateSet getNextStates(int s, int a) const
+    {
+        int ID = getID (s,a);
+        return next_states[ID];
+    }
     void Check() const;
 };
 
