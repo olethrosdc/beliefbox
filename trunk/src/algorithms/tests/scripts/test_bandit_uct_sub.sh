@@ -17,7 +17,7 @@ echo "results dir: $results method: $method gamma: $gamma actions: $actions expe
 # rm -f $results
 for actions in 2 4
 do
-    time $bin_dir/bandit_uct $method $gamma $iter $actions 0 $experiments  >>$results/a${actions}_g${gamma}_m${method}_i${iter}_uct.out &
+    time $bin_dir/bandit_uct_adjusted $method $gamma $iter $actions 0 $experiments  >>$results/a${actions}_g${gamma}_m${method}_i${iter}_uct.out &
 done
 
 wait
