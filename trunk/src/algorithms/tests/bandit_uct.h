@@ -535,7 +535,7 @@ enum ExpansionMethod {
     BAST // 15 
 };
 
-int MakeDecision(BeliefTree<BanditBelief>& tree,
+int MakeDecision(BeliefTree<BanditBelief>& new_tree,
                  ExpansionMethod expansion_method,
                  int n_states,
                  int n_actions,
