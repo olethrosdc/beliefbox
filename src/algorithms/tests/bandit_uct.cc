@@ -90,7 +90,8 @@ int main (int argc, char** argv)
     real start_time = GetCPU();
 
         //Create an empty tree
-    BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions, gamma);
+    BanditBelief prior_belief(n_actions, alpha, beta);
+    BeliefTree<BanditBelief> new_tree(prior_belief, 0, n_states, n_actions, gamma);
 
     for (int experiment=0; experiment<n_experiments; experiment++) {
         
@@ -129,7 +130,7 @@ int main (int argc, char** argv)
                 }
                 printf("\n");
             }
-            int action = MakeDecision(tree,
+            int action = MakeDecision(new_tree,
                                       method,
                                       n_states,
                                       n_actions,
@@ -236,7 +237,7 @@ int ChooseGreedyBranch(BeliefTree<BanditBelief>& tree, real gamma)
     
 }
 
-int MakeDecision(BeliefTree<BanditBelief>& tree,
+int MakeDecision(BeliefTree<BanditBelief>& new_tree,
                  ExpansionMethod expansion_method,
                  int n_states,
                  int n_actions,
@@ -252,7 +253,7 @@ int MakeDecision(BeliefTree<BanditBelief>& tree,
     double start_time = GetCPU();
 
     double vi_threshold = 0.0001;
-        //BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions, gamma);
+    BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions, gamma);
         // TODO: nothing here, I think
 
     for (int iter=0; iter<n_iter; iter++) {
