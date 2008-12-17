@@ -209,8 +209,8 @@ public:
 
     Node* root;
 
-    std::vector<Node*> nodes;
-    std::vector<Edge*> edges;
+    std::list<Node*> nodes; ///< a list of nodes for book-keeping purposes
+    std::list<Edge*> edges; ///< a list of edges for book-keeping purposes
     
     int n_states;
     int n_actions;
@@ -237,58 +237,65 @@ public:
 
     ~BeliefTree()
     {
-        for (int i=densities.size() - 1; i>=0; --i) {
-            delete densities[i];
+        for (std::vector<Distribution*>::iterator i=densities.begin();
+             i!=densities.end();
+             ++i) {
+            Distribution *d = *i;
+            delete d;
+        }
+        
+        for (typename std::list<Node*>::iterator i=nodes.begin();
+             i!=nodes.end(); ++i) {
+            Node* n = *i;
+            delete n;
         }
 
-        for (int i=nodes.size() - 1; i>=0; --i) {
-            delete nodes[i];
-        }
-
-        for (int i=edges.size() - 1; i>=0; --i) {
-            delete edges[i];
+        for (typename std::list<Edge*>::iterator i=edges.begin();
+             i!=edges.end(); ++i) {
+            Edge* e = *i;
+            delete e;
         }
     }
 
-    /// Return 
-    Node* ExpandAction(int i, int a, real r, int s, int verbose = 0)
+    /// Return the newly created node
+    Node* ExpandAction(Node *selected_node, int a, real r, int s, int verbose = 0)
     {
         Node* next = new Node;
-        next->belief = nodes[i]->belief;
+        next->belief = selected_node->belief;
         next->state = s;
         next->index = nodes.size();
-        next->depth = nodes[i]->depth + 1;
-        next->R = nodes[i]->R + r * pow(gamma, next->depth);
+        next->depth = selected_node->depth + 1;
+        next->R = selected_node->R + r * pow(gamma, next->depth);
         // the probability of the next state and reward given the
         // belief, state and action
-        real p = nodes[i]->belief.getProbability(nodes[i]->state, a, r, s);
-        real p_path = p * nodes[i]->GetPathProbability();
+        real p = selected_node->belief.getProbability(selected_node->state, a, r, s);
+        real p_path = p * selected_node->GetPathProbability();
         next->p = p_path; // fill in the total path probability
-        next->belief.update(nodes[i]->state, a, r, s); // update the belif
+        next->belief.update(selected_node->state, a, r, s); // update the belif
         
         // save the edge connecting the previous node to the next
-        edges.push_back(new Edge(nodes[i],
+        Edge* next_edge = new Edge(selected_node,
                                  next, //was: nodes[nodes.size()-1],
                                  a, // action taken
                                  r, // reward observed
                                  p // probability given previous node and action
-                                 ));
+                                   );
+        edges.push_back(next_edge);
 
-        int k = edges.size() - 1;
+
         if (verbose >= 100) {
-            printf ("Added edge %d : %d --(%d %f %f)-> %d\n",
-                    k,
-                    edges[k]->src->index,
-                    edges[k]->a,
-                    edges[k]->r,
-                    edges[k]->p,
-                    edges[k]->dst->index);
+            printf ("Added edge  %d --(%d %f %f)-> %d\n",
+                    next_edge->src->index,
+                    next_edge->a,
+                    next_edge->r,
+                    next_edge->p,
+                    next_edge->dst->index);
         }
                 
         // save the edge to the list of output edges of the previous node
         // and as an input edge of the next node
-        nodes[i]->outs.push_back(edges[k]);
-        next->in_edge = edges[k];
+        selected_node->outs.push_back(next_edge);
+        next->in_edge = next_edge;
         
         // save the node
         nodes.push_back(next);
@@ -297,6 +304,11 @@ public:
         return nodes.back();
     }
 
+    /// Find the next node
+    Node* FindObservation(Node* src, int a, real r, int s, int verbose = 0)
+    {
+        
+    }
         /// Cut a tree, making node i the root
     void MakeRoot(int i, int verbose = 0)
     {
@@ -311,12 +323,12 @@ public:
             // TODO: Complete this function
     }
     /// Expand a node in the tree
-    void Expand(int i, int verbose = 0)
+    void Expand(Node* node, int verbose = 0)
     {
         for (int a=0; a<n_actions; a++) {
             // If we play, there are two possibilities
-            ExpandAction(i, a, 1.0, 0, verbose);
-            ExpandAction(i, a, 0.0, 0, verbose); 
+            ExpandAction(node, a, 1.0, 0, verbose);
+            ExpandAction(node, a, 0.0, 0, verbose); 
         }
     }
 
@@ -334,7 +346,7 @@ public:
         return a;
     }
 
-    std::vector<Node*>& getNodes()
+    std::list<Node*>& getNodes()
     {
         return nodes;
     }
@@ -369,24 +381,26 @@ public:
             }
         }
 
-        for (int i=0; i<n_nodes; i++) {
-            int n_edges = nodes[i]->outs.size();
+        for (typename std::list<Node*>::iterator i=nodes.begin(); i!=nodes.end(); ++i) {
+            Node* node = *i;
+            int n_edges = node->outs.size();
             if (verbose >= 90) {
-                printf ("Node %d has %d outgoing edges\n", i, n_edges);
+                printf ("Node %d has %d outgoing edges\n",
+                        node->index, n_edges);
             }
             // loop for internal nodes
             for (int j=0; j<n_edges; j++) {
-                Edge* edge = nodes[i]->outs[j];
+                Edge* edge = node->outs[j];
                 Distribution* reward_density = 
                     new SingularDistribution(edge->r);
                 
                 densities.push_back(reward_density);
-                mdp.setTransitionProbability(i,
+                mdp.setTransitionProbability(node->index,
                                              edge->a,
                                              edge->dst->index,
                                              edge->p);
                 if (verbose >= 90) {
-                    printf ("%d: - a=%d - r=%f - p=%f ->%d\n", i, edge->a, edge->r, edge->p, edge->dst->index);
+                    printf ("%d: - a=%d - r=%f - p=%f ->%d\n", node->index, edge->a, edge->r, edge->p, edge->dst->index);
                 }
                 for (int a=0; a<n_actions; a++) {
                     mdp.setRewardDistribution(edge->dst->index,
@@ -397,18 +411,17 @@ public:
            
             // the leaf nodes
             if (!n_edges) {
-                real mean_return = nodes[i]->belief.getGreedyReturn(nodes[i]->state, gamma);
+                real mean_return = node->belief.getGreedyReturn(node->state, gamma);
                 
                 for (int a=0; a<n_actions; a++) {
-                    mdp.setTransitionProbability(i, a, terminal, 1.0);
-                    //real r = nodes[i]->belief.getMeanReward(nodes[i]->state, a);
+                    mdp.setTransitionProbability(node->index, a, terminal, 1.0);
                     // the actions are fake, we only use the _previous_ reward!
-                    real r = nodes[i]->GetIncomingReward();
+                    real r = node->GetIncomingReward();
                     Distribution* reward_density = 
                         new SingularDistribution(r + gamma*mean_return);
                     //new SingularDistribution(mean_reward);
                     densities.push_back(reward_density);
-                    mdp.setRewardDistribution(i, a, reward_density);
+                    mdp.setRewardDistribution(node->index, a, reward_density);
                 }
             }
         }
@@ -433,17 +446,11 @@ public:
         int n_nodes = nodes.size();
         int terminal = n_nodes;
 
-        DiscreteMDP mdp(n_nodes + 1, n_actions, NULL, NULL);
-#if 0
-            // assume MDP is cleared
-        for (int i=0; i<n_nodes + 1; i++) {
-            for (int a=0; a < n_actions; a++) {
-                for (int j=0; j<n_nodes+1; j++) {
-                    mdp.setTransitionProbability(i, a, j, 0.0);
-                }
-            }
+        if (verbose >= 90) {
+            printf ("Creating MDP with %d nodes\n", n_nodes);
         }
-#endif
+        DiscreteMDP mdp(n_nodes + 1, n_actions, NULL, NULL);
+        // assume MDP is cleared
         // no reward in the first state
         {
             Distribution* reward_density = 
@@ -456,23 +463,25 @@ public:
             }
         }
 
-        for (int i=0; i<n_nodes; i++) {
-            int n_edges = nodes[i]->outs.size();
+        for (typename std::list<Node*>::iterator i = nodes.begin();
+             i!=nodes.end(); ++i) {
+            Node* node = *i;
+            int n_edges = node->outs.size();
             if (verbose >= 90) {
-                printf ("Node %d has %d outgoing edges\n", i, n_edges);
+                printf ("Node %d has %d outgoing edges\n", node->index, n_edges);
             }
             for (int j=0; j<n_edges; j++) {
-                Edge* edge = nodes[i]->outs[j];
+                Edge* edge = node->outs[j];
                 Distribution* reward_density = 
                     new SingularDistribution(edge->r);
                 
                 densities.push_back(reward_density);
-                mdp.setTransitionProbability(i,
+                mdp.setTransitionProbability(node->index,
                                              edge->a,
                                              edge->dst->index,
                                              edge->p);
                 if (verbose >= 90) {
-                    printf ("%d: - a=%d - r=%f - p=%f ->%d\n", i, edge->a, edge->r, edge->p, edge->dst->index);
+                    printf ("%d: - a=%d - r=%f - p=%f ->%d\n", node->index, edge->a, edge->r, edge->p, edge->dst->index);
                 }
                 for (int a=0; a<n_actions; a++) {
                     mdp.setRewardDistribution(edge->dst->index,
@@ -482,22 +491,22 @@ public:
             }
             
             if (!n_edges) {
-                real mean_reward = nodes[i]->belief.getGreedyReturn(nodes[i]->state, gamma);
-                while (nodes[i]->U.size() <= 0) {
-                    nodes[i]->U.push_back(nodes[i]->belief.sampleReturn(nodes[i]->state, gamma));
+                real mean_reward = node->belief.getGreedyReturn(node->state, gamma);
+                while (node->U.size() <= 0) {
+                    node->U.push_back(node->belief.sampleReturn(node->state, gamma));
                 }
-                real Ub = Mean(nodes[i]->U);
+                real Ub = Mean(node->U);
                 if (Ub < mean_reward) {
                     Ub = mean_reward;
                 }
 
                 for (int a=0; a<n_actions; a++) {
-                    mdp.setTransitionProbability(i, a, terminal, 1.0);
-                    real r = nodes[i]->GetIncomingReward();
+                    mdp.setTransitionProbability(node->index, a, terminal, 1.0);
+                    real r = node->GetIncomingReward();
                     Distribution* reward_density = 
                         new SingularDistribution(r + gamma * Ub);
                     densities.push_back(reward_density);
-                    mdp.setRewardDistribution(i, a, reward_density);
+                    mdp.setRewardDistribution(node->index, a, reward_density);
                 }
             }
         }
@@ -549,5 +558,6 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
 
 typedef BeliefTree<BanditBelief>::Node BeliefTreeNode;
 typedef BeliefTree<BanditBelief>::Edge BeliefTreeEdge;
+typedef std::list<BeliefTreeNode*> BTNodeSet;
 
 #endif
