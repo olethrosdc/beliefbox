@@ -85,6 +85,7 @@ int main (int argc, char** argv)
     //RandomNumberFile rng("./dat/r1e7.bin");
     int n_states  = 0;
 
+    srand(1228517343);
     srand48(1228517343);
     // perform experiments
     real start_time = GetCPU();
@@ -578,14 +579,14 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
 
                 // if there are edges, randomly select one of the edges
                 // to traverse
-                std::vector<BeliefTreeEdge*> edges;
+                //std::vector<BeliefTreeEdge*> edges;
                 real pr = 0.0;
                 real X = urandom();
-                for (uint i=0; i<node->outs.size(); i++) {
-                    BeliefTreeEdge* edge = node->outs[i];
-                        //printf("node %d edge %d: %d %f\n", node->index, i, edge->a, edge->p);
+                for (BTEdgeSet::iterator j = node->outs.begin();
+                     j != node->outs.end(); ++j) {
+                    BeliefTreeEdge* edge = *j;
                     if (edge->a == a_max) {
-                        edges.push_back(edge);
+                        //edges.push_back(edge);
                         pr += edge->p;
                         if (pr >= X) {
                             s = edge->dst->index;
@@ -593,10 +594,10 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
                         }
                     }
                 }
-                    //printf("Total probability :%f\n", pr);
+                //printf("Total probability :%f\n", pr);
             }
             
-                //printf("exiting\n");
+            //printf("exiting\n");
         } else {
             std::cerr << "Unknown method " << expansion_method << std::endl;
             exit(-1);
