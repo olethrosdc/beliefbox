@@ -19,7 +19,6 @@
 
 /// A toy UCT stopping problem
 
-
 //void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r);
 /// TODO: implement algorithm
 
@@ -668,7 +667,6 @@ int MakeDecision(ExpansionMethod expansion_method,
             } else {
                 node_index = leaf_nodes[argmax_L];
             }
-
         } else if (expansion_method == BAST) {
                 // sample all leaf nodes
             for (int i=0; i<n_leaf_nodes; i++) {
