@@ -264,16 +264,15 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
     double start_time = GetCPU();
 
     double vi_threshold = 0.0001;
-    BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions, gamma);
+    //BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions, gamma);
     // TODO: use new_tree rather than tree.
-    //BeliefTree<BanditBelief> &tree = new_tree;
-
-    for (int iter=0; iter<n_iter; iter++) {
+    BeliefTree<BanditBelief> &tree = new_tree;
+    
+    for (int iter=tree.getNodes().size() - 1; iter<n_iter; iter++) {
         BTNodeSet node_set = tree.getNodes();
         int n_edge_nodes = 0;
         BeliefTreeNode* selected_node = NULL;
         std::vector<BeliefTreeNode*> leaf_nodes;
-        std::set<int> action_leaf_nodes;
         
         // leaf ndoes are state nodes
         for (BTNodeSet::iterator i=node_set.begin(); i!=node_set.end(); ++i) {
@@ -285,7 +284,6 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
             }
         }
         
-
         int n_leaf_nodes = (int) leaf_nodes.size();
         
         // Find the root actions
@@ -322,20 +320,10 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTreeNode* node = leaf_nodes[i];
-                std::vector<real> &Ub = node->U;
-                int n_samples=1;
-                for (int k=0; k<n_samples; k++) {
-                    Ub.push_back(node->belief.sampleReturn(node->state, gamma));
-                }
-                real Ui = Mean(Ub);
                 real Li = node->belief.getGreedyReturn(node->state, gamma);
                 node->L = Li;
-                if (Li > Ui) {
-                    Ui = Li;
-                }
                 U[i] = Li;
             }
-
             selected_node = leaf_nodes[ArgMax(U)];
         } else if (expansion_method == HighestDiscountedMeanValue) {
             std::vector<real> U(leaf_nodes.size());
@@ -617,7 +605,7 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
             std::cout << n_leaf_nodes << " leaf nodes, "
                       << n_edge_nodes << " edge nodes, "
                       << node_set.size() << " total nodes, "
-                      << "expanding node " << selected_node
+                      << "expanding node " << selected_node->index
                       << std::endl;
         }
 
