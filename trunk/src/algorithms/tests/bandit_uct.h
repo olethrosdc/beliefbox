@@ -341,16 +341,46 @@ public:
             return; // node is already the root node
         }
         
+
         RecursiveDeleteExcept(root, node);
         root = node;
+        root->index = 0;
+        root->depth = 0;
+        root->in_edge = NULL;
+        UpdateNodes(root, 0);
     }
     
+    /// Update index and depth information of nodes
+    ///
+    /// Fills out index numbers in a depth-first manner.
+    /// This if index1 > index2, depth1 >= depth2
+    int UpdateNodes(Node* node, int index)
+    {
+        int depth = node->depth;
+        for (typename std::list<Edge*>::iterator j = node->outs.begin();
+             j != node->outs.end(); ++j) {
+            Edge* edge = *j;
+            Node* next = edge->dst;
+            next->index = ++index;
+            next->depth = depth + 1;
+        }
+
+        for (typename std::list<Edge*>::iterator j = node->outs.begin();
+             j != node->outs.end(); ++j) {
+            Edge* edge = *j;
+            Node* next = edge->dst;
+            index = UpdateNodes(next, index);
+        }
+        return index;
+    }
+
     /// Delete a node and outgoing edges
     ///
     /// Assumes later nodes are deleted first,
     /// otherwise edge data is lost.
     void DeleteNode(Node* node)
     {
+        
         assert(node);
         for (typename std::list<Edge*>::iterator j = node->outs.begin();
              j != node->outs.end(); ++j) {
