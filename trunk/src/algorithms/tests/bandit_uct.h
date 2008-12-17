@@ -156,7 +156,7 @@ public:
     public:
         BanditBelief belief;
         int state;
-        std::vector<Edge*> outs;
+        std::list<Edge*> outs;
         Edge* in_edge;
         int index;
         int depth;
@@ -310,9 +310,9 @@ public:
         
     }
         /// Cut a tree, making node i the root
-    void MakeRoot(int i, int verbose = 0)
+    void MakeRoot(Node* node, int verbose = 0)
     {
-        Node* parent = nodes[i]->GetParent();
+        Node* parent = node->GetParent();
         if (!parent) {
             if (verbose >= 50) {
                 printf("# warning: making root a node which is already root\n");
@@ -320,7 +320,18 @@ public:
             return; // node is already the root node
         }
         
-            // TODO: Complete this function
+        // TODO: Complete this function
+        RecursiveDeleteExcept(root, node);
+        root = node;
+    }
+
+    void RecursiveDeleteExcept(Node* node, Node* exception)
+    {
+        for (typename std::list<Edge*>::iterator j = node->outs.begin();
+             j != node->outs.end(); ++j) {
+            Edge* edge = *j;
+            
+        }
     }
     /// Expand a node in the tree
     void Expand(Node* node, int verbose = 0)
@@ -389,8 +400,9 @@ public:
                         node->index, n_edges);
             }
             // loop for internal nodes
-            for (int j=0; j<n_edges; j++) {
-                Edge* edge = node->outs[j];
+            for (typename std::list<Edge*>::iterator j = node->outs.begin();
+                 j != node->outs.end(); ++j) {
+                Edge* edge = *j;
                 Distribution* reward_density = 
                     new SingularDistribution(edge->r);
                 
@@ -470,8 +482,9 @@ public:
             if (verbose >= 90) {
                 printf ("Node %d has %d outgoing edges\n", node->index, n_edges);
             }
-            for (int j=0; j<n_edges; j++) {
-                Edge* edge = node->outs[j];
+            for (typename std::list<Edge*>::iterator j = node->outs.begin();
+                 j != node->outs.end(); ++j) {
+                Edge* edge = *j;
                 Distribution* reward_density = 
                     new SingularDistribution(edge->r);
                 
@@ -559,5 +572,6 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
 typedef BeliefTree<BanditBelief>::Node BeliefTreeNode;
 typedef BeliefTree<BanditBelief>::Edge BeliefTreeEdge;
 typedef std::list<BeliefTreeNode*> BTNodeSet;
+typedef std::list<BeliefTreeEdge*> BTEdgeSet;
 
 #endif
