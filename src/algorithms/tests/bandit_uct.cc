@@ -214,12 +214,6 @@ int main (int argc, char** argv)
     return 0;
 }
 
-#if 0
-static bool sort_using_greater_than(real u, real v)
-{
-    return u > v;
-}
-#endif
 
 
                     
