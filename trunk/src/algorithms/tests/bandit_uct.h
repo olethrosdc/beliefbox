@@ -148,9 +148,14 @@ template <typename BanditBelief>
 class BeliefTree
 {
 protected:
-    std::vector<Distribution*> densities;
+    std::vector<Distribution*> densities; ///< hold densities for the tree-derived MDPs.
 public:
     class Edge;
+    /// Node class
+    ///
+    /// Contains a list of edges and an incoming edge.
+    /// It summarises the total reward and probability.
+    /// It also contains upper and lower bounds on the future return.
     class Node
     {
     public:
@@ -208,9 +213,9 @@ public:
     };
 
     Node* root;
-
+    
     std::list<Node*> nodes; ///< a list of nodes for book-keeping purposes
-    std::list<Edge*> edges; ///< a list of edges for book-keeping purposes
+    //std::list<Edge*> edges; ///< a list of edges for book-keeping purposes
     
     int n_states;
     int n_actions;
@@ -237,23 +242,23 @@ public:
 
     ~BeliefTree()
     {
+        DeleteDensities();
+        // TODO: Valgrind invalid read!?
+        for (typename std::list<Node*>::iterator i=nodes.begin();
+             i!=nodes.end(); ++i) {
+            Node* n = *i;
+            DeleteNode(n);
+        }
+    }
+
+    // Should be called after created MDPs are discarded
+    void DeleteDensities()
+    {
         for (std::vector<Distribution*>::iterator i=densities.begin();
              i!=densities.end();
              ++i) {
             Distribution *d = *i;
             delete d;
-        }
-        
-        for (typename std::list<Node*>::iterator i=nodes.begin();
-             i!=nodes.end(); ++i) {
-            Node* n = *i;
-            delete n;
-        }
-
-        for (typename std::list<Edge*>::iterator i=edges.begin();
-             i!=edges.end(); ++i) {
-            Edge* e = *i;
-            delete e;
         }
     }
 
@@ -280,7 +285,7 @@ public:
                                  r, // reward observed
                                  p // probability given previous node and action
                                    );
-        edges.push_back(next_edge);
+        //edges.push_back(next_edge);
 
 
         if (verbose >= 100) {
@@ -304,7 +309,7 @@ public:
         return nodes.back();
     }
 
-    /// Find the next node
+    /// Find the next node - TODO: Fill in the function
     Node* FindObservation(Node* src, int a, real r, int s, int verbose = 0)
     {
         
@@ -325,13 +330,33 @@ public:
         root = node;
     }
 
-    void RecursiveDeleteExcept(Node* node, Node* exception)
+    /// TODO: this is faulty
+    void DeleteNode(Node* node)
     {
+        assert(node);
         for (typename std::list<Edge*>::iterator j = node->outs.begin();
              j != node->outs.end(); ++j) {
             Edge* edge = *j;
-            
+            delete edge;
         }
+        delete node;
+    }
+
+    void RecursiveDeleteExcept(Node* node, Node* exception)
+    {
+        if (node==exception) {
+            return;
+        }
+        for (typename std::list<Edge*>::iterator j = node->outs.begin();
+             j != node->outs.end(); ++j) {
+            Edge* edge = *j;
+            Node* next = edge->dst;
+            if (next != NULL && next != exception) {
+                RecursiveDeleteExcept(next, exception);
+            }
+        }
+        DeleteNode(node);
+        nodes.remove(node);
     }
     /// Expand a node in the tree
     void Expand(Node* node, int verbose = 0)
@@ -369,16 +394,6 @@ public:
 		
         // clear mean MDP
         DiscreteMDP mdp(n_nodes + 1, n_actions, NULL, NULL);
-#if 0
-            // no nead to clear probabilities
-        for (int i=0; i<n_nodes + 1; i++) {
-            for (int a=0; a < n_actions; a++) {
-                for (int j=0; j<n_nodes+1; j++) {
-                    mdp.setTransitionProbability(i, a, j, 0.0);
-                }
-            }
-        }
-#endif
 
         // no reward in the first state
         {
