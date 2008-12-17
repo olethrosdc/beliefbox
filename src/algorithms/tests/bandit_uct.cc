@@ -92,10 +92,10 @@ int main (int argc, char** argv)
 
         //Create an empty tree
     BanditBelief prior_belief(n_actions, alpha, beta);
-    BeliefTree<BanditBelief> new_tree(prior_belief, 0, n_states, n_actions, gamma);
 
     for (int experiment=0; experiment<n_experiments; experiment++) {
-        
+        BeliefTree<BanditBelief>* new_tree= new BeliefTree<BanditBelief> (prior_belief, 0, n_states, n_actions, gamma);
+
         std::vector<real> Er(n_actions);
 
         for (int i=0; i<n_actions; i++) {
@@ -119,7 +119,7 @@ int main (int argc, char** argv)
                 fprintf (fout, "digraph Lookahead {\n");
                 fprintf (fout, "ranksep=2; rankdir=LR; \n");
             }
-
+            
             if (verbose >= 10) {
                 printf(" Er:");
                 for (int i=0; i<n_actions; i++) {
@@ -131,7 +131,7 @@ int main (int argc, char** argv)
                 }
                 printf("\n");
             }
-            int action = MakeDecision(new_tree,
+            int action = MakeDecision(*new_tree,
                                       method,
                                       n_states,
                                       n_actions,
@@ -166,13 +166,29 @@ int main (int argc, char** argv)
                 printf("#SARS: %d %d -> %f %d\n",
                        state, action, reward, next_state);
             }
+
             // update belief
             belief.update(state, action, reward, next_state);
 
+            // update future belief tree
+            BeliefTreeNode* new_root = new_tree->FindObservation(new_tree->root,
+                                                                 action,
+                                                                 reward,
+                                                                next_state);
+            
+            if (new_root) {
+                new_tree->MakeRoot(new_root, verbose);
+            } else {
+                delete new_tree;
+                new_tree = new BeliefTree<BanditBelief> (belief, 0, n_states, n_actions, gamma);
+            }
+
             // update state
             state = next_state;
-        }
+        } // for t
         
+        delete new_tree;
+
         // collect statistics
         real oracle_return = 0.0;
         real max_reward = Max(Er);
@@ -180,7 +196,7 @@ int main (int argc, char** argv)
         average_oracle_return += oracle_return;
         average_oracle_reward += max_reward * ((real) horizon);
 
-    }
+    } // for experiment
 
     // average statistics
     real inv_exp = 1.0 / (real) n_experiments;

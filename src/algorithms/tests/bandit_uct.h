@@ -151,6 +151,7 @@ protected:
     std::vector<Distribution*> densities; ///< hold densities for the tree-derived MDPs.
 public:
     class Edge;
+
     /// Node class
     ///
     /// Contains a list of edges and an incoming edge.
@@ -194,6 +195,11 @@ public:
         }
     };
     
+    /// Edge class
+    /// 
+    /// Information about links between nodes.
+    /// Also stores the observations used to get from
+    /// the previous node to the current.
     class Edge
     {
     public:
@@ -243,7 +249,7 @@ public:
     ~BeliefTree()
     {
         DeleteDensities();
-        // TODO: Valgrind invalid read!?
+
         for (typename std::list<Node*>::iterator i=nodes.begin();
              i!=nodes.end(); ++i) {
             Node* n = *i;
@@ -309,10 +315,20 @@ public:
         return nodes.back();
     }
 
-    /// Find the next node - TODO: Fill in the function
+    /// Find the next node
     Node* FindObservation(Node* src, int a, real r, int s, int verbose = 0)
     {
+        for (typename std::list<Edge*>::iterator j = src->outs.begin();
+             j != src->outs.end(); ++j) {
+            Edge* edge = *j;
+            if (edge->a == a
+                && edge->r == r
+                && edge->dst->state == s) {
+                return edge->dst;
+            }
+        }
         
+        return NULL;
     }
         /// Cut a tree, making node i the root
     void MakeRoot(Node* node, int verbose = 0)
@@ -325,12 +341,14 @@ public:
             return; // node is already the root node
         }
         
-        // TODO: Complete this function
         RecursiveDeleteExcept(root, node);
         root = node;
     }
-
-    /// TODO: this is faulty
+    
+    /// Delete a node and outgoing edges
+    ///
+    /// Assumes later nodes are deleted first,
+    /// otherwise edge data is lost.
     void DeleteNode(Node* node)
     {
         assert(node);
