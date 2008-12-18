@@ -268,6 +268,20 @@ public:
         }
     }
 
+    int GetNumberOfLeafNodes()
+    {
+        int n_leaf_nodes = 0;
+        // leaf ndoes are state nodes
+        for (typename std::list<Node*>::iterator i=nodes.begin();
+             i!=nodes.end(); ++i) {
+            Node* node = *i;
+            if (node->outs.size() == 0) {
+                n_leaf_nodes++;
+            }
+        }
+        return n_leaf_nodes;
+    }
+
     /// Return the newly created node
     Node* ExpandAction(Node *selected_node, int a, real r, int s, int verbose = 0)
     {
