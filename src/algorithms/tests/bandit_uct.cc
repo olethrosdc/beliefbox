@@ -83,7 +83,7 @@ int main (int argc, char** argv)
     real average_oracle_reward = 0.0;
 
     //RandomNumberFile rng("./dat/r1e7.bin");
-    int n_states  = 0;
+    int n_states  = 1;
 
     srand(1228517343);
     srand48(1228517343);
@@ -267,8 +267,12 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
     //BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions, gamma);
     // TODO: use new_tree rather than tree.
     BeliefTree<BanditBelief> &tree = new_tree;
-    
-    for (int iter=tree.getNodes().size() - 1; iter<n_iter; iter++) {
+
+    int n_rewards = 2;
+    int branching_factor = n_actions * n_states * n_rewards;
+    int starting_iter = (tree.GetNumberOfLeafNodes() - 1)/(branching_factor - 1);
+
+    for (int iter = starting_iter; iter<n_iter; iter++) {
         BTNodeSet node_set = tree.getNodes();
         int n_edge_nodes = 0;
         BeliefTreeNode* selected_node = NULL;
@@ -619,7 +623,12 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
         //              << std::endl;
     } // for(iter)
 
-
+    if (verbose >= 90) {
+        std::cout << "Final expansion : "
+                  << tree.GetNumberOfLeafNodes() << " leaf nodes, " 
+                  << tree.getNodes().size() << " nodes"
+                  << std::endl;
+    }
     BTNodeSet& node_set = tree.getNodes();
     for (BTNodeSet::iterator i=node_set.begin(); i!=node_set.end(); ++i) {
         BeliefTreeNode* node = *i;
