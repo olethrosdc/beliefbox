@@ -265,7 +265,6 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
 
     double vi_threshold = 0.0001;
     //BeliefTree<BanditBelief> tree(prior, state, n_states, n_actions, gamma);
-    // TODO: use new_tree rather than tree.
     BeliefTree<BanditBelief> &tree = new_tree;
 
     int n_rewards = 2;
