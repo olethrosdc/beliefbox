@@ -1,13 +1,13 @@
 // -*- Mode: C++; -*-
 // copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+/************************************************************************
+ *                                                                      *
+ * This program is free software; you can redistribute it and/or modify *
+ * it under the terms of the GNU General Public License as published by *
+ * the Free Software Foundation; either version 2 of the License, or    *
+ * (at your option) any later version.                                  *
+ *                                                                      *
+ ************************************************************************/
 
 #ifdef MAKE_MAIN
 
@@ -332,17 +332,7 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
             std::vector<real> U(leaf_nodes.size());
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTreeNode* node = leaf_nodes[i];
-                std::vector<real> &Ub = node->U;
-                int n_samples=1;
-                for (int k=0; k<n_samples; k++) {
-                    Ub.push_back(node->belief.sampleReturn(node->state, gamma));
-                }
-                real Ui = Mean(Ub);
                 real Li = node->belief.getGreedyReturn(node->state, gamma);
-                node->L = Li;
-                if (Li > Ui) {
-                    Ui = Li;
-                }
                 U[i] = node->R + pow(gamma, (real) node->depth)*Li;
             }
             selected_node = leaf_nodes[ArgMax(U)];
@@ -536,6 +526,70 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
 
         } else if (expansion_method == BAST) {
                 // sample all leaf nodes
+            for (int i=0; i<n_leaf_nodes; i++) {
+                BeliefTreeNode* node = leaf_nodes[i];
+                //assert(node->index==n);
+                std::vector<real> &Ub = node->U;
+                Ub.push_back(node->belief.sampleReturn(node->state, gamma));
+            }
+                // propagate upper bounds to the root
+            DiscreteMDP upper_mdp = tree.CreateUpperBoundMDP(gamma, verbose);
+            upper_mdp.Check(); 
+            ValueIteration value_iteration_upper(&upper_mdp, gamma);
+            value_iteration_upper.ComputeStateActionValues(vi_threshold, max_value_iterations);
+
+            
+            int s = 0; // the MDP state
+            while (1) {
+                std::vector<real> Ua(n_actions);
+                for (int a=0; a<n_actions; a++) {
+                    Ua[a] = value_iteration_upper.getValue(s,a);
+                }
+                int a_max = ArgMax(Ua);
+                // TODO: Choose only ONE node via sampling
+                // (or multiple nodes?)
+                // Warning: uses STATE value as ID
+                BeliefTreeNode* node = NULL;
+                for (BTNodeSet::iterator i=node_set.begin(); i!=node_set.end(); ++i) {
+                    BeliefTreeNode* inode = *i;
+                    if (inode->index == s) {
+                        node = inode;
+                    }
+                }
+                if (!node) {
+                    fprintf(stderr, "Error: Could not find node!\n");
+                    exit(-1);
+                }
+
+                //printf ("state: %d selected_node: %d with %d edges\n", s, node->index, node->outs.size());
+                // if node is a leaf node...
+                if (node->outs.size() == 0) {
+                    selected_node = node;
+                    break;
+                }
+
+                // if there are edges, randomly select one of the edges
+                // to traverse
+                //std::vector<BeliefTreeEdge*> edges;
+                real pr = 0.0;
+                real X = urandom();
+                for (BTEdgeSet::iterator j = node->outs.begin();
+                     j != node->outs.end(); ++j) {
+                    BeliefTreeEdge* edge = *j;
+                    if (edge->a == a_max) {
+                        //edges.push_back(edge);
+                        pr += edge->p;
+                        if (pr >= X) {
+                            s = edge->dst->index;
+                            break;
+                        }
+                    }
+                }
+                //printf("Total probability :%f\n", pr);
+            }
+            
+            //printf("exiting\n");
+       } else if (expansion_method == BAST_FULL) {
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTreeNode* node = leaf_nodes[i];
                 //assert(node->index==n);

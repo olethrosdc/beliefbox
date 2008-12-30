@@ -1,24 +1,558 @@
-0 0 0.990000 4 104.620000 45.346866 160.952840 70.044437 1.972123 100
-1 0 0.990000 4 104.840000 45.406338 160.952840 70.044437 1.928120 100
-2 0 0.990000 4 106.040000 46.063399 160.952840 70.044437 1.912119 100
-13 0 0.990000 4 104.470000 45.365871 160.952840 70.044437 1.912119 100
-15 0 0.990000 4 104.000000 45.223156 160.952840 70.044437 1.876117 100
-0 1 0.990000 4 152.550000 65.243402 160.952840 70.044437 10.724670 100
-1 1 0.990000 4 154.970000 66.356047 160.952840 70.044437 10.512657 100
-2 1 0.990000 4 153.750000 65.772502 160.952840 70.044437 10.716670 100
-13 1 0.990000 4 153.260000 65.791859 160.952840 70.044437 10.740671 100
-15 1 0.990000 4 154.470000 66.130798 160.952840 70.044437 11.512719 100
-0 2 0.990000 4 153.980000 66.029160 160.952840 70.044437 21.445340 100
-1 2 0.990000 4 153.050000 65.283293 160.952840 70.044437 20.865304 100
-2 2 0.990000 4 153.720000 65.923514 160.952840 70.044437 21.397337 100
-13 2 0.990000 4 151.440000 64.379369 160.952840 70.044437 21.617351 100
-15 2 0.990000 4 153.700000 65.798002 160.952840 70.044437 26.517657 100
-0 4 0.990000 4 154.770000 66.027954 160.952840 70.044437 52.103256 100
-1 4 0.990000 4 152.730000 64.955417 160.952840 70.044437 47.226951 100
-2 4 0.990000 4 153.120000 65.813159 160.952840 70.044437 56.263516 100
-13 4 0.990000 4 155.580000 66.370340 160.952840 70.044437 55.787486 100
-15 4 0.990000 4 155.680000 66.019045 160.952840 70.044437 82.601162 100
-0 8 0.990000 4 156.090000 66.439424 160.952840 70.044437 137.580598 100
-1 8 0.990000 4 156.100000 66.167678 160.952840 70.044437 103.342458 100
-2 8 0.990000 4 153.820000 65.870163 160.952840 70.044437 174.410900 100
-13 8 0.990000 4 154.140000 65.492243 160.952840 70.044437 153.741608 100
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 27.25      1.79     1.79    15342     0.12     0.17  ValueIteration::ComputeStateActionValues(double, int)
+ 11.26      2.53     0.74   122736     0.01     0.01  std::vector<double, std::allocator<double> >::_M_fill_insert(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double const&)
+  9.28      3.14     0.61    15342     0.04     0.05  MDP<int, int>::MDP(int, int, double**, Distribution**)
+  8.07      3.67     0.53 13654424     0.00     0.00  std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_copy(std::_Rb_tree_node<int> const*, std::_Rb_tree_node<int>*)
+  7.46      4.16     0.49  1409364     0.00     0.00  genbet(float, float)
+  6.09      4.56     0.40 16282024     0.00     0.00  std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_erase(std::_Rb_tree_node<int>*)
+  5.48      4.92     0.36    13352     0.03     0.10  BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int)
+  3.50      5.15     0.23  3219654     0.00     0.00  ignlgi()
+  2.13      5.29     0.14    15342     0.01     0.01  MDP<int, int>::~MDP()
+  1.83      5.41     0.12    15342     0.01     0.04  ValueIteration::Reset()
+  1.67      5.52     0.11  2940708     0.00     0.00  std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_insert_unique(int const&)
+  1.67      5.63     0.11     1990     0.06     0.14  BeliefTree<BanditBelief>::CreateMeanMDP(double, int)
+  1.52      5.73     0.10                             __i686.get_pc_thunk.bx
+  1.37      5.82     0.09  3219654     0.00     0.00  ranf()
+  1.37      5.91     0.09  2940708     0.00     0.00  std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_insert(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, int const&)
+  1.37      6.00     0.09     1990     0.05     3.13  MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*)
+  1.07      6.07     0.07  2956050     0.00     0.00  SingularDistribution::~SingularDistribution()
+  0.76      6.12     0.05  4880724     0.00     0.00  SingularDistribution::getMean()
+  0.76      6.17     0.05  2956050     0.00     0.00  SingularDistribution::SingularDistribution(double)
+  0.76      6.22     0.05  1409364     0.00     0.00  BetaDistribution::generate()
+  0.76      6.27     0.05    13930     0.00     0.01  BeliefTree<BanditBelief>::RecursiveDeleteExcept(BeliefTree<BanditBelief>::Node*, BeliefTree<BanditBelief>::Node*)
+  0.61      6.31     0.04  3327795     0.00     0.00  Object::~Object()
+  0.61      6.35     0.04    90896     0.00     0.00  BeliefTree<BanditBelief>::ExpandAction(BeliefTree<BanditBelief>::Node*, int, double, int, int)
+  0.61      6.39     0.04       10     4.00    14.56  BeliefTree<BanditBelief>::~BeliefTree()
+  0.46      6.42     0.03  3219719     0.00     0.00  gscgn(long, long*)
+  0.46      6.45     0.03   371701     0.00     0.00  BetaDistribution::~BetaDistribution()
+  0.30      6.47     0.02  3219655     0.00     0.00  gssst(long, long*)
+  0.30      6.49     0.02    66026     0.00     0.00  std::vector<BeliefTree<BanditBelief>::Node*, std::allocator<BeliefTree<BanditBelief>::Node*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<BeliefTree<BanditBelief>::Node**, std::vector<BeliefTree<BanditBelief>::Node*, std::allocator<BeliefTree<BanditBelief>::Node*> > >, BeliefTree<BanditBelief>::Node* const&)
+  0.30      6.51     0.02    61368     0.00     0.00  std::vector<double*, std::allocator<double*> >::_M_fill_insert(__gnu_cxx::__normal_iterator<double**, std::vector<double*, std::allocator<double*> > >, unsigned int, double* const&)
+  0.15      6.52     0.01  3219688     0.00     0.00  gsrgs(long, long*)
+  0.15      6.53     0.01   569045     0.00     0.00  std::vector<double, std::allocator<double> >::~vector()
+  0.15      6.54     0.01   454520     0.00     0.00  BetaDistribution::getMean()
+  0.15      6.55     0.01   253287     0.00     0.00  std::vector<double, std::allocator<double> >::_M_insert_aux(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double const&)
+  0.15      6.56     0.01    92886     0.00     0.00  BetaDistribution::calculatePosterior(double)
+  0.15      6.57     0.01    23519     0.00     0.00  MersenneTwister::uniform()
+  0.00      6.57     0.00    90906     0.00     0.00  std::vector<BetaDistribution, std::allocator<BetaDistribution> >::operator=(std::vector<BetaDistribution, std::allocator<BetaDistribution> > const&)
+  0.00      6.57     0.00    23519     0.00     0.00  urandom()
+  0.00      6.57     0.00    15342     0.00     0.04  ValueIteration::ValueIteration(MDP<int, int> const*, double, double)
+  0.00      6.57     0.00    15342     0.00     0.00  ValueIteration::~ValueIteration()
+  0.00      6.57     0.00    15342     0.00     0.00  MDP<int, int>::Check() const
+  0.00      6.57     0.00    15342     0.00     0.00  std::vector<Distribution*, std::allocator<Distribution*> >::_M_fill_insert(__gnu_cxx::__normal_iterator<Distribution**, std::vector<Distribution*, std::allocator<Distribution*> > >, unsigned int, Distribution* const&)
+  0.00      6.57     0.00    15342     0.00     0.00  std::vector<std::set<int, std::less<int>, std::allocator<int> >, std::allocator<std::set<int, std::less<int>, std::allocator<int> > > >::_M_fill_insert(__gnu_cxx::__normal_iterator<std::set<int, std::less<int>, std::allocator<int> >*, std::vector<std::set<int, std::less<int>, std::allocator<int> >, std::allocator<std::set<int, std::less<int>, std::allocator<int> > > > >, unsigned int, std::set<int, std::less<int>, std::allocator<int> > const&)
+  0.00      6.57     0.00    15342     0.00     0.00  void std::__uninitialized_fill_n_aux<std::set<int, std::less<int>, std::allocator<int> >*, unsigned int, std::set<int, std::less<int>, std::allocator<int> > >(std::set<int, std::less<int>, std::allocator<int> >*, unsigned int, std::set<int, std::less<int>, std::allocator<int> > const&, std::__false_type)
+  0.00      6.57     0.00     9016     0.00     0.00  BeliefTree<BanditBelief>::UpdateNodes(BeliefTree<BanditBelief>::Node*, int)
+  0.00      6.57     0.00     4001     0.00     0.00  std::vector<BetaDistribution, std::allocator<BetaDistribution> >::~vector()
+  0.00      6.57     0.00      200     0.00     0.00  std::vector<Distribution*, std::allocator<Distribution*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<Distribution**, std::vector<Distribution*, std::allocator<Distribution*> > >, Distribution* const&)
+  0.00      6.57     0.00       62     0.00     0.00  mltmod(long, long, long)
+  0.00      6.57     0.00       38     0.00     0.00  MersenneTwister::nextState()
+  0.00      6.57     0.00       33     0.00     0.00  std::vector<BetaDistribution, std::allocator<BetaDistribution> >::_M_insert_aux(__gnu_cxx::__normal_iterator<BetaDistribution*, std::vector<BetaDistribution, std::allocator<BetaDistribution> > >, BetaDistribution const&)
+  0.00      6.57     0.00       32     0.00     0.00  initgn(long)
+  0.00      6.57     0.00       11     0.00     0.00  std::vector<double, std::allocator<double> >::vector(unsigned int, double const&, std::allocator<double> const&)
+  0.00      6.57     0.00       10     0.00     0.00  BeliefTree<BanditBelief>::BeliefTree(BanditBelief, int, int, int, double)
+  0.00      6.57     0.00        1     0.00     0.00  global constructors keyed to _Z13setRandomSeedj
+  0.00      6.57     0.00        1     0.00     0.00  global constructors keyed to _Z9NewVectori
+  0.00      6.57     0.00        1     0.00     0.00  global constructors keyed to _ZN14ValueIterationC2EPK3MDPIiiEdd
+  0.00      6.57     0.00        1     0.00     0.00  global constructors keyed to _ZN16BetaDistribution3pdfEd
+  0.00      6.57     0.00        1     0.00     0.00  global constructors keyed to _ZN19UniformDistribution8generateEv
+  0.00      6.57     0.00        1     0.00     0.00  global constructors keyed to _ZN3MDPIiiEC2EiiPPdPP12Distribution
+  0.00      6.57     0.00        1     0.00     0.00  global constructors keyed to main
+  0.00      6.57     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00      6.57     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00      6.57     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00      6.57     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00      6.57     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00      6.57     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00      6.57     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00      6.57     0.00        1     0.00     0.00  inrgcm()
+  0.00      6.57     0.00        1     0.00     0.00  setall(long, long)
+  0.00      6.57     0.00        1     0.00     0.00  MersenneTwister::manualSeed(unsigned long)
+  0.00      6.57     0.00        1     0.00     0.00  MersenneTwister::seed()
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+ 
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this 
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 4 byte(s) for 0.15% of 6.57 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     98.5    0.00    6.47                 main [1]
+                0.09    6.15    1990/1990        MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+                0.04    0.11      10/10          BeliefTree<BanditBelief>::~BeliefTree() [18]
+                0.05    0.03   13930/13930       BeliefTree<BanditBelief>::RecursiveDeleteExcept(BeliefTree<BanditBelief>::Node*, BeliefTree<BanditBelief>::Node*) [22]
+                0.00    0.00    4001/4001        std::vector<BetaDistribution, std::allocator<BetaDistribution> >::~vector() [39]
+                0.00    0.00    1990/23519       urandom() [36]
+                0.00    0.00    1990/92886       BetaDistribution::calculatePosterior(double) [35]
+                0.00    0.00    2001/569045      std::vector<double, std::allocator<double> >::~vector() [33]
+                0.00    0.00      33/33          std::vector<BetaDistribution, std::allocator<BetaDistribution> >::_M_insert_aux(__gnu_cxx::__normal_iterator<BetaDistribution*, std::vector<BetaDistribution, std::allocator<BetaDistribution> > >, BetaDistribution const&) [40]
+                0.00    0.00      44/3327795     Object::~Object() [26]
+                0.00    0.00    9016/9016        BeliefTree<BanditBelief>::UpdateNodes(BeliefTree<BanditBelief>::Node*, int) [55]
+                0.00    0.00      11/11          std::vector<double, std::allocator<double> >::vector(unsigned int, double const&, std::allocator<double> const&) [59]
+                0.00    0.00      10/10          BeliefTree<BanditBelief>::BeliefTree(BanditBelief, int, int, int, double) [60]
+-----------------------------------------------
+                0.09    6.15    1990/1990        main [1]
+[2]     94.9    0.09    6.15    1990         MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+                1.79    0.87   15342/15342       ValueIteration::ComputeStateActionValues(double, int) [3]
+                0.36    0.99   13352/13352       BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+                0.05    0.83 1345684/1409364     BetaDistribution::generate() [5]
+                0.00    0.69   15342/15342       ValueIteration::ValueIteration(MDP<int, int> const*, double, double) [10]
+                0.11    0.16    1990/1990        BeliefTree<BanditBelief>::CreateMeanMDP(double, int) [15]
+                0.14    0.06   15342/15342       MDP<int, int>::~MDP() [16]
+                0.04    0.01   90896/90896       BeliefTree<BanditBelief>::ExpandAction(BeliefTree<BanditBelief>::Node*, int, double, int, int) [23]
+                0.02    0.00   66026/66026       std::vector<BeliefTree<BanditBelief>::Node*, std::allocator<BeliefTree<BanditBelief>::Node*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<BeliefTree<BanditBelief>::Node**, std::vector<BeliefTree<BanditBelief>::Node*, std::allocator<BeliefTree<BanditBelief>::Node*> > >, BeliefTree<BanditBelief>::Node* const&) [30]
+                0.01    0.00  237367/253287      std::vector<double, std::allocator<double> >::_M_insert_aux(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double const&) [34]
+                0.00    0.01   21529/23519       urandom() [36]
+                0.01    0.00  387222/569045      std::vector<double, std::allocator<double> >::~vector() [33]
+                0.00    0.00   63680/454520      BetaDistribution::getMean() [38]
+                0.00    0.00   15342/15342       MDP<int, int>::Check() const [51]
+                0.00    0.00   15342/15342       ValueIteration::~ValueIteration() [50]
+-----------------------------------------------
+                1.79    0.87   15342/15342       MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[3]     40.4    1.79    0.87   15342         ValueIteration::ComputeStateActionValues(double, int) [3]
+                0.53    0.00 13654424/13654424     std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_copy(std::_Rb_tree_node<int> const*, std::_Rb_tree_node<int>*) [11]
+                0.34    0.00 13654424/16282024     std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_erase(std::_Rb_tree_node<int>*) [12]
+-----------------------------------------------
+                0.36    0.99   13352/13352       MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[4]     20.5    0.36    0.99   13352         BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+                0.53    0.17   13352/15342       MDP<int, int>::MDP(int, int, double**, Distribution**) [7]
+                0.09    0.07 2351668/2940708     std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_insert_unique(int const&) [17]
+                0.00    0.04   63680/1409364     BetaDistribution::generate() [5]
+                0.04    0.00 2365020/2956050     SingularDistribution::SingularDistribution(double) [25]
+                0.04    0.00 3901644/4880724     SingularDistribution::getMean() [24]
+                0.01    0.00  299944/454520      BetaDistribution::getMean() [38]
+                0.00    0.00   90906/569045      std::vector<double, std::allocator<double> >::~vector() [33]
+                0.00    0.00   15920/253287      std::vector<double, std::allocator<double> >::_M_insert_aux(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double const&) [34]
+                0.00    0.00     187/200         std::vector<Distribution*, std::allocator<Distribution*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<Distribution**, std::vector<Distribution*, std::allocator<Distribution*> > >, Distribution* const&) [56]
+-----------------------------------------------
+                0.00    0.04   63680/1409364     BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+                0.05    0.83 1345684/1409364     MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[5]     14.0    0.05    0.87 1409364         BetaDistribution::generate() [5]
+                0.49    0.38 1409364/1409364     genbet(float, float) [6]
+-----------------------------------------------
+                0.49    0.38 1409364/1409364     BetaDistribution::generate() [5]
+[6]     13.2    0.49    0.38 1409364         genbet(float, float) [6]
+                0.09    0.29 3219654/3219654     ranf() [13]
+-----------------------------------------------
+                0.08    0.02    1990/15342       BeliefTree<BanditBelief>::CreateMeanMDP(double, int) [15]
+                0.53    0.17   13352/15342       BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+[7]     12.2    0.61    0.19   15342         MDP<int, int>::MDP(int, int, double**, Distribution**) [7]
+                0.18    0.00   30684/122736      std::vector<double, std::allocator<double> >::_M_fill_insert(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double const&) [8]
+                0.01    0.00   15342/61368       std::vector<double*, std::allocator<double*> >::_M_fill_insert(__gnu_cxx::__normal_iterator<double**, std::vector<double*, std::allocator<double*> > >, unsigned int, double* const&) [31]
+                0.00    0.00   15342/15342       std::vector<Distribution*, std::allocator<Distribution*> >::_M_fill_insert(__gnu_cxx::__normal_iterator<Distribution**, std::vector<Distribution*, std::allocator<Distribution*> > >, unsigned int, Distribution* const&) [52]
+                0.00    0.00   15342/15342       std::vector<std::set<int, std::less<int>, std::allocator<int> >, std::allocator<std::set<int, std::less<int>, std::allocator<int> > > >::_M_fill_insert(__gnu_cxx::__normal_iterator<std::set<int, std::less<int>, std::allocator<int> >*, std::vector<std::set<int, std::less<int>, std::allocator<int> >, std::allocator<std::set<int, std::less<int>, std::allocator<int> > > > >, unsigned int, std::set<int, std::less<int>, std::allocator<int> > const&) [53]
+-----------------------------------------------
+                0.18    0.00   30684/122736      MDP<int, int>::MDP(int, int, double**, Distribution**) [7]
+                0.56    0.00   92052/122736      ValueIteration::Reset() [9]
+[8]     11.3    0.74    0.00  122736         std::vector<double, std::allocator<double> >::_M_fill_insert(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double const&) [8]
+-----------------------------------------------
+                0.12    0.57   15342/15342       ValueIteration::ValueIteration(MDP<int, int> const*, double, double) [10]
+[9]     10.5    0.12    0.57   15342         ValueIteration::Reset() [9]
+                0.56    0.00   92052/122736      std::vector<double, std::allocator<double> >::_M_fill_insert(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double const&) [8]
+                0.01    0.00   46026/61368       std::vector<double*, std::allocator<double*> >::_M_fill_insert(__gnu_cxx::__normal_iterator<double**, std::vector<double*, std::allocator<double*> > >, unsigned int, double* const&) [31]
+-----------------------------------------------
+                0.00    0.69   15342/15342       MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[10]    10.5    0.00    0.69   15342         ValueIteration::ValueIteration(MDP<int, int> const*, double, double) [10]
+                0.12    0.57   15342/15342       ValueIteration::Reset() [9]
+-----------------------------------------------
+                             1633780             std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_copy(std::_Rb_tree_node<int> const*, std::_Rb_tree_node<int>*) [11]
+                0.53    0.00 13654424/13654424     ValueIteration::ComputeStateActionValues(double, int) [3]
+[11]     8.1    0.53    0.00 13654424+1633780 std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_copy(std::_Rb_tree_node<int> const*, std::_Rb_tree_node<int>*) [11]
+                             1633780             std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_copy(std::_Rb_tree_node<int> const*, std::_Rb_tree_node<int>*) [11]
+-----------------------------------------------
+                0.06    0.00 2627600/16282024     MDP<int, int>::~MDP() [16]
+                0.34    0.00 13654424/16282024     ValueIteration::ComputeStateActionValues(double, int) [3]
+[12]     6.1    0.40    0.00 16282024         std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_erase(std::_Rb_tree_node<int>*) [12]
+-----------------------------------------------
+                0.09    0.29 3219654/3219654     genbet(float, float) [6]
+[13]     5.8    0.09    0.29 3219654         ranf() [13]
+                0.23    0.06 3219654/3219654     ignlgi() [14]
+-----------------------------------------------
+                0.23    0.06 3219654/3219654     ranf() [13]
+[14]     4.4    0.23    0.06 3219654         ignlgi() [14]
+                0.03    0.00 3219654/3219719     gscgn(long, long*) [28]
+                0.02    0.00 3219654/3219655     gssst(long, long*) [29]
+                0.01    0.00 3219654/3219688     gsrgs(long, long*) [32]
+                0.00    0.00       1/1           setall(long, long) [41]
+                0.00    0.00       1/1           inrgcm() [43]
+-----------------------------------------------
+                0.11    0.16    1990/1990        MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[15]     4.2    0.11    0.16    1990         BeliefTree<BanditBelief>::CreateMeanMDP(double, int) [15]
+                0.08    0.02    1990/15342       MDP<int, int>::MDP(int, int, double**, Distribution**) [7]
+                0.02    0.02  589040/2940708     std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_insert_unique(int const&) [17]
+                0.01    0.00  979080/4880724     SingularDistribution::getMean() [24]
+                0.01    0.00  591030/2956050     SingularDistribution::SingularDistribution(double) [25]
+                0.00    0.00      13/200         std::vector<Distribution*, std::allocator<Distribution*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<Distribution**, std::vector<Distribution*, std::allocator<Distribution*> > >, Distribution* const&) [56]
+-----------------------------------------------
+                0.14    0.06   15342/15342       MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[16]     3.1    0.14    0.06   15342         MDP<int, int>::~MDP() [16]
+                0.06    0.00 2627600/16282024     std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_erase(std::_Rb_tree_node<int>*) [12]
+-----------------------------------------------
+                0.02    0.02  589040/2940708     BeliefTree<BanditBelief>::CreateMeanMDP(double, int) [15]
+                0.09    0.07 2351668/2940708     BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+[17]     3.0    0.11    0.09 2940708         std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_insert_unique(int const&) [17]
+                0.09    0.00 2940708/2940708     std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_insert(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, int const&) [21]
+-----------------------------------------------
+                0.04    0.11      10/10          main [1]
+[18]     2.2    0.04    0.11      10         BeliefTree<BanditBelief>::~BeliefTree() [18]
+                0.07    0.04 2956050/2956050     SingularDistribution::~SingularDistribution() [19]
+                0.00    0.00     616/371701      BetaDistribution::~BetaDistribution() [27]
+                0.00    0.00     154/569045      std::vector<double, std::allocator<double> >::~vector() [33]
+-----------------------------------------------
+                0.07    0.04 2956050/2956050     BeliefTree<BanditBelief>::~BeliefTree() [18]
+[19]     1.6    0.07    0.04 2956050         SingularDistribution::~SingularDistribution() [19]
+                0.04    0.00 2956050/3327795     Object::~Object() [26]
+-----------------------------------------------
+                                                 <spontaneous>
+[20]     1.5    0.10    0.00                 __i686.get_pc_thunk.bx [20]
+-----------------------------------------------
+                0.09    0.00 2940708/2940708     std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_insert_unique(int const&) [17]
+[21]     1.4    0.09    0.00 2940708         std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_insert(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, int const&) [21]
+-----------------------------------------------
+                               74832             BeliefTree<BanditBelief>::RecursiveDeleteExcept(BeliefTree<BanditBelief>::Node*, BeliefTree<BanditBelief>::Node*) [22]
+                0.05    0.03   13930/13930       main [1]
+[22]     1.3    0.05    0.03   13930+74832   BeliefTree<BanditBelief>::RecursiveDeleteExcept(BeliefTree<BanditBelief>::Node*, BeliefTree<BanditBelief>::Node*) [22]
+                0.03    0.00  355048/371701      BetaDistribution::~BetaDistribution() [27]
+                0.00    0.00   88762/569045      std::vector<double, std::allocator<double> >::~vector() [33]
+                               74832             BeliefTree<BanditBelief>::RecursiveDeleteExcept(BeliefTree<BanditBelief>::Node*, BeliefTree<BanditBelief>::Node*) [22]
+-----------------------------------------------
+                0.04    0.01   90896/90896       MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[23]     0.8    0.04    0.01   90896         BeliefTree<BanditBelief>::ExpandAction(BeliefTree<BanditBelief>::Node*, int, double, int, int) [23]
+                0.01    0.00   90896/92886       BetaDistribution::calculatePosterior(double) [35]
+                0.00    0.00   90896/454520      BetaDistribution::getMean() [38]
+                0.00    0.00   90896/90906       std::vector<BetaDistribution, std::allocator<BetaDistribution> >::operator=(std::vector<BetaDistribution, std::allocator<BetaDistribution> > const&) [49]
+-----------------------------------------------
+                0.01    0.00  979080/4880724     BeliefTree<BanditBelief>::CreateMeanMDP(double, int) [15]
+                0.04    0.00 3901644/4880724     BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+[24]     0.8    0.05    0.00 4880724         SingularDistribution::getMean() [24]
+-----------------------------------------------
+                0.01    0.00  591030/2956050     BeliefTree<BanditBelief>::CreateMeanMDP(double, int) [15]
+                0.04    0.00 2365020/2956050     BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+[25]     0.8    0.05    0.00 2956050         SingularDistribution::SingularDistribution(double) [25]
+-----------------------------------------------
+                0.00    0.00      44/3327795     main [1]
+                0.00    0.00  371701/3327795     BetaDistribution::~BetaDistribution() [27]
+                0.04    0.00 2956050/3327795     SingularDistribution::~SingularDistribution() [19]
+[26]     0.6    0.04    0.00 3327795         Object::~Object() [26]
+-----------------------------------------------
+                0.00    0.00      33/371701      std::vector<BetaDistribution, std::allocator<BetaDistribution> >::_M_insert_aux(__gnu_cxx::__normal_iterator<BetaDistribution*, std::vector<BetaDistribution, std::allocator<BetaDistribution> > >, BetaDistribution const&) [40]
+                0.00    0.00     616/371701      BeliefTree<BanditBelief>::~BeliefTree() [18]
+                0.00    0.00   16004/371701      std::vector<BetaDistribution, std::allocator<BetaDistribution> >::~vector() [39]
+                0.03    0.00  355048/371701      BeliefTree<BanditBelief>::RecursiveDeleteExcept(BeliefTree<BanditBelief>::Node*, BeliefTree<BanditBelief>::Node*) [22]
+[27]     0.5    0.03    0.00  371701         BetaDistribution::~BetaDistribution() [27]
+                0.00    0.00  371701/3327795     Object::~Object() [26]
+-----------------------------------------------
+                0.00    0.00      32/3219719     initgn(long) [42]
+                0.00    0.00      33/3219719     setall(long, long) [41]
+                0.03    0.00 3219654/3219719     ignlgi() [14]
+[28]     0.5    0.03    0.00 3219719         gscgn(long, long*) [28]
+-----------------------------------------------
+                0.00    0.00       1/3219655     setall(long, long) [41]
+                0.02    0.00 3219654/3219655     ignlgi() [14]
+[29]     0.3    0.02    0.00 3219655         gssst(long, long*) [29]
+-----------------------------------------------
+                0.02    0.00   66026/66026       MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[30]     0.3    0.02    0.00   66026         std::vector<BeliefTree<BanditBelief>::Node*, std::allocator<BeliefTree<BanditBelief>::Node*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<BeliefTree<BanditBelief>::Node**, std::vector<BeliefTree<BanditBelief>::Node*, std::allocator<BeliefTree<BanditBelief>::Node*> > >, BeliefTree<BanditBelief>::Node* const&) [30]
+-----------------------------------------------
+                0.01    0.00   15342/61368       MDP<int, int>::MDP(int, int, double**, Distribution**) [7]
+                0.01    0.00   46026/61368       ValueIteration::Reset() [9]
+[31]     0.3    0.02    0.00   61368         std::vector<double*, std::allocator<double*> >::_M_fill_insert(__gnu_cxx::__normal_iterator<double**, std::vector<double*, std::allocator<double*> > >, unsigned int, double* const&) [31]
+-----------------------------------------------
+                0.00    0.00       1/3219688     inrgcm() [43]
+                0.00    0.00       1/3219688     setall(long, long) [41]
+                0.00    0.00      32/3219688     initgn(long) [42]
+                0.01    0.00 3219654/3219688     ignlgi() [14]
+[32]     0.2    0.01    0.00 3219688         gsrgs(long, long*) [32]
+-----------------------------------------------
+                0.00    0.00     154/569045      BeliefTree<BanditBelief>::~BeliefTree() [18]
+                0.00    0.00    2001/569045      main [1]
+                0.00    0.00   88762/569045      BeliefTree<BanditBelief>::RecursiveDeleteExcept(BeliefTree<BanditBelief>::Node*, BeliefTree<BanditBelief>::Node*) [22]
+                0.00    0.00   90906/569045      BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+                0.01    0.00  387222/569045      MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[33]     0.2    0.01    0.00  569045         std::vector<double, std::allocator<double> >::~vector() [33]
+-----------------------------------------------
+                0.00    0.00   15920/253287      BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+                0.01    0.00  237367/253287      MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[34]     0.2    0.01    0.00  253287         std::vector<double, std::allocator<double> >::_M_insert_aux(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double const&) [34]
+-----------------------------------------------
+                0.00    0.00    1990/92886       main [1]
+                0.01    0.00   90896/92886       BeliefTree<BanditBelief>::ExpandAction(BeliefTree<BanditBelief>::Node*, int, double, int, int) [23]
+[35]     0.2    0.01    0.00   92886         BetaDistribution::calculatePosterior(double) [35]
+-----------------------------------------------
+                0.00    0.00    1990/23519       main [1]
+                0.00    0.01   21529/23519       MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[36]     0.2    0.00    0.01   23519         urandom() [36]
+                0.01    0.00   23519/23519       MersenneTwister::uniform() [37]
+-----------------------------------------------
+                0.01    0.00   23519/23519       urandom() [36]
+[37]     0.2    0.01    0.00   23519         MersenneTwister::uniform() [37]
+                0.00    0.00      38/38          MersenneTwister::nextState() [58]
+-----------------------------------------------
+                0.00    0.00   63680/454520      MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+                0.00    0.00   90896/454520      BeliefTree<BanditBelief>::ExpandAction(BeliefTree<BanditBelief>::Node*, int, double, int, int) [23]
+                0.01    0.00  299944/454520      BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+[38]     0.2    0.01    0.00  454520         BetaDistribution::getMean() [38]
+-----------------------------------------------
+                0.00    0.00    4001/4001        main [1]
+[39]     0.0    0.00    0.00    4001         std::vector<BetaDistribution, std::allocator<BetaDistribution> >::~vector() [39]
+                0.00    0.00   16004/371701      BetaDistribution::~BetaDistribution() [27]
+-----------------------------------------------
+                0.00    0.00      33/33          main [1]
+[40]     0.0    0.00    0.00      33         std::vector<BetaDistribution, std::allocator<BetaDistribution> >::_M_insert_aux(__gnu_cxx::__normal_iterator<BetaDistribution*, std::vector<BetaDistribution, std::allocator<BetaDistribution> > >, BetaDistribution const&) [40]
+                0.00    0.00      33/371701      BetaDistribution::~BetaDistribution() [27]
+-----------------------------------------------
+                0.00    0.00       1/1           ignlgi() [14]
+[41]     0.0    0.00    0.00       1         setall(long, long) [41]
+                0.00    0.00      32/32          initgn(long) [42]
+                0.00    0.00      33/3219719     gscgn(long, long*) [28]
+                0.00    0.00       1/3219655     gssst(long, long*) [29]
+                0.00    0.00       1/3219688     gsrgs(long, long*) [32]
+                0.00    0.00      62/62          mltmod(long, long, long) [57]
+-----------------------------------------------
+                0.00    0.00      32/32          setall(long, long) [41]
+[42]     0.0    0.00    0.00      32         initgn(long) [42]
+                0.00    0.00      32/3219719     gscgn(long, long*) [28]
+                0.00    0.00      32/3219688     gsrgs(long, long*) [32]
+-----------------------------------------------
+                0.00    0.00       1/1           ignlgi() [14]
+[43]     0.0    0.00    0.00       1         inrgcm() [43]
+                0.00    0.00       1/3219688     gsrgs(long, long*) [32]
+-----------------------------------------------
+                0.00    0.00      10/90906       BeliefTree<BanditBelief>::BeliefTree(BanditBelief, int, int, int, double) [60]
+                0.00    0.00   90896/90906       BeliefTree<BanditBelief>::ExpandAction(BeliefTree<BanditBelief>::Node*, int, double, int, int) [23]
+[49]     0.0    0.00    0.00   90906         std::vector<BetaDistribution, std::allocator<BetaDistribution> >::operator=(std::vector<BetaDistribution, std::allocator<BetaDistribution> > const&) [49]
+-----------------------------------------------
+                0.00    0.00   15342/15342       MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[50]     0.0    0.00    0.00   15342         ValueIteration::~ValueIteration() [50]
+-----------------------------------------------
+                0.00    0.00   15342/15342       MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [2]
+[51]     0.0    0.00    0.00   15342         MDP<int, int>::Check() const [51]
+-----------------------------------------------
+                0.00    0.00   15342/15342       MDP<int, int>::MDP(int, int, double**, Distribution**) [7]
+[52]     0.0    0.00    0.00   15342         std::vector<Distribution*, std::allocator<Distribution*> >::_M_fill_insert(__gnu_cxx::__normal_iterator<Distribution**, std::vector<Distribution*, std::allocator<Distribution*> > >, unsigned int, Distribution* const&) [52]
+-----------------------------------------------
+                0.00    0.00   15342/15342       MDP<int, int>::MDP(int, int, double**, Distribution**) [7]
+[53]     0.0    0.00    0.00   15342         std::vector<std::set<int, std::less<int>, std::allocator<int> >, std::allocator<std::set<int, std::less<int>, std::allocator<int> > > >::_M_fill_insert(__gnu_cxx::__normal_iterator<std::set<int, std::less<int>, std::allocator<int> >*, std::vector<std::set<int, std::less<int>, std::allocator<int> >, std::allocator<std::set<int, std::less<int>, std::allocator<int> > > > >, unsigned int, std::set<int, std::less<int>, std::allocator<int> > const&) [53]
+                0.00    0.00   15342/15342       void std::__uninitialized_fill_n_aux<std::set<int, std::less<int>, std::allocator<int> >*, unsigned int, std::set<int, std::less<int>, std::allocator<int> > >(std::set<int, std::less<int>, std::allocator<int> >*, unsigned int, std::set<int, std::less<int>, std::allocator<int> > const&, std::__false_type) [54]
+-----------------------------------------------
+                0.00    0.00   15342/15342       std::vector<std::set<int, std::less<int>, std::allocator<int> >, std::allocator<std::set<int, std::less<int>, std::allocator<int> > > >::_M_fill_insert(__gnu_cxx::__normal_iterator<std::set<int, std::less<int>, std::allocator<int> >*, std::vector<std::set<int, std::less<int>, std::allocator<int> >, std::allocator<std::set<int, std::less<int>, std::allocator<int> > > > >, unsigned int, std::set<int, std::less<int>, std::allocator<int> > const&) [53]
+[54]     0.0    0.00    0.00   15342         void std::__uninitialized_fill_n_aux<std::set<int, std::less<int>, std::allocator<int> >*, unsigned int, std::set<int, std::less<int>, std::allocator<int> > >(std::set<int, std::less<int>, std::allocator<int> >*, unsigned int, std::set<int, std::less<int>, std::allocator<int> > const&, std::__false_type) [54]
+-----------------------------------------------
+                0.00    0.00    9016/9016        main [1]
+[55]     0.0    0.00    0.00    9016         BeliefTree<BanditBelief>::UpdateNodes(BeliefTree<BanditBelief>::Node*, int) [55]
+-----------------------------------------------
+                0.00    0.00      13/200         BeliefTree<BanditBelief>::CreateMeanMDP(double, int) [15]
+                0.00    0.00     187/200         BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [4]
+[56]     0.0    0.00    0.00     200         std::vector<Distribution*, std::allocator<Distribution*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<Distribution**, std::vector<Distribution*, std::allocator<Distribution*> > >, Distribution* const&) [56]
+-----------------------------------------------
+                0.00    0.00      62/62          setall(long, long) [41]
+[57]     0.0    0.00    0.00      62         mltmod(long, long, long) [57]
+-----------------------------------------------
+                0.00    0.00      38/38          MersenneTwister::uniform() [37]
+[58]     0.0    0.00    0.00      38         MersenneTwister::nextState() [58]
+                0.00    0.00       1/1           MersenneTwister::seed() [76]
+-----------------------------------------------
+                0.00    0.00      11/11          main [1]
+[59]     0.0    0.00    0.00      11         std::vector<double, std::allocator<double> >::vector(unsigned int, double const&, std::allocator<double> const&) [59]
+-----------------------------------------------
+                0.00    0.00      10/10          main [1]
+[60]     0.0    0.00    0.00      10         BeliefTree<BanditBelief>::BeliefTree(BanditBelief, int, int, int, double) [60]
+                0.00    0.00      10/90906       std::vector<BetaDistribution, std::allocator<BetaDistribution> >::operator=(std::vector<BetaDistribution, std::allocator<BetaDistribution> > const&) [49]
+-----------------------------------------------
+                0.00    0.00       1/1           __do_global_ctors_aux [244]
+[61]     0.0    0.00    0.00       1         global constructors keyed to _Z13setRandomSeedj [61]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [73]
+-----------------------------------------------
+                0.00    0.00       1/1           __do_global_ctors_aux [244]
+[62]     0.0    0.00    0.00       1         global constructors keyed to _Z9NewVectori [62]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [74]
+-----------------------------------------------
+                0.00    0.00       1/1           __do_global_ctors_aux [244]
+[63]     0.0    0.00    0.00       1         global constructors keyed to _ZN14ValueIterationC2EPK3MDPIiiEdd [63]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [69]
+-----------------------------------------------
+                0.00    0.00       1/1           __do_global_ctors_aux [244]
+[64]     0.0    0.00    0.00       1         global constructors keyed to _ZN16BetaDistribution3pdfEd [64]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [71]
+-----------------------------------------------
+                0.00    0.00       1/1           __do_global_ctors_aux [244]
+[65]     0.0    0.00    0.00       1         global constructors keyed to _ZN19UniformDistribution8generateEv [65]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [72]
+-----------------------------------------------
+                0.00    0.00       1/1           __do_global_ctors_aux [244]
+[66]     0.0    0.00    0.00       1         global constructors keyed to _ZN3MDPIiiEC2EiiPPdPP12Distribution [66]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [70]
+-----------------------------------------------
+                0.00    0.00       1/1           __do_global_ctors_aux [244]
+[67]     0.0    0.00    0.00       1         global constructors keyed to main [67]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [68]
+-----------------------------------------------
+                0.00    0.00       1/1           global constructors keyed to main [67]
+[68]     0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [68]
+-----------------------------------------------
+                0.00    0.00       1/1           global constructors keyed to _ZN14ValueIterationC2EPK3MDPIiiEdd [63]
+[69]     0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [69]
+-----------------------------------------------
+                0.00    0.00       1/1           global constructors keyed to _ZN3MDPIiiEC2EiiPPdPP12Distribution [66]
+[70]     0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [70]
+-----------------------------------------------
+                0.00    0.00       1/1           global constructors keyed to _ZN16BetaDistribution3pdfEd [64]
+[71]     0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [71]
+-----------------------------------------------
+                0.00    0.00       1/1           global constructors keyed to _ZN19UniformDistribution8generateEv [65]
+[72]     0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [72]
+-----------------------------------------------
+                0.00    0.00       1/1           global constructors keyed to _Z13setRandomSeedj [61]
+[73]     0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [73]
+-----------------------------------------------
+                0.00    0.00       1/1           global constructors keyed to _Z9NewVectori [62]
+[74]     0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [74]
+-----------------------------------------------
+                0.00    0.00       1/1           MersenneTwister::seed() [76]
+[75]     0.0    0.00    0.00       1         MersenneTwister::manualSeed(unsigned long) [75]
+-----------------------------------------------
+                0.00    0.00       1/1           MersenneTwister::nextState() [58]
+[76]     0.0    0.00    0.00       1         MersenneTwister::seed() [76]
+                0.00    0.00       1/1           MersenneTwister::manualSeed(unsigned long) [75]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+
+Index by function name
+
+  [61] global constructors keyed to _Z13setRandomSeedj (Random.cc) [41] setall(long, long) [7] MDP<int, int>::MDP(int, int, double**, Distribution**)
+  [62] global constructors keyed to _Z9NewVectori (Vector.cc) [36] urandom() [16] MDP<int, int>::~MDP()
+  [63] global constructors keyed to _ZN14ValueIterationC2EPK3MDPIiiEdd (ValueIteration.cc) [55] BeliefTree<BanditBelief>::UpdateNodes(BeliefTree<BanditBelief>::Node*, int) [26] Object::~Object()
+  [64] global constructors keyed to _ZN16BetaDistribution3pdfEd (BetaDistribution.cc) [23] BeliefTree<BanditBelief>::ExpandAction(BeliefTree<BanditBelief>::Node*, int, double, int, int) [51] MDP<int, int>::Check() const
+  [65] global constructors keyed to _ZN19UniformDistribution8generateEv (Distribution.cc) [15] BeliefTree<BanditBelief>::CreateMeanMDP(double, int) [40] std::vector<BetaDistribution, std::allocator<BetaDistribution> >::_M_insert_aux(__gnu_cxx::__normal_iterator<BetaDistribution*, std::vector<BetaDistribution, std::allocator<BetaDistribution> > >, BetaDistribution const&)
+  [66] global constructors keyed to _ZN3MDPIiiEC2EiiPPdPP12Distribution (DiscreteMDP.cc) [4] BeliefTree<BanditBelief>::CreateUpperBoundMDP(double, int) [39] std::vector<BetaDistribution, std::allocator<BetaDistribution> >::~vector()
+  [67] global constructors keyed to main (bandit_uct.cc) [22] BeliefTree<BanditBelief>::RecursiveDeleteExcept(BeliefTree<BanditBelief>::Node*, BeliefTree<BanditBelief>::Node*) [49] std::vector<BetaDistribution, std::allocator<BetaDistribution> >::operator=(std::vector<BetaDistribution, std::allocator<BetaDistribution> > const&)
+   [2] MakeDecision(BeliefTree<BanditBelief>&, ExpansionMethod, int, int, BanditBelief, int, double, int, int, int, _IO_FILE*) [60] BeliefTree<BanditBelief>::BeliefTree(BanditBelief, int, int, int, double) [56] std::vector<Distribution*, std::allocator<Distribution*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<Distribution**, std::vector<Distribution*, std::allocator<Distribution*> > >, Distribution* const&)
+  [68] __static_initialization_and_destruction_0(int, int) (bandit_uct.cc) [18] BeliefTree<BanditBelief>::~BeliefTree() [52] std::vector<Distribution*, std::allocator<Distribution*> >::_M_fill_insert(__gnu_cxx::__normal_iterator<Distribution**, std::vector<Distribution*, std::allocator<Distribution*> > >, unsigned int, Distribution* const&)
+  [69] __static_initialization_and_destruction_0(int, int) (ValueIteration.cc) [3] ValueIteration::ComputeStateActionValues(double, int) [30] std::vector<BeliefTree<BanditBelief>::Node*, std::allocator<BeliefTree<BanditBelief>::Node*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<BeliefTree<BanditBelief>::Node**, std::vector<BeliefTree<BanditBelief>::Node*, std::allocator<BeliefTree<BanditBelief>::Node*> > >, BeliefTree<BanditBelief>::Node* const&)
+  [70] __static_initialization_and_destruction_0(int, int) (DiscreteMDP.cc) [9] ValueIteration::Reset() [31] std::vector<double*, std::allocator<double*> >::_M_fill_insert(__gnu_cxx::__normal_iterator<double**, std::vector<double*, std::allocator<double*> > >, unsigned int, double* const&)
+  [71] __static_initialization_and_destruction_0(int, int) (BetaDistribution.cc) [10] ValueIteration::ValueIteration(MDP<int, int> const*, double, double) [53] std::vector<std::set<int, std::less<int>, std::allocator<int> >, std::allocator<std::set<int, std::less<int>, std::allocator<int> > > >::_M_fill_insert(__gnu_cxx::__normal_iterator<std::set<int, std::less<int>, std::allocator<int> >*, std::vector<std::set<int, std::less<int>, std::allocator<int> >, std::allocator<std::set<int, std::less<int>, std::allocator<int> > > > >, unsigned int, std::set<int, std::less<int>, std::allocator<int> > const&)
+  [72] __static_initialization_and_destruction_0(int, int) (Distribution.cc) [50] ValueIteration::~ValueIteration() [34] std::vector<double, std::allocator<double> >::_M_insert_aux(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double const&)
+  [73] __static_initialization_and_destruction_0(int, int) (Random.cc) [75] MersenneTwister::manualSeed(unsigned long) [8] std::vector<double, std::allocator<double> >::_M_fill_insert(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double const&)
+  [74] __static_initialization_and_destruction_0(int, int) (Vector.cc) [76] MersenneTwister::seed() [59] std::vector<double, std::allocator<double> >::vector(unsigned int, double const&, std::allocator<double> const&)
+  [13] ranf()                 [37] MersenneTwister::uniform() [33] std::vector<double, std::allocator<double> >::~vector()
+  [28] gscgn(long, long*)     [58] MersenneTwister::nextState() [17] std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_insert_unique(int const&)
+  [32] gsrgs(long, long*)     [35] BetaDistribution::calculatePosterior(double) [11] std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_copy(std::_Rb_tree_node<int> const*, std::_Rb_tree_node<int>*)
+  [29] gssst(long, long*)     [38] BetaDistribution::getMean() [12] std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_erase(std::_Rb_tree_node<int>*)
+   [6] genbet(float, float)    [5] BetaDistribution::generate() [21] std::_Rb_tree<int, int, std::_Identity<int>, std::less<int>, std::allocator<int> >::_M_insert(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, int const&)
+  [14] ignlgi()               [27] BetaDistribution::~BetaDistribution() [54] void std::__uninitialized_fill_n_aux<std::set<int, std::less<int>, std::allocator<int> >*, unsigned int, std::set<int, std::less<int>, std::allocator<int> > >(std::set<int, std::less<int>, std::allocator<int> >*, unsigned int, std::set<int, std::less<int>, std::allocator<int> > const&, std::__false_type)
+  [42] initgn(long)           [24] SingularDistribution::getMean() [20] __i686.get_pc_thunk.bx
+  [43] inrgcm()               [25] SingularDistribution::SingularDistribution(double)
+  [57] mltmod(long, long, long) [19] SingularDistribution::~SingularDistribution()
