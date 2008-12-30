@@ -40,8 +40,18 @@ public:
     void Reset();
     void ComputeStateValues(real threshold, int max_iter=-1);
     void ComputeStateActionValues(real threshold, int max_iter=-1);
-    real getValue (int state, int action);
-    real getValue (int state);
+    inline real getValue (int state, int action)
+    {
+        assert(state>=0 && state < n_states);
+        assert(action>=0 && action < n_actions);
+        return Q[state][action];
+    }
+    inline real getValue (int state)
+    {
+        assert(state>=0 && state < n_states);
+        return V[state];
+    }
+    
 };
 
 #endif

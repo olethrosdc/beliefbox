@@ -57,15 +57,19 @@ class BanditBelief
 protected:
     int n_actions;
     BanditPrior prior;
+    real _greedy_return;
+    bool _greedy_return_is_set;
 public:
     BanditBelief()
     {
         n_actions = 0;
+        _greedy_return_is_set = false;
     }
     /// Create a belief
     BanditBelief(int n_actions_, real alpha, real beta)
         : n_actions(n_actions_),
-          prior(n_actions, alpha, beta)
+          prior(n_actions, alpha, beta),
+          _greedy_return_is_set(false)
     {
     }
     ~BanditBelief()
@@ -84,6 +88,7 @@ public:
         assert (action >= 0 && action < n_actions);
         assert (approx_eq(reward, 0.0) || approx_eq(reward, 1.0));
         prior.ActionReward(action).calculatePosterior(reward);
+        _greedy_return_is_set = false;
     }
 
     real getProbability(int state, int action, real reward, int next_state)
@@ -112,6 +117,9 @@ public:
     /// Gives the greedy return starting from a particular statea
     real getGreedyReturn(int state, real gamma)
     {
+        if (_greedy_return_is_set) {
+            return _greedy_return;
+        }
         std::vector<real> p(n_actions);
         int arg_max = 0;
         for (int i=0; i<n_actions; i++) {
@@ -122,8 +130,9 @@ public:
         }
         real p_max = p[arg_max];
         real R = p_max;
-        real U = R / (1.0 - gamma);
-        return U;
+        _greedy_return = R / (1.0 - gamma);
+        _greedy_return_is_set = true;
+        return _greedy_return;
     }
 
     /// Gives the Thompson return
@@ -631,7 +640,8 @@ enum ExpansionMethod {
     MeanHighProbabilityBound, // 12
     DiscountedMeanHighProbabilityBound, // 13
     GreedyBoundReduction, // 14 (54.3)
-    BAST // 15 
+    BAST, // 15 
+    BAST_FULL // 16
 };
 
 int MakeDecision(BeliefTree<BanditBelief>& new_tree,

@@ -20,6 +20,7 @@
 #include <set>
 
 typedef std::set<int> DiscreteStateSet;
+typedef std::set<int>& DiscreteStateSetRef;
 
 template<>
 class MDP<int, int> {
@@ -41,7 +42,9 @@ protected:
 #endif
         return s*n_actions + a;
     }
+
 public:
+
     MDP<int, int> (int n_states, int n_actions, real** initial_transitions, Distribution** initial_rewards);
 
     inline int GetNStates() const

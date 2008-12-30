@@ -74,7 +74,6 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
             for (int a=0; a<n_actions; a++) {
                 real S = 0.0;
                 DiscreteStateSet next = mdp->getNextStates(s, a);
-//                for (int s2=0; s2<n_states; s2++) {
                 for (DiscreteStateSet::iterator i=next.begin();
                      i!=next.end();
                      ++i) {
@@ -124,7 +123,6 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
                 real sum = 0.0;
 
                 DiscreteStateSet next = mdp->getNextStates(s, a);
-                    //for (int s2=0; s2<n_states; s2++) {
                 for (DiscreteStateSet::iterator i=next.begin();
                      i!=next.end();
                      ++i) {
@@ -148,13 +146,3 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
     } while(Delta >= threshold && max_iter > 0);
 }
 
-real ValueIteration::getValue (int state, int action)
-{
-    return Q[state][action];
-}
-
-
-real ValueIteration::getValue (int state)
-{
-    return V[state];
-}
