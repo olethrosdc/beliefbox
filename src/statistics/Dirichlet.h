@@ -26,10 +26,12 @@ public:
     DirichletDistribution();
     DirichletDistribution(int n);
     virtual ~DirichletDistribution();
-    virtual void generate(Vector* x);
+    virtual void generate(Vector& x);
     virtual Vector generate();
-    virtual real pdf(Vector* x);
+    virtual real pdf(Vector& x);
     virtual void update(Vector* x);
+    /// When there is only one observation, give it directly.
+    void Observation(int i);
     Vector GetParameters();
     void resize(int n, real p = 0.0);
     

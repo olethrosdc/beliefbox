@@ -13,6 +13,10 @@
 #include "MultinomialDistribution.h"
 #include "Random.h"
 
+MultinomialDistribution::MultinomialDistribution(Vector p_)
+    : p(p_)
+{
+}
 MultinomialDistribution::MultinomialDistribution(int n)
 {
 	p.Resize(n);

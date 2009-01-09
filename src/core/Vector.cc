@@ -171,16 +171,6 @@ Vector Vector::operator* (const Vector& rhs)
     return lhs;
 }
 
-/// Scalar multiplication
-Vector Vector::operator* (const real& rhs)
-{
-    Vector lhs (n);
-    for (int i=0; i<n; i++) {
-        lhs.x[i] = x[i]*rhs;
-    }
-    return lhs;
-}
-
 /// Per-element self-multiplication
 Vector& Vector::operator*= (const Vector& rhs)
 {
@@ -191,7 +181,89 @@ Vector& Vector::operator*= (const Vector& rhs)
     return *this;
 }
 
-/// Self scalard multiplication
+/// Per-element division
+Vector Vector::operator/ (const Vector& rhs)
+{
+    assert (rhs.n==n);
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = x[i] * rhs[i];
+    }
+    return lhs;
+}
+
+/// Per-element self-multiplication
+Vector& Vector::operator/= (const Vector& rhs)
+{
+    assert (rhs.n==n);
+    for (int i=0; i<n; i++) {
+        x[i] *= rhs[i];
+    }
+    return *this;
+}
+
+
+/* ----------- SCALAR OPERATORS -------------------------*/
+/// Scalar addition
+Vector Vector::operator+ (const real& rhs)
+{
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = x[i] + rhs;
+    }
+    return lhs;
+}
+/// Scalar subtraction
+Vector Vector::operator- (const real& rhs)
+{
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = x[i] - rhs;
+    }
+    return lhs;
+}
+/// Scalar multiplication
+Vector Vector::operator* (const real& rhs)
+{
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = x[i]*rhs;
+    }
+    return lhs;
+}
+/// Scalar division
+Vector Vector::operator/ (const real& rhs)
+{
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = x[i]/rhs;
+    }
+    return lhs;
+}
+
+
+/* ----------- SELF SCALAR OPERATORS -------------------------*/
+
+/// Self scalar addition
+Vector& Vector::operator+= (const real& rhs)
+{
+    for (int i=0; i<n; i++) {
+        x[i] += rhs;
+    }
+    return *this;
+}
+
+/// Self scalar subtraction
+Vector& Vector::operator-= (const real& rhs)
+{
+    for (int i=0; i<n; i++) {
+        x[i] -= rhs;
+    }
+    return *this;
+}
+
+
+/// Self scalar multiplication
 Vector& Vector::operator*= (const real& rhs)
 {
     for (int i=0; i<n; i++) {
@@ -200,6 +272,17 @@ Vector& Vector::operator*= (const real& rhs)
     return *this;
 }
 
+/// Self scalar multiplication
+Vector& Vector::operator/= (const real& rhs)
+{
+    for (int i=0; i<n; i++) {
+        x[i] /= rhs;
+    }
+    return *this;
+}
+
+
+/* --------------- INDEXING ------------------- */
 /// index
 real& Vector::operator[] (int index)
 {

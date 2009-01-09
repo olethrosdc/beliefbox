@@ -14,10 +14,11 @@
 #include "real.h"
 #include "MathFunctions.h"
 #include "Vector.h"
+#include "DiscreteMDPCounts.h"
 #include <cmath>
 #include <cassert>
 
-OptimisticValueIteration::OptimisticValueIteration(const DiscreteMDP* mdp, real gamma, real baseline)
+OptimisticValueIteration::OptimisticValueIteration(DiscreteMDPCounts* mdp, real gamma, real baseline)
 {
     assert (mdp);
     assert (gamma>=0 && gamma <=1);
@@ -65,21 +66,36 @@ void OptimisticValueIteration::ComputeStateValues(real epsilon, real threshold, 
     do {
         Delta = 0.0;
         for (int s=0; s<n_states; s++) {
-                //real v = V[s];
+            //real v = V[s];
             real Q_a_max = -RAND_MAX;
             int a_max = 0;
             for (int a=0; a<n_actions; a++) {
                 real S = 0.0;
-                DiscreteStateSet next = mdp->getNextStates(s, a);
-                for (DiscreteStateSet::iterator i=next.begin();
-                     i!=next.end();
-                     ++i) {
-                    int s2 = *i;
-                    real P = mdp->getTransitionProbability(s, a, s2);
-                    real r = 
-                    real R = mdp->getExpectedReward(s, a) + gamma * V[s2] - baseline;
-                    S += P * R;
+
+                Vector V2(n_states);
+                // store the value of next states
+                for (int s2=0; s2<n_states; ++s2) {
+                    V2[s2] = V[s2];
                 }
+                Vector Q = mdp->getTransitionProbabilities(s, a);
+                real max_U = -RAND_MAX;
+                
+                for (int s2=0; s2<n_states; ++s2) {
+                    Vector I(n_states);
+                    I[s2] = 1.0;
+                    I = I + (I - 1.0)/((real) (n_states -1));
+                    for (int j=-1; j<=1; j+=2) {
+                        Vector P(Q);
+                        P += I*((real) j)*epsilon;
+                        real U = Product(&P, &V2);
+                        if (U > max_U) {
+                            max_U = U;
+                        }
+                    }
+                }
+                        
+                real R = mdp->getExpectedReward(s, a) + gamma*max_U - baseline;
+                
                 if (a==0 || Q_a_max < S) {
                     a_max = a;
                     Q_a_max = S;
@@ -90,8 +106,8 @@ void OptimisticValueIteration::ComputeStateValues(real epsilon, real threshold, 
             pV[s] = V[s];
         }
         Delta = Max(dV) - Min(dV);
-        max_iter--;
-
+    max_iter--;
+    
     } while(Delta >= threshold && max_iter > 0);
 	
 }
@@ -106,41 +122,4 @@ void OptimisticValueIteration::ComputeStateValues(real epsilon, real threshold, 
 
 void OptimisticValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 {
-    int N = n_states * n_actions;
-
-    for (int s=0; s<n_states; s++) {
-        for (int a=0; a<n_actions; a++) {
-            dQ[s][a] = 0.0;
-        }
-    }
-    do {
-        Delta = 0.0;
-        for (int s0=0; s0<n_states; s0++) {
-            int s = s0;
-            for (int a=0; a<n_actions; a++) {
-                real sum = 0.0;
-
-                DiscreteStateSet next = mdp->getNextStates(s, a);
-                for (DiscreteStateSet::iterator i=next.begin();
-                     i!=next.end();
-                     ++i) {
-                    int s2 = *i;
-                    real P = mdp->getTransitionProbability(s, a, s2);
-                        //if (P > 0) {
-                        real R = mdp->getExpectedReward(s, a) - baseline;
-                        real Q_a_max = Max(n_actions, Q[s2]);
-                        sum += P*(R + gamma*Q_a_max);
-                            //}
-
-                }
-                Q[s][a] = sum;
-                dQ[s][a] = pQ[s][a] - sum;
-                pQ[s][a] = sum;
-            }
-        }
-        
-        Delta = Max(N, &dQ_data[0]) - Min(N, &dQ_data[0]);			
-        max_iter--;
-    } while(Delta >= threshold && max_iter > 0);
 }
-
