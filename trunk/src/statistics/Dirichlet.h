@@ -23,13 +23,16 @@ protected:
     int n; ///< size of multinomial distribution
     Vector a; ///< size of vector
 public:
+    DirichletDistribution();
     DirichletDistribution(int n);
     virtual ~DirichletDistribution();
     virtual void generate(Vector* x);
     virtual Vector generate();
     virtual real pdf(Vector* x);
     virtual void update(Vector* x);
-	Vector GetParameters();
+    Vector GetParameters();
+    void resize(int n, real p = 0.0);
+    
 };
 
 

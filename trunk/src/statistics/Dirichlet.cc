@@ -15,10 +15,23 @@
 
 DirichletDistribution::DirichletDistribution(int n)
 {
+    n = 0;
+}
+DirichletDistribution::DirichletDistribution(int n)
+{
     this->n = n;
     a.Resize(n);
     for (int i=0; i<n; ++i) {
         a[i] = 0;
+    }
+}
+
+DirichletDistribution::resize(int n, real p)
+{
+    this->n = n;
+    a.Resize(n);
+    for (int i=0; i<n; ++i) {
+        a[i] = p;
     }
 }
 
