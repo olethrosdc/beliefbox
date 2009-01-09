@@ -11,6 +11,7 @@
  ***************************************************************************/
 
 #include "DiscreteMDPCounts.h"
+#include "Random.h"
 
 DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, int init_transition_count, int init_reward_count, real init_reward) :
     MDPModel(n_states, n_actions)
@@ -22,12 +23,58 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, int init_tran
     }
 }
 
-DiscreteMDPCounts::~DiscreteMDPCounts();
-void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2);
-void DiscreteMDPCounts::ShowModel();
-real DiscreteMDPCounts::GenerateReward (int s, int a);
-int DiscreteMDPCounts::GenerateTransition (int s, int a);
-real DiscreteMDPCounts::getTransitionProbability (int s, int a, int s2);
-real DiscreteMDPCounts::getExpectedReward (int s, int a);
-int DiscreteMDPCounts::getNStates () { return N;}
-void DiscreteMDPCounts::Reset();
+DiscreteMDPCounts::~DiscreteMDPCounts()
+{
+}
+
+void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
+{
+    int ID = getID (s, a);
+    P[ID].Observation(s2);
+    ER[ID] = r;
+}
+
+void DiscreteMDPCounts::SetNextReward(int s, int a, real r)
+{
+    ER[getID (s, a)] = r;
+}
+
+real DiscreteMDPCounts::GenerateReward (int s, int a)
+{
+    return ER[getID (s, a)];
+}
+
+int DiscreteMDPCounts::GenerateTransition (int s, int a)
+{
+    Vector p = P[getID (s,a)].GetParameters();
+    real d=urandom();
+    real sum = 0.0;
+    int n_outcomes = p.Size();
+    for (int i=0; i<n_outcomes; i++) {
+        sum += p[i];
+        if (d < sum) {
+            return i;
+        }
+    }
+    return rand()%n_outcomes;
+}
+
+real DiscreteMDPCounts::getTransitionProbability (int s, int a, int s2)
+{
+    Vector p = P[getID (s,a)].GetParameters();
+    return p[s2];
+}
+
+Vector DiscreteMDPCounts::getTransitionProbabilities (int s, int a)
+{
+    return P[getID (s,a)].GetParameters();
+}
+
+real DiscreteMDPCounts::getExpectedReward (int s, int a)
+{
+    return ER[getID (s,a)];
+}
+
+void DiscreteMDPCounts::Reset()
+{
+}

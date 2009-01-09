@@ -13,14 +13,14 @@
 #ifndef OPTIMISTIC_VALUE_ITERATION_H
 #define OPTIMISTIC_VALUE_ITERATION_H
 
-#include "DiscreteMDP.h"
+#include "DiscreteMDPCounts.h"
 #include "real.h"
 #include <vector>
 
 class OptimisticValueIteration
 {
 public:
-    const DiscreteMDP* mdp;
+    DiscreteMDPCounts* mdp;
     real gamma;
     int n_states;
     int n_actions;
@@ -35,10 +35,10 @@ public:
     std::vector<real> pQ_data;
     real Delta;
     real baseline;
-    OptimisticValueIteration(const DiscreteMDP* mdp, real gamma, real baseline=0.0);
+    OptimisticValueIteration(DiscreteMDPCounts* mdp, real gamma, real baseline=0.0);
     ~OptimisticValueIteration();
     void Reset();
-    void ComputeStateValues(real threshold, int max_iter=-1);
+    void ComputeStateValues(real epsilon, real threshold, int max_iter=-1);
     void ComputeStateActionValues(real threshold, int max_iter=-1);
     inline real getValue (int state, int action)
     {

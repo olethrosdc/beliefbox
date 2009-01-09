@@ -13,7 +13,7 @@
 #include "Dirichlet.h"
 #include "ranlib.h"
 
-DirichletDistribution::DirichletDistribution(int n)
+DirichletDistribution::DirichletDistribution()
 {
     n = 0;
 }
@@ -26,7 +26,7 @@ DirichletDistribution::DirichletDistribution(int n)
     }
 }
 
-DirichletDistribution::resize(int n, real p)
+void DirichletDistribution::resize(int n, real p)
 {
     this->n = n;
     a.Resize(n);
@@ -39,9 +39,9 @@ DirichletDistribution::~DirichletDistribution()
 {
 }
 
-void DirichletDistribution::generate(Vector* x)
+void DirichletDistribution::generate(Vector& x)
 {
-    *x = generate();
+    x = generate();
 }
 
 Vector DirichletDistribution::generate()
@@ -60,15 +60,14 @@ Vector DirichletDistribution::generate()
 /** Dirichlet distribution
     Gets the parameters of a multinomial distribution as input.
 */
-real DirichletDistribution::pdf(Vector* x)
+real DirichletDistribution::pdf(Vector& x)
 {
     assert(x->Size() == n);
-    Vector& y = *x;
 
     real log_prod = 0.0;
     real sum = 0.0;
     for (int i=0; i<n; i++) {
-        real xi = y[i];
+        real xi = x[i];
         if (xi<0) {
             Swarning ("Got a negative value for x[%d]:%f\n", i, xi);
             return 0.0;
@@ -87,6 +86,11 @@ real DirichletDistribution::pdf(Vector* x)
 void DirichletDistribution::update(Vector* x)
 {
     a += *x;
+}
+
+void DirichletDistribution::Observation(int i)
+{
+    a[i] += 1.0;
 }
 
 Vector DirichletDistribution::GetParameters()

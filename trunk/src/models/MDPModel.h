@@ -43,11 +43,11 @@ public:
         this->n_states = n_states;
         this->n_actions = n_actions;
     }
-    int GetNStates()
+    inline virtual int GetNStates()
     {
         return n_states;
     }
-    int GetNActions()
+    inline virtual int GetNActions()
     {
         return n_actions;
     }
@@ -58,7 +58,7 @@ public:
     virtual real GenerateReward (int s, int a) {return 0.0;}
     virtual int GenerateTransition (int s, int a) = 0;
     virtual real getTransitionProbability (int s, int a, int s2) {return 0.0;}
-    virtual real getExpectedReward (int s, int a) = 0;
+    virtual real getExpectedReward (int s, int a) const = 0;
     virtual void Reset() = 0;
 
 };
@@ -87,7 +87,7 @@ public:
     virtual int GenerateTransition (int s, int a);
     virtual real getTransitionProbability (int s, int a, int s2);
     virtual real getExpectedReward (int s, int a);
-    virtual int getNStates () { return N;}
+    //virtual int getNStates () { return N;}
     virtual void setLearningRate (real learning_rate)
     {
         alpha = learning_rate;

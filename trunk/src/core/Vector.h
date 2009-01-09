@@ -45,13 +45,21 @@ public:
     int Size() const { return n;}
     real Sum();
     Vector operator+ (const Vector& rhs);
-    Vector& operator+= (const Vector& rhs);
     Vector operator- (const Vector& rhs);
-    Vector& operator-= (const Vector& rhs);
     Vector operator* (const Vector& rhs);
-    Vector operator* (const real& rhs);
+    Vector operator/ (const Vector& rhs);
+    Vector& operator+= (const Vector& rhs);
+    Vector& operator-= (const Vector& rhs);
     Vector& operator*= (const Vector& rhs);
+    Vector& operator/= (const Vector& rhs);
+    Vector operator+ (const real& rhs);
+    Vector operator- (const real& rhs);
+    Vector operator* (const real& rhs);
+    Vector operator/ (const real& rhs);
+    Vector& operator+= (const real& rhs);
+    Vector& operator-= (const real& rhs);
     Vector& operator*= (const real& rhs);
+    Vector& operator/= (const real& rhs);
 private:
     int maxN;
     enum BoundsCheckingStatus checking_bounds;

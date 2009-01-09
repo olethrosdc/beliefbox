@@ -21,6 +21,7 @@ class MultinomialDistribution : public VectorDistribution
 protected:
 	Vector p;
 public:
+	MultinomialDistribution(Vector p_);
 	MultinomialDistribution(int n);
 	virtual ~MultinomialDistribution();
 	virtual void generate(Vector* x);

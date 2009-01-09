@@ -157,7 +157,9 @@ Distribution* DiscreteDistribution::clone()
 
 
 DiscreteDistribution::~DiscreteDistribution() {
-    free (p);
+    if (p) {
+        free (p);
+    }
 }
 
 real DiscreteDistribution::generate()

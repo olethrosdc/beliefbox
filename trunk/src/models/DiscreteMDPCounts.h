@@ -14,12 +14,14 @@
 #define DISCRETE_MDP_COUNTS
 
 #include "MDPModel.h"
-#incldue "Dirichlet.h"
+#include "Dirichlet.h"
+#include "real.h"
 
 class DiscreteMDPCounts : public MDPModel
 {
 protected:
     std::vector<DirichletDistribution> P;
+    std::vector<real> ER;
     int N;
     int getID (int s, int a)
     {
@@ -31,13 +33,13 @@ public:
     DiscreteMDPCounts (int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
     virtual ~DiscreteMDPCounts();
     virtual void AddTransition(int s, int a, real r, int s2);
-    void ShowModel();
     virtual real GenerateReward (int s, int a);
     virtual int GenerateTransition (int s, int a);
     virtual real getTransitionProbability (int s, int a, int s2);
+    virtual Vector getTransitionProbabilities (int s, int a);
     virtual real getExpectedReward (int s, int a);
-    virtual int getNStates () { return N;}
     virtual void Reset();
+    void SetNextReward(int s, int a, real r);
 };
 
 
