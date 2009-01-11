@@ -20,12 +20,11 @@
 RandomMDP::RandomMDP(uint n_actions_,
                      uint n_states_,
                      real randomness,
-		     real step_value,
-		     real pit_value,
-		     real goal_value) :
-    n_states(n_states_),
-    n_actions(n_actions_)
-
+                     real step_value,
+                     real pit_value,
+                     real goal_value,
+                     bool termination) : n_states(n_states_),
+                                         n_actions(n_actions_)
 {
     
     // set up the mdp
@@ -47,35 +46,44 @@ RandomMDP::RandomMDP(uint n_actions_,
     
     //std::cout << "Assigning rewards\n";
     // first the terminal state rewards
-    for (uint a=0; a<n_actions; ++a) {
-        mdp->setRewardDistribution(n_states - 1, a, zero_reward);
+    if (termination) {
+        for (uint a=0; a<n_actions; ++a) {
+            mdp->setRewardDistribution(n_states - 1, a, zero_reward);
+        }
     }
 
-    for (uint s=0; s<n_states - 1; ++s) { 
-	for (uint a=0; a<n_actions; ++a) {
-	    mdp->setRewardDistribution(s, a, step_reward);
-	}
+    int terminal_state = n_states;
+    if (termination) {
+        terminal_state = n_states - 1;
+    }
+    for (uint s=0; s<terminal_state; ++s) { 
+        for (uint a=0; a<n_actions; ++a) {
+            mdp->setRewardDistribution(s, a, step_reward);
+        }
     }
 
     int pit_state = (int) floor(((real) n_states - 1) * true_random(false));
     int goal_state = pit_state;
     while (goal_state == pit_state) {
-	goal_state = (int) floor(((real) n_states - 1) * true_random(false));
+        goal_state = (int) floor(((real) n_states - 1) * true_random(false));
     }
-    int terminal_state = n_states - 1;
+
+
 
     for (uint a=0; a<n_actions; ++a) {
-	mdp->setRewardDistribution(pit_state, a, pit_reward);
-	mdp->setRewardDistribution(goal_state, a, goal_reward);
-	mdp->setTransitionProbability (pit_state, a, terminal_state, 1.0);
-	mdp->setTransitionProbability (goal_state, a, terminal_state, 1.0);
-	mdp->setTransitionProbability (terminal_state, a, terminal_state, 1.0);
+        mdp->setRewardDistribution(goal_state, a, goal_reward);
+        mdp->setRewardDistribution(pit_state, a, pit_reward);
+        if (termination) {
+            mdp->setTransitionProbability (goal_state, a, terminal_state, 1.0);
+            mdp->setTransitionProbability (pit_state, a, terminal_state, 1.0);
+            mdp->setTransitionProbability (terminal_state, a, terminal_state, 1.0);
+        }
     }
 
 
     //std::cout << "Assigning transition probabilities\n";
     // Step 1: set prior
-    for (uint s=0; s<n_states -1; ++s) {   
+    for (uint s=0; s<terminal_state; ++s) {   
         for (uint a=0; a<n_actions; ++a) {
             for (uint s2=0; s2<n_states - 1; s2++) {
                 mdp->setTransitionProbability (s, a, s2, randomness);
@@ -84,24 +92,24 @@ RandomMDP::RandomMDP(uint n_actions_,
     }
     
     // Step 2: add target states
-    for (uint s=0; s<n_states -1; s++) {   
+    for (uint s=0; s<terminal_state; s++) {   
         for (uint a=0; a<n_actions; ++a) {
-	    int s2 = (int) floor(((real) n_states) * true_random(false));
-	    mdp->setTransitionProbability (s, a, s2, 1.0);
+            int s2 = (int) floor(((real) n_states) * true_random(false));
+            mdp->setTransitionProbability (s, a, s2, 1.0);
         }
     }
 
     // Step 3: normalize
     for (uint s=0; s<n_states; s++) {   
         for (uint a=0; a<n_actions; ++a) {
-	    real sum = 0.0;
-	    for (uint s2=0; s2<n_states; ++s2) {
-		sum += mdp->getTransitionProbability (s, a, s2);
-	    }
-	    for (uint s2=0; s2<n_states; ++s2) {
-		real p = mdp->getTransitionProbability (s, a, s2);
-		mdp->setTransitionProbability (s, a, s2, p / sum);
-	    }
+            real sum = 0.0;
+            for (uint s2=0; s2<n_states; ++s2) {
+                sum += mdp->getTransitionProbability (s, a, s2);
+            }
+            for (uint s2=0; s2<n_states; ++s2) {
+                real p = mdp->getTransitionProbability (s, a, s2);
+                mdp->setTransitionProbability (s, a, s2, p / sum);
+            }
         }
     }
     fflush(stdout);
@@ -110,7 +118,7 @@ RandomMDP::RandomMDP(uint n_actions_,
 	
 RandomMDP::~RandomMDP() {
     for (uint i=0; i<rewards.size(); ++i) {
-	delete rewards[i];
+        delete rewards[i];
     }
     delete mdp;
 }
@@ -129,7 +137,7 @@ bool RandomMDP::Act(uint action)
     reward = mdp->generateReward(state, action);
     //reward = mdp->getExpectedReward(state, action);
     if (state != n_states - 1) {
-	return true;
+        return true;
     }
     return false;  // environment has terminated
 }

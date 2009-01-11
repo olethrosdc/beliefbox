@@ -23,21 +23,21 @@
 class Gridworld : public Environment<int, int> {
 public:
     enum MapDirection {
-	NORTH=0, SOUTH, EAST, WEST
+        NORTH=0, SOUTH, EAST, WEST
     };
     enum MapElement {
-	INVALID=-1, GRID, WALL, GOAL, PIT
+        INVALID=-1, GRID, WALL, GOAL, PIT
     };
     DiscreteMDP* mdp;
 
-    Gridworld(char* fname,
-	      uint height_,
-	      uint width_,
-	      uint n_actions_ = 4,
-	      real random_ = 0.0,
-	      real pit_ = -100.0,
-	      real goal_ = 0.0,
-	      real step_ = -1.0);
+    Gridworld(const char* fname,
+              uint height_,
+              uint width_,
+              uint n_actions_ = 4,
+              real random_ = 0.0,
+              real pit_ = -100.0,
+              real goal_ = 0.0,
+              real step_ = -1.0);
     virtual ~Gridworld()
     {
     }
@@ -49,19 +49,21 @@ public:
 
     MapElement whatIs(int x, int y)
     {
-	if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
-	    return grid[x][y];
-	} else {
-	    return INVALID;
-	}
+        if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
+            return grid[x][y];
+        } else {
+            return INVALID;
+        }
     }
+    virtual void Reset();
+    virtual bool Act(int a);
     void Show();
     int getState(int x, int y)
     {
-	if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
-	    return x + y*width;
-	}
-	return -1;
+        if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
+            return x + y*width;
+        }
+        return -1;
     };
 protected:
     uint height;
