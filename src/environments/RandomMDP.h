@@ -32,7 +32,8 @@ public:
               real randomness,
               real step_value,
               real pit_value,
-              real goal_value);
+              real goal_value,
+              bool termination=true);
 
     virtual ~RandomMDP();
 

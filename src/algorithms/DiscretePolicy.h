@@ -21,6 +21,7 @@ public:
     DiscretePolicy() {}
     virtual ~DiscretePolicy() {}
     virtual int SelectAction() = 0;
+    virtual void Observe (int previous_state, int action, real r, int next_state) = 0;
     virtual void Observe (real r, int next_state) = 0;
     virtual void Reset() = 0;
     virtual real getActionProbability(int action) = 0;
@@ -34,6 +35,7 @@ public:
     FixedDiscretePolicy (std::vector<Vector> p);
     virtual ~FixedDiscretePolicy();
     virtual int SelectAction();
+    virtual void Observe (int previous_state, int action, real r, int next_state);
     virtual void Observe (real r, int next_state);
     virtual void Reset();
     virtual real getActionProbability(int action);
