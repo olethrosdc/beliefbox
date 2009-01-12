@@ -51,7 +51,6 @@ threshold - exit when difference in Q is smaller than the threshold
 max_iter - exit when the number of iterations reaches max_iter
 
 */
-#define BATCH_EVALUATION
 void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
 {
     std::vector<real> dV(n_states);
@@ -72,17 +71,9 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
             }
 	    //printf (" =  %f\n", pV[s]);
             dV[s] = V[s] - pV[s];
-#ifndef BATCH_EVALUATION
             V[s] = pV[s];
-#endif
         }
 	
-#ifdef BATCH_EVALUATION
-        for (int s=0; s<n_states; s++) {
-            V[s] = pV[s];
-        }
-#endif
-		
         Delta = Max(n_states, &dV[0]) - Min(n_states, &dV[0]);
 			
         if (max_iter > 0) {
@@ -92,7 +83,7 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
     
 }
 
-real PolicyEvaluation::getValue (int state, int action)
+real PolicyEvaluation::getValue (int state, int action) const
 {
     real sum_over_states = 0.0;
     for (int s2=0; s2<n_states; s2++) {

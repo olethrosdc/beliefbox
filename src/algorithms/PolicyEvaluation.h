@@ -33,11 +33,15 @@ public:
                      const DiscreteMDP* mdp_,
                      real gamma_,
                      real baseline_ = 0.0);
-    ~PolicyEvaluation();
+    virtual ~PolicyEvaluation();
+    virtual void ComputeStateValues(real threshold, int max_iter=-1);
+    inline void SetPolicy(DiscretePolicy* policy_)
+    {
+        policy = policy_;
+    }
     void Reset();
-    void ComputeStateValues(real threshold, int max_iter=-1);
-    real getValue (int state, int action);
-    inline real getValue (int state)
+    real getValue (int state, int action) const;
+    inline real getValue (int state) const
     {
         return V[state];
     }

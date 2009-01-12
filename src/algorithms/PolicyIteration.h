@@ -21,19 +21,25 @@
 
 class PolicyIteration
 {
+protected:
+    PolicyEvaluation* _evaluation;
 public:
+    PolicyEvaluation* evaluation;
     const DiscreteMDP* mdp;
     FixedDiscretePolicy* policy;
-    PolicyEvaluation* evaluation;
     std::vector<int> a_max;
     real gamma;
     int n_states;
     int n_actions;
     real Delta;
     real baseline;
+    PolicyIteration(const PolicyEvaluation* evaluation_,
+                    const DiscreteMDP* mdp_,
+                    real gamma_,
+                    real baseline_ = 0.0);
     PolicyIteration(const DiscreteMDP* mdp_,
-                     real gamma_,
-                     real baseline_ = 0.0);
+                    real gamma_,
+                    real baseline_ = 0.0);
     ~PolicyIteration();
     void Reset();
     void ComputeStateValues(real threshold, int max_iter=-1);
