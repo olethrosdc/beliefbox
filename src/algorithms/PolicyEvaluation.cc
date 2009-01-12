@@ -33,7 +33,9 @@ PolicyEvaluation::PolicyEvaluation(DiscretePolicy* policy_,
 
 void PolicyEvaluation::Reset()
 {
-    policy->Reset();
+    if (policy) {
+        policy->Reset();
+    }
     V.resize(n_states);
     for (int s=0; s<n_states; s++) {
         V[s] = 0.0;
