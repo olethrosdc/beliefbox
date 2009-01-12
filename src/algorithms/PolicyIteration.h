@@ -13,6 +13,7 @@
 #ifndef POLICY_ITERATION_H
 #define POLICY_ITERATION_H
 
+#include "PolicyEvaluation.h"
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
 #include "real.h"

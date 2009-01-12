@@ -39,10 +39,8 @@ PolicyIteration::PolicyIteration(const DiscreteMDP* mdp_,
 void PolicyIteration::Reset()
 {
     policy->Reset();
-    V.resize(n_states);
     for (int s=0; s<n_states; s++) {
         a_max[s] = ArgMax(policy->getActionProbabilitiesPtr(s));
-        V[s] = 0.0;
     }
 }
 
