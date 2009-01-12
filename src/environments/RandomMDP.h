@@ -47,6 +47,12 @@ public:
 
     /// returns true if the action succeeds
     virtual bool Act(uint action);
+
+    /// Remove periods from MDP
+    void AperiodicityTransform(real tau) 
+    {
+        mdp->AperiodicityTransform(tau);
+    }
 protected:
     DiscreteMDP* mdp;
     real** transitions;

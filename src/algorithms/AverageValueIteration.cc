@@ -32,6 +32,7 @@ AverageValueIteration::AverageValueIteration(const DiscreteMDP* mdp, real baseli
 
 void AverageValueIteration::Reset()
 {
+    max_iter_reached = false;
     int N = n_states * n_actions;
     V.resize(n_states);
     dV.resize(n_states);
@@ -143,13 +144,16 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
             p_b[s] = p_tmp[s];
         }
 #endif
-        Delta = Max(dV) - Min(dV);
+        Delta = Span(dV);//Max(dV) - Min(dV);
         max_iter--;
 
     } while(Delta >= threshold && max_iter > 0);
-	if (n_policy_changes == 0) {
-        printf ("Policy did not change : iters left = %d\n", max_iter);
+    if (max_iter==0) {
+        max_iter_reached = true;
+    } else {
+        max_iter_reached = false;
     }
+    printf ("Delta = %f, iter left = %d\n", Delta, max_iter);
 }
 
 
@@ -209,5 +213,6 @@ void AverageValueIteration::ComputeStateActionValues(real threshold, int max_ite
         Delta = Max(N, &dQ_data[0]) - Min(N, &dQ_data[0]);			
         max_iter--;
     } while(Delta >= threshold && max_iter > 0);
+    printf ("Delta = %f, iter left = %d\n", Delta, max_iter);
 }
 
