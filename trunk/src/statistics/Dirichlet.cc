@@ -62,7 +62,7 @@ Vector DirichletDistribution::generate()
 */
 real DirichletDistribution::pdf(Vector& x)
 {
-    assert(x->Size() == n);
+    assert(x.Size() == n);
 
     real log_prod = 0.0;
     real sum = 0.0;

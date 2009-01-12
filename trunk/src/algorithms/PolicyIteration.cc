@@ -32,7 +32,7 @@ PolicyIteration::PolicyIteration(const PolicyEvaluation* evaluation_,
     policy = new FixedDiscretePolicy(n_states, n_actions);
     _evaluation = NULL;
     
-    a_max.resize(n_actions);
+    a_max.resize(n_states);
     
     Reset();
 }
@@ -52,7 +52,7 @@ PolicyIteration::PolicyIteration(const DiscreteMDP* mdp_,
     _evaluation = new PolicyEvaluation(policy, mdp, gamma, baseline);
     evaluation = _evaluation;
     
-    a_max.resize(n_actions);
+    a_max.resize(n_states);
     
     Reset();
 }

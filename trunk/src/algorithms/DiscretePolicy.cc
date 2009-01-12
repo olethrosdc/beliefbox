@@ -23,7 +23,12 @@ FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions)
     real p_u = 1.0 / (real) n_actions;
     p.resize(n_states);
     for (uint i=0; i<p.size(); i++) {
-        p[i] = p_u;
+        Vector& V = p[i];
+        V.Resize(n_actions);
+        assert (V.Size()==n_actions);
+        for (int j=0; j<n_actions; j++) {
+            V[j] = p_u;
+        }
     }
 }
 
