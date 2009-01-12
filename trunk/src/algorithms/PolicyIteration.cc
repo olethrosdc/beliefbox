@@ -17,6 +17,26 @@
 #include <cmath>
 #include <cassert>
 
+PolicyIteration::PolicyIteration(const PolicyEvaluation* evaluation_,
+                                 const DiscreteMDP* mdp_, 
+                                 real gamma_,
+                                 real baseline_) 
+    : mdp(mdp_), gamma(gamma_), baseline(baseline_)
+{
+    assert (mdp);
+    assert (gamma>=0 && gamma <=1);
+    
+    n_actions = mdp->GetNActions();
+    n_states = mdp->GetNStates();
+    
+    policy = new FixedDiscretePolicy(n_states, n_actions);
+    _evaluation = NULL;
+    
+    a_max.resize(n_actions);
+    
+    Reset();
+}
+
 PolicyIteration::PolicyIteration(const DiscreteMDP* mdp_, 
                                  real gamma_,
                                  real baseline_) 
@@ -29,7 +49,8 @@ PolicyIteration::PolicyIteration(const DiscreteMDP* mdp_,
     n_states = mdp->GetNStates();
     
     policy = new FixedDiscretePolicy(n_states, n_actions);
-    evaluation = new PolicyEvaluation(policy, mdp, gamma, baseline);
+    _evaluation = new PolicyEvaluation(policy, mdp, gamma, baseline);
+    evaluation = _evaluation;
     
     a_max.resize(n_actions);
     
@@ -46,15 +67,15 @@ void PolicyIteration::Reset()
 
 PolicyIteration::~PolicyIteration()
 {
-    delete evaluation;
+    delete _evaluation;
     delete policy;
 }
 
 /** ComputeStateValues
    
-threshold - exit policy estimation when difference in Q is smaller than the threshold
-max_iter - exit policy estimation when the number of iterations reaches max_iter
-The policy iteration itself stops whenever the policy has been the same for a bit.
+    threshold - exit policy estimation when difference in Q is smaller than the threshold
+    max_iter - exit policy estimation when the number of iterations reaches max_iter
+    The policy iteration itself stops whenever the policy has been the same for a bit.
 
 */
 void PolicyIteration::ComputeStateValues(real threshold, int max_iter)
@@ -74,6 +95,8 @@ void PolicyIteration::ComputeStateValues(real threshold, int max_iter)
                 a_max[s] = a_nxt;
             }
         }
+        Delta = evaluation->Delta;
+        baseline = evaluation->baseline;
     } while(!policy_stable);
 }
 
