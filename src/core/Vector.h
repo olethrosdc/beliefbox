@@ -93,18 +93,19 @@ inline void PutVal (Vector* v, int i, real x) {
 
 class Matrix;
 
-void Add (Vector* lhs, Vector* rhs, Vector* res); 
-void Sub (Vector* lhs, Vector* rhs, Vector* res);
-void Mul (Vector* lhs, Vector* rhs, Vector* res);
-void Div (Vector* lhs, Vector* rhs, Vector* res);
+void Add (const Vector* lhs, const Vector* rhs, Vector* res); 
+void Sub (const Vector* lhs, const Vector* rhs, Vector* res);
+void Mul (const Vector* lhs, const Vector* rhs, Vector* res);
+void Div (const Vector* lhs, const Vector* rhs, Vector* res);
 real Product (const Vector* const lhs, const Vector* const rhs);
-void Product (Vector* lhs, Vector* rhs, Matrix* res);
-real EuclideanNorm (Vector* lhs, Vector* rhs);
-real SquareNorm (Vector* lhs, Vector* rhs);
-real Max(Vector* v);
-real Min(Vector* v);
-int ArgMax(Vector* v);
-int ArgMin(Vector* v);
+void Product (const Vector* lhs, const Vector* rhs, Matrix* res);
+real EuclideanNorm (const Vector* lhs, const Vector* rhs);
+real SquareNorm (const Vector* lhs, const Vector* rhs);
+real Max(const Vector* v);
+real Min(const Vector* v);
+int ArgMax(const Vector* v);
+int ArgMin(const Vector* v);
+real Span(const Vector* v);
 
 /*@}*/
 

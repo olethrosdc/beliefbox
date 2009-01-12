@@ -322,7 +322,7 @@ void Vector::Resize(int N_)
 
 /// \brief Add vector lhs to rhs, save result to res.
 /// It is safe to use identical handles for all arguments.
-void Add (Vector* lhs, Vector* rhs, Vector* res)
+void Add (const Vector* lhs, const Vector* rhs, Vector* res)
 {
     SMART_ASSERT(lhs && rhs  && res);
     int n=lhs->n;
@@ -334,7 +334,7 @@ void Add (Vector* lhs, Vector* rhs, Vector* res)
 
 /// \brief Sub vector rhs from lhs, save result to res.
 /// It is safe to use identical handles for all arguments.
-void Sub (Vector* lhs, Vector* rhs, Vector* res)
+void Sub (const Vector* lhs, const Vector* rhs, Vector* res)
 {
     SMART_ASSERT(lhs && rhs  && res);
     int n=lhs->n;
@@ -347,7 +347,7 @@ void Sub (Vector* lhs, Vector* rhs, Vector* res)
 
 /// \brief Multiply lhs and rhs element by element, save result to res.
 /// It is safe to use identical handles for all arguments.
-void Mul (Vector* lhs, Vector* rhs, Vector* res)
+void Mul (const Vector* lhs, const Vector* rhs, Vector* res)
 {
     SMART_ASSERT(lhs && rhs  && res);
     int n=lhs->n;
@@ -359,7 +359,7 @@ void Mul (Vector* lhs, Vector* rhs, Vector* res)
 
 /// \brief Divide lhs and rhs element by element, save result to res.
 /// It is safe to use identical handles for all arguments.
-void Div (Vector* lhs, Vector* rhs, Vector* res)
+void Div (const Vector* lhs, const Vector* rhs, Vector* res)
 {
     SMART_ASSERT(lhs && rhs  && res);
     int n=lhs->n;
@@ -386,7 +386,7 @@ real Product (const Vector* const lhs, const Vector* const rhs)
 
 /// \brief Save product of two vectors onto a matrix.
 /// If all vectors are column vectors, this is \f$x=a b'\f$.
-void Product (Vector* lhs, Vector* rhs, Matrix* res)
+void Product (const Vector* lhs, const Vector* rhs, Matrix* res)
 {
     SMART_ASSERT(lhs && rhs  && res);
     int n=lhs->n;
@@ -401,40 +401,44 @@ void Product (Vector* lhs, Vector* rhs, Matrix* res)
 
 
 /// Return \f$\|a-b\|\f$, the euclidean norm between two vectors.
-real EuclideanNorm (Vector* lhs, Vector* rhs)
+real EuclideanNorm (const Vector* lhs, const Vector* rhs)
 {
     assert (lhs->n==rhs->n);
     return EuclideanNorm (lhs->x, rhs->x, lhs->n);
 }
 /// Return \f$\|a-b\|^2\f$, the square of the euclidean norm between two
 /// vectors.
-real SquareNorm (Vector* lhs, Vector* rhs)
+real SquareNorm (const Vector* lhs, const Vector* rhs)
 {
     assert (lhs->n==rhs->n);
     return SquareNorm (lhs->x, rhs->x, lhs->n);
 }
 
 /// Get maximum element
-real Max(Vector* v)
+real Max(const Vector* v)
 {
     return Max(v->Size(), v->x);
 }
 
 /// Get minimum element
-real Min(Vector* v)
+real Min(const Vector* v)
 {
     return Min(v->Size(), v->x);
 }
 
 /// Get maximum element
-int ArgMax(Vector* v)
+int ArgMax(const Vector* v)
 {
     return ArgMax(v->Size(), v->x);
 }
 
 /// Get minimum element
-int ArgMin(Vector* v)
+int ArgMin(const Vector* v)
 {
     return ArgMin(v->Size(), v->x);
 }
 
+real Span(const Vector* v)
+{
+    return Max(v) - Min(v);
+}

@@ -83,12 +83,7 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
             baseline += p_b[s] * V[s];
         }
 #else
-        baseline = 0.0;
-        for (int s=0; s<n_states; s++) {
-            if (baseline < V[s]) {
-                baseline = V[s];
-            }
-        }
+        baseline = V[0];
 #endif
         //baseline = = real(n_states);
         for (int s=0; s<n_states; s++) {
@@ -185,11 +180,7 @@ void AverageValueIteration::ComputeStateActionValues(real threshold, int max_ite
     }
     do {
         Delta = 0.0;
-        baseline = 0.0;
-        for (int s=0; s<n_states; s++) {
-            baseline += p_b[s] * V[s];
-        }
-        baseline = 0.0;///= real(n_states);
+        baseline = V[0];///= real(n_states);
         for (int s0=0; s0<n_states; s0++) {
             int s = s0;
             for (int a=0; a<n_actions; a++) {

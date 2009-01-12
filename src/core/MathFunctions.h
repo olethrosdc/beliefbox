@@ -155,6 +155,16 @@ real Mean (const std::vector<T>& x)
     return Sum(x) / (real) x.size();
 }
 
+template<typename T>
+real Span (const std::vector<T>& x)
+{
+    if (x.size() == 0) {
+        //return 0;
+        return std::numeric_limits<real>::quiet_NaN();
+    }
+    return Max(x) - Min(x);
+}
+
 
 
 
