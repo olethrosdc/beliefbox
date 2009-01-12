@@ -23,7 +23,7 @@ public:
     virtual int SelectAction() = 0;
     virtual void Observe (int previous_state, int action, real r, int next_state) = 0;
     virtual void Observe (real r, int next_state) = 0;
-    virtual void Reset() = 0;
+    virtual void Reset(int start_state) = 0;
     virtual real getActionProbability(int action) = 0;
     virtual real getActionProbability(int state, int action) = 0;
 };
@@ -37,9 +37,17 @@ public:
     virtual int SelectAction();
     virtual void Observe (int previous_state, int action, real r, int next_state);
     virtual void Observe (real r, int next_state);
-    virtual void Reset();
+    virtual void Reset(int start_state = 0);
     virtual real getActionProbability(int action);
     virtual real getActionProbability(int state, int action);
+    inline Vector getActionProbabilities(int state)
+    {
+        return p[state];
+    }
+    inline Vector* getActionProbabilitiesPtr(int state)
+    {
+        return &p[state];
+    }
 };
 
 #endif

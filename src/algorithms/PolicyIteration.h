@@ -10,36 +10,39 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef POLICY_EVALUATION_H
-#define POLICY_EVALUATION_H
+#ifndef POLICY_ITERATION_H
+#define POLICY_ITERATION_H
 
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
 #include "real.h"
 #include <vector>
 
-class PolicyEvaluation
+class PolicyIteration
 {
 public:
-    DiscretePolicy* policy;
     const DiscreteMDP* mdp;
+    FixedDiscretePolicy* policy;
+    PolicyEvaluation* evaluation;
+    std::vector<int> a_max;
     real gamma;
     int n_states;
     int n_actions;
-    std::vector<real> V;
     real Delta;
     real baseline;
-    PolicyEvaluation(DiscretePolicy* policy_,
-                     const DiscreteMDP* mdp_,
+    PolicyIteration(const DiscreteMDP* mdp_,
                      real gamma_,
                      real baseline_ = 0.0);
-    ~PolicyEvaluation();
+    ~PolicyIteration();
     void Reset();
     void ComputeStateValues(real threshold, int max_iter=-1);
-    real getValue (int state, int action);
+    inline real getValue (int state, int action)
+    {
+        return evaluation->getValue(state, action);
+    }
     inline real getValue (int state)
     {
-        return V[state];
+        return evaluation->getValue(state);
     }
 };
 
