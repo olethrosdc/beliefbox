@@ -35,41 +35,31 @@ int main (void)
     InventoryManagement inventory_management (period, max_items, demand);
 
     Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
-    RandomMDP random_mdp(2, 8, 0.001, 0.1, 0, 1, false);
+    RandomMDP random_mdp(2, 4, 0.01, 0.1, 0, 1, false);
+    random_mdp.AperiodicityTransform(0.5);
     const DiscreteMDP* mdp = random_mdp.getMDP();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
-    
+
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
     
     AveragePolicyEvaluation policy_evaluation(NULL, mdp);
-    PolicyIteration policy_iteration(mdp, gamma);
+    PolicyIteration policy_iteration(&policy_evaluation, mdp, gamma);
     //ValueIteration value_iteration(mdp, gamma);
     //AverageValueIteration value_iteration(mdp);
 
     std::vector<real> Q(n_actions);
 
-    for (int s=0; s<n_states; s++) {
-        for (int a=0; a<n_actions; a++) {
-            Q[a] = policy_iteration.getValue(s,a);
-        }
-        int a_max = ArgMax(Q);
-        std::cout << s << " : " << policy_evaluation.getValue(s)
-                  << " | "
-                  << a_max << ":" << Q[a_max]
-                  << std::endl;
-    }
-
 #if 1
-    policy_iteration.ComputeStateValues(0.1, 10);
+    policy_iteration.ComputeStateValues(0.01, 1000);
     for (int s=0; s<mdp->GetNStates(); s++) {
         printf ("%1.f ", policy_iteration.getValue(s));
     }
     printf(", D = %.1f, b = %.1f\n",
               policy_iteration.Delta,
               policy_iteration.baseline);
-   mdp->ShowModel();
+    //mdp->ShowModel();
    if (1) {
        FILE* f = fopen("test.dot", "w");
        if (f) {

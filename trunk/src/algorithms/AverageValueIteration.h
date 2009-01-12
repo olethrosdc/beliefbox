@@ -25,6 +25,7 @@ public:
     real gamma;
     int n_states;
     int n_actions;
+    bool max_iter_reached;
     std::vector<real> V; ///< current value
     std::vector<real> dV; ///< value difference
     std::vector<real> pV; ///< previous value

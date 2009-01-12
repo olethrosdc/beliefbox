@@ -17,11 +17,11 @@
 #include <cmath>
 #include <cassert>
 
-PolicyIteration::PolicyIteration(const PolicyEvaluation* evaluation_,
+PolicyIteration::PolicyIteration(PolicyEvaluation* evaluation_,
                                  const DiscreteMDP* mdp_, 
                                  real gamma_,
                                  real baseline_) 
-    : mdp(mdp_), gamma(gamma_), baseline(baseline_)
+    : evaluation(evaluation_), mdp(mdp_), gamma(gamma_), baseline(baseline_)
 {
     assert (mdp);
     assert (gamma>=0 && gamma <=1);
@@ -30,6 +30,7 @@ PolicyIteration::PolicyIteration(const PolicyEvaluation* evaluation_,
     n_states = mdp->GetNStates();
     
     policy = new FixedDiscretePolicy(n_states, n_actions);
+    evaluation->policy = policy;
     _evaluation = NULL;
     
     a_max.resize(n_states);
@@ -81,23 +82,39 @@ PolicyIteration::~PolicyIteration()
 void PolicyIteration::ComputeStateValues(real threshold, int max_iter)
 {
     bool policy_stable = true;
+    int iter = 0;
     do {
+        policy_stable = true;
         Delta = 0.0;
-        if (max_iter > 0) {
-            max_iter--;
-        }
-        
+        // evaluate policy
         evaluation->ComputeStateValues(threshold, max_iter);
+        // improve policy
         for (int s=0; s<n_states; s++) {
-            int a_nxt = ArgMax(policy->getActionProbabilitiesPtr(s));
-            if (a_max[s] != a_nxt) {
+            real max_Qa = evaluation->getValue(s, 0);
+            int argmax_Qa = 0;
+            for (int a=1; a<n_actions; a++) {
+                real Qa = evaluation->getValue(s, a);
+                if (Qa > max_Qa) {
+                    max_Qa = Qa;
+                    argmax_Qa = a;
+                }
+            }
+            Vector* p = policy->getActionProbabilitiesPtr(s);
+            for (int a=0; a<n_actions; a++) { 
+                (*p)[a] = 0.0;
+            }
+            (*p)[argmax_Qa] = 1.0;
+            if (a_max[s] != argmax_Qa) {
                 policy_stable = false;
-                a_max[s] = a_nxt;
+                a_max[s] = argmax_Qa;
             }
         }
         Delta = evaluation->Delta;
         baseline = evaluation->baseline;
-    } while(!policy_stable);
+        iter++;
+    } while(policy_stable == false && iter < max_iter);
+
+    printf ("iter left = %d\n", max_iter - iter);
 }
 
 

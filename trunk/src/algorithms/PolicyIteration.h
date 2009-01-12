@@ -33,7 +33,7 @@ public:
     int n_actions;
     real Delta;
     real baseline;
-    PolicyIteration(const PolicyEvaluation* evaluation_,
+    PolicyIteration(PolicyEvaluation* evaluation_,
                     const DiscreteMDP* mdp_,
                     real gamma_,
                     real baseline_ = 0.0);
