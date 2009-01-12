@@ -58,12 +58,62 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
     }
 }
 
+DiscreteMDP::MDP(const MDP<int,int>& mdp)
+    : n_states(mdp.n_states),
+      n_actions(mdp.n_actions)
+{
+ N = n_states * n_actions;
+    
+    P.resize(N);//= new real* [N];
+    P_data.resize(N*n_states);
+    state = 0;
+    
+    next_states.resize(N);
+    
+    for (int i=0; i<N; i++) {
+        P[i] = &P_data[i*n_states];
+        for (int j=0; j<n_states; j++) {
+            P[i][j] = mdp.P[i][j];
+        }
+    }
+    
+    ER.resize(N);
+    R.resize(N);
+    for (int i=0; i<N; i++) {
+        R[i] = mdp.R[i];
+        ER[i] = mdp.ER[i];
+    }
+}
 
 DiscreteMDP::~MDP()
 {
 }
 
 
+/** From Putterman, 8.5.4.
+ 
+    The gain value function is now proportional to tau.
+ */
+void DiscreteMDP::AperiodicityTransform(real tau)
+{
+    SMART_ASSERT(tau > 0 && tau < 1)(tau);
+    for (int i=0; i<N; i++) {
+        //R[i] *= tau;
+        ER[i] *= tau;
+    }
+    for (int s=0; s<n_states; s++) {
+        for (int a=0; a<n_actions; a++) {
+            int i = getID(s,a);
+            for (int j=0; j<n_states; j++) {
+                real delta = 0;
+                if (j==s) {
+                    delta = 1.0;
+                }
+                P[i][j] = (1-tau)*delta + tau*P[i][j];
+            }
+        }
+    }
+}
 
 void DiscreteMDP::ShowModel() const
 {
@@ -91,7 +141,7 @@ void DiscreteMDP::ShowModel() const
 
 void DiscreteMDP::dotModel(FILE* fout) const
 {
-    char* colour[] ={
+    const char* colour[] ={
         "red",
         "green",
         "blue",

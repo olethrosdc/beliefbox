@@ -45,7 +45,8 @@ protected:
 
 public:
 
-    MDP<int, int> (int n_states, int n_actions, real** initial_transitions, Distribution** initial_rewards);
+    MDP<int, int>(int n_states, int n_actions, real** initial_transitions, Distribution** initial_rewards);
+    MDP<int,int> (const MDP<int,int>& mdp);
 
     inline int GetNStates() const
     {
@@ -95,6 +96,7 @@ public:
         int ID = getID (s,a);
         return next_states[ID];
     }
+    void AperiodicityTransform(real tau);
     void Check() const;
 };
 
