@@ -34,7 +34,7 @@ int main (void)
     InventoryManagement inventory_management (period, max_items, demand);
 
     Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
-    RandomMDP random_mdp(2, 4, 0.1, 0.1, 0, 1, false);
+    RandomMDP random_mdp(2, 8, 0.001, 0.1, 0, 1, false);
     const DiscreteMDP* mdp = random_mdp.getMDP();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();

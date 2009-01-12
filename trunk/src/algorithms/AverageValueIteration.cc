@@ -91,7 +91,6 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
         }
 #endif
         //baseline = = real(n_states);
-        n_policy_changes = 0;
         for (int s=0; s<n_states; s++) {
             real Q_a_max = -RAND_MAX;
             int c_a_max = 0;
@@ -131,7 +130,7 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
                  ++i) {
                 int s2 = *i;
                 real P = mdp->getTransitionProbability(s, a_max[s], s2);
-                p_tmp[s2] += 0.01 +  p_b[s] * P;
+                p_tmp[s2] += p_b[s] * P;
             }
         }
 #if 1
@@ -152,7 +151,7 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
         Delta = Max(dV) - Min(dV);
         max_iter--;
 
-    } while(Delta >= threshold && max_iter > 0 && n_policy_changes > 0);
+    } while(Delta >= threshold && max_iter > 0);
 	if (n_policy_changes == 0) {
         printf ("Policy did not change : iters left = %d\n", max_iter);
     }
