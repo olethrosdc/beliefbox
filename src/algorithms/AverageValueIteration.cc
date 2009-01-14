@@ -18,6 +18,8 @@
 #include <cmath>
 #include <cassert>
 
+#undef RECALCULATE_P_B
+
 AverageValueIteration::AverageValueIteration(const DiscreteMDP* mdp, real baseline)
 {
     assert (mdp);
@@ -78,7 +80,7 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
     int n_policy_changes = 0;
     do {
         Delta = 0.0;
-#if 0
+#if 1
         baseline = 0.0;
         for (int s=0; s<n_states; s++) {
             baseline += p_b[s] * V[s];
@@ -118,6 +120,7 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
         for (int s=0; s<n_states; s++) {
             p_tmp[s] = 0.0;
         }
+#ifdef RECALCULATE_P_B
         for (int s=0; s<n_states; s++) {
             // calculate new p_b
             DiscreteStateSet next = mdp->getNextStates(s, a_max[s]);
@@ -129,31 +132,20 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
                 p_tmp[s2] += p_b[s] * P;
             }
         }
-#if 1
-        real sum = 0.0;
-        for (int s=0; s<n_states; s++) {
-            sum += p_tmp[s];
-        }
-        //printf ("sum: %f\n", sum);
-        for (int s=0; s<n_states; s++) {
-            p_b[s] = p_tmp[s] / sum;
-            //p_b[s] = 1/((real) n_states);//xp_tmp[s] / sum;
-        }
-#else
         for (int s=0; s<n_states; s++) {
             p_b[s] = p_tmp[s];
         }
 #endif
-        Delta = Span(dV);//Max(dV) - Min(dV);
+        Delta = Span(dV);
         max_iter--;
-
+        //printf ("%f ", Delta);
     } while(Delta >= threshold && max_iter > 0);
-    if (max_iter==0) {
+    if (max_iter<=0) {
         max_iter_reached = true;
     } else {
         max_iter_reached = false;
     }
-    printf ("Delta = %f, iter left = %d\n", Delta, max_iter);
+
 }
 
 

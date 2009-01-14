@@ -63,9 +63,9 @@ Stats Evaluate() {
     InventoryManagement inventory_management (period, max_items, demand);
 
     //Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
-    RandomMDP random_mdp(2, 4, 0.0, -0.1, -1, 1, false);
+    RandomMDP random_mdp(2 + rand()%6, 3 + rand()%28, 0.0001, 0.1, 0, 1, false);
     const DiscreteMDP* mdp = random_mdp.getMDP();
-    real tau = 0.75;
+    real tau = 0.9;
     random_mdp.AperiodicityTransform(tau);
     mdp->Check();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
@@ -87,25 +87,30 @@ Stats Evaluate() {
 
     std::vector<real> Q(n_actions);
     
-    value_iteration.ComputeStateValues(0.01, 1000);
-    if (value_iteration.max_iter_reached) {
-        for (int s=0; s<mdp->GetNStates(); s++) {
-            printf ("%1.f ", value_iteration.getValue(s));
+    value_iteration.ComputeStateValues(0.1, 100000);
+    //    for (int s=0; s<mdp->GetNStates(); s++) {
+    //        printf ("%1.f ", value_iteration.getValue(s));
+    //    }
+    //printf("\n");
+    
+    if (value_iteration.Delta > 1 || value_iteration.max_iter_reached) {
+        printf ("D=%f", value_iteration.Delta);
+        if (value_iteration.max_iter_reached == true) {
+            printf(" TERM\n");
+        } else {
+            printf("\n");
         }
-        printf(" [V2] \n");
-        value_iteration.ComputeStateValues(0.01, 1000);
-    }
-    for (int s=0; s<mdp->GetNStates(); s++) {
-        printf ("%1.f ", value_iteration.getValue(s));
-    }
-    printf("\n");
-
-    if (value_iteration.max_iter_reached) {
         FILE* f = fopen("test.dot", "w");
         if (f) {
             fprintf (f, "digraph MDP {\n");
             fprintf (f, "ranksep=2; rankdir=LR; \n");
             mdp->dotModel(f);
+            for (int s=0; s<mdp->GetNStates(); s++) {
+                fprintf (f,
+                         "s%d [label = \"%.2f\"];\n",
+                         s,
+                         value_iteration.getValue(s));
+            }
             fprintf (f, "}\n");
             fclose(f);
         }
