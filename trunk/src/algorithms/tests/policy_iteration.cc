@@ -35,8 +35,8 @@ int main (void)
     InventoryManagement inventory_management (period, max_items, demand);
 
     Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
-    RandomMDP random_mdp(2, 4, 0.01, 0.1, 0, 1, false);
-    random_mdp.AperiodicityTransform(0.5);
+    RandomMDP random_mdp(1, 4, 0.01, 0.1, 0, 1, false);
+    random_mdp.AperiodicityTransform(0.99);
     const DiscreteMDP* mdp = random_mdp.getMDP();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
