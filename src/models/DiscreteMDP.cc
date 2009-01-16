@@ -87,6 +87,12 @@ DiscreteMDP::MDP(const MDP<int,int>& mdp)
 
 DiscreteMDP::~MDP()
 {
+    // clear all distributions that have been added
+    for (std::vector<Distribution*>::iterator i = distribution_vector.begin();
+         i < distribution_vector.end(); ++i) {
+        delete *i;
+    }
+         
 }
 
 
