@@ -31,6 +31,7 @@ protected:
     std::vector<real*> P; ///< transition distribution
     std::vector<real> P_data; ///< transition distribution data
     std::vector<Distribution*> R; ///< reward distribution
+    std::vector<Distribution*> distribution_vector; ///< for malloc
     std::vector<real> ER; ///< expected reward
     std::vector<DiscreteStateSet> next_states;
     int N;
@@ -90,6 +91,20 @@ public:
         int ID = getID (s, a);
         R[ID] = reward;
         ER[ID] = reward->getMean();
+    }
+    // only use this function once per state-action pair
+    inline void addRewardDistribution(int s, int a, Distribution* reward)
+    {   
+        int ID = getID (s, a);
+        distribution_vector.push_back(reward);
+        R[ID] = reward;
+        ER[ID] = reward->getMean();
+    }
+    // only use this function once per state-action pair
+    inline void addFixedReward(int s, int a, real reward)
+    {   
+        SingularDistribution* distribution = new SingularDistribution(reward);
+        addRewardDistribution(s, a, distribution);
     }
     inline DiscreteStateSet getNextStates(int s, int a) const
     {

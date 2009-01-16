@@ -21,6 +21,8 @@
 class AverageValueIteration
 {
 public:
+    const bool RELATIVE;
+    const bool SYNCHRONOUS;
     const DiscreteMDP* mdp;
     real gamma;
     int n_states;
@@ -38,7 +40,7 @@ public:
     std::vector<real> p_b; ///< stationary distribution for baseline
     real Delta; ///< difference norm for termination
     real baseline; ///< baseline for fixing overflow
-    AverageValueIteration(const DiscreteMDP* mdp, real baseline=0.0);
+    AverageValueIteration(const DiscreteMDP* mdp, bool relative, bool synchronous);
     ~AverageValueIteration();
     void Reset();
     void ComputeStateValues(real threshold, int max_iter=-1);

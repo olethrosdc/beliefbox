@@ -20,7 +20,7 @@
 
 #undef RECALCULATE_P_B
 
-AverageValueIteration::AverageValueIteration(const DiscreteMDP* mdp, real baseline)
+AverageValueIteration::AverageValueIteration(const DiscreteMDP* mdp, bool relative, bool synchronous) : RELATIVE(relative), SYNCHRONOUS(synchronous)
 {
     assert (mdp);
     assert (gamma>=0 && gamma <=1);
@@ -80,14 +80,12 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
     Delta = 0.0;
     int stuck_count = 0;
     do {
-#if 1
         baseline = 0.0;
-        for (int s=0; s<n_states; s++) {
-            baseline += p_b[s] * V[s];
+        if (RELATIVE) {
+            for (int s=0; s<n_states; s++) {
+                baseline += p_b[s] * V[s];
+            }
         }
-#else
-        baseline = V[0];
-#endif
         //baseline = = real(n_states);
         for (int s=0; s<n_states; s++) {
             real Q_a_max = -RAND_MAX;
@@ -100,7 +98,12 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
                      ++i) {
                     int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
-                    real R = mdp->getExpectedReward(s, a) + V[s2] - baseline;
+                    real R;
+                    if (SYNCHRONOUS) {
+                        R = mdp->getExpectedReward(s, a) + pV[s2] - baseline;
+                    } else {
+                        R = mdp->getExpectedReward(s, a) + V[s2] - baseline;
+                    }
                     S += P * R;
                 }
                 if (a==0 || Q_a_max < S) {
@@ -114,26 +117,36 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
             }
             V[s] = Q_a_max;
             dV[s] = pV[s] - V[s];
-            pV[s] = V[s];
+            if (!SYNCHRONOUS) {
+                pV[s] = V[s];
+            }
+        }
+
+        if (SYNCHRONOUS) {
+            for (int s=0; s<n_states; s++) {
+                pV[s] = V[s];
+            }
         }
 
 #ifdef RECALCULATE_P_B
-        for (int s=0; s<n_states; s++) {
-            p_tmp[s] = 0.0;
-        }
-        for (int s=0; s<n_states; s++) {
-            // calculate new p_b
-            DiscreteStateSet next = mdp->getNextStates(s, a_max[s]);
-            for (DiscreteStateSet::iterator i=next.begin();
-                 i!=next.end();
-                 ++i) {
-                int s2 = *i;
-                real P = mdp->getTransitionProbability(s, a_max[s], s2);
-                p_tmp[s2] += p_b[s] * P;
+        if (RELATIVE) { 
+            for (int s=0; s<n_states; s++) {
+                p_tmp[s] = 0.0;
             }
-        }
-        for (int s=0; s<n_states; s++) {
-            p_b[s] = 1.0 / (real) n_states; //p_tmp[s];
+            for (int s=0; s<n_states; s++) {
+                // calculate new p_b
+                DiscreteStateSet next = mdp->getNextStates(s, a_max[s]);
+                for (DiscreteStateSet::iterator i=next.begin();
+                     i!=next.end();
+                     ++i) {
+                    int s2 = *i;
+                    real P = mdp->getTransitionProbability(s, a_max[s], s2);
+                    p_tmp[s2] += p_b[s] * P;
+                }
+            }
+            for (int s=0; s<n_states; s++) {
+                p_b[s] = 1.0 / (real) n_states; //p_tmp[s];
+            }
         }
 #endif
         pDelta = Delta;
@@ -141,10 +154,6 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
         if (pDelta > 0) {
             d2Delta = Delta - pDelta;
             dDelta += d2Delta;
-            //            if (max_iter < 0) {
-            //                printf ("iter: %d, dDelta = %f, pDelta = %f,  Delta = %f\n",
-            //                        max_iter, dDelta, pDelta, Delta);
-            //}
             if (fabs(d2Delta) < 0.00001*threshold) {
                 stuck_count++;
                 if (stuck_count >=10) {
