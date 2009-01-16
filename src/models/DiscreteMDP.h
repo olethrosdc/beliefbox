@@ -98,6 +98,7 @@ public:
     }
     void AperiodicityTransform(real tau);
     void Check() const;
+    real CalculateDiameter() const;
 };
 
 typedef MDP<int, int> DiscreteMDP;

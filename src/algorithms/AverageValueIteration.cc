@@ -61,11 +61,7 @@ void AverageValueIteration::Reset()
     p_b.resize(n_states);
     real sum = 0.0;
     for (int s=0; s<n_states; s++) {
-        p_b[s] = urandom();
-        sum += p_b[s];
-    }
-    for (int s=0; s<n_states; s++) {
-        p_b[s] /= sum;
+        p_b[s] = 1./n_states;
     }
 }
 
@@ -78,8 +74,12 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
     std::vector<real> p_tmp(n_states);
     std::vector<int> a_max(n_states);
     int n_policy_changes = 0;
+    real pDelta = 0.0;
+    real dDelta = 0.0;
+    real d2Delta = 0.0;
+    Delta = 0.0;
+    int stuck_count = 0;
     do {
-        Delta = 0.0;
 #if 1
         baseline = 0.0;
         for (int s=0; s<n_states; s++) {
@@ -117,10 +117,10 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
             pV[s] = V[s];
         }
 
+#ifdef RECALCULATE_P_B
         for (int s=0; s<n_states; s++) {
             p_tmp[s] = 0.0;
         }
-#ifdef RECALCULATE_P_B
         for (int s=0; s<n_states; s++) {
             // calculate new p_b
             DiscreteStateSet next = mdp->getNextStates(s, a_max[s]);
@@ -133,13 +133,30 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
             }
         }
         for (int s=0; s<n_states; s++) {
-            p_b[s] = p_tmp[s];
+            p_b[s] = 1.0 / (real) n_states; //p_tmp[s];
         }
 #endif
+        pDelta = Delta;
         Delta = Span(dV);
+        if (pDelta > 0) {
+            d2Delta = Delta - pDelta;
+            dDelta += d2Delta;
+            //            if (max_iter < 0) {
+            //                printf ("iter: %d, dDelta = %f, pDelta = %f,  Delta = %f\n",
+            //                        max_iter, dDelta, pDelta, Delta);
+            //}
+            if (fabs(d2Delta) < 0.00001*threshold) {
+                stuck_count++;
+                if (stuck_count >=10) {
+                    printf ("STUCK\n");
+                }
+            } else {
+                stuck_count = 0;
+            }
+        }
         max_iter--;
-        //printf ("%f ", Delta);
-    } while(Delta >= threshold && max_iter > 0);
+    } while(stuck_count < 10 && Delta >= threshold && (max_iter > 0 || dDelta < 0));
+    //printf ("Delta: %f, dDelta: %f, d2Delta: %f\n", Delta, dDelta, d2Delta);
     if (max_iter<=0) {
         max_iter_reached = true;
     } else {
@@ -188,11 +205,11 @@ void AverageValueIteration::ComputeStateActionValues(real threshold, int max_ite
                      ++i) {
                     int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
-                        //if (P > 0) {
-                        real R = mdp->getExpectedReward(s, a) - baseline;
-                        real Q_a_max = Max(n_actions, Q[s2]);
-                        sum += P*(R + gamma*Q_a_max);
-                            //}
+                    //if (P > 0) {
+                    real R = mdp->getExpectedReward(s, a) - baseline;
+                    real Q_a_max = Max(n_actions, Q[s2]);
+                    sum += P*(R + gamma*Q_a_max);
+                    //}
 
                 }
                 Q[s][a] = sum;
@@ -205,6 +222,6 @@ void AverageValueIteration::ComputeStateActionValues(real threshold, int max_ite
         Delta = Max(N, &dQ_data[0]) - Min(N, &dQ_data[0]);			
         max_iter--;
     } while(Delta >= threshold && max_iter > 0);
-    printf ("Delta = %f, iter left = %d\n", Delta, max_iter);
+    //printf ("Delta = %f, iter left = %d\n", Delta, max_iter);
 }
 

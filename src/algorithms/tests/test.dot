@@ -1,0 +1,33 @@
+digraph MDP {
+ranksep=2; rankdir=LR; 
+s0 -> s0 [label = " p=0.10, r=0.1", color=red];
+s0 -> s1 [label = " p=0.90, r=0.1", color=red];
+s0 -> s2 [label = " p=0.00, r=0.1", color=red];
+s0 -> s0 [label = " p=1.00, r=0.1", color=green];
+s0 -> s1 [label = " p=0.00, r=0.1", color=green];
+s0 -> s2 [label = " p=0.00, r=0.1", color=green];
+s1 -> s0 [label = " p=0.00, r=0.0", color=red];
+s1 -> s1 [label = " p=1.00, r=0.0", color=red];
+s1 -> s2 [label = " p=0.00, r=0.0", color=red];
+s1 -> s0 [label = " p=0.00, r=0.0", color=green];
+s1 -> s1 [label = " p=0.10, r=0.0", color=green];
+s1 -> s2 [label = " p=0.90, r=0.0", color=green];
+s2 -> s0 [label = " p=0.90, r=0.9", color=red];
+s2 -> s1 [label = " p=0.00, r=0.9", color=red];
+s2 -> s2 [label = " p=0.10, r=0.9", color=red];
+s2 -> s0 [label = " p=0.90, r=0.9", color=green];
+s2 -> s1 [label = " p=0.00, r=0.9", color=green];
+s2 -> s2 [label = " p=0.10, r=0.9", color=green];
+s3 -> s0 [label = " p=0.90, r=0.1", color=red];
+s3 -> s1 [label = " p=0.00, r=0.1", color=red];
+s3 -> s2 [label = " p=0.00, r=0.1", color=red];
+s3 -> s3 [label = " p=0.10, r=0.1", color=red];
+s3 -> s0 [label = " p=0.00, r=0.1", color=green];
+s3 -> s1 [label = " p=0.00, r=0.1", color=green];
+s3 -> s2 [label = " p=0.90, r=0.1", color=green];
+s3 -> s3 [label = " p=0.10, r=0.1", color=green];
+s0 [label = "-97044339.09"];
+s1 [label = "18160849.07"];
+s2 [label = "-360489499.57"];
+s3 [label = "-364258603.74"];
+}
