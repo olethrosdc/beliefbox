@@ -11,6 +11,7 @@
  ***************************************************************************/
 
 #ifdef MAKE_MAIN
+#include "GoalStateIteration.h"
 #include "AverageValueIteration.h"
 #include "Gridworld.h"
 #include "InventoryManagement.h"
@@ -63,9 +64,12 @@ Stats Evaluate() {
     InventoryManagement inventory_management (period, max_items, demand);
 
     //Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
-    RandomMDP random_mdp(2 + rand()%6, 3 + rand()%28, 0.0001, 0.1, 0, 1, false);
+    RandomMDP random_mdp(2, 4, 0.001, 0.1, 0, 1, false);
     const DiscreteMDP* mdp = random_mdp.getMDP();
+    GoalStateIteration goal_state_iteration(mdp);
+    real diameter = goal_state_iteration.GetMDPDiameter(0.0001, 1000);
     real tau = 0.9;
+    //printf ("Aperiodcity %f, diameter = %f\n", tau, diameter);
     random_mdp.AperiodicityTransform(tau);
     mdp->Check();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
@@ -87,14 +91,16 @@ Stats Evaluate() {
 
     std::vector<real> Q(n_actions);
     
-    value_iteration.ComputeStateValues(0.1, 100000);
-    //    for (int s=0; s<mdp->GetNStates(); s++) {
-    //        printf ("%1.f ", value_iteration.getValue(s));
-    //    }
-    //printf("\n");
+    value_iteration.ComputeStateValues(0.1, 1000);
+#if 0
+    for (int s=0; s<mdp->GetNStates(); s++) {
+        printf ("%1.f ", value_iteration.getValue(s));
+        }
+    printf("\n");
+#endif
     
-    if (value_iteration.Delta > 1 || value_iteration.max_iter_reached) {
-        printf ("D=%f", value_iteration.Delta);
+    if (value_iteration.Delta > 100) {// || value_iteration.max_iter_reached) {
+        printf ("D=%f, diameter = %f", value_iteration.Delta, diameter);
         if (value_iteration.max_iter_reached == true) {
             printf(" TERM\n");
         } else {
