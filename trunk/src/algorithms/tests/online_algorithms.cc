@@ -19,6 +19,8 @@
 #include "Environment.h"
 #include "ExplorationPolicy.h"
 #include "Sarsa.h"
+#include "QLearning.h"
+//#include "QLearningDirichlet.h"
 
 struct Statistics
 {
@@ -85,19 +87,37 @@ int main (int argc, char** argv)
     std::vector<Statistics> statistics(n_episodes);
     for (uint run=0; run<n_runs; ++run) {
 	//std::cout << "Creating exploration policy" << std::endl;
-	ExplorationPolicy* exploration_policy = NULL;
+	VFExplorationPolicy* exploration_policy = NULL;
 	exploration_policy = new EpsilonGreedy(n_actions, epsilon);
     
     
 	//std::cout << "Creating online algorithm" << std::endl;
 	OnlineAlgorithm<int, int>* algorithm = NULL;
-	algorithm = new Sarsa(n_states,
-			      n_actions,
-			      gamma,
-			      lambda,
-			      alpha,
-			      exploration_policy);
-
+        if (0) { 
+            algorithm = new Sarsa(n_states,
+                                  n_actions,
+                                  gamma,
+                                  lambda,
+                                  alpha,
+                                  exploration_policy);
+        } else if (1) {
+            algorithm = new QLearning(n_states,
+                                      n_actions,
+                                      gamma,
+                                      lambda,
+                                      alpha,
+                                      exploration_policy);
+        }
+#if 0
+        else {
+                        algorithm = new QLearningDirichlet(n_states,
+                                               n_actions,
+                                               gamma,
+                                               lambda,
+                                               alpha,
+                                               exploration_policy);
+        }
+#endif
 	//std::cout << "Creating environment" << std::endl;
 	DiscreteEnvironment* environment = NULL;
 	environment = new RandomMDP (n_actions,

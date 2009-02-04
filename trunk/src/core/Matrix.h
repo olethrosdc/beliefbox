@@ -47,6 +47,8 @@ public:
     bool isUpperTriangular();
     bool isLowerTriangular();
     real det();
+    real ColumnSum(int c);
+    real RowSum(int r);
     real compute_det_triangular();
     real gaussian_elimination_forward(real epsilon = 0.000001);
     std::vector<Matrix> LUDecomposition(real& determinant, real epsilon = 0.000001);

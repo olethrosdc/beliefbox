@@ -17,9 +17,11 @@
 #include "DiscretePolicy.h"
 #include "Matrix.h"
 #include "real.h"
+#include "ExplorationPolicy.h"
+#include "OnlineAlgorithm.h"
 #include <vector>
 
-class QLearning
+class QLearning : public OnlineAlgorithm<int,int>
 {
 protected:
     const int n_states; ///< number of states
@@ -27,6 +29,7 @@ protected:
     real gamma; ///< discount factor
     real lambda; ///< eligibility trace decay rate
     real alpha; ///< learning rate 
+    VFExplorationPolicy* exploration_policy; ///< exploration policy
     real initial_value; ///< initial value for Q values
     real baseline; ///< baseline reward
 
@@ -34,19 +37,28 @@ protected:
     Matrix el;
 
     int state; ///< current state
-
+    int action; ///< current action
 public:
     QLearning(int n_states_,
               int n_actions_,
               real gamma_,
               real lambda_,
-              real alpha_ = 0.1,
+              real alpha_,
+              VFExplorationPolicy* exploration_policy_,
               real initial_value_= 0.0,
               real baseline_ = 0.0);
-    ~QLearning();
-    void Reset();
-    real Observe (int action, int next_state, real reward);
-    real getValue (int s, int a);
+    virtual ~QLearning()
+    {
+    }
+    virtual void Reset();
+    virtual real Observe (int action, int next_state, real reward);
+    virtual real Observe (real reward, int next_state, int next_action);
+    virtual int Act(real reward, int next_state);
+    virtual real getValue (int s, int a)
+    {
+        return Q(state, action);
+    }
+
     
 };
 

@@ -59,7 +59,7 @@ void AverageValueIteration::Reset()
         }
     }
     p_b.resize(n_states);
-    real sum = 0.0;
+    //real sum = 0.0;
     for (int s=0; s<n_states; s++) {
         p_b[s] = 1./n_states;
     }
