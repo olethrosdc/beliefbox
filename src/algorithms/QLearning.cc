@@ -17,6 +17,7 @@ QLearning::QLearning(int n_states_,
                      real gamma_,
                      real lambda_,
                      real alpha_,
+                     VFExplorationPolicy* exploration_policy_,
                      real initial_value_,
                      real baseline_)
     : n_states(n_states_),
@@ -29,13 +30,24 @@ QLearning::QLearning(int n_states_,
       Q(n_states_, n_actions_),
       el(n_states_, n_actions_)
 {
-    state = -1;
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             Q(s, a) = initial_value;
+        }
+    }
+    Reset();
+}
+
+void QLearning::Reset()
+{
+    state = -1;
+    action = -1;
+    for (int s=0; s<n_states; s++) {
+        for (int a=0; a<n_actions; a++) {
             el(s,a) = 0.0;
         }
     }
+
 }
 
 real QLearning::Observe (int action, int next_state, real reward)
@@ -51,8 +63,6 @@ real QLearning::Observe (int action, int next_state, real reward)
 	    Qa_max = Q(next_state, a_max);
 	}
     }
-
-    
 
     real n_R = (reward - baseline) +  gamma*Qa_max; // partially observed return
     real p_R = Q(state, action); // predicted return
@@ -72,4 +82,19 @@ real QLearning::Observe (int action, int next_state, real reward)
 
     state = next_state; // fall back next state;
     return TD;
+}
+
+real QLearning::Observe (real reward, int next_state, int next_action)
+{
+    real TD = Observe(action, next_state, reward);
+    action = next_action; // fall back next action
+    return TD;
+}
+
+int QLearning::Act(real reward, int next_state)
+{
+    exploration_policy->Observe(reward, next_state);
+    int next_action = exploration_policy->SelectAction();//Q, next_state);
+    Observe(reward, next_state, next_action);
+    return next_action;
 }

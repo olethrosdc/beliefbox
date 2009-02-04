@@ -540,3 +540,20 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
     }
     return retval;
 }
+
+real Matrix::ColumnSum(int c)
+{
+    real sum = 0.0;
+    for (int i=0; i<rows; i++) {
+        sum += (*this)(i,c);
+    }
+    return sum;
+}
+real Matrix::RowSum(int r)
+{
+    real sum = 0.0;
+    for (int i=0; i<columns; i++) {
+        sum += (*this)(r,i);
+    }
+    return sum;
+}

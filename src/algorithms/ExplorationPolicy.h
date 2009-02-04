@@ -58,6 +58,7 @@ public:
     {
         epsilon = epsilon_;
         assert(epsilon >= 0 && epsilon <= 1);
+        return epsilon;
     }
     virtual void setValueMatrix(Matrix* Q_)
     {
@@ -80,5 +81,16 @@ public:
 	}
 	return argmax;
     }
+    virtual void Observe(real reward, int state)
+    {
+    }
+
+    virtual DiscretePolicy* getFixedPolicy() 
+    {
+        Serror ("Not implemented\n");
+        exit(-1);
+        return NULL;
+    }
+
 };
 #endif
