@@ -83,6 +83,7 @@ public:
     }
     virtual void Observe(real reward, int state)
     {
+        this->state = state;
     }
 
     virtual DiscretePolicy* getFixedPolicy() 
