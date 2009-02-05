@@ -33,10 +33,10 @@ public:
                        VFExplorationPolicy* exploration_policy_,
                        real initial_value_= 0.0,
                        real baseline_ = 0.0);
-    virtual ~QLearningDirichlet();
-    virtual void Reset();
+    virtual ~QLearningDirichlet()
+    {
+    }
     virtual real Observe (int action, int next_state, real reward);
-    virtual real getValue (int s, int a);
 };
 
 #endif

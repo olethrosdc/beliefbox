@@ -79,6 +79,7 @@ real QLearningDirichlet::Observe (int action, int next_state, real reward)
             int i = state*n_actions + action;
             real Z = (C.RowSum(i));
             lambda_t = C(i, next_state);
+            C(i, next_state) += 1.0;
             if (Z > 0) {
                 lambda_t /= Z;
             }
