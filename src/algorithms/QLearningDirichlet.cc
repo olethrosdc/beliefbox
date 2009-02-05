@@ -50,6 +50,8 @@ QLearningDirichlet::QLearningDirichlet(int n_states_,
             }
         }
     }
+    exploration_policy->setValueMatrix(&Q);
+    Reset();
 }
 real QLearningDirichlet::Observe (int action, int next_state, real reward)
 {
@@ -58,41 +60,43 @@ real QLearningDirichlet::Observe (int action, int next_state, real reward)
     real Qa_max = Q(next_state, a_max);
     // select maximising action
     for (int i=1; i<n_actions; ++i) {
-	if (Q(next_state, i) > Qa_max) {
-	    a_max = i;
-	    Qa_max = Q(next_state, a_max);
-	}
-    }
-
-    real n_R = (reward - baseline) +  gamma*Qa_max; // partially observed return
-    real p_R = Q(state, action); // predicted return
-    real TD = n_R - p_R;
-
-    // find lambda
-    // model assumes P(r|s',s,a) = P(r|s,a)
-    real lambda_t = 0.0; // default value for initial state thing
-    if (state >= 0) {
-        int i = state*n_actions + action;
-        real Z = (C.RowSum(i));
-        lambda_t = C(i, next_state);
-        if (Z > 0) {
-            lambda_t /= Z;
+        if (Q(next_state, i) > Qa_max) {
+            a_max = i;
+            Qa_max = Q(next_state, a_max);
         }
     }
 
-    // update eligibility traces
-    for (int i=0; i<n_states; ++i) {
-	for (int j=0; j<n_actions; ++j ) {
-	    el(i,j) *= lambda_t;
-	}
-    }
-    el(state, action) = 1;
-    for (int i=0; i<n_states; ++i) {
-	for (int j=0; j<n_actions; ++j ) {
-	    Q(i, j) += el(i, j)*alpha*TD;	    
-	}
-    }
+    real n_R = (reward - baseline) +  gamma*Qa_max; // partially observed return
+    real TD = 0.0;
+    if (state >= 0 && action >= 0) {
+        real p_R = Q(state, action); // predicted return
+        TD = n_R - p_R;
+        
+        // find lambda
+        // model assumes P(r|s',s,a) = P(r|s,a)
+        real lambda_t = 0.0; // default value for initial state thing
+        if (state >= 0) {
+            int i = state*n_actions + action;
+            real Z = (C.RowSum(i));
+            lambda_t = C(i, next_state);
+            if (Z > 0) {
+                lambda_t /= Z;
+            }
+        }
 
+        // update eligibility traces
+        for (int i=0; i<n_states; ++i) {
+            for (int j=0; j<n_actions; ++j ) {
+                el(i,j) *= lambda_t;
+            }
+        }
+        el(state, action) = 1;
+        for (int i=0; i<n_states; ++i) {
+            for (int j=0; j<n_actions; ++j ) {
+                Q(i, j) += el(i, j)*alpha*TD;	    
+            }
+        }
+    }
     state = next_state; // fall back next state;
     return TD;
 }

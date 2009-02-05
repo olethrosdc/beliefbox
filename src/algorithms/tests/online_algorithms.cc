@@ -52,8 +52,8 @@ int main (int argc, char** argv)
     int n_episodes = 10000;
     int n_steps = 1000;
 
-    if (argc != 6) {
-	std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness\n";
+    if (argc != 9) {
+	std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps\n";
 	return -1;
     }
     n_states = atoi(argv[1]);
@@ -71,6 +71,14 @@ int main (int argc, char** argv)
     randomness = atof(argv[5]);
     assert (randomness >= 0 && randomness <= 1);
     
+    n_runs = atoi(argv[6]);
+    assert (n_runs > 0);
+
+    n_episodes = atoi(argv[7]);
+    assert (n_episodes > 0);
+
+    n_steps = atoi(argv[8]);
+    assert (n_steps > 0);
 
     std::cout << "Starting test program" << std::endl;
     

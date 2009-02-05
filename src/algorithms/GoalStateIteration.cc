@@ -48,7 +48,7 @@ GoalStateIteration::~GoalStateIteration()
 // calculate the negative expected distance
 void GoalStateIteration::ComputeStateValues(int goal_state, real threshold, int max_iter)
 {
-    assert (goal_state >=0 && goal_state <_states);
+    assert (goal_state >=0 && goal_state < n_states);
     Reset();
     V[goal_state] = 1;
     

@@ -25,6 +25,7 @@ QLearning::QLearning(int n_states_,
       gamma(gamma_),
       lambda(lambda_),
       alpha(alpha_),
+      exploration_policy(exploration_policy_),
       initial_value(initial_value_),
       baseline(baseline_),
       Q(n_states_, n_actions_),
@@ -32,9 +33,10 @@ QLearning::QLearning(int n_states_,
 {
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
-            Q(s, a) = initial_value;
+            Q(s, a) = 0.0;//initial_value;
         }
     }
+    exploration_policy->setValueMatrix(&Q);
     Reset();
 }
 
@@ -58,28 +60,30 @@ real QLearning::Observe (int action, int next_state, real reward)
     real Qa_max = Q(next_state, a_max);
     // select maximising action
     for (int i=1; i<n_actions; ++i) {
-	if (Q(next_state, i) > Qa_max) {
-	    a_max = i;
-	    Qa_max = Q(next_state, a_max);
-	}
+        if (Q(next_state, i) > Qa_max) {
+            a_max = i;
+            Qa_max = Q(next_state, a_max);
+        }
     }
 
     real n_R = (reward - baseline) +  gamma*Qa_max; // partially observed return
-    real p_R = Q(state, action); // predicted return
-    real TD = n_R - p_R;
-
-    for (int i=0; i<n_states; ++i) {
-	for (int j=0; j<n_actions; ++j ) {
-	    el(i,j) *= lambda;
-	}
+    real TD = 0.0;
+    if (state >= 0 && action >= 0) {
+        real p_R = Q(state, action); // predicted return
+        TD = n_R - p_R;
+        
+        for (int i=0; i<n_states; ++i) {
+            for (int j=0; j<n_actions; ++j ) {
+                el(i,j) *= lambda;
+            }
+        }
+        el(state, action) = 1;
+        for (int i=0; i<n_states; ++i) {
+            for (int j=0; j<n_actions; ++j ) {
+                Q(i, j) += el(i, j)*alpha*TD;	    
+            }
+        }
     }
-    el(state, action) = 1;
-    for (int i=0; i<n_states; ++i) {
-	for (int j=0; j<n_actions; ++j ) {
-	    Q(i, j) += el(i, j)*alpha*TD;	    
-	}
-    }
-
     state = next_state; // fall back next state;
     return TD;
 }
