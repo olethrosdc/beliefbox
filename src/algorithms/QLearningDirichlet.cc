@@ -39,7 +39,7 @@ QLearningDirichlet::QLearningDirichlet(int n_states_,
         Swarning("Lambda is 1\n");
         lambda_count = INF;
     } else { 
-        lambda_count = 1 / (1 - lambda);
+        lambda_count = (real) n_states / (lambda) - (real) n_states;
     }
 
     for (int s=0; s<n_states; s++) {

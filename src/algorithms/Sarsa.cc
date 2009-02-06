@@ -13,13 +13,13 @@
 #include "Sarsa.h"
 
 Sarsa::Sarsa(int n_states_,
-	     int n_actions_,
-	     real gamma_,
-	     real lambda_,
-	     real alpha_,
-	     VFExplorationPolicy* exploration_policy_,
-	     real initial_value_,
-	     real baseline_)
+             int n_actions_,
+             real gamma_,
+             real lambda_,
+             real alpha_,
+             VFExplorationPolicy* exploration_policy_,
+             real initial_value_,
+             real baseline_)
     : n_states(n_states_),
       n_actions(n_actions_),
       gamma(gamma_),
@@ -81,26 +81,26 @@ real Sarsa::Observe (real reward, int next_state, int next_action)
     real p_R = 0.0;
     real TD = 0.0;
     if (state >= 0 && action >= 0) {
-	p_R = Q(state, action); // predicted return
-	TD = n_R - p_R;
-    }
-
-    for (int i=0; i<n_states; ++i) {
-	for (int j=0; j<n_actions; ++j ) {
-	    el(i,j) *= lambda;
-	}
-    }
-
-    if (state >= 0 && action >= 0) {
-	el(state, action) = 1;
-    }
-
-    for (int i=0; i<n_states; ++i) {
-	for (int j=0; j<n_actions; ++j ) {
-	    Q(i, j) += el(i, j) * alpha * TD;
-	}
-    }
+        p_R = Q(state, action); // predicted return
+        TD = n_R - p_R;
     
+
+        for (int i=0; i<n_states; ++i) {
+            for (int j=0; j<n_actions; ++j ) {
+                el(i,j) *= lambda;
+            }
+        }
+
+        if (state >= 0 && action >= 0) {
+            el(state, action) = 1;
+        }
+
+        for (int i=0; i<n_states; ++i) {
+            for (int j=0; j<n_actions; ++j ) {
+                Q(i, j) += el(i, j) * alpha * TD;
+            }
+        }
+    }
     state = next_state; // fall back next state;
     action = next_action; // fall back next action
     
