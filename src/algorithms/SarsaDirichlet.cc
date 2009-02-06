@@ -28,7 +28,7 @@ SarsaDirichlet::SarsaDirichlet(int n_states_,
             exploration_policy_,
             initial_value_,
             baseline_),
-      C(n_states_ * n_actions_, n_actions)
+      C(n_states_ * n_actions_, n_states)
 {
     real lambda_count;
     if (lambda == 1.0) {

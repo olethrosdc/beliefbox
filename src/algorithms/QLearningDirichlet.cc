@@ -28,7 +28,7 @@ QLearningDirichlet::QLearningDirichlet(int n_states_,
                 exploration_policy_,
                 initial_value_,
                 baseline_),
-      C(n_states_ * n_actions_, n_actions)
+      C(n_states_ * n_actions_, n_states)
 {
     state = -1;
 
@@ -79,11 +79,15 @@ real QLearningDirichlet::Observe (int action, int next_state, real reward)
             int i = state*n_actions + action;
             real Z = (C.RowSum(i));
             lambda_t = C(i, next_state);
-            C(i, next_state) += 1.0;
             if (Z > 0) {
                 lambda_t /= Z;
+            } else {
+                lambda_t = 1.0;
             }
+            C(i, next_state) += 1.0;
         }
+
+
 
         // update eligibility traces
         for (int i=0; i<n_states; ++i) {
