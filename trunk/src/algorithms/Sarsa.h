@@ -49,7 +49,7 @@ public:
           real initial_value_= 0.0,
           real baseline_ = 0.0);
     virtual ~Sarsa();
-    void Reset();
+    virtual void Reset();
     /// Full SARSA observation (no eligibility traces)
     virtual real Observe (int state, int action, real reward, int next_state, int next_action);
     /// Partial SARSA observation (can be used with eligibility traces)
