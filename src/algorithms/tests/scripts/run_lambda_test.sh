@@ -1,7 +1,7 @@
 #! /bin/bash
 
 n_actions=2
-gamma=0.99
+gamma=0.9
 n_runs=1000
 n_episodes=10000
 n_steps=1000
