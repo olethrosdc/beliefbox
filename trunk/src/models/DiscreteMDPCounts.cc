@@ -39,12 +39,12 @@ void DiscreteMDPCounts::SetNextReward(int s, int a, real r)
     ER[getID (s, a)] = r;
 }
 
-real DiscreteMDPCounts::GenerateReward (int s, int a)
+real DiscreteMDPCounts::GenerateReward (int s, int a) const
 {
     return ER[getID (s, a)];
 }
 
-int DiscreteMDPCounts::GenerateTransition (int s, int a)
+int DiscreteMDPCounts::GenerateTransition (int s, int a) const
 {
     Vector p = P[getID (s,a)].GetParameters();
     real d=urandom();
@@ -59,18 +59,18 @@ int DiscreteMDPCounts::GenerateTransition (int s, int a)
     return rand()%n_outcomes;
 }
 
-real DiscreteMDPCounts::getTransitionProbability (int s, int a, int s2)
+real DiscreteMDPCounts::getTransitionProbability (int s, int a, int s2) const
 {
     Vector p = P[getID (s,a)].GetParameters();
     return p[s2];
 }
 
-Vector DiscreteMDPCounts::getTransitionProbabilities (int s, int a)
+Vector DiscreteMDPCounts::getTransitionProbabilities (int s, int a) const
 {
     return P[getID (s,a)].GetParameters();
 }
 
-real DiscreteMDPCounts::getExpectedReward (int s, int a)
+real DiscreteMDPCounts::getExpectedReward (int s, int a) const
 {
     return ER[getID (s,a)];
 }

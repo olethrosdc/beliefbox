@@ -21,12 +21,17 @@ class MultinomialDistribution : public VectorDistribution
 protected:
 	Vector p;
 public:
+	MultinomialDistribution(std::vector<real> p_);
 	MultinomialDistribution(Vector p_);
 	MultinomialDistribution(int n);
 	virtual ~MultinomialDistribution();
 	virtual void generate(Vector* x);
 	virtual Vector generate();
+    int generateInt();
 	virtual real pdf(Vector* x);
+    virtual real pdf(Vector& x);
+    virtual void generate(Vector& x);
+
 };
 
 #endif

@@ -23,7 +23,7 @@ protected:
     std::vector<DirichletDistribution> P;
     std::vector<real> ER;
     int N;
-    int getID (int s, int a)
+    int getID (int s, int a) const
     {
         SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
         SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
@@ -33,11 +33,11 @@ public:
     DiscreteMDPCounts (int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
     virtual ~DiscreteMDPCounts();
     virtual void AddTransition(int s, int a, real r, int s2);
-    virtual real GenerateReward (int s, int a);
-    virtual int GenerateTransition (int s, int a);
-    virtual real getTransitionProbability (int s, int a, int s2);
-    virtual Vector getTransitionProbabilities (int s, int a);
-    virtual real getExpectedReward (int s, int a);
+    virtual real GenerateReward (int s, int a) const;
+    virtual int GenerateTransition (int s, int a) const;
+    virtual real getTransitionProbability (int s, int a, int s2) const;
+    virtual Vector getTransitionProbabilities (int s, int a) const;
+    virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
     void SetNextReward(int s, int a, real r);
 };

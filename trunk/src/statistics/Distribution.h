@@ -128,6 +128,7 @@ public:
     virtual real pdf(real x);
     virtual Distribution* clone();
     virtual real getMean();
+    int generate(std::vector<real> x) const;
 };
 
 
