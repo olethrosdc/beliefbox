@@ -26,6 +26,15 @@ MultinomialDistribution::MultinomialDistribution(int n)
 	}
 		
 }
+MultinomialDistribution::MultinomialDistribution(std::vector<real> p_)
+{
+    int n = p_.size();
+	p.Resize(n);
+	for (int i=0; i<n; i++) {
+		p[i] = p_[i];
+	}
+}
+
 MultinomialDistribution::~MultinomialDistribution()
 {
 }
@@ -33,21 +42,32 @@ void MultinomialDistribution::generate(Vector* x)
 {
 	*x = generate();
 }
+void MultinomialDistribution::generate(Vector& x)
+{
+	x = generate();
+}
 
-Vector MultinomialDistribution::generate()
+int MultinomialDistribution::generateInt()
 {
     real d=urandom();
     real sum = 0.0;
 	int z = 0;
 	int n = p.Size();
-	Vector x(n);
 
     for (int i=0; i<n; i++) {
         sum += p[i];
         if (d <= sum) {
-			i = z; break;
+            return i;
         }
     }
+
+}
+Vector MultinomialDistribution::generate()
+{
+    int z = generateInt();
+    int n = p.Size();
+	Vector x(n);
+
 	for (int i=0; i<n; i++) {
 		if (i==z) {
 			x[i] = 1.0;
@@ -68,6 +88,10 @@ real MultinomialDistribution::pdf(Vector* x)
 		log_density += p[i] + (*x)[i];
 	}
 	return exp(log_density);
+}
+real MultinomialDistribution::pdf(Vector& x)
+{
+    return pdf(&x);
 }
 
 

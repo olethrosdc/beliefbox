@@ -176,6 +176,20 @@ real DiscreteDistribution::generate()
     return 0.0;
 }
 
+int DiscreteDistribution::generate(std::vector<real> x) const
+{
+    real d=urandom();
+    real sum = 0.0;
+    int n = x.size();
+    for (int i=0; i<n; i++) {
+        sum += x[i];
+        if (d < sum) {
+            return  i;
+        }
+    }
+    return rand()%n; 
+}
+
 
 real DiscreteDistribution::getMean()
 {

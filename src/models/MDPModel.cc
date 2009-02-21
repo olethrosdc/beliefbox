@@ -110,13 +110,13 @@ void GradientDescentMDPModel::ShowModel()
     }
 }
 
-real GradientDescentMDPModel::GenerateReward (int s, int a)
+real GradientDescentMDPModel::GenerateReward (int s, int a) const
 {
     int ID = getID (s, a);
     return R[ID];
 }
 
-int GradientDescentMDPModel::GenerateTransition (int s, int a)
+int GradientDescentMDPModel::GenerateTransition (int s, int a) const
 {
     int ID = getID (s,a);
     real* Ps=P[ID];
@@ -134,14 +134,14 @@ int GradientDescentMDPModel::GenerateTransition (int s, int a)
     return select;
 }
 
-real GradientDescentMDPModel::getTransitionProbability (int s, int a, int s2)
+real GradientDescentMDPModel::getTransitionProbability (int s, int a, int s2) const
 {
     int ID = getID (s, a);                
     assert (s2>=0 && s2<n_states);
     return P[ID][s2];
 }
 
-real GradientDescentMDPModel::getExpectedReward (int s, int a)
+real GradientDescentMDPModel::getExpectedReward (int s, int a) const
 {
     int ID = getID (s, a);
     return R[ID];

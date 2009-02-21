@@ -32,7 +32,7 @@ public:
     virtual void update(Vector* x);
     /// When there is only one observation, give it directly.
     void Observation(int i);
-    Vector GetParameters();
+    Vector GetParameters() const;
     void resize(int n, real p = 0.0);
     
 };

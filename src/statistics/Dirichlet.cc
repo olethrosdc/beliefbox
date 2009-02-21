@@ -93,7 +93,7 @@ void DirichletDistribution::Observation(int i)
     a[i] += 1.0;
 }
 
-Vector DirichletDistribution::GetParameters()
+Vector DirichletDistribution::GetParameters() const
 {
 	return a;
 }

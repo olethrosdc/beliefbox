@@ -55,9 +55,15 @@ public:
     {
     }
     virtual void AddTransition(int s, int a, real r, int s2) = 0;
-    virtual real GenerateReward (int s, int a) {return 0.0;}
-    virtual int GenerateTransition (int s, int a) = 0;
-    virtual real getTransitionProbability (int s, int a, int s2) {return 0.0;}
+    virtual real GenerateReward (int s, int a) const
+    {
+        return 0.0;
+    }
+    virtual int GenerateTransition (int s, int a) const = 0;
+    virtual real getTransitionProbability (int s, int a, int s2) const
+    {
+        return 0.0;
+    }
     virtual real getExpectedReward (int s, int a) const = 0;
     virtual void Reset() = 0;
 
@@ -70,7 +76,7 @@ protected:
     real** P;
     real* R;
     int N;
-    int getID (int s, int a)
+    int getID (int s, int a) const
     {
         SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
         SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
@@ -83,10 +89,10 @@ public:
     virtual ~GradientDescentMDPModel();
     virtual void AddTransition(int s, int a, real r, int s2);
     void ShowModel();
-    virtual real GenerateReward (int s, int a);
-    virtual int GenerateTransition (int s, int a);
-    virtual real getTransitionProbability (int s, int a, int s2);
-    virtual real getExpectedReward (int s, int a);
+    virtual real GenerateReward (int s, int a) const;
+    virtual int GenerateTransition (int s, int a) const;
+    virtual real getTransitionProbability (int s, int a, int s2) const;
+    virtual real getExpectedReward (int s, int a) const;
     //virtual int getNStates () { return N;}
     virtual void setLearningRate (real learning_rate)
     {
