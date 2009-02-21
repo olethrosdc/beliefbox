@@ -176,7 +176,7 @@ real DiscreteDistribution::generate()
     return 0.0;
 }
 
-int DiscreteDistribution::generate(std::vector<real> x) const
+int DiscreteDistribution::generate(std::vector<real> x)
 {
     real d=urandom();
     real sum = 0.0;

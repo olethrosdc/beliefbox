@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2005 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2005-2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Id: MDPModel.c,v 1.1 2006/10/23 08:33:32 olethros Exp cdimitrakakis $
 /***************************************************************************
  *                                                                         *
@@ -15,6 +15,24 @@
 #include "Random.h"
 
 #include <iostream>
+
+DiscreteMDP* MDPModel::CreateMDP()
+{
+    DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL, NULL);
+    for (int i=0; i<n_states; ++i) {
+        for (int a=0; a<n_actions; ++a) {
+            SingularDistribution* ER = new SingularDistribution(getExpectedReward(i, a));
+            mdp->addRewardDistribution(i, a, ER);
+            for (int j=0; j<n_states; ++j) {
+                real p = getTransitionProbability(i, a, j);
+                if (p) {
+                    mdp->setTransitionProbability(i, a, j, p);
+                }
+            }
+        }
+    }
+    return mdp;
+}
 
 GradientDescentMDPModel::GradientDescentMDPModel (int n_states, int n_actions, Distribution* initial_transitions, Distribution* initial_rewards) 
     : MDPModel (n_states, n_actions)
