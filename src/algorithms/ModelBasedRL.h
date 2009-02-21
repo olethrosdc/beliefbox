@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -10,8 +10,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef BAYESRL_H
-#define BAYESRL_H
+#ifndef MODEL_BASED_RL_H
+#define MODEL_BASED_RL_H
 
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
@@ -19,6 +19,8 @@
 #include "Matrix.h"
 #include "real.h"
 #include "OnlineAlgorithm.h"
+#include "MDPModel.h"
+#include "ValueIteration.h"
 #include <vector>
 
 class ModelBasedRL : public OnlineAlgorithm<int, int>
@@ -30,12 +32,15 @@ protected:
     real alpha; ///< learning rate 
     int state; ///< current state
     int action; ///< current action
-
+    MDPModel* model;
+    DiscreteMDP* mdp;
+    ValueIteration* value_iteration;
+    std::vector<real> tmpQ;
 public:
     ModelBasedRL(int n_states_,
                  int n_actions_,
                  real gamma_,
-                 MDPModel* model);
+                 MDPModel* model_);
     virtual ~ModelBasedRL();
     virtual void Reset();
     /// Full observation
@@ -48,7 +53,7 @@ public:
 
     virtual real getValue (int state, int action)
     {
-        return Q(state, action);
+        return value_iteration->getValue(state, action);
     }
     
 };
