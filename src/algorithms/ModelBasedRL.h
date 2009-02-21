@@ -33,9 +33,9 @@ protected:
 
 public:
     ModelBasedRL(int n_states_,
-            int n_actions_,
-            real gamma_,
-            int counts = 0.0);
+                 int n_actions_,
+                 real gamma_,
+                 MDPModel* model);
     virtual ~ModelBasedRL();
     virtual void Reset();
     /// Full observation
