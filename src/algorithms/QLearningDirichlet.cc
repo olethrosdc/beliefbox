@@ -35,9 +35,9 @@ QLearningDirichlet::QLearningDirichlet(int n_states_,
     assert (lambda >= 0 && lambda <= 1);
 
     real lambda_count;
-    if (lambda == 1.0) {
+    if (lambda == 0.0) {
         Swarning("Lambda is 1\n");
-        lambda_count = INF;
+        lambda_count = INT_MAX;
     } else { 
         lambda_count = (real) n_states / (lambda) - (real) n_states;
     }

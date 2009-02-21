@@ -42,7 +42,7 @@ public:
     {
     }
 
-    const DiscreteMDP* getMDP()
+    virtual DiscreteMDP* getMDP() const
     {
         return mdp;
     }

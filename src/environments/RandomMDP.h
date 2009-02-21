@@ -37,7 +37,7 @@ public:
 
     virtual ~RandomMDP();
 
-    const DiscreteMDP* getMDP()
+    virtual DiscreteMDP* getMDP() const
     {
         return mdp;
     }
@@ -46,7 +46,7 @@ public:
     virtual void Reset();
 
     /// returns true if the action succeeds
-    virtual bool Act(uint action);
+    virtual bool Act(int action);
 
     /// Remove periods from MDP
     void AperiodicityTransform(real tau) 
