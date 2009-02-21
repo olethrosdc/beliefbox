@@ -19,6 +19,7 @@
 #include "real.h"
 #include "SmartAssert.h"
 #include "Distribution.h"
+#include "DiscreteMDP.h"
 
 
 /**
@@ -31,6 +32,9 @@
 
   Implements algorithms for learning the parameters of an observed MDP.
   This is not an abstract class, it used for discrete spaces.
+  
+  Since this the _model_ of an MDP, it can actually be used to create
+  an MDP.  However, it is _not_ an MDP.
 */
 class MDPModel 
 {
@@ -64,8 +68,12 @@ public:
     {
         return 0.0;
     }
-    virtual real getExpectedReward (int s, int a) const = 0;
+    virtual real getExpectedReward (int s, int a) const
+    {
+        return 0.0;
+    }
     virtual void Reset() = 0;
+    DiscreteMDP* CreateMDP();
 
 };
 
