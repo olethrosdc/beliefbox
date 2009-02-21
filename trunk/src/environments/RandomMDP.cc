@@ -131,7 +131,7 @@ void RandomMDP::Reset()
 }
 
 /// returns true if the action succeeds, false if we are in a terminal state
-bool RandomMDP::Act(uint action)
+bool RandomMDP::Act(int action)
 {
     state = mdp->generateState(state, action);
     reward = mdp->generateReward(state, action);

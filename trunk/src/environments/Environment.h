@@ -13,7 +13,9 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
-template <typename A, typename S>
+#include "MDP.h"
+
+template <typename S, typename A>
 class Environment
 {
 protected:
@@ -30,6 +32,10 @@ public:
     /// returns true if the action succeeds
     virtual bool Act(A action) = 0;
 
+    virtual MDP<S, A>* getMDP() const
+    {
+        return NULL;
+    }
     /// returns the current state
     S getState()
     {
@@ -44,7 +50,7 @@ public:
 
 };
 
-typedef Environment<uint, uint> DiscreteEnvironment;
+typedef Environment<int, int> DiscreteEnvironment;
 
 
 #endif

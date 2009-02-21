@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2005-2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -10,28 +10,44 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DISCRETE_MDP_COUNTS
-#define DISCRETE_MDP_COUNTS
+#ifndef DISCRETE_MDP_AGGREGATE
+#define DISCRETE_MDP_AGGREGATE
 
-#include "MDPModel.h"
-#include "Dirichlet.h"
-#include "real.h"
+#include "DiscreteMDPCounts.h"
+#include <set>
+#include <vector>
 
-class DiscreteMDPCounts : public MDPModel
+/// A container for states
+class DiscreteStateAggregate
+{
+public:
+    std::set<int> S;
+    void add(int state)
+    {
+        S.insert(state);
+    }
+    bool contains(int state)
+    {
+        return (S.find(state) != S.end());
+    }
+};
+
+
+/// USes DiscreteStateAggregate to form an MDP
+class DiscreteMDPAggregate : public DiscreteMDPCounts
 {
 protected:
-    std::vector<DirichletDistribution> P;
-    std::vector<real> ER;
-    int N;
-    int getID (int s, int a)
+    std::vector<int> state_map; ///< each entry tells you which set the state belongs in
+    std::vector<DiscreteStateAggregate> X; ///< each X contains the set of states that are aggregated
+    int n_aggregated_states; // the original number of states
+    /// Return the Aggregate state in which s belongs
+    int Aggregate(int s)
     {
-        SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
-        SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
-        return s*n_actions + a;
+        return state_map[s];
     }
 public:
-    DiscreteMDPCounts (int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
-    virtual ~DiscreteMDPCounts();
+    DiscreteMDPAggregate (int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
+    virtual ~DiscreteMDPAggregate();
     virtual void AddTransition(int s, int a, real r, int s2);
     virtual real GenerateReward (int s, int a);
     virtual int GenerateTransition (int s, int a);
@@ -44,4 +60,3 @@ public:
 
 
 #endif
-

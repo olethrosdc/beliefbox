@@ -27,6 +27,7 @@ struct Statistics
     real total_reward;
     real discounted_reward;
     int steps;
+    real mse;
 };
 
 
@@ -45,12 +46,12 @@ int main (int argc, char** argv)
     real alpha = 0.01;
     real randomness = 0.1;
     real pit_value = -1.0;
-    real goal_value = 0.0;
-    real step_value = -0.1;
+    real goal_value = 1.0;
+    real step_value = -0.01;
     real epsilon = 0.0;
     int n_runs = 1000;
-    int n_episodes = 10000;
-    int n_steps = 1000;
+    int n_episodes = 1000;
+    int n_steps = 100;
 
     if (argc != 10) {
         std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm\n";
@@ -82,19 +83,19 @@ int main (int argc, char** argv)
 
     char* algorithm_name = argv[9];
 
+
     std::cout << "Starting test program" << std::endl;
-    
-
-
-    //const DiscreteMDP* mdp = environment->getMDP();
-    //assert(n_states == mdp->GetNStates());
-    //assert(n_actions == mdp->GetNActions());
-    
     
     std::cout << "Starting evaluation" << std::endl;
 
     // remember to use n_runs
     std::vector<Statistics> statistics(n_episodes);
+    for (uint i=0; i<statistics.size(); ++i) {
+        statistics[i].total_reward = 0.0;
+        statistics[i].discounted_reward = 0.0;
+        statistics[i].steps = 0;
+        statistics[i].mse = 0;
+    }
     for (uint run=0; run<n_runs; ++run) {
         //std::cout << "Creating exploration policy" << std::endl;
         VFExplorationPolicy* exploration_policy = NULL;
@@ -135,13 +136,18 @@ int main (int argc, char** argv)
                                      randomness,
                                      step_value,
                                      pit_value,
-                                     goal_value);
+                                     goal_value,
+                                     false);
+
+    
+        
         //std::cerr << "run : " << run << std::endl;
         std::vector<Statistics> run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
         for (uint i=0; i<statistics.size(); ++i) {
             statistics[i].total_reward += run_statistics[i].total_reward;
             statistics[i].discounted_reward += run_statistics[i].discounted_reward;
             statistics[i].steps += run_statistics[i].steps;
+            statistics[i].mse += run_statistics[i].mse;
         }
         delete environment;
         delete algorithm;
@@ -153,8 +159,12 @@ int main (int argc, char** argv)
         statistics[i].total_reward /= (float) n_runs;
         statistics[i].discounted_reward /= (float) n_runs;
         statistics[i].steps /= n_runs;
+        statistics[i].mse /= n_runs;
         std::cout << statistics[i].total_reward << " "
                   << statistics[i].discounted_reward << "# REWARD"
+                  << std::endl;
+        std::cout << statistics[i].steps << " "
+                  << statistics[i].mse << "# MSE"
                   << std::endl;
     }
     std::cout << "Done" << std::endl;
@@ -172,6 +182,16 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 {
     std:: cout << "Evaluating..." << std::endl;
  
+    const DiscreteMDP* mdp = environment->getMDP(); 
+    ValueIteration value_iteration(mdp, gamma);
+    if (!mdp) {
+        Serror("The environment must support the creation of an MDP\n");
+        exit(-1);
+    }
+    value_iteration.ComputeStateActionValues(10e-6);
+    int n_states = mdp->GetNStates();
+    int n_actions = mdp->GetNActions();
+
     std::vector<Statistics> statistics(n_episodes);
 
     for (int episode = 0; episode < n_episodes; ++episode) {
@@ -180,20 +200,29 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
         statistics[episode].steps = 0;
         real discount = 1.0;
         environment->Reset();
-        for (int t=0; t < n_steps; ++t) {
+        int t;
+        for (t=0; t < n_steps; ++t) {
             int state = environment->getState();
             real reward = environment->getReward();
             //std::cout << state << " " << reward << std::endl;
             statistics[episode].total_reward += reward;
             statistics[episode].discounted_reward += discount * reward;
             discount *= gamma;
-            statistics[episode].steps = t;
             int action = algorithm->Act(reward, state);
             bool action_ok = environment->Act(action);
             if (!action_ok) {
                 break;
             }
         }
+        statistics[episode].steps += t;
+        real sse = 0.0;
+        for (int i=0; i<n_states; i++) {
+            for (int a=0; a<n_actions; a++) {
+                real err = value_iteration.getValue(i, a) - algorithm->getValue(i, a);
+                sse += err*err;
+            }
+        }
+        statistics[episode].mse += sse /((real) (n_states*n_actions));
 
     }
     return statistics;

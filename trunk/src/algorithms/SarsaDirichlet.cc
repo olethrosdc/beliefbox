@@ -31,9 +31,9 @@ SarsaDirichlet::SarsaDirichlet(int n_states_,
       C(n_states_ * n_actions_, n_states)
 {
     real lambda_count;
-    if (lambda == 1.0) {
-        Swarning("Lambda is 1\n");
-        lambda_count = INF;
+    if (lambda == 0.0) {
+        Swarning("Lambda is 0\n");
+        lambda_count = (real) INT_MAX;
     } else { 
         lambda_count = (real) n_states / (lambda) - (real) n_states;
     }
