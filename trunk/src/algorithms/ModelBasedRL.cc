@@ -21,6 +21,7 @@ ModelBasedRL::ModelBasedRL(int n_states_,
       gamma(gamma_),
       model(model_)
 {
+    state = -1;
     mdp = model->CreateMDP();
     value_iteration = new ValueIteration(mdp, gamma);
     tmpQ.resize(n_actions);
@@ -28,7 +29,9 @@ ModelBasedRL::ModelBasedRL(int n_states_,
 ModelBasedRL::~ModelBasedRL()
 {
     delete value_iteration;
-    delete mdp;
+    if (mdp) {
+        delete mdp;
+    }
 }
 void ModelBasedRL::Reset()
 {
@@ -37,13 +40,17 @@ void ModelBasedRL::Reset()
 /// Full observation
 real ModelBasedRL::Observe (int state, int action, real reward, int next_state, int next_action)
 {
-    model->AddTransition(state, action, reward, next_state);
+    if (state>=0) {
+        model->AddTransition(state, action, reward, next_state);
+    }
     return 0.0;
 }
 /// Partial observation 
 real ModelBasedRL::Observe (real reward, int next_state, int next_action)
 {
-    model->AddTransition(state, action, reward, next_state);
+    if (state >= 0) {
+        model->AddTransition(state, action, reward, next_state);
+    }
     state = next_state;
     return 0.0;
 }
@@ -51,12 +58,17 @@ real ModelBasedRL::Observe (real reward, int next_state, int next_action)
 /// it calls Observe as a side-effect.
 int ModelBasedRL::Act(real reward, int next_state)
 {
+    assert(next_state >= 0 && next_state < n_states);
 
-    DiscreteMDP* mdp = model->CreateMDP();
+    if (mdp) {
+        delete mdp;
+        mdp = NULL;
+    }
+    mdp = model->CreateMDP();
     value_iteration->mdp = mdp;
     value_iteration->ComputeStateActionValues(0.00, 1);
     for (int i=0; i<n_actions; i++) {
-        tmpQ[i] = getValue(state, i);
+        tmpQ[i] = value_iteration->getValue(next_state, i);
     }
     int next_action = ArgMax(tmpQ);
     Observe(reward, next_state, action);
