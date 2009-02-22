@@ -18,8 +18,10 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, int init_tran
 {
     N = n_states * n_actions;
     P.resize(N);
+    ER.resize(N);
     for (int i=0; i<N; ++i) {
         P[i].resize(n_states, (real) init_transition_count);
+        ER[i] =0.0;
     }
 }
 
