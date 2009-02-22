@@ -106,6 +106,7 @@ int main (int argc, char** argv)
     
         //std::cout << "Creating online algorithm" << std::endl;
         OnlineAlgorithm<int, int>* algorithm = NULL;
+        MDPModel* model = NULL;
         if (!strcmp(algorithm_name, "Sarsa")) { 
             algorithm = new Sarsa(n_states,
                                   n_actions,
@@ -128,10 +129,16 @@ int main (int argc, char** argv)
                                                alpha,
                                                exploration_policy);
         } else if (!strcmp(algorithm_name, "Collection")) {
-            MDPModel* model= (MDPModel*)
+#if 0
+            model= (MDPModel*)
                 new DiscreteMDPCollection(1,
                                           n_states,
                                           n_actions);
+#else
+            model= (MDPModel*)
+                new DiscreteMDPCounts(n_states,
+                                      n_actions);
+#endif
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
                                          gamma,
@@ -159,6 +166,10 @@ int main (int argc, char** argv)
             statistics[i].discounted_reward += run_statistics[i].discounted_reward;
             statistics[i].steps += run_statistics[i].steps;
             statistics[i].mse += run_statistics[i].mse;
+        }
+        if (model) {
+            delete model;
+            model = NULL;
         }
         delete environment;
         delete algorithm;
