@@ -73,7 +73,7 @@ public:
         return 0.0;
     }
     virtual void Reset() = 0;
-    DiscreteMDP* CreateMDP();
+    virtual DiscreteMDP* CreateMDP();
 
 };
 

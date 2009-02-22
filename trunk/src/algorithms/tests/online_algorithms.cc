@@ -240,7 +240,10 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
         real sse = 0.0;
         for (int i=0; i<n_states; i++) {
             for (int a=0; a<n_actions; a++) {
-                real err = value_iteration.getValue(i, a) - algorithm->getValue(i, a);
+                real V =  value_iteration.getValue(i, a);
+                real hV = algorithm->getValue(i, a);
+                //printf ("Q(%d, %d) = %f ~ %f\n", i, a, V, hV);
+                real err = V - hV;
                 sse += err*err;
             }
         }
