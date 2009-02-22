@@ -21,6 +21,8 @@
 #include "Sarsa.h"
 #include "QLearning.h"
 #include "QLearningDirichlet.h"
+#include "ModelBasedRL.h"
+#include "DiscreteMDPCollection.h"
 
 struct Statistics
 {
@@ -125,6 +127,15 @@ int main (int argc, char** argv)
                                                lambda,
                                                alpha,
                                                exploration_policy);
+        } else if (!strcmp(algorithm_name, "Collection")) {
+            MDPModel* model= (MDPModel*)
+                new DiscreteMDPCollection(1,
+                                          n_states,
+                                          n_actions);
+            algorithm = new ModelBasedRL(n_states,
+                                         n_actions,
+                                         gamma,
+                                         model);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
         }

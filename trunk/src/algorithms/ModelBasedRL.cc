@@ -54,7 +54,7 @@ int ModelBasedRL::Act(real reward, int next_state)
 
     DiscreteMDP* mdp = model->CreateMDP();
     value_iteration->mdp = mdp;
-    value_iteration->ComputeStateActionValues(0.001, 10);
+    value_iteration->ComputeStateActionValues(0.00, 1);
     for (int i=0; i<n_actions; i++) {
         tmpQ[i] = getValue(state, i);
     }

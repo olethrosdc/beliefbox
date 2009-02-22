@@ -16,6 +16,7 @@
 DiscreteMDPCollection::DiscreteMDPCollection(int n_aggregates, int n_states, int n_actions) : MDPModel(n_states, n_actions)
 {
     P.resize(n_aggregates);
+    A.resize(n_aggregates);
     for (int i=0; i<n_aggregates; i++) {
         P[i] = 1.0 / (real) n_aggregates;
         if (i==0) {
