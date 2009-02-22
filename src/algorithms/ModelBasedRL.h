@@ -29,7 +29,7 @@ protected:
     const int n_states; ///< number of states
     const int n_actions; ///< number 
     real gamma; ///< discount factor
-    real alpha; ///< learning rate 
+    real epsilon; ///< randomness
     int state; ///< current state
     int action; ///< current action
     MDPModel* model;
@@ -40,6 +40,7 @@ public:
     ModelBasedRL(int n_states_,
                  int n_actions_,
                  real gamma_,
+                 real epsilon_,
                  MDPModel* model_);
     virtual ~ModelBasedRL();
     virtual void Reset();

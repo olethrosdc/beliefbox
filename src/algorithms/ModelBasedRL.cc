@@ -13,12 +13,14 @@
 #include "ModelBasedRL.h"
 
 ModelBasedRL::ModelBasedRL(int n_states_,
-             int n_actions_,
-             real gamma_,
-             MDPModel* model_)
+                           int n_actions_,
+                           real gamma_,
+                           real epsilon_,
+                           MDPModel* model_)
     : n_states(n_states_),
       n_actions(n_actions_),
       gamma(gamma_),
+      epsilon(epsilon_),
       model(model_)
 {
     state = -1;
@@ -71,11 +73,11 @@ int ModelBasedRL::Act(real reward, int next_state)
         delete value_iteration;
     }
     value_iteration = new ValueIteration(mdp, gamma);
-    value_iteration->ComputeStateValues(0.001, 1000000);
+    //value_iteration->ComputeStateValues(0.001, 1000000);
     value_iteration->ComputeStateActionValues(0.001, 1000000);
 #else
     value_iteration->mdp = mdp;
-    value_iteration->ComputeStateValues(0.00, 1);
+    //value_iteration->ComputeStateValues(0.00, 1);
     value_iteration->ComputeStateActionValues(0.00, 1);
 #endif
     //printf ("V(%d) = %f\n", next_state, value_iteration->getValue(next_state));
@@ -83,7 +85,12 @@ int ModelBasedRL::Act(real reward, int next_state)
         tmpQ[i] = value_iteration->getValue(next_state, i);
         //printf ("Q(%d %d) = %f\n", next_state, i, tmpQ[i]);
     }
-    int next_action = ArgMax(tmpQ);
+    int next_action;
+    if (urandom()<epsilon) {
+        next_action = (int) floor(urandom(0.0, n_actions));
+    } else {
+        next_action = ArgMax(tmpQ);
+    }
     Observe(reward, next_state, action);
     state = next_state;
     action = next_action;
