@@ -14,6 +14,7 @@
 #include "PolicyEvaluation.h"
 #include "ValueIteration.h"
 #include "RandomMDP.h"
+#include "Gridworld.h"
 #include "InventoryManagement.h"
 #include "DiscretePolicy.h"
 #include "Environment.h"
@@ -85,7 +86,10 @@ int main (int argc, char** argv)
 
     char* algorithm_name = argv[9];
 
-
+    srand48(987234987235);
+    srand(987234987235);
+    setRandomSeed(987234987235);
+    
     std::cout << "Starting test program" << std::endl;
     
     std::cout << "Starting evaluation" << std::endl;
@@ -99,6 +103,24 @@ int main (int argc, char** argv)
         statistics[i].mse = 0;
     }
     for (uint run=0; run<n_runs; ++run) {
+        std::cout << "Creating environment" << std::endl;
+        DiscreteEnvironment* environment = NULL;
+#if 1
+        environment = new RandomMDP (n_actions,
+                                     n_states,
+                                     randomness,
+                                     step_value,
+                                     pit_value,
+                                     goal_value,
+                                     false);
+#else
+        environment = new Gridworld("maze1",
+                                    8, 8);
+#endif
+    
+
+
+
         //std::cout << "Creating exploration policy" << std::endl;
         VFExplorationPolicy* exploration_policy = NULL;
         exploration_policy = new EpsilonGreedy(n_actions, epsilon);
@@ -142,22 +164,12 @@ int main (int argc, char** argv)
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
                                          gamma,
+                                         epsilon,
                                          model);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
         }
 
-        //std::cout << "Creating environment" << std::endl;
-        DiscreteEnvironment* environment = NULL;
-        environment = new RandomMDP (n_actions,
-                                     n_states,
-                                     randomness,
-                                     step_value,
-                                     pit_value,
-                                     goal_value,
-                                     false);
-
-    
         
         //std::cerr << "run : " << run << std::endl;
         std::vector<Statistics> run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
