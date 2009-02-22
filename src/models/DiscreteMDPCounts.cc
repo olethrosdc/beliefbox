@@ -48,7 +48,7 @@ real DiscreteMDPCounts::GenerateReward (int s, int a) const
 
 int DiscreteMDPCounts::GenerateTransition (int s, int a) const
 {
-    Vector p = P[getID (s,a)].GetParameters();
+    Vector p = P[getID (s,a)].GetMean();
     real d=urandom();
     real sum = 0.0;
     int n_outcomes = p.Size();
@@ -63,13 +63,13 @@ int DiscreteMDPCounts::GenerateTransition (int s, int a) const
 
 real DiscreteMDPCounts::getTransitionProbability (int s, int a, int s2) const
 {
-    Vector p = P[getID (s,a)].GetParameters();
+    Vector p = P[getID (s,a)].GetMean();
     return p[s2];
 }
 
 Vector DiscreteMDPCounts::getTransitionProbabilities (int s, int a) const
 {
-    return P[getID (s,a)].GetParameters();
+    return P[getID (s,a)].GetMean();
 }
 
 real DiscreteMDPCounts::getExpectedReward (int s, int a) const
@@ -80,3 +80,5 @@ real DiscreteMDPCounts::getExpectedReward (int s, int a) const
 void DiscreteMDPCounts::Reset()
 {
 }
+
+

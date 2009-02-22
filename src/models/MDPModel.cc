@@ -27,10 +27,12 @@ DiscreteMDP* MDPModel::CreateMDP()
                 real p = getTransitionProbability(i, a, j);
                 if (p) {
                     mdp->setTransitionProbability(i, a, j, p);
+                    //printf("p(s'=%d|s=%d, a=%d)=%f\n", j, i, a, p);
                 }
             }
         }
     }
+    mdp->Check();
     return mdp;
 }
 

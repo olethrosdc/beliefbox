@@ -97,3 +97,19 @@ Vector DirichletDistribution::GetParameters() const
 {
 	return a;
 }
+
+Vector DirichletDistribution::GetMean() const
+{
+    Vector p = a;
+    real S = a.Sum();
+    if (S > 0) {
+        p /= S;
+    } else {
+        real invs = 1.0 / (real) p.Size();
+        for (int i=0; i<p.Size(); i++) {
+            p[i] = invs;
+        }
+    }
+    assert(fabs(p.Sum()-1.0) < 0.0001);
+	return p;
+}

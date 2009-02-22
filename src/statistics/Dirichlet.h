@@ -33,6 +33,7 @@ public:
     /// When there is only one observation, give it directly.
     void Observation(int i);
     Vector GetParameters() const;
+    Vector GetMean() const;
     void resize(int n, real p = 0.0);
     
 };

@@ -107,7 +107,7 @@ Vector& Vector::operator= (const Vector& rhs)
 }
 
 /// Sum of all in vector
-real Vector::Sum()
+real Vector::Sum() const
 {
     real sum = 0;
     for (int i=0; i<n; ++i) {

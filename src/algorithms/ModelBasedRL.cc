@@ -65,10 +65,23 @@ int ModelBasedRL::Act(real reward, int next_state)
         mdp = NULL;
     }
     mdp = model->CreateMDP();
+    //mdp->Check();
+#if 0
+    if (value_iteration) {
+        delete value_iteration;
+    }
+    value_iteration = new ValueIteration(mdp, gamma);
+    value_iteration->ComputeStateValues(0.001, 1000000);
+    value_iteration->ComputeStateActionValues(0.001, 1000000);
+#else
     value_iteration->mdp = mdp;
+    value_iteration->ComputeStateValues(0.00, 1);
     value_iteration->ComputeStateActionValues(0.00, 1);
+#endif
+    //printf ("V(%d) = %f\n", next_state, value_iteration->getValue(next_state));
     for (int i=0; i<n_actions; i++) {
         tmpQ[i] = value_iteration->getValue(next_state, i);
+        //printf ("Q(%d %d) = %f\n", next_state, i, tmpQ[i]);
     }
     int next_action = ArgMax(tmpQ);
     Observe(reward, next_state, action);
