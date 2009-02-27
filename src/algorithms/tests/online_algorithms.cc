@@ -40,8 +40,8 @@ struct Statistics
     std::vector<real> reward;
 };
 
-Statistics EvaluateAlgorithm(int n_steps,
-                             int n_episodes,
+Statistics EvaluateAlgorithm(uint n_steps,
+                             uint n_episodes,
                              OnlineAlgorithm<int,int>* algorithm,
                              DiscreteEnvironment* environment,
                              real gamma);
@@ -57,10 +57,10 @@ int main (int argc, char** argv)
     real pit_value = -1.0;
     real goal_value = 1.0;
     real step_value = -0.01;
-    real epsilon = 0.0;
-    int n_runs = 1000;
-    int n_episodes = 1000;
-    int n_steps = 100;
+    real epsilon = 0.01;
+    uint n_runs = 1000;
+    uint n_episodes = 1000;
+    uint n_steps = 100;
 
     if (argc != 10) {
         std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm\n";
@@ -96,7 +96,7 @@ int main (int argc, char** argv)
     srand(34987235);
     setRandomSeed(34987235);
    
-    RandomNumberFile random_file("dat/r1e7.bin");
+    RandomNumberFile random_file("/home/olethros/projects/beliefbox/dat/r1e7.bin");
     RandomNumberGenerator* rng = (RandomNumberGenerator*) &random_file;
 
     std::cout << "Starting test program" << std::endl;
@@ -163,16 +163,19 @@ int main (int argc, char** argv)
                                                alpha,
                                                exploration_policy);
         } else if (!strcmp(algorithm_name, "Model")) {
-#if 0
-            model= (MDPModel*)
-                new DiscreteMDPCollection(1,
-                                          n_states,
-                                          n_actions);
-#else
             model= (MDPModel*)
                 new DiscreteMDPCounts(n_states,
                                       n_actions);
-#endif
+            algorithm = new ModelBasedRL(n_states,
+                                         n_actions,
+                                         gamma,
+                                         epsilon,
+                                         model);
+        } else if (!strcmp(algorithm_name, "Collection")) {
+            model= (MDPModel*)
+                new DiscreteMDPCollection(2,
+                                          n_states,
+                                          n_actions);
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
                                          gamma,
@@ -230,8 +233,8 @@ int main (int argc, char** argv)
     return 0;
 }
 
-Statistics EvaluateAlgorithm (int n_steps,
-                             int n_episodes,
+Statistics EvaluateAlgorithm (uint n_steps,
+                             uint n_episodes,
                              OnlineAlgorithm<int, int>* algorithm,
                              DiscreteEnvironment* environment,
                              real gamma)
@@ -255,13 +258,13 @@ Statistics EvaluateAlgorithm (int n_steps,
     real discount = 1.0;
     int current_time = 0;
     environment->Reset();
-    for (int episode = 0; episode < n_episodes; ++episode) {
+    for (uint episode = 0; episode < n_episodes; ++episode) {
         statistics.ep_stats[episode].total_reward = 0.0;
         statistics.ep_stats[episode].discounted_reward = 0.0;
         statistics.ep_stats[episode].steps = 0;
         discount = 1.0;
         environment->Reset();
-        int t;
+        uint t;
         for (t=0; t < n_steps; ++t) {
             int state = environment->getState();
             real reward = environment->getReward();

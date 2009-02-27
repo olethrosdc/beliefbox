@@ -11,6 +11,7 @@
 
 #include "RandomNumberFile.h"
 #include <string>
+#include <limits>
 
 RandomNumberFile::RandomNumberFile(std::string filename)
 {
@@ -43,21 +44,22 @@ ulong RandomNumberFile::random()
     return x;
 }
 
-real RandomNumberFile::uniform()
+real RandomNumberFile::uniform() 
 {
-    const ulong LONG_INT_MAX = (ulong) INT_MAX * (ulong) INT_MAX;
+    const double LONG_INT_MAX = std::numeric_limits<ulong>::max();
+
     real x = 0;
     do {
-        ulong y = pool[position];
-        position = (position + 1) % pool.size();
-        //x = ((double) i) * (0.5 / (double) LONG_INT_MAX);
+        ulong y = random();
+            //x = ((double) i) * (0.5 / (double) LONG_INT_MAX);
 #if 0
         y ^= (y >> 11);
         y ^= (y << 7) & 0x9d2c5680UL;
         y ^= (y << 15) & 0xefc60000UL;
         y ^= (y >> 18);
 #endif
-        x = (real) y * (1.0/((double)18445853990380844360.0));
+        x = ((real) y)/ LONG_INT_MAX;
+//        printf("%f\n", x);
     } while (x >= 1.0);
     return x;
 }
