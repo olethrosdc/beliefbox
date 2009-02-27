@@ -23,10 +23,13 @@ RandomMDP::RandomMDP(uint n_actions_,
                      real step_value,
                      real pit_value,
                      real goal_value,
+                     RandomNumberGenerator* rng,
                      bool termination) : n_states(n_states_),
                                          n_actions(n_actions_)
 {
     
+    this->rng = rng;
+
     // set up the mdp
     //std::cout << "Making the MPD\n";
     mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
@@ -68,8 +71,6 @@ RandomMDP::RandomMDP(uint n_actions_,
         goal_state = (int) floor(((real) n_states - 1) * true_random(false));
     }
 
-
-
     for (uint a=0; a<n_actions; ++a) {
         mdp->setRewardDistribution(goal_state, a, goal_reward);
         mdp->setRewardDistribution(pit_state, a, pit_reward);
@@ -94,7 +95,7 @@ RandomMDP::RandomMDP(uint n_actions_,
     // Step 2: add target states
     for (uint s=0; s<terminal_state; s++) {   
         for (uint a=0; a<n_actions; ++a) {
-            int s2 = (int) floor(((real) n_states) * true_random(false));
+            int s2 = (int) floor(((real) n_states) * rng->uniform());
             mdp->setTransitionProbability (s, a, s2, 1.0);
         }
     }
@@ -126,7 +127,7 @@ RandomMDP::~RandomMDP() {
 /// put the environment in its natural state
 void RandomMDP::Reset()
 {
-    state = (int) floor(urandom(0, n_states - 1));
+    state = (int) floor(rng->uniform()*((real) n_states));
     reward = 0;
 }
 

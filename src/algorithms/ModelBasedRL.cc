@@ -37,6 +37,7 @@ ModelBasedRL::~ModelBasedRL()
 }
 void ModelBasedRL::Reset()
 {
+    state = -1;
     model->Reset();
 }
 /// Full observation
