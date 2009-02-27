@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2008-2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -15,7 +15,7 @@
 
 #include "DiscreteMDP.h"
 #include "Environment.h"
-
+#include "RandomNumberGenerator.h"
 #include <string>
 #include <vector>
 
@@ -26,6 +26,7 @@ class RandomMDP : public DiscreteEnvironment
 protected:
     uint n_states;
     uint n_actions;
+    RandomNumberGenerator* rng;
 public:
     RandomMDP(uint n_actions,
               uint n_states,
@@ -33,6 +34,7 @@ public:
               real step_value,
               real pit_value,
               real goal_value,
+              RandomNumberGenerator* rng,
               bool termination=true);
 
     virtual ~RandomMDP();

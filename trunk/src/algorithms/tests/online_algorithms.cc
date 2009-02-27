@@ -24,8 +24,9 @@
 #include "QLearningDirichlet.h"
 #include "ModelBasedRL.h"
 #include "DiscreteMDPCollection.h"
+#include "RandomNumberFile.h"
 
-struct Statistics
+struct EpisodeStatistics
 {
     real total_reward;
     real discounted_reward;
@@ -33,12 +34,17 @@ struct Statistics
     real mse;
 };
 
+struct Statistics
+{
+    std::vector<EpisodeStatistics> ep_stats;
+    std::vector<real> reward;
+};
 
-std::vector<Statistics> EvaluateAlgorithm(int n_steps,
-                                          int n_episodes,
-                                          OnlineAlgorithm<int,int>* algorithm,
-                                          DiscreteEnvironment* environment,
-                                          real gamma);
+Statistics EvaluateAlgorithm(int n_steps,
+                             int n_episodes,
+                             OnlineAlgorithm<int,int>* algorithm,
+                             DiscreteEnvironment* environment,
+                             real gamma);
 
 int main (int argc, char** argv)
 {
@@ -46,7 +52,7 @@ int main (int argc, char** argv)
     int n_states = 4;
     real gamma = 0.9;
     real lambda = 0.9;
-    real alpha = 0.01;
+    real alpha = 0.1;
     real randomness = 0.1;
     real pit_value = -1.0;
     real goal_value = 1.0;
@@ -86,21 +92,26 @@ int main (int argc, char** argv)
 
     char* algorithm_name = argv[9];
 
-    srand48(987234987235);
-    srand(987234987235);
-    setRandomSeed(987234987235);
-    
+    srand48(34987235);
+    srand(34987235);
+    setRandomSeed(34987235);
+   
+    RandomNumberFile random_file("dat/r1e7.bin");
+    RandomNumberGenerator* rng = (RandomNumberGenerator*) &random_file;
+
     std::cout << "Starting test program" << std::endl;
     
     std::cout << "Starting evaluation" << std::endl;
 
     // remember to use n_runs
-    std::vector<Statistics> statistics(n_episodes);
-    for (uint i=0; i<statistics.size(); ++i) {
-        statistics[i].total_reward = 0.0;
-        statistics[i].discounted_reward = 0.0;
-        statistics[i].steps = 0;
-        statistics[i].mse = 0;
+    Statistics statistics;
+    statistics.ep_stats.resize(n_episodes);
+    statistics.reward.resize(n_episodes*n_steps);
+    for (uint i=0; i<statistics.ep_stats.size(); ++i) {
+        statistics.ep_stats[i].total_reward = 0.0;
+        statistics.ep_stats[i].discounted_reward = 0.0;
+        statistics.ep_stats[i].steps = 0;
+        statistics.ep_stats[i].mse = 0;
     }
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Creating environment" << std::endl;
@@ -112,6 +123,7 @@ int main (int argc, char** argv)
                                      step_value,
                                      pit_value,
                                      goal_value,
+                                     rng,
                                      false);
 #else
         environment = new Gridworld("maze1",
@@ -150,7 +162,7 @@ int main (int argc, char** argv)
                                                lambda,
                                                alpha,
                                                exploration_policy);
-        } else if (!strcmp(algorithm_name, "Collection")) {
+        } else if (!strcmp(algorithm_name, "Model")) {
 #if 0
             model= (MDPModel*)
                 new DiscreteMDPCollection(1,
@@ -172,12 +184,15 @@ int main (int argc, char** argv)
 
         
         //std::cerr << "run : " << run << std::endl;
-        std::vector<Statistics> run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
-        for (uint i=0; i<statistics.size(); ++i) {
-            statistics[i].total_reward += run_statistics[i].total_reward;
-            statistics[i].discounted_reward += run_statistics[i].discounted_reward;
-            statistics[i].steps += run_statistics[i].steps;
-            statistics[i].mse += run_statistics[i].mse;
+        Statistics run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
+        for (uint i=0; i<statistics.ep_stats.size(); ++i) {
+            statistics.ep_stats[i].total_reward += run_statistics.ep_stats[i].total_reward;
+            statistics.ep_stats[i].discounted_reward += run_statistics.ep_stats[i].discounted_reward;
+            statistics.ep_stats[i].steps += run_statistics.ep_stats[i].steps;
+            statistics.ep_stats[i].mse += run_statistics.ep_stats[i].mse;
+        }
+        for (uint i=0; i<statistics.reward.size(); ++i) {
+            statistics.reward[i] += run_statistics.reward[i];
         }
         if (model) {
             delete model;
@@ -189,18 +204,25 @@ int main (int argc, char** argv)
     }
     
 
-    for (uint i=0; i<statistics.size(); ++i) {
-        statistics[i].total_reward /= (float) n_runs;
-        statistics[i].discounted_reward /= (float) n_runs;
-        statistics[i].steps /= n_runs;
-        statistics[i].mse /= n_runs;
-        std::cout << statistics[i].total_reward << " "
-                  << statistics[i].discounted_reward << "# REWARD"
+    for (uint i=0; i<statistics.ep_stats.size(); ++i) {
+        statistics.ep_stats[i].total_reward /= (float) n_runs;
+        statistics.ep_stats[i].discounted_reward /= (float) n_runs;
+        statistics.ep_stats[i].steps /= n_runs;
+        statistics.ep_stats[i].mse /= n_runs;
+        std::cout << statistics.ep_stats[i].total_reward << " "
+                  << statistics.ep_stats[i].discounted_reward << "# REWARD"
                   << std::endl;
-        std::cout << statistics[i].steps << " "
-                  << statistics[i].mse << "# MSE"
+        std::cout << statistics.ep_stats[i].steps << " "
+                  << statistics.ep_stats[i].mse << "# MSE"
                   << std::endl;
     }
+
+    for (uint i=0; i<statistics.reward.size(); ++i) {
+        statistics.reward[i] /= (float) n_runs;
+        std::cout << statistics.reward[i] << " # INST_PAYOFF"
+                  << std::endl;
+    }
+
     std::cout << "Done" << std::endl;
 
 
@@ -208,11 +230,11 @@ int main (int argc, char** argv)
     return 0;
 }
 
-std::vector<Statistics> EvaluateAlgorithm(int n_steps,
-                                          int n_episodes,
-                                          OnlineAlgorithm<int, int>* algorithm,
-                                          DiscreteEnvironment* environment,
-                                          real gamma)
+Statistics EvaluateAlgorithm (int n_steps,
+                             int n_episodes,
+                             OnlineAlgorithm<int, int>* algorithm,
+                             DiscreteEnvironment* environment,
+                             real gamma)
 {
     std:: cout << "Evaluating..." << std::endl;
  
@@ -222,45 +244,51 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
         Serror("The environment must support the creation of an MDP\n");
         exit(-1);
     }
-    value_iteration.ComputeStateActionValues(10e-6);
+    value_iteration.ComputeStateActionValues(10e-6,10000);
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
 
-    std::vector<Statistics> statistics(n_episodes);
+    Statistics statistics;
+    statistics.ep_stats.resize(n_episodes);
+    statistics.reward.resize(n_episodes*n_steps);
 
+    real discount = 1.0;
+    int current_time = 0;
+    environment->Reset();
     for (int episode = 0; episode < n_episodes; ++episode) {
-        statistics[episode].total_reward = 0.0;
-        statistics[episode].discounted_reward = 0.0;
-        statistics[episode].steps = 0;
-        real discount = 1.0;
+        statistics.ep_stats[episode].total_reward = 0.0;
+        statistics.ep_stats[episode].discounted_reward = 0.0;
+        statistics.ep_stats[episode].steps = 0;
+        discount = 1.0;
         environment->Reset();
         int t;
         for (t=0; t < n_steps; ++t) {
             int state = environment->getState();
             real reward = environment->getReward();
             //std::cout << state << " " << reward << std::endl;
-            statistics[episode].total_reward += reward;
-            statistics[episode].discounted_reward += discount * reward;
+            statistics.reward[current_time] = reward;
+            statistics.ep_stats[episode].total_reward += reward;
+            statistics.ep_stats[episode].discounted_reward += discount * reward;
             discount *= gamma;
             int action = algorithm->Act(reward, state);
             bool action_ok = environment->Act(action);
             if (!action_ok) {
                 break;
             }
+            current_time++;
         }
-        statistics[episode].steps += t;
+        statistics.ep_stats[episode].steps += t;
         real sse = 0.0;
         for (int i=0; i<n_states; i++) {
             for (int a=0; a<n_actions; a++) {
                 real V =  value_iteration.getValue(i, a);
                 real hV = algorithm->getValue(i, a);
-                //printf ("Q(%d, %d) = %f ~ %f\n", i, a, V, hV);
+                    //printf ("Q(%d, %d) = %f ~ %f\n", i, a, V, hV);
                 real err = V - hV;
                 sse += err*err;
             }
         }
-        statistics[episode].mse += sse /((real) (n_states*n_actions));
-
+        statistics.ep_stats[episode].mse += sse /((real) (n_states*n_actions));
     }
     return statistics;
 }
