@@ -41,7 +41,14 @@ protected:
     std::vector<DiscreteStateAggregate> X; ///< each X contains the set of states that are aggregated
     int n_aggregated_states; // the original number of states
     /// Return the Aggregate state in which s belongs
-    int Aggregate(int s)
+    virtual int getID (int x, int a) const
+    {
+        int s = Aggregate(x);
+        assert(s>=0 && s<n_states);
+        assert(a>=0 && a<n_actions);
+        return s*n_actions + a;
+    }
+    int Aggregate(int s) const
     {
         return state_map[s];
     }

@@ -23,10 +23,10 @@ protected:
     std::vector<DirichletDistribution> P;
     std::vector<real> ER;
     int N;
-    int getID (int s, int a) const
+    virtual int getID (int s, int a) const
     {
-        SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
-        SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
+        assert(s>=0 && s<n_states);
+        assert(a>=0 && a<n_actions);
         return s*n_actions + a;
     }
 public:

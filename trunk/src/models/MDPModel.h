@@ -84,7 +84,7 @@ protected:
     real** P;
     real* R;
     int N;
-    int getID (int s, int a) const
+    virtual int getID (int s, int a) const
     {
         SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
         SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
