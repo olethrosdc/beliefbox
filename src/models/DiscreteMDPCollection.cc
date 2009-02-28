@@ -58,8 +58,12 @@ real DiscreteMDPCollection::getTransitionProbability (int s, int a, int s2) cons
 {
     real p = 0.0;
     for (uint i=0; i<A.size(); ++i) {
-        p += P[i]*A[i]->getTransitionProbability(s, a, s2);
+        real Pi =  P[i];
+        real Psi = A[i]->getTransitionProbability(s, a, s2);
+        printf ("%f * %f = %f\n", Pi, Psi, Pi*Psi);
+        p += Pi*Psi;
     }
+    printf ("->P = %f\n", p);
     return p;
 }
 real DiscreteMDPCollection::getExpectedReward (int s, int a) const

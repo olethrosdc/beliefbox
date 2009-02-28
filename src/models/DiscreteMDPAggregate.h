@@ -56,11 +56,11 @@ public:
     DiscreteMDPAggregate (int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
     virtual ~DiscreteMDPAggregate();
     virtual void AddTransition(int s, int a, real r, int s2);
-    virtual real GenerateReward (int s, int a);
-    virtual int GenerateTransition (int s, int a);
-    virtual real getTransitionProbability (int s, int a, int s2);
-    virtual Vector getTransitionProbabilities (int s, int a);
-    virtual real getExpectedReward (int s, int a);
+    virtual real GenerateReward (int s, int a) const;
+    virtual int GenerateTransition (int s, int a) const;
+    virtual real getTransitionProbability (int s, int a, int s2) const;
+    virtual Vector getTransitionProbabilities (int s, int a) const;
+    virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
     void SetNextReward(int s, int a, real r);
 };

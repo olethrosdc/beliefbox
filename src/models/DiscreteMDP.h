@@ -112,7 +112,7 @@ public:
         return next_states[ID];
     }
     void AperiodicityTransform(real tau);
-    void Check() const;
+    bool Check() const;
     real CalculateDiameter() const;
 };
 

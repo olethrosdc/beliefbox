@@ -45,27 +45,31 @@ void DiscreteMDPAggregate::SetNextReward(int s, int a, real r)
     DiscreteMDPCounts::SetNextReward(Aggregate(s), a, r);
 }
 
-real DiscreteMDPAggregate::GenerateReward (int s, int a)
+real DiscreteMDPAggregate::GenerateReward (int s, int a) const
 {
     return DiscreteMDPCounts::GenerateReward(Aggregate(s), a);
 }
 
-int DiscreteMDPAggregate::GenerateTransition (int s, int a)
+int DiscreteMDPAggregate::GenerateTransition (int s, int a) const
 {
     return DiscreteMDPCounts::GenerateTransition(Aggregate(s), a);
 }
 
-real DiscreteMDPAggregate::getTransitionProbability (int s, int a, int s2)
+real DiscreteMDPAggregate::getTransitionProbability (int s, int a, int s2) const
 {
-    return DiscreteMDPCounts::getTransitionProbability(Aggregate(s), a, Aggregate(s2));
+    int x = Aggregate(s);
+    int x2 = Aggregate(s2);
+    real p = DiscreteMDPCounts::getTransitionProbability(x2, a, x2);
+    printf ("p (%d | %d, %d) = %f\n", x2, x, a, p);
+    return p;
 }
 
-Vector DiscreteMDPAggregate::getTransitionProbabilities (int s, int a)
+Vector DiscreteMDPAggregate::getTransitionProbabilities (int s, int a) const
 {
     return DiscreteMDPCounts::getTransitionProbabilities(Aggregate(s), a);
 }
 
-real DiscreteMDPAggregate::getExpectedReward (int s, int a)
+real DiscreteMDPAggregate::getExpectedReward (int s, int a) const
 {
     return DiscreteMDPCounts::getExpectedReward(Aggregate(s), a);
 }
