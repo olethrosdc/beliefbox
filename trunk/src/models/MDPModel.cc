@@ -23,12 +23,18 @@ DiscreteMDP* MDPModel::CreateMDP()
         for (int a=0; a<n_actions; ++a) {
             SingularDistribution* ER = new SingularDistribution(getExpectedReward(i, a));
             mdp->addRewardDistribution(i, a, ER);
+            real sum_p = 0.0;
             for (int j=0; j<n_states; ++j) {
                 real p = getTransitionProbability(i, a, j);
                 if (p) {
                     mdp->setTransitionProbability(i, a, j, p);
+                    sum_p += p;
                     //printf("p(s'=%d|s=%d, a=%d)=%f\n", j, i, a, p);
                 }
+            }
+            if (fabs(sum_p - 1.0) > 0.001) {
+                printf ("!!!!!!! ");
+                printf ("sum_s' p(s'|s=%d, a=%d) = %f\n", i, a, sum_p);
             }
         }
     }

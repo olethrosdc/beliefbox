@@ -204,14 +204,15 @@ int DiscreteMDP::generateState (int s, int a) const
 
 
 #ifdef NDEBUG
-void DiscreteMDP::Check() const
+bool DiscreteMDP::Check() const
 {
-    
+    return true;
 }
 #else
-void DiscreteMDP::Check() const
+bool DiscreteMDP::Check() const
 {
     real threshold = 0.001;
+    bool flag = false;
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             real sum = 0.0;
@@ -220,7 +221,11 @@ void DiscreteMDP::Check() const
                 sum += p;
             }
             SMART_ASSERT(fabs(sum - 1.0f) <= threshold)(s)(a)(sum);
+            if (fabs(sum - 1.0f) > threshold) {
+                flag = true;
+            }
         }
     }
+    return flag;
 }
 #endif
