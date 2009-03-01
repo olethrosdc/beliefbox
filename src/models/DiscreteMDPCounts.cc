@@ -16,6 +16,7 @@
 DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, int init_transition_count, int init_reward_count, real init_reward) :
     MDPModel(n_states, n_actions)
 {
+    mdp_dbg("Creating DiscreteMDPCounts with %d states and %d actions\n",  n_states, n_actions);
     N = n_states * n_actions;
     P.resize(N);
     ER.resize(N);

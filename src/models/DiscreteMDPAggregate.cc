@@ -20,6 +20,7 @@ DiscreteMDPAggregate::DiscreteMDPAggregate (int n_aggregated_states, int n_state
     DiscreteMDPCounts(n_states, n_actions, init_transition_count,  init_reward_count,  init_reward)
 
 {
+    mdp_dbg("Creating DiscreteMDPAggregate from %d states to %d sets and %d actions\n",  n_aggregated_states, n_states, n_actions);
     this->n_aggregated_states = n_aggregated_states;
     X.resize(n_states);
     state_map.resize(n_aggregated_states);
@@ -59,8 +60,12 @@ real DiscreteMDPAggregate::getTransitionProbability (int s, int a, int s2) const
 {
     int x = Aggregate(s);
     int x2 = Aggregate(s2);
-    real p = DiscreteMDPCounts::getTransitionProbability(x2, a, x2);
-    printf ("p (%d | %d, %d) = %f\n", x2, x, a, p);
+    int n = X[x2].size();
+    real p = 0.0;
+    if (n > 0) {
+        p = DiscreteMDPCounts::getTransitionProbability(x, a, x2) / (real) n; 
+    }
+    mdp_dbg ("p (%d | %d, %d) = %f\n", x2, x, a, p);
     return p;
 }
 

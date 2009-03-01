@@ -21,6 +21,13 @@
 #include "Distribution.h"
 #include "DiscreteMDP.h"
 
+#undef DEBUG_MDP_MODELS
+
+#ifdef DEBUG_MDP_MODELS
+#define mdp_dbg  printf("%s:%d: %s(): ", __FILE__, __LINE__, __FUNCTION__); printf
+#else
+#define mdp_dbg (void)
+#endif
 
 /**
    \ingroup MachineLearning
@@ -46,6 +53,7 @@ public:
     {
         this->n_states = n_states;
         this->n_actions = n_actions;
+        mdp_dbg("Creating MDPModel with %d states and %d actions\n",  n_states, n_actions);
     }
     inline virtual int GetNStates()
     {
