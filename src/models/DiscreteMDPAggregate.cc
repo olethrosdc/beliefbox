@@ -25,8 +25,18 @@ DiscreteMDPAggregate::DiscreteMDPAggregate (int n_aggregated_states, int n_state
     X.resize(n_states);
     state_map.resize(n_aggregated_states);
     for (int i=0; i<n_aggregated_states; i++) {
+        int zeros = 0;
+        for (int x=0; x<n_states; x++) {
+            if (X[x].size()==0) {
+                zeros++;
+            }
+        }
         int s = floor(urandom() * ((real) n_states));
+        while (zeros && X[s].size()!=0) {
+            s = (s+1) % n_states;
+        }
         SMART_ASSERT(s>=0 && s<n_states);
+        
         X[s].add(i);
         state_map[i] = s;
     }
@@ -65,7 +75,10 @@ real DiscreteMDPAggregate::getTransitionProbability (int s, int a, int s2) const
     if (n > 0) {
         p = DiscreteMDPCounts::getTransitionProbability(x, a, x2) / (real) n; 
     }
-    mdp_dbg ("p (%d | %d, %d) = %f\n", x2, x, a, p);
+    mdp_dbg ("\n P(s'=%d | s=%d, a=%d) = (1/%d) P(x'=%d | x=%d, a=%d) = %f\n",
+             s2, s, a,
+             n, x2, x, a,
+             p);
     return p;
 }
 

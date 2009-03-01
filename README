@@ -1,4 +1,38 @@
 The project's main aim is to support a Bayesian
 framework for reinforcement learning.
 
+Directories:
+
+dat/                 - data 
+dat/r1e7.bin         - random bits, useful for consistent PSR runs
+
+src/                 - source code
+
+src/algorithms/      - algorithms for reinforcement learning
+src/core/            - miscellaneous routines used elsewhere
+src/environments/    - test benches
+src/geometry/        - anything pertaining to geometry goes here
+src/models/          - models of processes, used by algorithms
+src/statistics/      - RNGs, distributions, used by models or algorithms
+src/tests/           - test code
+
+An algorithm in algorithms/ may use classes from the models/
+directory.  Models may use statistics or algorithms for
+implementation.
+
+Environments should have the ability to create a full MDP or POMDP model
+(if not, an approximate one could be built via simulation perhaps).
+
+Currently, statistical models of MDPs are included in models rather
+than in statistics, although the remains of an earlier effort are
+there.
+
+A few useful RL algorithms are arleady implmented in algorithms/
+
+Most of the top-level src/ directories also have a subdirectory called
+tests/ which is used for one of
+
+       a) regression testing
+       b) experimental test benches
+       c) prototyping new algorithms.
 

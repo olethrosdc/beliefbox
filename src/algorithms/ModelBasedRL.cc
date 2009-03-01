@@ -55,6 +55,7 @@ real ModelBasedRL::Observe (real reward, int next_state, int next_action)
         model->AddTransition(state, action, reward, next_state);
     }
     state = next_state;
+    action = next_action;
     return 0.0;
 }
 /// Get an action using the current exploration policy.
@@ -63,38 +64,35 @@ int ModelBasedRL::Act(real reward, int next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
 
+    // update the model
+    if (state >= 0) {
+        model->AddTransition(state, action, reward, next_state);
+    }
+    state = next_state;
+
+    // re-create the MDP
     if (mdp) {
         delete mdp;
         mdp = NULL;
     }
     mdp = model->CreateMDP();
-    //mdp->Check();
-#if 0
-    if (value_iteration) {
-        delete value_iteration;
-    }
-    value_iteration = new ValueIteration(mdp, gamma);
-    //value_iteration->ComputeStateValues(0.001, 1000000);
-    value_iteration->ComputeStateActionValues(0.001, 1000000);
-#else
+
+    // update values
     value_iteration->mdp = mdp;
-    //value_iteration->ComputeStateValues(0.00, 1);
     value_iteration->ComputeStateActionValues(0.00, 1);
-#endif
-    //printf ("V(%d) = %f\n", next_state, value_iteration->getValue(next_state));
     for (int i=0; i<n_actions; i++) {
         tmpQ[i] = value_iteration->getValue(next_state, i);
-        //printf ("Q(%d %d) = %f\n", next_state, i, tmpQ[i]);
     }
+
+    // choose action
     int next_action;
     if (urandom()<epsilon) {
         next_action = (int) floor(urandom(0.0, n_actions));
     } else {
         next_action = ArgMax(tmpQ);
     }
-    Observe(reward, next_state, action);
-    state = next_state;
     action = next_action;
+
     return action;
 }
 
