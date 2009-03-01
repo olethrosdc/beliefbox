@@ -15,6 +15,7 @@
 
 DiscreteMDPCollection::DiscreteMDPCollection(int n_aggregates, int n_states, int n_actions) : MDPModel(n_states, n_actions)
 {
+    mdp_dbg("Creating DiscreteMDPCollection of %d aggregates, from %d states and %d actions\n",  n_aggregates, n_states, n_actions);
     P.resize(n_aggregates);
     A.resize(n_aggregates);
     for (int i=0; i<n_aggregates; i++) {
@@ -25,7 +26,7 @@ DiscreteMDPCollection::DiscreteMDPCollection(int n_aggregates, int n_states, int
             int n = floor(log(n_states) / log(2));
             // make sure 1 < n_sets < n_states
             int n_sets = n_states >> (((i-1) % n) + 1);
-            printf ("Collection size: %d / %d\n", n_sets, n_states);
+            mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);
             A[i] = new DiscreteMDPAggregate(n_states, n_sets, n_actions);
         }
     }
@@ -60,10 +61,10 @@ real DiscreteMDPCollection::getTransitionProbability (int s, int a, int s2) cons
     for (uint i=0; i<A.size(); ++i) {
         real Pi =  P[i];
         real Psi = A[i]->getTransitionProbability(s, a, s2);
-        printf ("%f * %f = %f\n", Pi, Psi, Pi*Psi);
+        //printf ("%f * %f = %f\n", Pi, Psi, Pi*Psi);
         p += Pi*Psi;
     }
-    printf ("->P = %f\n", p);
+    //printf ("->P = %f\n", p);
     return p;
 }
 real DiscreteMDPCollection::getExpectedReward (int s, int a) const

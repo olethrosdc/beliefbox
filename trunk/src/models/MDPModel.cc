@@ -18,6 +18,7 @@
 
 DiscreteMDP* MDPModel::CreateMDP()
 {
+    mdp_dbg("Making a DiscreteMDP with %d states, %d actions from model", n_states, n_actions);
     DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL, NULL);
     for (int i=0; i<n_states; ++i) {
         for (int a=0; a<n_actions; ++a) {
@@ -33,8 +34,8 @@ DiscreteMDP* MDPModel::CreateMDP()
                 }
             }
             if (fabs(sum_p - 1.0) > 0.001) {
-                printf ("!!!!!!! ");
                 printf ("sum_s' p(s'|s=%d, a=%d) = %f\n", i, a, sum_p);
+                assert(0);
             }
         }
     }
