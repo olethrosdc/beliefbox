@@ -22,12 +22,14 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, int init_tran
     ER.resize(N);
     for (int i=0; i<N; ++i) {
         P[i].resize(n_states, (real) init_transition_count);
-        ER[i] =0.0;
+        ER[i] = init_reward;
     }
 }
 
 DiscreteMDPCounts::~DiscreteMDPCounts()
 {
+    printf ("COUNTS MODEL\n");
+    ShowModel();
 }
 
 void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
