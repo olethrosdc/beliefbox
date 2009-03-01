@@ -26,7 +26,7 @@ DBG_OPT=OPT
 
 # Add -pg flag for profiling
 CFLAGS_DBG = -fPIC -g -Wall -pedantic -DUSE_DOUBLE
-CFLAGS_OPT = -fPIC -g -O3 -Wall -pedantic -DUSE_DOUBLE -pg -DNDEBUG
+CFLAGS_OPT = -fPIC -g -O3 -Wall -pedantic -DUSE_DOUBLE -DNDEBUG #-pg
 CFLAGS=$(CFLAGS_$(DBG_OPT))
 CXXFLAGS=$(CFLAGS)
 

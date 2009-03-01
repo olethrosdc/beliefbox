@@ -173,7 +173,7 @@ int main (int argc, char** argv)
                                          model);
         } else if (!strcmp(algorithm_name, "Collection")) {
             model= (MDPModel*)
-                new DiscreteMDPCollection(2,
+                new DiscreteMDPCollection(4,
                                           n_states,
                                           n_actions);
             algorithm = new ModelBasedRL(n_states,
