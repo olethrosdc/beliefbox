@@ -83,6 +83,8 @@ public:
     virtual void Reset() = 0;
     virtual DiscreteMDP* CreateMDP();
 
+    void ShowModel();
+
 };
 
 class GradientDescentMDPModel : public MDPModel
@@ -104,7 +106,7 @@ public:
     GradientDescentMDPModel (int n_states, int n_actions, Distribution* initial_transitions, Distribution* initial_rewards);
     virtual ~GradientDescentMDPModel();
     virtual void AddTransition(int s, int a, real r, int s2);
-    void ShowModel();
+
     virtual real GenerateReward (int s, int a) const;
     virtual int GenerateTransition (int s, int a) const;
     virtual real getTransitionProbability (int s, int a, int s2) const;

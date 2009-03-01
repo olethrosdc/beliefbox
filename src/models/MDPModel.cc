@@ -44,6 +44,29 @@ DiscreteMDP* MDPModel::CreateMDP()
     return mdp;
 }
 
+void MDPModel::ShowModel()
+{
+    for (int a=0; a<n_actions; a++) {
+        for (int i=0; i<n_states; i++) {
+            std::cout << a << "," << i << ":";
+            for (int j=0; j<n_states; j++) {
+                real p = getTransitionProbability(i, a, j);
+                if (p<0.01) p =0.0f;
+                std::cout << p << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+   for (int a=0; a<n_actions; a++) {
+        for (int i=0; i<n_states; i++) {
+            std::cout << "R(" << a << "," << i 
+                      << ") = " << getExpectedReward(i, a)
+                      << std::endl; 
+        }
+   }
+}
+
 GradientDescentMDPModel::GradientDescentMDPModel (int n_states, int n_actions, Distribution* initial_transitions, Distribution* initial_rewards) 
     : MDPModel (n_states, n_actions)
 {
@@ -120,23 +143,7 @@ void GradientDescentMDPModel::AddTransition(int s, int a, real r, int s2)
 
 
 
-void GradientDescentMDPModel::ShowModel()
-{
-    for (int i=0; i<N; i++) {
-        std::cout << i << ":";
-        for (int j=0; j<n_states; j++) {
-            real p = P[i][j];
-            if (p<0.01) p =0.0f;
-            std::cout << p << " ";
-        }
-        std::cout << std::endl;
-    }
 
-    for (int i=0; i<N; i++) {
-        std::cout << "R[" << i
-                  << "] = " << R[i] << std::endl; 
-    }
-}
 
 real GradientDescentMDPModel::GenerateReward (int s, int a) const
 {

@@ -293,6 +293,10 @@ Statistics EvaluateAlgorithm (uint n_steps,
         }
         statistics.ep_stats[episode].mse += sse /((real) (n_states*n_actions));
     }
+
+    std::cout << "REAL MODEL\n";
+    mdp->ShowModel();
+    
     return statistics;
 }
 
