@@ -51,10 +51,10 @@ void DiscreteMDPAggregate::AddTransition(int s, int a, real r, int s2)
     DiscreteMDPCounts::AddTransition(Aggregate(s), a, r, Aggregate(s2));
 }
 
-void DiscreteMDPAggregate::SetNextReward(int s, int a, real r)
-{
-    DiscreteMDPCounts::SetNextReward(Aggregate(s), a, r);
-}
+//void DiscreteMDPAggregate::SetNextReward(int s, int a, real r)
+//{
+//    DiscreteMDPCounts::SetNextReward(Aggregate(s), a, r);
+//}
 
 real DiscreteMDPAggregate::GenerateReward (int s, int a) const
 {

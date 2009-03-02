@@ -22,31 +22,32 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, int init_tran
     ER.resize(N);
     for (int i=0; i<N; ++i) {
         P[i].resize(n_states, (real) init_transition_count);
-        ER[i] = init_reward;
+        ER[i].reset(init_reward, init_reward_count);
     }
 }
 
 DiscreteMDPCounts::~DiscreteMDPCounts()
 {
-    printf ("COUNTS MODEL\n");
-    ShowModel();
+    //printf ("COUNTS MODEL\n");
+    //ShowModel();
 }
 
 void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
 {
     int ID = getID (s, a);
+    //printf ("(%d, %d) [%.2f] -> %d\n", s, a, r, s2);
     P[ID].Observation(s2);
-    ER[ID] = r;
+    ER[ID].Observation(r);
 }
 
-void DiscreteMDPCounts::SetNextReward(int s, int a, real r)
-{
-    ER[getID (s, a)] = r;
-}
+//void DiscreteMDPCounts::SetNextReward(int s, int a, real r)
+//{
+//    ER[getID (s, a)].mean = r;
+//}
 
 real DiscreteMDPCounts::GenerateReward (int s, int a) const
 {
-    return ER[getID (s, a)];
+    return ER[getID (s, a)].Generate();
 }
 
 int DiscreteMDPCounts::GenerateTransition (int s, int a) const
@@ -77,7 +78,7 @@ Vector DiscreteMDPCounts::getTransitionProbabilities (int s, int a) const
 
 real DiscreteMDPCounts::getExpectedReward (int s, int a) const
 {
-    return ER[getID (s,a)];
+    return ER[getID (s,a)].GetMean();
 }
 
 void DiscreteMDPCounts::Reset()
@@ -85,3 +86,28 @@ void DiscreteMDPCounts::Reset()
 }
 
 
+void DiscreteMDPCounts::ShowModel() const
+{
+    for (int a=0; a<n_actions; a++) {
+        for (int i=0; i<n_states; i++) {
+            std::cout << a << "," << i << ":";
+            for (int j=0; j<n_states; j++) {
+                real p = getTransitionProbability(i, a, j);
+                if (p<0.01) p =0.0f;
+                std::cout << p << " ";
+            }
+            std::cout << " ["
+                      << P[getID(i,a)].GetParameters().Sum()
+                      << "]\n";
+        }
+    }
+
+   for (int a=0; a<n_actions; a++) {
+        for (int i=0; i<n_states; i++) {
+            std::cout << "R(" << a << "," << i 
+                      << ") = " << getExpectedReward(i, a)
+                      << " [" << ER[getID(i,a)].n_samples << "]"
+                      << std::endl; 
+        }
+   }
+}

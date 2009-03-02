@@ -15,13 +15,15 @@
 
 #include "MDPModel.h"
 #include "Dirichlet.h"
+#include "MeanEstimator.h"
 #include "real.h"
+#include <vector>
 
 class DiscreteMDPCounts : public MDPModel
 {
 protected:
     std::vector<DirichletDistribution> P;
-    std::vector<real> ER;
+    std::vector<MeanEstimator> ER;
     int N;
     virtual int getID (int s, int a) const
     {
@@ -39,7 +41,8 @@ public:
     virtual Vector getTransitionProbabilities (int s, int a) const;
     virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
-    void SetNextReward(int s, int a, real r);
+    virtual void ShowModel() const;
+    //void SetNextReward(int s, int a, real r);
 };
 
 

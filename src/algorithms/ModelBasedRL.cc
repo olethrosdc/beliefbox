@@ -32,8 +32,8 @@ ModelBasedRL::~ModelBasedRL()
 {
     delete value_iteration;
     if (mdp) {
-        printf("Discrete MDP from model\n");
-        mdp->ShowModel();
+        //printf("Discrete MDP from model\n");
+        //mdp->ShowModel();
         delete mdp;
     }
 }
@@ -91,7 +91,7 @@ int ModelBasedRL::Act(real reward, int next_state)
     int next_action;
     if (urandom()<epsilon) {
         next_action = (int) floor(urandom(0.0, n_actions));
-        printf ("\n");
+        //printf ("\n");
     } else {
         next_action = ArgMax(tmpQ);
         //printf (" * A = %d\n", next_action);
