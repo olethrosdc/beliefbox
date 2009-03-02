@@ -46,8 +46,8 @@ void DiscreteMDPCollection::AddTransition(int s, int a, real r, int s2)
     for (uint i=0; i<A.size(); ++i) {
         real Pi =  P[i];
         real Psi = A[i]->getTransitionProbability(s, a, s2);
-        P[i] *= Pi*Psi;
-        Z += P[i];
+        P[i] *= Psi;
+        Z += P[i]; //post[i];
     }
 
     // normalise
