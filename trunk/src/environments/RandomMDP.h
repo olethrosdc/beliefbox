@@ -26,6 +26,7 @@ class RandomMDP : public DiscreteEnvironment
 protected:
     uint n_states;
     uint n_actions;
+    uint terminal_state;
     RandomNumberGenerator* rng;
 public:
     RandomMDP(uint n_actions,

@@ -23,7 +23,7 @@ public:
     virtual ~OnlineAlgorithm()
     {
     }
-    // set at the end of the episode.
+    /// call this at the end of an episode.
     virtual void Reset()
     {
     }

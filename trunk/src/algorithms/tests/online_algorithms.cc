@@ -96,7 +96,7 @@ int main (int argc, char** argv)
     srand(34987235);
     setRandomSeed(34987235);
    
-    RandomNumberFile random_file("/home/olethros/projects/beliefbox/dat/r1e7.bin");
+    RandomNumberFile random_file("/home/dimitrak/projects/beliefbox/dat/r1e7.bin");
     RandomNumberGenerator* rng = (RandomNumberGenerator*) &random_file;
 
     std::cout << "Starting test program" << std::endl;
@@ -264,6 +264,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
         statistics.ep_stats[episode].steps = 0;
         discount = 1.0;
         environment->Reset();
+        algorithm->Reset();
         uint t;
         for (t=0; t < n_steps; ++t) {
             int state = environment->getState();
@@ -294,8 +295,8 @@ Statistics EvaluateAlgorithm (uint n_steps,
         statistics.ep_stats[episode].mse += sse /((real) (n_states*n_actions));
     }
 
-    std::cout << "REAL MODEL\n";
-    mdp->ShowModel();
+    //std::cout << "REAL MODEL\n";
+    //mdp->ShowModel();
     
     return statistics;
 }

@@ -55,7 +55,7 @@ RandomMDP::RandomMDP(uint n_actions_,
         }
     }
 
-    int terminal_state = n_states;
+    terminal_state = n_states;
     if (termination) {
         terminal_state = n_states - 1;
     }
@@ -127,18 +127,18 @@ RandomMDP::~RandomMDP() {
 /// put the environment in its natural state
 void RandomMDP::Reset()
 {
-    state = (int) floor(rng->uniform()*((real) n_states));
+    state = (int) rng->discrete_uniform(n_states);
     reward = 0;
 }
 
 /// returns true if the action succeeds, false if we are in a terminal state
 bool RandomMDP::Act(int action)
 {
-    state = mdp->generateState(state, action);
     reward = mdp->generateReward(state, action);
+    state = mdp->generateState(state, action);
         //reward = mdp->getExpectedReward(state, action);
-    if (state != n_states - 1) {
-        return true;
+    if (state == terminal_state) {
+        return false; // terminated
     }
-    return false;  // environment has terminated
+    return true;  // we continue
 }

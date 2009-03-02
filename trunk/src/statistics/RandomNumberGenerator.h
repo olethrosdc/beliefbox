@@ -13,6 +13,7 @@
 #define RANDOM_NUMBER_GENERATOR_H
 
 #include "real.h"
+#include <cmath>
 
 /// Maybe this class is a bit useless.
 class  RandomNumberGenerator {
@@ -30,8 +31,14 @@ public:
     /// Generates a uniform 32 bits integer.
     virtual unsigned long random() = 0;
 
-    /// Generates a uniform random number on [0,1[.
+    /// Generates a uniform random number in [0,1[.
     virtual real uniform() = 0;
+
+    /// Generates a uniform random number in [0,n)
+    virtual int discrete_uniform(int n)
+    {
+        return (int) floor(uniform()*((real) n));
+    }
 };
 
 #endif

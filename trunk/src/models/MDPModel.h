@@ -83,7 +83,7 @@ public:
     virtual void Reset() = 0;
     virtual DiscreteMDP* CreateMDP();
 
-    void ShowModel();
+    virtual void ShowModel();
 
 };
 

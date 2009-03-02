@@ -66,7 +66,7 @@ public:
     virtual Vector getTransitionProbabilities (int s, int a) const;
     virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
-    void SetNextReward(int s, int a, real r);
+    //void SetNextReward(int s, int a, real r);
 };
 
 

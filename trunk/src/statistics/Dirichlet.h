@@ -34,6 +34,10 @@ public:
     void Observation(int i);
     Vector GetParameters() const;
     Vector GetMean() const;
+    int size() const
+    {
+        return n;
+    }
     void resize(int n, real p = 0.0);
     
 };
