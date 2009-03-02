@@ -32,7 +32,7 @@ protected:
         return s*n_actions + a;
     }
 public:
-    DiscreteMDPCounts (int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
+    DiscreteMDPCounts (int n_states, int n_actions, int init_transition_count=1, int init_reward_count = 0, real init_reward = 0.0);
     virtual ~DiscreteMDPCounts();
     virtual void AddTransition(int s, int a, real r, int s2);
     virtual real GenerateReward (int s, int a) const;

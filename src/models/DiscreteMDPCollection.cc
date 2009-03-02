@@ -41,6 +41,29 @@ DiscreteMDPCollection::~DiscreteMDPCollection()
 
 void DiscreteMDPCollection::AddTransition(int s, int a, real r, int s2)
 {
+    // update top-level model
+    real Z = 0.0;
+    for (uint i=0; i<A.size(); ++i) {
+        real Pi =  P[i];
+        real Psi = A[i]->getTransitionProbability(s, a, s2);
+        P[i] *= Pi*Psi;
+        Z += P[i];
+    }
+
+    // normalise
+    if (Z > 0.0) {
+        real invZ = 1.0 / Z;
+        for (uint i=0; i<A.size(); ++i) {
+            P[i] *= invZ;
+        }
+    } else {
+        Swarning("normalisation failed\n");
+        for (uint i=0; i<A.size(); ++i) {
+            P[i] = 1.0 / (real) A.size();
+        }
+    }
+
+    // update models
     for (uint i=0; i<A.size(); ++i) {
         A[i]->AddTransition(s, a, r, s2);
     }
