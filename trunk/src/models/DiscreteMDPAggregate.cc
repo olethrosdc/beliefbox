@@ -94,5 +94,5 @@ real DiscreteMDPAggregate::getExpectedReward (int s, int a) const
 
 void DiscreteMDPAggregate::Reset()
 {
-    DiscreteMDPAggregate::Reset();
+    DiscreteMDPCounts::Reset();
 }
