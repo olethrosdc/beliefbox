@@ -56,14 +56,20 @@ Gridworld::Gridworld(const char* fname,
     mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
 
     // set up rewards		
-    SingularDistribution step_reward(step_value);
-    SingularDistribution pit_reward(pit_value);
-    SingularDistribution zero_reward(0.0);
-    SingularDistribution goal_reward(goal_value);
+    SingularDistribution* step_reward = new SingularDistribution(step_value);
+    SingularDistribution* pit_reward = new SingularDistribution(pit_value);
+    SingularDistribution* zero_reward = new SingularDistribution(0.0);
+    SingularDistribution* goal_reward = new SingularDistribution(goal_value);
     
+    rewards.push_back(step_reward);
+    rewards.push_back(pit_reward);
+    rewards.push_back(zero_reward);
+    rewards.push_back(goal_reward);
+    
+
     // first the terminal state rewards
     for (uint a=0; a<n_actions; ++a) {
-        mdp->setRewardDistribution(n_states - 1, a, &zero_reward);
+        mdp->setRewardDistribution(n_states - 1, a, zero_reward);
     }
     // then the others.
     for (uint x=0; x<width; ++x) {
@@ -72,16 +78,16 @@ Gridworld::Gridworld(const char* fname,
                 int s = getState(x,y);
                 switch(whatIs(x,y)) {
                 case GRID:
-                    mdp->setRewardDistribution(s, a, &step_reward);
+                    mdp->setRewardDistribution(s, a, step_reward);
                     break;
                 case WALL:
-                    mdp->setRewardDistribution(s, a, &zero_reward);
+                    mdp->setRewardDistribution(s, a, zero_reward);
                     break;
                 case GOAL:
-                    mdp->setRewardDistribution(s, a, &goal_reward);
+                    mdp->setRewardDistribution(s, a, goal_reward);
                     break;
                 case PIT:
-                    mdp->setRewardDistribution(s, a, &pit_reward);
+                    mdp->setRewardDistribution(s, a, pit_reward);
                     break;
                 default:
                     std::cerr << "Unknown grid point type\n";
@@ -195,7 +201,14 @@ Gridworld::Gridworld(const char* fname,
             }
         }
     }
-    //mdp->Check();
+    mdp->Check();
+}
+
+Gridworld::~Gridworld() {
+    for (uint i=0; i<rewards.size(); ++i) {
+        delete rewards[i];
+    }
+    delete mdp;
 }
 
 void Gridworld::Reset()

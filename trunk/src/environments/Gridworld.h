@@ -38,9 +38,8 @@ public:
               real pit_ = -100.0,
               real goal_ = 0.0,
               real step_ = -1.0);
-    virtual ~Gridworld()
-    {
-    }
+    virtual ~Gridworld();
+
 
     virtual DiscreteMDP* getMDP() const
     {
