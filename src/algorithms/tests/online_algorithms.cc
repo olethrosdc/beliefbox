@@ -57,7 +57,7 @@ int main (int argc, char** argv)
     real pit_value = -1.0;
     real goal_value = 1.0;
     real step_value = -0.01;
-    real epsilon = 0.01;
+    real epsilon = 0.1;
     uint n_runs = 1000;
     uint n_episodes = 1000;
     uint n_steps = 100;
@@ -126,12 +126,13 @@ int main (int argc, char** argv)
                                      rng,
                                      false);
 #else
-        environment = new Gridworld("maze1",
-                                    8, 8);
+        environment = new Gridworld("maze0",
+                                    4, 4);
 #endif
     
-        // making sure the number of states is correct
+        // making sure the number of states & actions is correct
         n_states = environment->getMDP()->GetNStates();
+        n_actions = environment->getMDP()->GetNActions();
 
 
         //std::cout << "Creating exploration policy" << std::endl;
@@ -270,12 +271,12 @@ Statistics EvaluateAlgorithm (uint n_steps,
         for (t=0; t < n_steps; ++t) {
             int state = environment->getState();
             real reward = environment->getReward();
-            //std::cout << state << " " << reward << std::endl;
             statistics.reward[current_time] = reward;
             statistics.ep_stats[episode].total_reward += reward;
             statistics.ep_stats[episode].discounted_reward += discount * reward;
             discount *= gamma;
             int action = algorithm->Act(reward, state);
+            //std::cout << "s:" << state << " r:" << reward << " a:" << action << std::endl;
             bool action_ok = environment->Act(action);
             if (!action_ok) {
                 break;

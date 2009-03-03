@@ -29,15 +29,15 @@ public:
         INVALID=-1, GRID, WALL, GOAL, PIT
     };
     DiscreteMDP* mdp;
-
+    uint terminal_state;
     Gridworld(const char* fname,
               uint height_,
               uint width_,
               uint n_actions_ = 4,
               real random_ = 0.0,
-              real pit_ = -100.0,
+              real pit_ = -1.0,
               real goal_ = 0.0,
-              real step_ = -1.0);
+              real step_ = -0.1);
     virtual ~Gridworld();
 
 
@@ -55,7 +55,7 @@ public:
         }
     }
     virtual void Reset();
-    virtual bool Act(int a);
+    virtual bool Act(int action);
     void Show();
     int getState(int x, int y)
     {

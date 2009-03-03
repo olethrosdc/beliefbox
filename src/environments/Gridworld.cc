@@ -28,7 +28,8 @@ Gridworld::Gridworld(const char* fname,
        random(random_), pit_value(pit_), goal_value(goal_), step_value(step_)
 {
     uint n_states = width * height + 1; // plus a terminal state
-
+    terminal_state = n_states - 1;
+    
     std::ifstream ifs(fname, std::ifstream::in);
     std::string line;
     grid.resize(width);
@@ -61,6 +62,12 @@ Gridworld::Gridworld(const char* fname,
     SingularDistribution* zero_reward = new SingularDistribution(0.0);
     SingularDistribution* goal_reward = new SingularDistribution(goal_value);
     
+#if 0
+    std::cout << "step:" << step_value
+              << " pit:" << pit_value
+              << " goal:" << goal_value
+              << std::endl;
+#endif
     rewards.push_back(step_reward);
     rewards.push_back(pit_reward);
     rewards.push_back(zero_reward);
@@ -69,7 +76,7 @@ Gridworld::Gridworld(const char* fname,
 
     // first the terminal state rewards
     for (uint a=0; a<n_actions; ++a) {
-        mdp->setRewardDistribution(n_states - 1, a, zero_reward);
+        mdp->setRewardDistribution(terminal_state, a, zero_reward);
     }
     // then the others.
     for (uint x=0; x<width; ++x) {
@@ -100,23 +107,24 @@ Gridworld::Gridworld(const char* fname,
     // set up transitions
     // first the terminal state
     for (uint a=0; a<n_actions; ++a) {
-        mdp->setTransitionProbability (n_states-1, a, n_states-1, 1.0);
-        for (uint s=0; s<n_states - 1; s++) {
-            mdp->setTransitionProbability (n_states-1, a, s, 0.0);
-            mdp->setTransitionProbability (s, a, n_states-1, 0.0);
+        mdp->setTransitionProbability (terminal_state, a, terminal_state, 1.0);
+        for (uint s=0; s<terminal_state; s++) {
+            mdp->setTransitionProbability (terminal_state, a, s, 0.0);
+            mdp->setTransitionProbability (s, a, terminal_state, 0.0);
         }
     }
 
+#if 0
     // then all the other states
     // Step 1: clear
     for (uint s=0; s<n_states -1; s++) {   
         for (uint a=0; a<n_actions; ++a) {
-            for (uint s2=0; s2<n_states - 1; s2++) {
+            for (uint s2=0; s2<terminal_state; s2++) {
                 mdp->setTransitionProbability (s, a, s2, 0.0);
             }
         }
     }
-
+#endif
     // Step 2: fill
     for (uint x=0; x<width; ++x) {
         for (uint y=0; y<height; ++y) {
@@ -128,9 +136,9 @@ Gridworld::Gridworld(const char* fname,
                 }
                 continue;
             } else if (element == GOAL || element == PIT) {
-                std::cout << "TERMINATE: " << s << std::endl;
+                //std::cout << "TERMINATE: " << s << std::endl;
                 for (uint a=0; a<n_actions; ++a) {
-                    mdp->setTransitionProbability (s, a, n_states-1, 1.0);
+                    mdp->setTransitionProbability (s, a, terminal_state, 1.0);
                 }
                 continue;
             } else if (element == INVALID) {
@@ -202,6 +210,7 @@ Gridworld::Gridworld(const char* fname,
         }
     }
     mdp->Check();
+    //mdp->ShowModel();
 }
 
 Gridworld::~Gridworld() {
@@ -222,9 +231,13 @@ void Gridworld::Reset()
     } while(whatIs(x, y) != GRID);
 }
 
-bool Gridworld::Act(int a)
+bool Gridworld::Act(int action)
 {
-    state = mdp->generateState(state, a);
+    reward = mdp->generateReward(state, action);
+    state = mdp->generateState(state, action);
+    if (state==(int) terminal_state) {
+        return false;
+    }
     return true;
 }
 
