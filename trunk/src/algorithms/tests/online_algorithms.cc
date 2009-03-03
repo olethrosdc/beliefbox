@@ -96,7 +96,7 @@ int main (int argc, char** argv)
     srand(34987235);
     setRandomSeed(34987235);
    
-    RandomNumberFile random_file("./dat/r1e7.bin");
+    RandomNumberFile random_file("/home/dimitrak/projects/beliefbox/dat/r1e7.bin");
     RandomNumberGenerator* rng = (RandomNumberGenerator*) &random_file;
 
     std::cout << "Starting test program" << std::endl;
@@ -114,7 +114,7 @@ int main (int argc, char** argv)
         statistics.ep_stats[i].mse = 0;
     }
     for (uint run=0; run<n_runs; ++run) {
-        std::cout << "Creating environment" << std::endl;
+        std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
 #if 0
         environment = new RandomMDP (n_actions,
@@ -126,8 +126,8 @@ int main (int argc, char** argv)
                                      rng,
                                      false);
 #else
-        environment = new Gridworld("maze0",
-                                    4, 4);
+        environment = new Gridworld("/home/dimitrak/projects/beliefbox/dat/maze2",
+                                    8, 8);
 #endif
     
         // making sure the number of states & actions is correct
@@ -241,7 +241,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
                              DiscreteEnvironment* environment,
                              real gamma)
 {
-    std:: cout << "Evaluating..." << std::endl;
+    std:: cout << "evaluating..." << std::endl;
  
     const DiscreteMDP* mdp = environment->getMDP(); 
     ValueIteration value_iteration(mdp, gamma);
