@@ -96,7 +96,7 @@ int main (int argc, char** argv)
     srand(34987235);
     setRandomSeed(34987235);
    
-    RandomNumberFile random_file("/home/dimitrak/projects/beliefbox/dat/r1e7.bin");
+    RandomNumberFile random_file("/home/olethros/projects/beliefbox/dat/r1e7.bin");
     RandomNumberGenerator* rng = (RandomNumberGenerator*) &random_file;
 
     std::cout << "Starting test program" << std::endl;
