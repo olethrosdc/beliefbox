@@ -75,7 +75,7 @@ protected:
     std::vector< std::vector<MapElement> > grid;
     real** transitions;
     real* P_data;
-    Distribution** rewards;
+    std::vector<Distribution*> rewards;
 };
 
 #endif
