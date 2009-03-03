@@ -31,14 +31,23 @@ Gridworld::Gridworld(const char* fname,
     terminal_state = n_states - 1;
     
     std::ifstream ifs(fname, std::ifstream::in);
+    if (!ifs.is_open()) {
+        Serror ("Could not open file %s", fname);
+        exit(-1);
+    }
     std::string line;
     grid.resize(width);
     for (uint i=0; i<width; i++) {
         grid[i].resize(height);
     }
     uint y = 0;
-    while (getline(ifs, line) && y<height) {
-        assert (line.length() == width);
+    while (getline(ifs, line)) {// && y<height) {
+        if (line.length() != width) {
+            Serror ("Line length (%d) does not match width (%d)",
+                    line.length(), width);
+            exit(-1);
+        }
+        
         for (uint x=0; x<width; ++x) {
             switch (line[x]) {
             case '.': grid[x][y] = GRID; break;
@@ -51,7 +60,16 @@ Gridworld::Gridworld(const char* fname,
         y++;
     }				
 
-
+    if (y < height) {
+        std::cerr << "Only " << y << " lines read while accessing file "
+                  << fname << std::endl;
+        exit(-1);
+    } else  if (y > height) {
+        std::cerr << "Too many (" << y << ") lines read while accessing file "
+                  << fname << std::endl;
+        exit(-1);
+    }
+    
     // set up the mdp
 
     mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
@@ -233,9 +251,11 @@ void Gridworld::Reset()
 
 bool Gridworld::Act(int action)
 {
+    int prev_state = state;
     reward = mdp->generateReward(state, action);
     state = mdp->generateState(state, action);
-    if (state==(int) terminal_state) {
+    if (prev_state==(int) terminal_state) {
+        //std::cout << "TERMINATE\n";
         return false;
     }
     return true;
