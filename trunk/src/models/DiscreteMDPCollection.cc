@@ -25,9 +25,28 @@ DiscreteMDPCollection::DiscreteMDPCollection(int n_aggregates, int n_states, int
         } else {
             int n = floor(log(n_states) / log(2));
             // make sure 1 < n_sets < n_states
-            int n_sets = n_states >> (((i-1) % n) + 1);
+            int n_sets = 1 + n_states >> (((i-1) % n) + 1);
             mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);
             A[i] = new DiscreteMDPAggregate(n_states, n_sets, n_actions);
+        }
+    }
+}
+
+DiscreteMDPCollection::DiscreteMDPCollection(Gridworld& gridworld, int n_aggregates, int n_states, int n_actions) : MDPModel(n_states, n_actions)
+{
+    mdp_dbg("Creating DiscreteMDPCollection of %d aggregates, from %d states and %d actions\n",  n_aggregates, n_states, n_actions);
+    P.resize(n_aggregates);
+    A.resize(n_aggregates);
+    for (int i=0; i<n_aggregates; i++) {
+        P[i] = 1.0 / (real) n_aggregates;
+        if (i==0) {
+            A[i] = new DiscreteMDPCounts(n_states, n_actions);
+        } else {
+            int n = floor(log(n_states) / log(2));
+            // make sure 1 < n_sets < n_states
+            int n_sets = 1 + (n_states >> (((i-1) % n) + 1));
+            mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);
+            A[i] = new DiscreteMDPAggregate(gridworld, n_states, n_sets, n_actions);
         }
     }
 }
@@ -64,9 +83,12 @@ void DiscreteMDPCollection::AddTransition(int s, int a, real r, int s2)
     }
 
     // update models
+    printf ("P =");
     for (uint i=0; i<A.size(); ++i) {
+        printf (" %f", P[i]);
         A[i]->AddTransition(s, a, r, s2);
     }
+    printf("\n");
 }
 real DiscreteMDPCollection::GenerateReward (int s, int a) const
 {
@@ -101,7 +123,10 @@ real DiscreteMDPCollection::getExpectedReward (int s, int a) const
 }
 void DiscreteMDPCollection::Reset()
 {
-      for (uint i=0; i<A.size(); ++i) {
-          A[i]->Reset();
-      }  
+    //printf ("P =");
+    for (uint i=0; i<A.size(); ++i) {
+        //printf (" %f", P[i]);
+        A[i]->Reset();
+    }  
+    //printf("\n");
 }

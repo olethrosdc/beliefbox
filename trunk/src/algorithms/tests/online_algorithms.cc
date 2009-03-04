@@ -96,7 +96,7 @@ int main (int argc, char** argv)
     srand(34987235);
     setRandomSeed(34987235);
    
-    RandomNumberFile random_file("/home/dimitrak/projects/beliefbox/dat/r1e7.bin");
+    RandomNumberFile random_file("/home/olethros/projects/beliefbox/dat/r1e7.bin");
     RandomNumberGenerator* rng = (RandomNumberGenerator*) &random_file;
 
     std::cout << "Starting test program" << std::endl;
@@ -126,8 +126,9 @@ int main (int argc, char** argv)
                                      rng,
                                      false);
 #else
-        environment = new Gridworld("/home/dimitrak/projects/beliefbox/dat/maze2",
-                                    8, 8);
+        Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze3",
+                                            16, 16);
+        environment = gridworld;
 #endif
     
         // making sure the number of states & actions is correct
@@ -174,10 +175,18 @@ int main (int argc, char** argv)
                                          epsilon,
                                          model);
         } else if (!strcmp(algorithm_name, "Collection")) {
+#if 1
             model= (MDPModel*)
-                new DiscreteMDPCollection(4,
+                new DiscreteMDPCollection(16,
                                           n_states,
                                           n_actions);
+#else
+            model= (MDPModel*)
+                new DiscreteMDPCollection(*gridworld, 
+                                          4,
+                                          n_states,
+                                          n_actions);
+#endif
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
                                          gamma,
@@ -289,7 +298,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
             for (int a=0; a<n_actions; a++) {
                 real V =  value_iteration.getValue(i, a);
                 real hV = algorithm->getValue(i, a);
-                    //printf ("Q(%d, %d) = %f ~ %f\n", i, a, V, hV);
+                //printf ("Q(%d, %d) = %f ~ %f\n", i, a, V, hV);
                 real err = V - hV;
                 sse += err*err;
             }

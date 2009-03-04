@@ -64,6 +64,16 @@ public:
         }
         return -1;
     };
+
+    uint getWidth() const
+    {
+        return width;
+    }
+
+    uint getHeight() const
+    {
+        return height;
+    }
 protected:
     uint height;
     uint width;

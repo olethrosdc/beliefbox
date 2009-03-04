@@ -12,7 +12,7 @@
 
 #include "DiscreteMDPAggregate.h"
 #include "Random.h"
-
+#include "Gridworld.h"
 
 
 /// This constructor makes a random set 
@@ -24,6 +24,23 @@ DiscreteMDPAggregate::DiscreteMDPAggregate (int n_aggregated_states, int n_state
     this->n_aggregated_states = n_aggregated_states;
     X.resize(n_states);
     state_map.resize(n_aggregated_states);
+
+    BuildRandomAggregate();
+}
+
+DiscreteMDPAggregate::DiscreteMDPAggregate (Gridworld& gridworld, int n_aggregated_states, int n_states, int n_actions, int init_transition_count, int init_reward_count, real init_reward) :
+    DiscreteMDPCounts(n_states, n_actions, init_transition_count,  init_reward_count,  init_reward)
+{
+    mdp_dbg("Creating DiscreteMDPAggregate from %d states to %d sets and %d actions\n",  n_aggregated_states, n_states, n_actions);
+    this->n_aggregated_states = n_aggregated_states;
+    X.resize(n_states);
+    state_map.resize(n_aggregated_states);
+
+    BuildGridworldAggregate(gridworld);
+}
+
+void DiscreteMDPAggregate::BuildRandomAggregate()
+{
     for (int i=0; i<n_aggregated_states; i++) {
         int zeros = 0;
         for (int x=0; x<n_states; x++) {
@@ -36,10 +53,70 @@ DiscreteMDPAggregate::DiscreteMDPAggregate (int n_aggregated_states, int n_state
             s = (s+1) % n_states;
         }
         SMART_ASSERT(s>=0 && s<n_states);
-        
+            
         X[s].add(i);
         state_map[i] = s;
     }
+
+}
+
+void DiscreteMDPAggregate::BuildGridworldAggregate(Gridworld& gridworld)
+{
+    int width = gridworld.getWidth();
+    int height = gridworld.getHeight();
+
+    // keep one state for the termination and other states.
+    int n_divisions_x = (int) floor(sqrt(n_states-1));//width*height));
+    int n_divisions_y = (n_states-1)/n_divisions_x;
+    
+    int remaining_states = n_states - n_divisions_x*n_divisions_y;
+    printf("divx: %d, divy: %d, remaining: %d/%d\n",
+           n_divisions_x,
+           n_divisions_y,
+           remaining_states,
+           n_states);
+    for (int i=0; i<n_aggregated_states; i++) {
+        state_map[i] = -1;
+    }
+    int x_dist = width / n_divisions_x;
+    int y_dist = height / n_divisions_y;
+    for (int y=0; y<n_divisions_y; ++y) {
+        for (int x=0; x<n_divisions_x; ++x) {
+            for (int y_orig=y*y_dist;
+                 y_orig < std::min(height,(y+1)*y_dist);
+                 ++y_orig) {
+                for (int x_orig=x*x_dist;
+                     x_orig < std::min(width,(x+1)*x_dist);
+                     ++x_orig) {
+                    int s = y*n_divisions_x + x;
+                    int i = gridworld.getState(x_orig, y_orig);
+                    X[s].add(i);
+                    state_map[i] = s;
+                }
+            }
+        }
+    }
+    for (int i=0; i<n_aggregated_states; i++) {
+        // only fill in unmapped states
+        if (state_map[i] >= 0) {
+            continue;
+        }
+        int zeros = 0;
+        for (int x=0; x<n_states; x++) {
+            if (X[x].size()==0) {
+                zeros++;
+            }
+        }
+        int s = floor(urandom() * ((real) n_states));
+        // make sure you fill in at least one empty aggregated state
+        while (zeros && X[s].size()!=0) {
+            s = (s+1) % n_states;
+        }
+        SMART_ASSERT(s>=0 && s<n_states);
+        X[s].add(i);
+        state_map[i] = s;
+    }
+    
 }
 
 DiscreteMDPAggregate::~DiscreteMDPAggregate()

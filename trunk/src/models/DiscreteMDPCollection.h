@@ -15,6 +15,7 @@
 
 #include "DiscreteMDPCounts.h"
 #include "DiscreteMDPAggregate.h"
+#include "Gridworld.h"
 #include <set>
 #include <vector>
 
@@ -26,6 +27,7 @@ protected:
     std::vector<real> P;
 public:
     DiscreteMDPCollection(int n_aggregates, int n_states, int n_actions);
+    DiscreteMDPCollection(Gridworld& gridworld, int n_aggregates, int n_states, int n_actions);
     virtual ~DiscreteMDPCollection();
     virtual void AddTransition(int s, int a, real r, int s2);
     virtual real GenerateReward (int s, int a) const;
