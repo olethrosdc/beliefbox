@@ -14,6 +14,7 @@
 #define DISCRETE_MDP_AGGREGATE
 
 #include "DiscreteMDPCounts.h"
+#include "Gridworld.h"
 #include <set>
 #include <vector>
 
@@ -56,8 +57,12 @@ protected:
     {
         return state_map[s];
     }
+    void BuildRandomAggregate();
+    void BuildGridworldAggregate(Gridworld& gridworld);
 public:
     DiscreteMDPAggregate (int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
+    DiscreteMDPAggregate (Gridworld& gridworld, int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
+
     virtual ~DiscreteMDPAggregate();
     virtual void AddTransition(int s, int a, real r, int s2);
     virtual real GenerateReward (int s, int a) const;
