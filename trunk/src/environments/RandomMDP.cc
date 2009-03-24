@@ -136,9 +136,5 @@ bool RandomMDP::Act(int action)
 {
     reward = mdp->generateReward(state, action);
     state = mdp->generateState(state, action);
-        //reward = mdp->getExpectedReward(state, action);
-    if (state == terminal_state) {
-        return false; // terminated
-    }
     return true;  // we continue
 }
