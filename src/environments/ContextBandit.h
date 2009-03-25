@@ -16,6 +16,7 @@
 #include "DiscreteMDP.h"
 #include "Environment.h"
 #include "RandomNumberGenerator.h"
+#include "NormalDistribution.h"
 #include <string>
 #include <vector>
 
@@ -35,22 +36,14 @@ public:
                   RandomNumberGenerator* rng);
     virtual ~ContextBandit();
 
-    virtual DiscreteMDP* getMDP() const
-    {
-        return mdp;
-    }
     
     /// put the environment in its natural state
     virtual void Reset();
 
     /// returns true if the action succeeds
     virtual bool Act(int action);
-
 protected:
-    DiscreteMDP* mdp;
-    real** transitions;
-    real* P_data;
-    std::vector<Distribution*> rewards;
+    NormalDistribution normal;
 };
 
 #endif
