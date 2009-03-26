@@ -27,8 +27,8 @@ public:
     virtual void setMean(real mean) {p = mean;}
     virtual void setVariance(real var) {} ///< set variance in a magic way
     virtual real generate();
-    virtual real pdf(real x);
-    virtual real getMean() {return s*t*p;}
+    virtual real pdf(real x) const;
+    virtual real getMean() const {return s*t*p;}
     void setPeriod(long t);
 };
 

@@ -10,55 +10,37 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "DiscreteMDPCollection.h"
+#include "ContextBanditCollection.h"
 #include "MultinomialDistribution.h"
 
-DiscreteMDPCollection::DiscreteMDPCollection(int n_aggregates, int n_states, int n_actions) : MDPModel(n_states, n_actions)
+ContextBanditCollection::ContextBanditCollection(int n_aggregates, int n_states, int n_actions, real tau, real mu_0, real tau_0) : MDPModel(n_states, n_actions)
 {
-    mdp_dbg("Creating DiscreteMDPCollection of %d aggregates, from %d states and %d actions\n",  n_aggregates, n_states, n_actions);
+    mdp_dbg("Creating ContextBanditCollection of %d aggregates, from %d states and %d actions\n",  n_aggregates, n_states, n_actions);
     P.resize(n_aggregates);
     A.resize(n_aggregates);
     for (int i=0; i<n_aggregates; i++) {
         P[i] = 1.0 / (real) n_aggregates;
         if (i==0) {
-            A[i] = new DiscreteMDPCounts(n_states, n_actions);
+            A[i] = new ContextBanditGaussian(n_states, n_actions, tau, mu_0, tau_0);
         } else {
             int n = floor(log(n_states) / log(2));
             // make sure 1 < n_sets < n_states
             int n_sets = 1 + n_states >> (((i-1) % n) + 1);
             mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);
-            A[i] = new DiscreteMDPAggregate(n_states, n_sets, n_actions);
+            A[i] = new ContextBanditAggregate(n_states, n_sets, n_actions);
         }
     }
 }
 
-DiscreteMDPCollection::DiscreteMDPCollection(Gridworld& gridworld, int n_aggregates, int n_states, int n_actions) : MDPModel(n_states, n_actions)
-{
-    mdp_dbg("Creating DiscreteMDPCollection of %d aggregates, from %d states and %d actions\n",  n_aggregates, n_states, n_actions);
-    P.resize(n_aggregates);
-    A.resize(n_aggregates);
-    for (int i=0; i<n_aggregates; i++) {
-        P[i] = 1.0 / (real) n_aggregates;
-        if (i==0) {
-            A[i] = new DiscreteMDPCounts(n_states, n_actions);
-        } else {
-            int n = floor(log(n_states) / log(2));
-            // make sure 1 < n_sets < n_states
-            int n_sets = 1 + (n_states >> (((i-1) % n) + 1));
-            mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);
-            A[i] = new DiscreteMDPAggregate(gridworld, n_states, n_sets, n_actions);
-        }
-    }
-}
 
-DiscreteMDPCollection::~DiscreteMDPCollection()
+ContextBanditCollection::~ContextBanditCollection()
 {
     for (uint i=0; i<A.size(); i++) {
         delete A[i];
     }
 }
 
-void DiscreteMDPCollection::AddTransition(int s, int a, real r, int s2)
+void ContextBanditCollection::AddTransition(int s, int a, real r, int s2)
 {
     // update top-level model
     real Z = 0.0;
@@ -90,17 +72,17 @@ void DiscreteMDPCollection::AddTransition(int s, int a, real r, int s2)
     }
     //printf("\n");
 }
-real DiscreteMDPCollection::GenerateReward (int s, int a) const
+real ContextBanditCollection::GenerateReward (int s, int a) const
 {
     int i = DiscreteDistribution::generate(P);
     return A[i]->GenerateReward(s, a);
 }
-int DiscreteMDPCollection::GenerateTransition (int s, int a) const
+int ContextBanditCollection::GenerateTransition (int s, int a) const
 {
     int i = DiscreteDistribution::generate(P);
     return A[i]->GenerateTransition(s, a);
 }
-real DiscreteMDPCollection::getTransitionProbability (int s, int a, int s2) const
+real ContextBanditCollection::getTransitionProbability (int s, int a, int s2) const
 {
     real p = 0.0;
     for (uint i=0; i<A.size(); ++i) {
@@ -113,7 +95,17 @@ real DiscreteMDPCollection::getTransitionProbability (int s, int a, int s2) cons
     //printf ("->P = %f\n", p);
     return p;
 }
-real DiscreteMDPCollection::getExpectedReward (int s, int a) const
+
+real ContextBanditCollection::getRewardDensity (int s, int a, real r) const
+{
+    real p = 0.0;
+    for (uint i=0; i<A.size(); ++i) {
+        p += P[i]*A[i]->getRewardDensity(s, a, r);
+    }
+    return p; 
+}
+
+real ContextBanditCollection::getExpectedReward (int s, int a) const
 {
     real E = 0.0;
     for (uint i=0; i<A.size(); ++i) {
@@ -121,7 +113,7 @@ real DiscreteMDPCollection::getExpectedReward (int s, int a) const
     }
     return E; 
 }
-void DiscreteMDPCollection::Reset()
+void ContextBanditCollection::Reset()
 {
     //printf ("P =");
     for (uint i=0; i<A.size(); ++i) {

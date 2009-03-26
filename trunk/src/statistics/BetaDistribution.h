@@ -35,11 +35,11 @@ public:
         this->beta = beta;
     }
 
-    virtual real pdf(real x);
+    virtual real pdf(real x) const;
     virtual void calculatePosterior(real x);
     virtual void setMean(real mean);
     virtual void setVariance(real var);
-    virtual real getMean();
+    virtual real getMean() const;
     virtual real getVariance();
     virtual real generate();
 };

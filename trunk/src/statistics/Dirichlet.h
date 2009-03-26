@@ -28,7 +28,7 @@ public:
     virtual ~DirichletDistribution();
     virtual void generate(Vector& x);
     virtual Vector generate();
-    virtual real pdf(Vector& x);
+    virtual real pdf(Vector& x) const;
     virtual void update(Vector* x);
     /// When there is only one observation, give it directly.
     void Observation(int i);
