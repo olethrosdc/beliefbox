@@ -132,7 +132,7 @@ int main (int argc, char** argv)
                                             16, 16);
         environment = gridworld;
 #else
-        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
+        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 8, rng);
         environment = context_bandit;
 #endif
     
@@ -188,7 +188,8 @@ int main (int argc, char** argv)
                                          n_actions,
                                          gamma,
                                          epsilon,
-                                         model);
+                                         model,
+                                         false);
         } else if (!strcmp(algorithm_name, "Collection")) {
 #if 1
             //new DiscreteMDPCollection(8,
@@ -208,7 +209,8 @@ int main (int argc, char** argv)
                                          n_actions,
                                          gamma,
                                          epsilon,
-                                         model);
+                                         model,
+                                         false);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
         }

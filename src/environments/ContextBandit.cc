@@ -64,14 +64,14 @@ void ContextBandit::Reset()
 
 real ContextBandit::getMean(int action)
 {
-    int f0 = state & 3;
-    int f1 = (state >> 2) & 3;
-    int f2 = (state >> 4) & 3;
+    int f0 = state & 7;
+    int f1 = (state >> 3) & 7;
+    int f2 = (state >> 6) & 7;
    	real mean;
 
-	if (f1)
+	if (f1 % 4 == 1)
 	{
-		if (f2)
+		if (f2 % 2)
 		{
 			mean = 1;
 		}
@@ -82,7 +82,7 @@ real ContextBandit::getMean(int action)
 	}
 	else
 	{
-		if (f0)
+		if (f0 % 2)
 		{
 			mean = 1;
 		}
