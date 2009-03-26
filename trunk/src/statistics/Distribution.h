@@ -58,7 +58,7 @@ public:
     virtual real generate() = 0; ///< generate a value from this distribution
     virtual real pdf(real x) = 0; ///< return the density at point x
     virtual Distribution* clone() { return NULL; /* does nothing */}
-    virtual real getMean() {return 0.0f;}
+    virtual real getMean() const {return 0.0f;}
 };
 
 /// \brief Parametric distribution.
@@ -68,8 +68,14 @@ class ParametricDistribution : public Distribution
 public:
     ParametricDistribution() {}
     virtual ~ParametricDistribution() {}
-    virtual void setVariance (real var) = 0; ///< set the variance
-    virtual void setMean (real mean) = 0; ///< set the mean
+    virtual void setVariance (real var) ///< set the variance
+    {
+        Serror ("Cannot set variance\n");
+    }
+    virtual void setMean (real mean) ///< set the mean
+    {
+        Serror ("Cannot set mean\n");
+    }
 };
 
 
@@ -93,7 +99,7 @@ public:
     virtual ~SingularDistribution() {}
     virtual void setVariance (real var) {}; ///< ignore variance
     virtual void setMean (real mean); ///< set the mean
-    virtual real getMean ();
+    virtual real getMean () const;
     virtual real getVariance();
     virtual real generate();
     virtual real pdf(real x);
@@ -112,7 +118,7 @@ public:
     virtual void setVariance(real var) {} ///< set variance in a magic way
     virtual real generate();
     virtual real pdf(real x);
-    virtual real getMean() {return p;}
+    virtual real getMean() const {return p;}
 };
 
 /// Discrete probability distribution
@@ -127,7 +133,7 @@ public:
     virtual real generate();
     virtual real pdf(real x);
     virtual Distribution* clone();
-    virtual real getMean();
+    virtual real getMean() const;
     static int generate(std::vector<real> x);
 };
 

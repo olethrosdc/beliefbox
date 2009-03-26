@@ -23,6 +23,8 @@
 #include "QLearning.h"
 #include "QLearningDirichlet.h"
 #include "ModelBasedRL.h"
+#include "ContextBanditGaussian.h"
+#include "ContextBandit.h"
 #include "DiscreteMDPCollection.h"
 #include "RandomNumberFile.h"
 
@@ -102,7 +104,6 @@ int main (int argc, char** argv)
     std::cout << "Starting test program" << std::endl;
     
     std::cout << "Starting evaluation" << std::endl;
-
     // remember to use n_runs
     Statistics statistics;
     statistics.ep_stats.resize(n_episodes);
@@ -125,10 +126,13 @@ int main (int argc, char** argv)
                                      goal_value,
                                      rng,
                                      false);
-#else
+#elseif 0
         Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze3",
                                             16, 16);
         environment = gridworld;
+#else
+        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 8, rng);
+        environment = context_bandit;
 #endif
     
         // making sure the number of states & actions is correct
@@ -169,6 +173,16 @@ int main (int argc, char** argv)
             model= (MDPModel*)
                 new DiscreteMDPCounts(n_states,
                                       n_actions);
+            algorithm = new ModelBasedRL(n_states,
+                                         n_actions,
+                                         gamma,
+                                         epsilon,
+                                         model);
+        } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
+            model= (MDPModel*)
+                new ContextBanditGaussian(n_states,
+                                          n_actions,
+                                          0.5, 0.0, 1.0);
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
                                          gamma,
@@ -258,7 +272,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
         Serror("The environment must support the creation of an MDP\n");
         exit(-1);
     }
-    value_iteration.ComputeStateActionValues(10e-6,10000);
+    value_iteration.ComputeStateActionValues(10e-6,10);
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
 
