@@ -36,12 +36,14 @@ protected:
     DiscreteMDP* mdp;
     ValueIteration* value_iteration;
     std::vector<real> tmpQ;
+    bool use_value_iteration;
 public:
     ModelBasedRL(int n_states_,
                  int n_actions_,
                  real gamma_,
                  real epsilon_,
-                 MDPModel* model_);
+                 MDPModel* model_,
+                 bool use_value_iteration_ = true);
     virtual ~ModelBasedRL();
     virtual void Reset();
     /// Full observation
