@@ -10,17 +10,19 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DISCRETE_MDP_AGGREGATE
-#define DISCRETE_MDP_AGGREGATE
+#ifndef CONTEXT_BANDIT_AGGREGATE
+#define CONTEXT_BANDIT_AGGREGATE
 
-#include "DiscreteMDPCounts.h"
-#include "Gridworld.h"
+#include "ContextBanditGaussian.h"
 #include "DiscreteStateAggregate.h"
+
 #include <vector>
 
 
+
+
 /// USes DiscreteStateAggregate to form an MDP
-class DiscreteMDPAggregate : public DiscreteMDPCounts
+class ContextBanditAggregate : public ContextBanditGaussian
 {
 protected:
     std::vector<int> state_map; ///< each entry tells you which set the state belongs in
@@ -39,15 +41,15 @@ protected:
         return state_map[s];
     }
     void BuildRandomAggregate();
-    void BuildGridworldAggregate(Gridworld& gridworld);
 public:
-    DiscreteMDPAggregate (int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
-    DiscreteMDPAggregate (Gridworld& gridworld, int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
+    ContextBanditAggregate (int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
+    ContextBanditAggregate (Gridworld& gridworld, int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
 
-    virtual ~DiscreteMDPAggregate();
+    virtual ~ContextBanditAggregate();
     virtual void AddTransition(int s, int a, real r, int s2);
     virtual real GenerateReward (int s, int a) const;
     virtual int GenerateTransition (int s, int a) const;
+    virtual real getRewardDensity (int s, int a, real r) const;
     virtual real getTransitionProbability (int s, int a, int s2) const;
     virtual Vector getTransitionProbabilities (int s, int a) const;
     virtual real getExpectedReward (int s, int a) const;

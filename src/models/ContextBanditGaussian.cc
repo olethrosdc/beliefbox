@@ -60,6 +60,11 @@ real ContextBanditGaussian::getTransitionProbability (int s, int a, int s2) cons
     return 1.0 / (real) n_states;
 }
 
+real ContextBanditGaussian::getRewardDensity(int s, int a, real r) const
+{
+    return ER[getID (s,a)].pdf(r);
+}
+
 Vector ContextBanditGaussian::getTransitionProbabilities (int s, int a) const
 {
     Vector P(n_states);

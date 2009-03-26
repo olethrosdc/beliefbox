@@ -50,7 +50,7 @@ real NormalDistribution::generate()
     }
 }
 /// Normal distribution pdf
-real NormalDistribution::pdf(real x)
+real NormalDistribution::pdf(real x) const
 {
     real d = (m-x)/s;
     return exp(-0.5 * d*d)/(sqrt(2.0 * M_PI) * s);
@@ -65,7 +65,7 @@ real NormalDistributionUnknownMean::generate() const
     return prior.generate();
 }
 
-real NormalDistributionUnknownMean::pdf(real x)
+real NormalDistributionUnknownMean::pdf(real x) const
 {
     return prior.pdf(x);
 }
@@ -94,7 +94,7 @@ Vector MultivariateNormal::generate()
 }
 
 /// Multivariate Gaussian density
-real MultivariateNormal::pdf(Vector& x)
+real MultivariateNormal::pdf(Vector& x) const
 {
 	assert (x.Size()==mean.Size());
 	real n = (real) x.Size();

@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2005-2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -10,41 +10,33 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTEXT_BANDIT_GAUSSIAN
-#define CONTEXT_BANDIT_GAUSSIAN
+#ifndef CONTEXT_BANDIT_COLLECTION
+#define CONTEXT_BANDIT_COLLECTION
 
-#include "MDPModel.h"
-#include "NormalDistribution.h"
-#include "MeanEstimator.h"
-#include "real.h"
+#include "ContextBanditGaussian.h"
+#include "ContextBanditAggregate.h"
+#include "Gridworld.h"
+#include <set>
 #include <vector>
 
-class ContextBanditGaussian : public MDPModel
+/// blah
+class ContextBanditCollection : MDPModel
 {
 protected:
-    std::vector<NormalDistributionUnknownMean> ER;
-    int N;
-    virtual int getID (int s, int a) const
-    {
-        assert(s>=0 && s<n_states);
-        assert(a>=0 && a<n_actions);
-        return s*n_actions + a;
-    }
+    std::vector<ContextBanditGaussian*> A;
+    std::vector<real> P;
 public:
-    ContextBanditGaussian (int n_states, int n_actions, real tau, real mu_0, real tau_0);
-    virtual ~ContextBanditGaussian();
+    ContextBanditCollection(int n_aggregates, int n_states, int n_actions, real tau, real mu_0, real tau_0);
+    virtual ~ContextBanditCollection();
     virtual void AddTransition(int s, int a, real r, int s2);
     virtual real GenerateReward (int s, int a) const;
     virtual int GenerateTransition (int s, int a) const;
     virtual real getTransitionProbability (int s, int a, int s2) const;
-    virtual Vector getTransitionProbabilities (int s, int a) const;
-    virtual real getRewardDensity(int s, int a, real r) const;
+    virtual real getRewardDensity (int s, int a, real r) const;
     virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
-    virtual void ShowModel() const;
-    //void SetNextReward(int s, int a, real r);
 };
 
 
-#endif
 
+#endif

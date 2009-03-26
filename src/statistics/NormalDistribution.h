@@ -43,7 +43,7 @@ class NormalDistribution : public ParametricDistribution {
     virtual ~NormalDistribution() {}
     virtual real generate();
     virtual real generate() const;
-    virtual real pdf(real x);
+    virtual real pdf(real x) const;
     void setSTD(real std)
     {
         s = std;
@@ -104,7 +104,7 @@ public:
     }
     virtual real generate();
     virtual real generate() const;
-    virtual real pdf(real x);
+    virtual real pdf(real x) const;
     virtual real getMean() const 
     {
         return mu_n;
@@ -125,7 +125,7 @@ class MultivariateNormal : public VectorDistribution {
     virtual ~MultivariateNormal() {}
     virtual void generate(Vector& x);
     virtual Vector generate();
-    virtual real pdf(Vector& x);
+    virtual real pdf(Vector& x) const;
 };
 
 #endif

@@ -26,6 +26,7 @@
 #include "ContextBanditGaussian.h"
 #include "ContextBandit.h"
 #include "DiscreteMDPCollection.h"
+#include "ContextBanditCollection.h"
 #include "RandomNumberFile.h"
 
 struct EpisodeStatistics
@@ -131,7 +132,7 @@ int main (int argc, char** argv)
                                             16, 16);
         environment = gridworld;
 #else
-        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 8, rng);
+        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
         environment = context_bandit;
 #endif
     
@@ -190,10 +191,12 @@ int main (int argc, char** argv)
                                          model);
         } else if (!strcmp(algorithm_name, "Collection")) {
 #if 1
-            model= (MDPModel*)
-                new DiscreteMDPCollection(16,
+            //new DiscreteMDPCollection(8,
+            model= (MDPModel*) 
+                new ContextBanditCollection(8,
                                           n_states,
-                                          n_actions);
+                                          n_actions,
+                                          0.5, 0.0, 1.0);
 #else
             model= (MDPModel*)
                 new DiscreteMDPCollection(*gridworld, 
@@ -272,6 +275,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
         Serror("The environment must support the creation of an MDP\n");
         exit(-1);
     }
+    std:: cout << "(value iteration)" << std::endl;
     value_iteration.ComputeStateActionValues(10e-6,10);
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
@@ -283,6 +287,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
     real discount = 1.0;
     int current_time = 0;
     environment->Reset();
+    std:: cout << "(running)" << std::endl;
     for (uint episode = 0; episode < n_episodes; ++episode) {
         statistics.ep_stats[episode].total_reward = 0.0;
         statistics.ep_stats[episode].discounted_reward = 0.0;

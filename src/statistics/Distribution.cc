@@ -26,7 +26,7 @@ real UniformDistribution::generate()
     return x;
 }
 
-real UniformDistribution::pdf(real x)
+real UniformDistribution::pdf(real x) const
 {
     if ((x >= min)&&(x <= min + range))
         return 1.0f/range;
@@ -57,7 +57,7 @@ real SingularDistribution::generate()
 {
     return m;
 }
-real SingularDistribution::pdf(real x)
+real SingularDistribution::pdf(real x) const
 {
         if (x==m) {
             return 1.0f;
@@ -82,7 +82,7 @@ real BernoulliDistribution::generate()
     return 0.0f;
 }
 
-real BernoulliDistribution::pdf(real x)
+real BernoulliDistribution::pdf(real x) const
 {
     if (x==0.0f) {
         return 1.0f - p;
@@ -109,7 +109,7 @@ real LaplacianDistribution::generate()
 
 }
 
-real LaplacianDistribution::pdf(real x)
+real LaplacianDistribution::pdf(real x) const
 {
     return 0.5*l * exp (-l*fabs(x-m));
 }
@@ -120,7 +120,7 @@ real ExponentialDistribution::generate()
     return - log (1.0 - x) / l;
 }
 
-real ExponentialDistribution::pdf(real x)
+real ExponentialDistribution::pdf(real x) const
 {
     real d = x - m;
     if (d>0.0) {
@@ -200,7 +200,7 @@ real DiscreteDistribution::getMean() const
 	return sum;
 }
 
-real DiscreteDistribution::pdf(real x)
+real DiscreteDistribution::pdf(real x) const
 {
     int i=(int) floor(x);
     if ((i>=0)&&(i<n_outcomes)) {

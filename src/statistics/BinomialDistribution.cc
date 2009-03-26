@@ -26,7 +26,7 @@ real BinomialDistribution::generate()
     return s * ignbin(t, p);
 }
 
-real BinomialDistribution::pdf(real x)
+real BinomialDistribution::pdf(real x) const
 {
     real logp = log(p);
     real log1mp = log(1-p);
