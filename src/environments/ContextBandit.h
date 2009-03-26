@@ -32,18 +32,30 @@ protected:
 public:
     ContextBandit(uint n_actions,
                   uint n_features,
-                  unit values_per_feature,
+                  uint values_per_feature,
                   RandomNumberGenerator* rng);
-    virtual ~ContextBandit();
-
-    
+    virtual ~ContextBandit()
+    {
+        for (uint i=0; i<rewards.size(); ++i) {
+            delete rewards[i];
+        }
+        delete mdp;
+    }
     /// put the environment in its natural state
     virtual void Reset();
-
+    
     /// returns true if the action succeeds
     virtual bool Act(int action);
+
+    virtual DiscreteMDP* getMDP() const
+    {
+        return mdp;
+    }
+    real getMean(int action);
 protected:
     NormalDistribution normal;
+    DiscreteMDP* mdp;
+    std::vector<Distribution*> rewards;
 };
 
 #endif

@@ -43,4 +43,40 @@ public:
     static real uniform();
 };
 
+
+class MersenneTwisterRNG : public RandomNumberGenerator {
+protected:
+	unsigned long initial_seed;
+    const int n;
+    const int m;
+    unsigned long* state; /* the array for the state vector  */
+    int left;
+    int initf;
+    unsigned long *next;
+    void nextState();
+public:
+    MersenneTwisterRNG();
+    virtual ~MersenneTwisterRNG();
+
+    /// Initializes the random number generator with the computer clock.
+    virtual void seed();
+    /// Initializes the random number generator with the given long "the_seed_".
+    virtual void manualSeed(unsigned long the_seed_);
+
+    /// Returns the starting seed used.
+    virtual unsigned long getInitialSeed() ;
+	
+    /// Generates a uniform 32 bits integer.
+    virtual unsigned long random();
+
+    /// Generates a uniform random number in [0,1[.
+    virtual real uniform();
+
+    /// Generates a uniform random number in [0,n)
+    virtual int discrete_uniform(int n)
+    {
+        return (int) floor(uniform()*((real) n));
+    }
+};
+
 #endif

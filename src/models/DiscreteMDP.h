@@ -75,6 +75,7 @@ public:
     }
     inline void setTransitionProbability(int s, int a, int s2, real p)
     {
+        assert(s>=0 && s<n_states);
         int ID = getID (s, a);
         real* Ps=P[ID];
         assert(s2>=0 && s2<n_states);

@@ -9,7 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#define MEAN_ESTIMATOR
+#ifndef MEAN_ESTIMATOR_H
+#define MEAN_ESTIMATOR_H
 
 #include "real.h"
 
@@ -56,3 +57,4 @@ class MeanEstimator
     }
 };
 
+#endif

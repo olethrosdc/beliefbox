@@ -18,11 +18,11 @@
 #include "Vector.h"
 
 
-/// Gaussian probability distribution
+/// Gaussian probability distribution 
 class NormalDistribution : public ParametricDistribution {
  private:
-    bool cache;
-    real normal_x, normal_y, normal_rho;
+    mutable bool cache;
+    mutable real normal_x, normal_y, normal_rho;
  public:
     real m; ///< mean
     real s; ///< standard deviation
@@ -42,17 +42,75 @@ class NormalDistribution : public ParametricDistribution {
     }
     virtual ~NormalDistribution() {}
     virtual real generate();
+    virtual real generate() const;
     virtual real pdf(real x);
+    void setSTD(real std)
+    {
+        s = std;
+    }
     virtual void setVariance (real var) 
-    {s = sqrt(var);} 
+    {
+        s = sqrt(var);
+    } 
     virtual void setMean (real mean)
-    {m = mean;}
-    virtual real getMean ()
+    {
+        m = mean;
+    }
+    virtual real getMean () const
     {
         return m;
     }
 };
 
+
+class NormalDistributionUnknownMean : public ConjugatePrior
+{
+protected:
+    NormalDistribution observations;
+    NormalDistribution prior;
+public:
+    real mu_0; ///< prior mean
+    real tau_0; ///< prior accuracy
+    real mu_n; ///< current mean
+    real tau_n; ///< current accuracy
+    real tau; ///< observation accuracy
+    int n;
+    real sum;
+    NormalDistributionUnknownMean() {
+        mu_n = 0.0;
+        tau_n =1.0;
+        tau = 1.0;
+        Reset();
+    }
+
+    NormalDistributionUnknownMean(real mu_0_, real tau_0_, real tau_)
+        : mu_0(mu_0_), tau_0(tau_0_), tau(tau_)
+    {
+        Reset();
+    }
+    void Reset()
+    {
+        observations.setMean(mu_0);
+        observations.setSTD(1.0 / tau);
+        prior.setMean(mu_0);
+        prior.setVariance(1.0 / (tau_0 * tau_0));
+        n = 0;
+        sum = 0.0;
+        tau_n = tau_0;
+        mu_n = mu_0 * tau_0;
+    }
+    virtual ~NormalDistributionUnknownMean()
+    {
+    }
+    virtual real generate();
+    virtual real generate() const;
+    virtual real pdf(real x);
+    virtual real getMean() const 
+    {
+        return mu_n;
+    }
+    virtual void calculatePosterior(real x);
+};
 
 
 /// Multivariate Gaussian probability distribution

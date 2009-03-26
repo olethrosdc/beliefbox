@@ -43,7 +43,7 @@ void SingularDistribution::setMean(real mean)
     m = mean;
 }
 
-real SingularDistribution::getMean()
+real SingularDistribution::getMean() const
 {
 	return m;
 }
@@ -191,7 +191,7 @@ int DiscreteDistribution::generate(std::vector<real> x)
 }
 
 
-real DiscreteDistribution::getMean()
+real DiscreteDistribution::getMean() const
 {
     real sum = 0.0;
     for (int i=0; i<n_outcomes; i++) {

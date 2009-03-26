@@ -14,7 +14,7 @@
 #include "Random.h"
 
 // Taken from numerical recipes in C
-real NormalDistribution::generate()
+real NormalDistribution::generate() const
 {
     if(!cache) {
         normal_x = urandom();
@@ -32,11 +32,53 @@ real NormalDistribution::generate()
     }
 }
 
+real NormalDistribution::generate()
+{
+    if(!cache) {
+        normal_x = urandom();
+        normal_y = urandom();
+        normal_rho = sqrt(-2.0 * log(1.0 - normal_y));
+        cache = true;
+    } else {
+        cache = false;
+    }
+    
+    if (cache) {
+        return normal_rho * cos(2.0 * M_PI * normal_x) * s + m;
+    } else {
+        return normal_rho * sin(2.0 * M_PI * normal_x) * s + m; 
+    }
+}
 /// Normal distribution pdf
 real NormalDistribution::pdf(real x)
 {
     real d = (m-x)/s;
     return exp(-0.5 * d*d)/(sqrt(2.0 * M_PI) * s);
+}
+real NormalDistributionUnknownMean::generate()
+{
+    return prior.generate();
+}
+
+real NormalDistributionUnknownMean::generate() const
+{
+    return prior.generate();
+}
+
+real NormalDistributionUnknownMean::pdf(real x)
+{
+    return prior.pdf(x);
+}
+
+void NormalDistributionUnknownMean::calculatePosterior(real x)
+{
+    //    sum += x;
+    n++;
+    mu_n += tau * x;
+    tau_n += tau;
+    prior.setMean(mu_n);
+    prior.setSTD(1.0 / tau_n);
+    observations.setMean(mu_n);
 }
 
 /// Multivariate Gaussian generation
@@ -61,3 +103,4 @@ real MultivariateNormal::pdf(Vector& x)
 	real log_pdf = - 0.5 * d - 0.5*(log(2.0*M_PI)*n + log(determinant));
 	return exp(log_pdf);
 }
+
