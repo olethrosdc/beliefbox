@@ -194,7 +194,7 @@ int main (int argc, char** argv)
 #if 1
             //new DiscreteMDPCollection(8,
             model= (MDPModel*) 
-                new ContextBanditCollection(8,
+                new ContextBanditCollection(16,
                                           n_states,
                                           n_actions,
                                           0.5, 0.0, 1.0);
