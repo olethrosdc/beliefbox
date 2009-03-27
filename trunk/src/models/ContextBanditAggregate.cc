@@ -16,8 +16,8 @@
 
 
 /// This constructor makes a random set 
-ContextBanditAggregate::ContextBanditAggregate (int n_aggregated_states, int n_states, int n_actions, int init_transition_count, int init_reward_count, real init_reward) :
-    ContextBanditGaussian(n_states, n_actions, init_transition_count,  init_reward_count,  init_reward)
+ContextBanditAggregate::ContextBanditAggregate (int n_aggregated_states, int n_states, int n_actions, real tau, real mu_0, real tau_0) :
+    ContextBanditGaussian(n_states, n_actions, tau, mu_0, tau_0)
 
 {
     mdp_dbg("Creating ContextBanditAggregate from %d states to %d sets and %d actions\n",  n_aggregated_states, n_states, n_actions);
@@ -33,8 +33,8 @@ ContextBanditAggregate::ContextBanditAggregate (int n_aggregated_states, int n_s
 
 
 /// This constructor makes a random set 
-ContextBanditAggregate::ContextBanditAggregate (bool blah, int n_factors, int n_values, int n_aggregated_states, int n_states, int n_actions, int init_transition_count, int init_reward_count, real init_reward) :
-    ContextBanditGaussian(n_states, n_actions, init_transition_count,  init_reward_count,  init_reward)
+ContextBanditAggregate::ContextBanditAggregate (bool blah, int n_factors, int n_values, int n_aggregated_states, int n_states, int n_actions, real tau, real mu_0, real tau_0) :
+    ContextBanditGaussian(n_states, n_actions, tau, mu_0, tau_0)
 
 {
     mdp_dbg("Creating ContextBanditAggregate from %d states to %d sets and %d actions\n",  n_aggregated_states, n_states, n_actions);
@@ -70,11 +70,21 @@ void ContextBanditAggregate::BuildRandomAggregate()
 void ContextBanditAggregate::BuildFactoredAggregate(int n_factors, int n_values)
 {
     for (int i=0; i<n_aggregated_states; i++) {
-        int s = i  & (n_states-1);
+        int s = i  % n_states;
         X[s].add(i);
+        //printf ("Putting state %d in aggregate %d\n", i, s);
         state_map[i] = s;
     }
-
+    int zeros = 0;
+    for (int x=0; x<n_states; x++) {
+        if (X[x].size()==0) {
+            zeros++;
+        }
+    }
+    if (zeros) {
+        Serror ("There should not be any zeros! Found %d\n", zeros);
+        exit(-1);
+    }
 }
 
 ContextBanditAggregate::~ContextBanditAggregate()

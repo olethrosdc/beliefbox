@@ -65,9 +65,15 @@ real NormalDistributionUnknownMean::generate() const
     return prior.generate();
 }
 
+/// TODO: Check that the marginal likelihood is correctly calculated
 real NormalDistributionUnknownMean::pdf(real x) const
 {
-    return prior.pdf(x);
+
+    real mean = mu_n;
+    real sigma = 1.0 / tau_n + 1.0 / tau;
+    real d = (mean - x )/sigma;
+    return exp(-0.5 * d*d)/(sqrt(2.0 * M_PI) * sigma);
+    //return prior.pdf(x);
 }
 
 void NormalDistributionUnknownMean::calculatePosterior(real x)

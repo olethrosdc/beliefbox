@@ -27,7 +27,7 @@ ContextBanditCollection::ContextBanditCollection(int n_aggregates, int n_states,
             // make sure 1 < n_sets < n_states
             int n_sets = 1 + n_states >> (((i-1) % n) + 1);
             mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);
-            A[i] = new ContextBanditAggregate(n_states, n_sets, n_actions);
+            A[i] = new ContextBanditAggregate(n_states, n_sets, n_actions, tau, mu_0, tau_0);
         }
     }
 }
@@ -35,6 +35,12 @@ ContextBanditCollection::ContextBanditCollection(int n_aggregates, int n_states,
 
 ContextBanditCollection::~ContextBanditCollection()
 {
+
+    for (uint i=0; i<A.size(); ++i) {
+        printf (" %f", P[i]);
+    }
+    printf("# Final model probabilities\n");
+
     for (uint i=0; i<A.size(); i++) {
         delete A[i];
     }
@@ -44,13 +50,16 @@ void ContextBanditCollection::AddTransition(int s, int a, real r, int s2)
 {
     // update top-level model
     real Z = 0.0;
+    //printf (" L = ");
     for (uint i=0; i<A.size(); ++i) {
-        real Pi =  P[i];
-        real Psi = A[i]->getTransitionProbability(s, a, s2);
+        //real Pi =  P[i];
+        //real Psi = A[i]->getTransitionProbability(s, a, s2);
+        real Psi = A[i]->getRewardDensity(s, a, r);
+        //printf (" %f ", Psi);
         P[i] *= Psi;
         Z += P[i]; //post[i];
     }
-
+    //printf("\n");
     // normalise
     if (Z > 0.0) {
         real invZ = 1.0 / Z;
@@ -65,12 +74,12 @@ void ContextBanditCollection::AddTransition(int s, int a, real r, int s2)
     }
 
     // update models
-    //    printf ("P =");
+    //printf ("P =");
     for (uint i=0; i<A.size(); ++i) {
-        //        printf (" %f", P[i]);
+        //printf (" %f ", P[i]);
         A[i]->AddTransition(s, a, r, s2);
     }
-    //printf("\n");
+    //    printf("\n");
 }
 real ContextBanditCollection::GenerateReward (int s, int a) const
 {

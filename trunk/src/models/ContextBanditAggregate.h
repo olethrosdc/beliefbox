@@ -43,8 +43,8 @@ protected:
     void BuildRandomAggregate();
     void BuildFactoredAggregate(int n_factors, int n_values);
 public:
-    ContextBanditAggregate (int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
-    ContextBanditAggregate (bool blah, int n_factors, int n_values, int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
+    ContextBanditAggregate (int n_aggregated_states, int n_states, int n_actions, real tau, real mu_0, real tau_0);
+    ContextBanditAggregate (bool blah, int n_factors, int n_values, int n_aggregated_states, int n_states, int n_actions, real tau, real mu_0, real tau_0);
 
     virtual ~ContextBanditAggregate();
     virtual void AddTransition(int s, int a, real r, int s2);
@@ -57,6 +57,6 @@ public:
     virtual void Reset();
     //void SetNextReward(int s, int a, real r);
 };
-
+ 
 
 #endif

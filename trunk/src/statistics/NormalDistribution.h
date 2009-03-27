@@ -104,6 +104,7 @@ public:
     }
     virtual real generate();
     virtual real generate() const;
+    /// Note that this the marginal likelihood!
     virtual real pdf(real x) const;
     virtual real getMean() const 
     {
