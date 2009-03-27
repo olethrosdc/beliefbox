@@ -194,7 +194,7 @@ int main (int argc, char** argv)
 #if 1
             //new DiscreteMDPCollection(8,
             model= (MDPModel*) 
-                new ContextBanditCollection(16,
+                new ContextBanditCollection(4,
                                           n_states,
                                           n_actions,
                                           0.5, 0.0, 1.0);
@@ -278,7 +278,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
         exit(-1);
     }
     std:: cout << "(value iteration)" << std::endl;
-    value_iteration.ComputeStateActionValues(10e-6,10);
+    value_iteration.ComputeStateActionValues(10e-6,1000);
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
 
