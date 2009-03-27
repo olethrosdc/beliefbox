@@ -94,7 +94,7 @@ void OptimisticValueIteration::ComputeStateValues(real epsilon, real threshold, 
                     }
                 }
                         
-                real R = mdp->getExpectedReward(s, a) + gamma*max_U - baseline;
+                //real R = mdp->getExpectedReward(s, a) + gamma*max_U - baseline;
                 
                 if (a==0 || Q_a_max < S) {
                     a_max = a;

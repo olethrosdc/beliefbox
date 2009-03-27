@@ -91,10 +91,13 @@ real ContextBandit::getMean(int action)
 			mean = -1;
 		}
 	}
+
+    //printf ("%d %f # STATE MEAN\n", state, mean);
 	if (action)   // a = 0 or a = 1
 	{
 		mean = -mean;
 	}
+
     return mean;
 }
 

@@ -60,7 +60,7 @@ int main (int argc, char** argv)
     real pit_value = -1.0;
     real goal_value = 1.0;
     real step_value = -0.01;
-    real epsilon = 0.1;
+    real epsilon = 0.01;
     uint n_runs = 1000;
     uint n_episodes = 1000;
     uint n_steps = 100;

@@ -63,7 +63,7 @@ void DiscreteMDPCollection::AddTransition(int s, int a, real r, int s2)
     // update top-level model
     real Z = 0.0;
     for (uint i=0; i<A.size(); ++i) {
-        real Pi =  P[i];
+        //real Pi =  P[i];
         real Psi = A[i]->getTransitionProbability(s, a, s2);
         P[i] *= Psi;
         Z += P[i]; //post[i];
