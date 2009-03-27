@@ -29,6 +29,23 @@ ContextBanditAggregate::ContextBanditAggregate (int n_aggregated_states, int n_s
 }
 
 
+
+
+
+/// This constructor makes a random set 
+ContextBanditAggregate::ContextBanditAggregate (bool blah, int n_factors, int n_values, int n_aggregated_states, int n_states, int n_actions, int init_transition_count, int init_reward_count, real init_reward) :
+    ContextBanditGaussian(n_states, n_actions, init_transition_count,  init_reward_count,  init_reward)
+
+{
+    mdp_dbg("Creating ContextBanditAggregate from %d states to %d sets and %d actions\n",  n_aggregated_states, n_states, n_actions);
+    this->n_aggregated_states = n_aggregated_states;
+    X.resize(n_states);
+    state_map.resize(n_aggregated_states);
+
+    BuildFactoredAggregate(n_factors, n_values);
+}
+
+
 void ContextBanditAggregate::BuildRandomAggregate()
 {
     for (int i=0; i<n_aggregated_states; i++) {
@@ -50,6 +67,15 @@ void ContextBanditAggregate::BuildRandomAggregate()
 
 }
 
+void ContextBanditAggregate::BuildFactoredAggregate(int n_factors, int n_values)
+{
+    for (int i=0; i<n_aggregated_states; i++) {
+        int s = i  & (n_states-1);
+        X[s].add(i);
+        state_map[i] = s;
+    }
+
+}
 
 ContextBanditAggregate::~ContextBanditAggregate()
 {

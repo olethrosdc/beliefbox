@@ -92,6 +92,7 @@ int ModelBasedRL::Act(real reward, int next_state)
     } else {
         for (int i=0; i<n_actions; i++) {
             tmpQ[i] = model->getExpectedReward(state, i);
+            tmpQ[i] = model->GenerateReward(state, i);
         } 
     }
     

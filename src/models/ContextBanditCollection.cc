@@ -65,9 +65,9 @@ void ContextBanditCollection::AddTransition(int s, int a, real r, int s2)
     }
 
     // update models
-    //printf ("P =");
+    //    printf ("P =");
     for (uint i=0; i<A.size(); ++i) {
-        //printf (" %f", P[i]);
+        //        printf (" %f", P[i]);
         A[i]->AddTransition(s, a, r, s2);
     }
     //printf("\n");

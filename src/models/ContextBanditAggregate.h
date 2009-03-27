@@ -41,9 +41,10 @@ protected:
         return state_map[s];
     }
     void BuildRandomAggregate();
+    void BuildFactoredAggregate(int n_factors, int n_values);
 public:
     ContextBanditAggregate (int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
-    ContextBanditAggregate (Gridworld& gridworld, int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
+    ContextBanditAggregate (bool blah, int n_factors, int n_values, int n_aggregated_states, int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
 
     virtual ~ContextBanditAggregate();
     virtual void AddTransition(int s, int a, real r, int s2);
