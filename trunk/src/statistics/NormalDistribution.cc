@@ -69,7 +69,7 @@ real NormalDistributionUnknownMean::generate() const
 real NormalDistributionUnknownMean::pdf(real x) const
 {
 
-    real mean = mu_n;
+    real mean = mu_n / tau_n;
     real sigma = 1.0 / tau_n + 1.0 / tau;
     real d = (mean - x )/sigma;
     return exp(-0.5 * d*d)/(sqrt(2.0 * M_PI) * sigma);
@@ -86,6 +86,12 @@ void NormalDistributionUnknownMean::calculatePosterior(real x)
     prior.setSTD(1.0 / tau_n);
     observations.setMean(mu_n);
 }
+
+real NormalDistributionUnknownMean::getMean() const
+{
+    return mu_n / tau_n;
+}
+
 
 /// Multivariate Gaussian generation
 void MultivariateNormal::generate(Vector& x)

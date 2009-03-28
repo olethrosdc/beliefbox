@@ -56,7 +56,11 @@ public:
 
     virtual real getValue (int state, int action)
     {
-        return value_iteration->getValue(state, action);
+        if (use_value_iteration) {
+            return value_iteration->getValue(state, action);
+        } else {
+            return 0.0;
+        }
     }
     
 };

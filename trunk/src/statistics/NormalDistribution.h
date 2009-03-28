@@ -106,10 +106,7 @@ public:
     virtual real generate() const;
     /// Note that this the marginal likelihood!
     virtual real pdf(real x) const;
-    virtual real getMean() const 
-    {
-        return mu_n;
-    }
+    virtual real getMean() const;
     virtual void calculatePosterior(real x);
 };
 

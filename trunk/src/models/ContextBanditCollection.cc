@@ -93,16 +93,7 @@ int ContextBanditCollection::GenerateTransition (int s, int a) const
 }
 real ContextBanditCollection::getTransitionProbability (int s, int a, int s2) const
 {
-    real p = 0.0;
-    for (uint i=0; i<A.size(); ++i) {
-        mdp_dbg (" A_%d\n", i);
-        real Pi =  P[i];
-        real Psi = A[i]->getTransitionProbability(s, a, s2);
-        //printf (" -- %f * %f = %f\n", Pi, Psi, Pi*Psi);
-        p += Pi*Psi;
-    }
-    //printf ("->P = %f\n", p);
-    return p;
+    return 1.0 / (real) n_states;
 }
 
 real ContextBanditCollection::getRewardDensity (int s, int a, real r) const
