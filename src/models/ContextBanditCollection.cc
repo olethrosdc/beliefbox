@@ -25,9 +25,9 @@ ContextBanditCollection::ContextBanditCollection(int n_aggregates, int n_states,
         } else {
             int n = floor(log(n_states) / log(2));
             // make sure 1 < n_sets < n_states
-            int n_sets = 1 + n_states >> (((i-1) % n) + 1);
+            int n_sets = 4;//1 + n_states >> (((i-1) % n) + 1);
             mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);
-            A[i] = new ContextBanditAggregate(n_states, n_sets, n_actions, tau, mu_0, tau_0);
+            A[i] = new ContextBanditAggregate(false, 3, 2, n_states, n_sets, n_actions, tau, mu_0, tau_0);
         }
     }
 }

@@ -72,7 +72,7 @@ void ContextBanditAggregate::BuildFactoredAggregate(int n_factors, int n_values)
     for (int i=0; i<n_aggregated_states; i++) {
         int s = i  % n_states;
         X[s].add(i);
-        printf ("Putting state %d in aggregate %d\n", i, s);
+        //printf ("Putting state %d in aggregate %d\n", i, s);
         state_map[i] = s;
     }
     int zeros = 0;

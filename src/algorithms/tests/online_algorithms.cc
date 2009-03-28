@@ -132,7 +132,7 @@ int main (int argc, char** argv)
                                             16, 16);
         environment = gridworld;
 #else
-        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 2, rng);
+        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
         environment = context_bandit;
 #endif
     
@@ -192,8 +192,8 @@ int main (int argc, char** argv)
                                          false);
         } else if (!strcmp(algorithm_name, "Aggregate")) {
             model= (MDPModel*)
-                new ContextBanditAggregate(
-                                           n_states, 2,
+                new ContextBanditAggregate(false, 3, 2,
+                                           n_states, 4,
                                           n_actions,
                                           0.5, 0.0, 1.0);
             algorithm = new ModelBasedRL(n_states,
@@ -206,7 +206,7 @@ int main (int argc, char** argv)
 #if 1
             //new DiscreteMDPCollection(8,
             model= (MDPModel*) 
-                new ContextBanditCollection(4,
+                new ContextBanditCollection(2,
                                           n_states,
                                           n_actions,
                                           0.5, 0.0, 1.0);
