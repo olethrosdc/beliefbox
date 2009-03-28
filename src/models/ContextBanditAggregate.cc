@@ -72,7 +72,7 @@ void ContextBanditAggregate::BuildFactoredAggregate(int n_factors, int n_values)
     for (int i=0; i<n_aggregated_states; i++) {
         int s = i  % n_states;
         X[s].add(i);
-        //printf ("Putting state %d in aggregate %d\n", i, s);
+        printf ("Putting state %d in aggregate %d\n", i, s);
         state_map[i] = s;
     }
     int zeros = 0;
@@ -89,6 +89,15 @@ void ContextBanditAggregate::BuildFactoredAggregate(int n_factors, int n_values)
 
 ContextBanditAggregate::~ContextBanditAggregate()
 {
+    printf ("Aggregate state values:\n");
+    for (int s=0; s<n_aggregated_states; s++) {
+        for (int a=0; a<n_actions; ++a) {
+            printf ("Q(%d, %d) = %f\n", 
+                    s,
+                    a,
+                    getExpectedReward(s,a));
+        }
+    }
 }
 
 void ContextBanditAggregate::AddTransition(int s, int a, real r, int s2)
@@ -113,23 +122,16 @@ int ContextBanditAggregate::GenerateTransition (int s, int a) const
 
 real ContextBanditAggregate::getTransitionProbability (int s, int a, int s2) const
 {
-    int x = Aggregate(s);
-    int x2 = Aggregate(s2);
-    int n = X[x2].size();
-    real p = 0.0;
-    if (n > 0) {
-        p = ContextBanditGaussian::getTransitionProbability(x, a, x2) / (real) n; 
-    }
-    mdp_dbg ("\n P(s'=%d | s=%d, a=%d) = (1/%d) P(x'=%d | x=%d, a=%d) = %f\n",
-             s2, s, a,
-             n, x2, x, a,
-             p);
-    return p;
+    return 1.0 / (real) n_states;
 }
 
 Vector ContextBanditAggregate::getTransitionProbabilities (int s, int a) const
 {
-    return ContextBanditGaussian::getTransitionProbabilities(Aggregate(s), a);
+     Vector P(n_states);
+    for (int i=0; i<n_states; i++) {
+        P[i] = 1.0 / (real) n_states;
+    }
+    return P;
 }
 
 real ContextBanditAggregate::getRewardDensity (int s, int a, real r) const

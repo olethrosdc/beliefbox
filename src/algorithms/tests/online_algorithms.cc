@@ -76,7 +76,7 @@ int main (int argc, char** argv)
     assert (n_actions > 0);
 
     gamma = atof(argv[3]);
-    assert (gamma > 0 && gamma <= 1);
+    assert (gamma >= 0 && gamma <= 1);
 
     lambda = atof(argv[4]);
     assert (lambda >= 0 && lambda <= 1);
@@ -132,7 +132,7 @@ int main (int argc, char** argv)
                                             16, 16);
         environment = gridworld;
 #else
-        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 8, rng);
+        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 2, rng);
         environment = context_bandit;
 #endif
     
@@ -182,6 +182,18 @@ int main (int argc, char** argv)
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
                 new ContextBanditGaussian(n_states,
+                                          n_actions,
+                                          0.5, 0.0, 1.0);
+            algorithm = new ModelBasedRL(n_states,
+                                         n_actions,
+                                         gamma,
+                                         epsilon,
+                                         model,
+                                         false);
+        } else if (!strcmp(algorithm_name, "Aggregate")) {
+            model= (MDPModel*)
+                new ContextBanditAggregate(
+                                           n_states, 2,
                                           n_actions,
                                           0.5, 0.0, 1.0);
             algorithm = new ModelBasedRL(n_states,
