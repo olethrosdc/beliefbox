@@ -89,6 +89,7 @@ void ContextBanditAggregate::BuildFactoredAggregate(int n_factors, int n_values)
 
 ContextBanditAggregate::~ContextBanditAggregate()
 {
+#if 0
     printf ("Aggregate state values:\n");
     for (int s=0; s<n_aggregated_states; s++) {
         for (int a=0; a<n_actions; ++a) {
@@ -98,6 +99,7 @@ ContextBanditAggregate::~ContextBanditAggregate()
                     getExpectedReward(s,a));
         }
     }
+#endif
 }
 
 void ContextBanditAggregate::AddTransition(int s, int a, real r, int s2)

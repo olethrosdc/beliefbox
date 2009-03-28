@@ -29,6 +29,7 @@ ContextBanditGaussian::ContextBanditGaussian (int n_states, int n_actions, real 
 
 ContextBanditGaussian::~ContextBanditGaussian()
 {
+#if 0
     printf ("CBG state values:\n");
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; ++a) {
@@ -38,7 +39,7 @@ ContextBanditGaussian::~ContextBanditGaussian()
                     getExpectedReward(s,a));
         }
     }
-    
+#endif
     //printf ("COUNTS MODEL\n");
     //ShowModel();
 }
