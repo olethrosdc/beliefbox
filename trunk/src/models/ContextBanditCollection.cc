@@ -107,11 +107,19 @@ real ContextBanditCollection::getRewardDensity (int s, int a, real r) const
 
 real ContextBanditCollection::getExpectedReward (int s, int a) const
 {
+#if 0
     real E = 0.0;
     for (uint i=0; i<A.size(); ++i) {
+        //printf ("%f ", P[i]);
         E += P[i]*A[i]->getExpectedReward(s, a);
     }
+    //printf ("= %f\n", E);
     return E; 
+#else
+    int i = ArgMax(P);
+    return A[i]->getExpectedReward(s, a);
+#endif
+
 }
 void ContextBanditCollection::Reset()
 {
