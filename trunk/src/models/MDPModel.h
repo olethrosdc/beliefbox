@@ -26,7 +26,11 @@
 #ifdef DEBUG_MDP_MODELS
 #define mdp_dbg  printf("%s:%d: %s(): ", __FILE__, __LINE__, __FUNCTION__); printf
 #else
-#define mdp_dbg (void)
+//#define mdp_dbg (void)
+void mdp_dbg(...)
+{
+    
+}
 #endif
 
 /**
