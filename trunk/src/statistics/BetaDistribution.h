@@ -36,6 +36,7 @@ public:
     }
 
     virtual real pdf(real x) const;
+    real log_pdf(real x) const;
     virtual void calculatePosterior(real x);
     virtual void setMean(real mean);
     virtual void setVariance(real var);
