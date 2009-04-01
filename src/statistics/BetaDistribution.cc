@@ -27,6 +27,17 @@ real BetaDistribution::pdf(real x) const
     real log_pdf = log(x)*(alpha - 1.0) + log(1-x)*(beta - 1.0)- logBeta(alpha, beta);
     return exp(log_pdf);
 }
+
+real BetaDistribution::log_pdf(real x) const
+{
+    if (x<0.0 || x>1.0) {
+        return log(0.0);
+    }
+    return log(x)*(alpha - 1.0) + log(1-x)*(beta - 1.0)- logBeta(alpha, beta);
+}
+
+
+
 /// Standard posterior calculation
 void BetaDistribution::calculatePosterior(real x)
 {

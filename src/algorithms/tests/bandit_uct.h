@@ -39,7 +39,7 @@ public:
             prior.push_back(BetaDistribution(alpha, beta));
         }
     }
-    BetaDistribution getActionReward(int action)
+    BetaDistribution getActionReward(int action) const
     {
         assert(action >= 0 && action < (int) prior.size());
         return prior[action];
@@ -48,6 +48,15 @@ public:
     {
         assert(action >= 0 && action < (int) prior.size());
         return prior[action];
+    }
+    real pdf(std::vector<real>& x) const
+    {
+        assert(x.size() == prior.size());
+        real P = 0.0;
+        for (uint i=0; i<prior.size(); i++) {
+            P += prior[i].log_pdf(x[i]);
+        }
+        return exp(P);
     }
 };
 
@@ -78,7 +87,7 @@ public:
             //    delete prior[i];
         }
     }
-    BanditPrior getPrior()
+    BanditPrior getPrior() const
     {
         assert(n_actions > 0);
         return prior;
@@ -135,6 +144,21 @@ public:
         return _greedy_return;
     }
 
+
+    /// Gives the Thompson return
+    std::vector<real> sampleMDP()
+    {
+        std::vector<real> p(n_actions);
+        for (int i=0; i<n_actions; i++) {
+            p[i] = prior.ActionReward(i).generate();
+        }
+        return p;
+    }
+    
+    real ModelProbability(std::vector<real>& x) const
+    {
+        return prior.pdf(x);
+    }
     /// Gives the Thompson return
     real sampleReturn(int state, real gamma)
     {
@@ -142,6 +166,20 @@ public:
         int arg_max = 0;
         for (int i=0; i<n_actions; i++) {
             p[i] = prior.ActionReward(i).generate();
+            if (p[i] > p[arg_max]) {
+                arg_max = i;
+            }
+        }
+        real p_max = p[arg_max];
+        real R = p_max;
+        real U = R / (1.0 - gamma);
+        return U;
+    }
+
+    real estimateMDPReturn(std::vector<real>& p, int state, real gamma) const
+    {
+        int arg_max = 0;
+        for (int i=0; i<n_actions; i++) {
             if (p[i] > p[arg_max]) {
                 arg_max = i;
             }
@@ -176,6 +214,7 @@ public:
         int index;
         int depth;
         std::vector<real> U; ///< upper bound samples
+        std::vector<real> w; ///< upper bound weights
         real R; ///< reward received along path
         real U_c; ///< current upper bound
         real L; ///< lower bound
@@ -641,7 +680,7 @@ enum ExpansionMethod {
     DiscountedMeanHighProbabilityBound, // 13
     GreedyBoundReduction, // 14 (54.3)
     BAST, // 15 
-    BAST_FULL // 16
+    BAST_IS // 16
 };
 
 int MakeDecision(BeliefTree<BanditBelief>& new_tree,

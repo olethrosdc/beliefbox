@@ -589,12 +589,23 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
             }
             
             //printf("exiting\n");
-       } else if (expansion_method == BAST_FULL) {
+        } else if (expansion_method == BAST_IS) {
+            // sample only ONE leaf node
+            BeliefTreeNode* sampled_node = leaf_nodes[rand()%n_leaf_nodes];
+            std::vector<real> sampled_mdp = sampled_node->belief.sampleMDP();
+            real sampled_return = sampled_node->belief.estimateMDPReturn(sampled_mdp, sampled_node->state, gamma);
+            real sampled_weight = sampled_node->belief.ModelProbability(sampled_mdp);
+                
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTreeNode* node = leaf_nodes[i];
                 //assert(node->index==n);
                 std::vector<real> &Ub = node->U;
-                Ub.push_back(node->belief.sampleReturn(node->state, gamma));
+                real w = node->belief.ModelProbability(sampled_mdp);
+                //Ub.push_back(node->belief.estimateMDPreturn(sampled_mdp, node->state, gamma) * w / sampled_weight);
+
+                // ---- NOTE: This ONLY works for BANDIT problems! ------
+                Ub.push_back(sampled_return * w / sampled_weight);
+                // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             }
                 // propagate upper bounds to the root
             DiscreteMDP upper_mdp = tree.CreateUpperBoundMDP(gamma, verbose);
@@ -653,6 +664,7 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
             }
             
             //printf("exiting\n");
+
         } else {
             std::cerr << "Unknown method " << expansion_method << std::endl;
             exit(-1);
