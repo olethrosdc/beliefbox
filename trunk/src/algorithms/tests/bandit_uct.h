@@ -680,7 +680,8 @@ enum ExpansionMethod {
     DiscountedMeanHighProbabilityBound, // 13
     GreedyBoundReduction, // 14 (54.3)
     BAST, // 15 
-    BAST_IS // 16
+    BAST_IS, // 16
+    BAST_SINGLE // 17
 };
 
 int MakeDecision(BeliefTree<BanditBelief>& new_tree,

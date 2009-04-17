@@ -525,7 +525,7 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
             }
 
         } else if (expansion_method == BAST) {
-                // sample all leaf nodes
+            // sample all leaf nodes
             for (int i=0; i<n_leaf_nodes; i++) {
                 BeliefTreeNode* node = leaf_nodes[i];
                 //assert(node->index==n);
@@ -590,7 +590,7 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
             
             //printf("exiting\n");
         } else if (expansion_method == BAST_IS) {
-            // sample only ONE leaf node
+            // sample only ONE leaf node and do importance sampling
             BeliefTreeNode* sampled_node = leaf_nodes[rand()%n_leaf_nodes];
             std::vector<real> sampled_mdp = sampled_node->belief.sampleMDP();
             real sampled_return = sampled_node->belief.estimateMDPReturn(sampled_mdp, sampled_node->state, gamma);
@@ -664,6 +664,74 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
             }
             
             //printf("exiting\n");
+
+
+        } else if (expansion_method == BAST_SINGLE) {
+            // sample only ONE leaf node
+            BeliefTreeNode* sampled_node = leaf_nodes[rand()%n_leaf_nodes];
+            std::vector<real> sampled_mdp = sampled_node->belief.sampleMDP();
+            real sampled_return = sampled_node->belief.estimateMDPReturn(sampled_mdp, sampled_node->state, gamma);
+            std::vector<real> &Ub = sampled_node->U;
+            Ub.push_back(sampled_return);
+            
+            // propagate upper bounds to the root
+            DiscreteMDP upper_mdp = tree.CreateUpperBoundMDP(gamma, verbose);
+            upper_mdp.Check(); 
+            ValueIteration value_iteration_upper(&upper_mdp, gamma);
+            value_iteration_upper.ComputeStateActionValues(vi_threshold, max_value_iterations);
+            
+            int s = 0; // the MDP state
+            while (1) {
+                std::vector<real> Ua(n_actions);
+                for (int a=0; a<n_actions; a++) {
+                    Ua[a] = value_iteration_upper.getValue(s,a);
+                }
+                int a_max = ArgMax(Ua);
+                // TODO: Choose only ONE node via sampling
+                // (or multiple nodes?)
+                // Warning: uses STATE value as ID
+                BeliefTreeNode* node = NULL;
+                for (BTNodeSet::iterator i=node_set.begin(); i!=node_set.end(); ++i) {
+                    BeliefTreeNode* inode = *i;
+                    if (inode->index == s) {
+                        node = inode;
+                    }
+                }
+                if (!node) {
+                    fprintf(stderr, "Error: Could not find node!\n");
+                    exit(-1);
+                }
+
+                //printf ("state: %d selected_node: %d with %d edges\n", s, node->index, node->outs.size());
+                // if node is a leaf node...
+                if (node->outs.size() == 0) {
+                    selected_node = node;
+                    break;
+                }
+
+                // if there are edges, randomly select one of the edges
+                // to traverse
+                //std::vector<BeliefTreeEdge*> edges;
+                real pr = 0.0;
+                real X = urandom();
+                for (BTEdgeSet::iterator j = node->outs.begin();
+                     j != node->outs.end(); ++j) {
+                    BeliefTreeEdge* edge = *j;
+                    if (edge->a == a_max) {
+                        //edges.push_back(edge);
+                        pr += edge->p;
+                        if (pr >= X) {
+                            s = edge->dst->index;
+                            break;
+                        }
+                    }
+                }
+                //printf("Total probability :%f\n", pr);
+            }
+            
+            //printf("exiting\n");
+
+
 
         } else {
             std::cerr << "Unknown method " << expansion_method << std::endl;
