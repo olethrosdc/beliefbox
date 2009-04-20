@@ -752,6 +752,26 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
             std::cout << "Warning: no nodes could be expanded\n";
         }
 
+        if (verbose >= 10) {
+            DiscreteMDP mean_mdp = tree.CreateMeanMDP(gamma, verbose);
+            DiscreteMDP upper_mdp = tree.CreateUpperBoundMDP(gamma, verbose);
+            
+            ValueIteration value_iteration_lower(&mean_mdp, gamma);
+            ValueIteration value_iteration_upper(&upper_mdp, gamma);
+
+            value_iteration_upper.ComputeStateActionValues(vi_threshold, max_value_iterations);
+            value_iteration_lower.ComputeStateActionValues(vi_threshold, max_value_iterations);
+
+            
+            for (int a=0; a<mean_mdp.GetNActions(); a++) {
+                std::cout << state << " " << a 
+                          << " " << value_iteration_lower.getValue(state,a)
+                          << " " << value_iteration_upper.getValue(state,a)
+                          << " " << iter << "# ITER Q" << std::endl;
+            }
+        }
+
+        
         //std::cout << node_set.size() << " total nodes"
         //              << std::endl;
     } // for(iter)
@@ -776,6 +796,8 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
 
     ValueIteration value_iteration_lower(&mean_mdp, gamma);
     ValueIteration value_iteration_upper(&upper_mdp, gamma);
+
+
     if (verbose >= 75) {
         mean_mdp.ShowModel();
         upper_mdp.ShowModel();
@@ -853,6 +875,16 @@ int MakeDecision(BeliefTree<BanditBelief>& new_tree,
         std::cout << "# CPU " << end_time - start_time << std::endl;
     }
 
+    if (verbose >= 10) {
+        int s = state;
+       for (int a=0; a<mean_mdp.GetNActions(); a++) {
+           std::cout << "Q[" << s << ", " << a << "]"
+                     << " = " << value_iteration_lower.getValue(s,a)
+                     << " - " << value_iteration_upper.getValue(s,a)
+                     << std::endl;
+           
+       }
+    }
     if (verbose >= 20) {
         for (int s=0; s<mean_mdp.GetNStates(); s++) {
             for (int a=0; a<mean_mdp.GetNActions(); a++) {

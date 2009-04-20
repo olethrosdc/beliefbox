@@ -2,8 +2,8 @@
 #
 
 
-results=results/belief_uct/bandit/uct_is.out
-experiments=1000
+results=results/belief_uct/bandit/uct_is_q.out
+experiments=100
 #echo "#meth #n_iter #gamma #actions #total #discounted #o_total #o_discounted" > $results
 
 #rm -f $results
