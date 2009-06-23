@@ -8,24 +8,14 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#if 0
+#if 1
 #include "SparseMarkovChain.h"
 #include "Random.h"
 
 SparseMarkovChain::SparseMarkovChain(int n_states, int mem_size)
-	: MarkovChain(n_states, mem_size)
+	: MarkovChain(n_states, mem_size), transitions((int) pow((double) n_states, (double) mem_size), n_states)
 {
-	Vector::BoundsCheckingStatus bounds_checking = Vector::NO_CHECK_BOUNDS;
-	n_transitions = n_states*tot_states;
-	transitions.Resize(n_transitions);
-	transitions.CheckBounds(bounds_checking);
-	Pr.Resize(n_transitions);
-	Pr.CheckBounds(bounds_checking);
 
-	for (int i=0; i<n_transitions; i++) {
-		transitions[i] = 0.0f;
-		Pr[i] = 0.0f;
-	}
 }
 
 SparseMarkovChain::~SparseMarkovChain()
@@ -50,8 +40,8 @@ float SparseMarkovChain::ObserveNextState (int state)
 {
 	assert((state>=0)&&(state<n_states));
 	curr_state = CalculateStateID();
-	sources.observe(curr_state, state)
-	PushState (state);
+	transitions.observe(curr_state, state);
+    PushState (state);
 	return getProbability(curr_state, state);
 }
 
@@ -72,7 +62,7 @@ float SparseMarkovChain::NextStateProbability (int state)
 
 	curr_state = CalculateStateID ();
 	assert (curr_state>=0 && curr_state<tot_states);
-	return Pr[state * tot_states + curr_state];
+	return 0.0;
 }
 
 
@@ -82,7 +72,7 @@ float SparseMarkovChain::getTransition (int src, int dst)
 	assert((src>=0)&&(src<n_states));
 	assert((dst>=0)&&(dst<n_states));
 
-	return transitions[dst * tot_states + src];
+	return transitions.get_weight(src, dst);
 }
 
 
@@ -119,7 +109,7 @@ void SparseMarkovChain::setTransition (int src, int dst, float value)
 {
 	assert((src>=0)&&(src<tot_states));
 	assert((dst>=0)&&(dst<n_states));
-	transitions[dst * tot_states + src] = value;
+        //transitions[dst * tot_states + src] = value;
 }
 
 /**
@@ -179,10 +169,10 @@ void SparseMarkovChain::Reset ()
 int SparseMarkovChain::GenerateStatic ()
 {
 	float tot = 0.0f;
-	int curr = CalculateStateID ();
+        //int curr = CalculateStateID ();
 	float sel = urandom();
 	for (int j=0; j<n_states; j++) {
-		float P = Pr[curr + j*tot_states];
+		float P = 0.0;//Pr[curr + j*tot_states];
 		tot += P;
 		if (sel<=tot && P>0.0f) {
 			return j;
@@ -202,10 +192,10 @@ int SparseMarkovChain::GenerateStatic ()
 int SparseMarkovChain::generate ()
 {
 	float tot = 0.0f;
-	int curr = CalculateStateID ();
+        //int curr = CalculateStateID ();
 	float sel = urandom();
 	for (int j=0; j<n_states; j++) {
-		float P = Pr[curr + j*tot_states];
+		float P = 0.0;//Pr[curr + j*tot_states];
 		tot += P;
 		if (sel<=tot && P>0.0f) {
 			PushState(j);
@@ -237,7 +227,7 @@ int SparseMarkovChain::generate ()
 */
 int SparseMarkovChain::CalculateStateID () {
 	int id = 0;
-	int i;
+        //int i;
 	int n = 1;
 
 	for (int i=1; i<=mem_size; i++, n*=n_states) {
@@ -303,12 +293,12 @@ int SparseMarkovChain::ShowTransitions () {
 	for (i=0; i<tot_states; i++) {
 		Reset ();
 		PushState (i);
-		printf ("Current state ID : %d\n", curr);
+            //printf ("Current state ID : %d\n", curr);
 		printf ("Transition probabilities for next states:\n");
-    
+        
 		for (j=0; j<n_states; j++) {
-			printf ("->%d = %f\n", j, transitions[curr + j*tot_states]);
-			tot += transitions[i + j*tot_states];
+                //printf ("->%d = %f\n", j, transitions[curr + j*tot_states]);
+                //			tot += transitions[i + j*tot_states];
 		}
 		printf ("\nTOTAL: %f\n\n",tot);
 	}

@@ -99,6 +99,8 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
 }
 
 
+
+
 /** ComputeStateActionValues
    
     threshold - exit when difference in Q is smaller than the threshold
@@ -128,12 +130,9 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
                      ++i) {
                     int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
-                        //if (P > 0) {
-                        real R = mdp->getExpectedReward(s, a) - baseline;
-                        real Q_a_max = Max(n_actions, Q[s2]);
-                        sum += P*(R + gamma*Q_a_max);
-                            //}
-
+                    real R = mdp->getExpectedReward(s, a) - baseline;
+                    real Q_a_max = Max(n_actions, Q[s2]);
+                    sum += P*(R + gamma*Q_a_max);
                 }
                 Q[s][a] = sum;
                 dQ[s][a] = pQ[s][a] - sum;
