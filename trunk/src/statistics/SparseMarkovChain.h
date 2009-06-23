@@ -14,6 +14,7 @@
 #include "MarkovChain.h"
 #include <map>
 #include <vector>
+#include <real.h>
 
 /**
    \ingroup StatisticsGroup
@@ -21,8 +22,7 @@
 /*@{*/
 
 
-
-typedef std::map<int, std::vector<float>, std::greater<int> > SourceMap;
+typedef std::map<int, std::vector<real>, std::greater<int> > SourceMap;
 typedef SourceMap::iterator SourceMapIterator;
 
 class SparseTransitions 
@@ -30,20 +30,30 @@ class SparseTransitions
 protected:
 	int n_sources;
 	int n_destinations;
-	std::map<int, std::vector<float>, std::greater<int> > sources;
+	SourceMap sources;
 public:
 	SparseTransitions(int n_sources, int n_destinations)
 	{
 		this->n_sources = n_sources;
 		this->n_destinations = n_destinations;
 	}
-	float get_weight(int src, int dst)
+	real get_weight(int src, int dst)
 	{
 		SourceMapIterator i = sources.find(src);
 		if (i==sources.end()) {
-			return 0.0;
+			return 1.0 / (real) n_destinations;
 		} else {
-			return i->destinations??
+			return i->second[dst];
+		}
+	}
+    std::vector<real> get_weights(int src)
+    {
+		SourceMapIterator i = sources.find(src);
+		if (i==sources.end()) {
+            std::vector<real> zero_vector(n_destinations);
+			return zero_vector;
+		} else {
+			return i->second;
 		}
 	}
 	int nof_destinations()
@@ -51,9 +61,18 @@ public:
 		return n_destinations;
 	}
 
-	float AddTransition(int src, int dst)
+	float observe(int src, int dst)
 	{
-		sources.find(src);
+		SourceMapIterator i = sources.find(src);
+		if (i==sources.end()) {
+            std::vector<real> v(n_destinations);
+            v[dst] = 1.0;
+            std::pair<SourceMapIterator, bool> ret = sources.insert(std::make_pair(src, v));
+            return 1.0;
+        } else {
+            i->second[dst]++;
+            return i->second[dst];
+        }
 	}
 };
 

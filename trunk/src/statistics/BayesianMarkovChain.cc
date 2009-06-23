@@ -86,7 +86,7 @@ float BayesianMarkovChain::NextStateProbability(int state)
 ///
 /// We are flattening the hierarchical distribution to a simple
 /// multinomial.  This allows us to more accurately generate random
-/// samples.
+/// samples (!) does it ?
 ///
 /// Side-effects: Changes the current state.
 int BayesianMarkovChain::generate()
