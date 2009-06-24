@@ -41,7 +41,7 @@ public:
 	{
 		SourceMapIterator i = sources.find(src);
 		if (i==sources.end()) {
-			return 1.0 / (real) n_destinations;
+			return 0.0;
 		} else {
 			return i->second[dst];
 		}
@@ -80,7 +80,6 @@ public:
 class SparseMarkovChain : public MarkovChain
 {
 protected:
-    int CalculateStateID ();
     int n_transitions; ///< total number of transitions
 	SparseTransitions transitions; ///< history-wide transition table
 
@@ -92,8 +91,10 @@ public:
     /* probabilities */
     virtual float getTransition (int src, int dst);
     virtual float getProbability (int src, int dst);
+    virtual void getProbabilities(int src, std::vector<real>& p);
+    virtual void getNextStateProbabilities(std::vector<real>& p);
     virtual float pdf(int src, Vector q);
-    virtual void setTransition (int src, int dst, float value) ;
+    virtual void setTransition (int src, int dst, float value);
     virtual void setThreshold (float threshold);
 
 
@@ -101,10 +102,10 @@ public:
     virtual int PushState (int state);
     virtual float ObserveNextState (int state);
     virtual float NextStateProbability (int state);
-    virtual void Reset ();
+    virtual void Reset();
     virtual int GenerateStatic ();
     virtual int generate ();
-
+    
     /* Debug functions */
     virtual int ShowTransitions ();
 };

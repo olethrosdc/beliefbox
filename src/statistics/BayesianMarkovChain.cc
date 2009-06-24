@@ -12,14 +12,17 @@
 
 #include "BayesianMarkovChain.h"
 #include "DenseMarkovChain.h"
-//#include "SparseMarkovChain.h"
+#include "SparseMarkovChain.h"
 #include "Random.h"
 
 BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior, bool dense)
 {
     this->n_models = n_models;
     this->n_states = n_states;
+
     mc.resize(n_models);
+    log_prior.resize(n_models);
+
     Pr.Resize(n_models);
     Pr_next.Resize(n_states);
 
@@ -30,11 +33,12 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
 
     for (int i=0; i<n_models; ++i) {
         Pr[i] = 1.0 / (1.0 + (float) i);
+        log_prior[i] = log(Pr[i]);
         sum += Pr[i];
         if (dense) {
             mc[i] = new DenseMarkovChain(n_states, i);
         } else {
-            //mc[i] = new SparseMarkovChain(n_states, i);
+            mc[i] = new SparseMarkovChain(n_states, i);
         }
         mc[i]->setThreshold(prior);
     }
@@ -86,10 +90,26 @@ float BayesianMarkovChain::NextStateProbability(int state)
 ///
 /// We are flattening the hierarchical distribution to a simple
 /// multinomial.  This allows us to more accurately generate random
-/// samples (!) does it ?
+/// samples (does it ?)
 ///
 /// Side-effects: Changes the current state.
 int BayesianMarkovChain::generate()
+{
+    int i = generate_static();
+    for (int j=0; j<n_models; ++j) {
+        mc[j]->PushState(i);
+    }
+    return i;
+}
+
+
+/// Generate the next state.
+///
+/// We are flattening the hierarchical distribution to a simple
+/// multinomial.  This allows us to more accurately generate random
+/// samples (does it ?)
+///
+int BayesianMarkovChain::generate_static()
 {
     float sum = 0.0;
     for (int i=0; i<n_states; ++i) {
@@ -97,7 +117,6 @@ int BayesianMarkovChain::generate()
         for (int j=0; j<n_models; ++j) {
             Pr_next[i] += Pr[j] * mc[j]->NextStateProbability(i);
         }
-        //sum  += Pr_next[i];
     }
 
    sum = 0.0;
@@ -105,18 +124,12 @@ int BayesianMarkovChain::generate()
     for (int i=0; i<n_states; ++i) {
         sum += Pr_next[i];
         if (X<sum && Pr_next[i] > 0.0f) {
-            for (int j=0; j<n_models; ++j) {
-                mc[j]->PushState(i);
-            }
             return i;
         }
     }
 
     //Swarning ("Multinomial generation failed.");
     int i = rand()%n_states;
-    for (int j=0; j<n_models; ++j) {
-        mc[j]->PushState(i);
-    }
     return i;
 }
 

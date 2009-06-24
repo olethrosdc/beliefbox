@@ -66,6 +66,14 @@ float SparseMarkovChain::NextStateProbability (int state)
 }
 
 
+void SparseMarkovChain::getNextStateProbabilities(std::vector<real>& p)
+{
+    curr_state = CalculateStateID();
+    return getProbabilities(curr_state, p);
+}
+
+
+
 /// Get the number of transitions from \c src to \c dst
 float SparseMarkovChain::getTransition (int src, int dst)
 {
@@ -93,6 +101,28 @@ float SparseMarkovChain::getProbability(int src, int dst)
 	
 	return (transitions.get_weight(src, dst) + threshold) / (sum + threshold * ((float) N));
 }
+
+/// Get the transition probabilities
+///
+/// Takes into account the threshold.
+void SparseMarkovChain::getProbabilities(int src, std::vector<real>& p)
+{
+	assert((src>=0)&&(src<tot_states));
+	assert(p.size()==n_states);
+	real sum = 0.0;
+	int N = transitions.nof_destinations();
+	
+	for (int i=0; i<transitions.nof_destinations(); ++i) {
+        p[i] = threshold + transitions.get_weight(src, i);
+		sum += p[i];
+	}
+
+    real invsum = 1.0 / sum;
+	for (int i=0; i<transitions.nof_destinations(); ++i) {
+        p[i] *= invsum;
+	}
+}
+
 
 /// Get the density of the transition probabilities \c p from \c src
 float SparseMarkovChain::pdf(int src, Vector p)
@@ -192,7 +222,7 @@ int SparseMarkovChain::GenerateStatic ()
 int SparseMarkovChain::generate ()
 {
 	float tot = 0.0f;
-        //int curr = CalculateStateID ();
+    //int curr = CalculateStateID ();
 	float sel = urandom();
 	for (int j=0; j<n_states; j++) {
 		float P = 0.0;//Pr[curr + j*tot_states];
@@ -208,33 +238,6 @@ int SparseMarkovChain::generate ()
 }
 
 
-//==========================================================
-// MarkovChainCalculateStateID()
-//----------------------------------------------------------
-/**
-   \brief Calculate a unique ID corresponding to the state history.
-
-   Calculates a unique state ID from the MC's state history.
-   The calculation is \f$\sum_i s_{t-i} N^i\f$, where \f$N\f$ is the number of
-   states, \f$i \in [0,M-1]\f$, where \f$M\f$ is the history size (the order of
-   the markov chain) and \f$s_{t}\f$ is the state at time \f$t\f$.
-
-   \return The id of the current state history.
-
-   SEE ALSO
-
-   - MarkovChainPushState(), MarkovChainReset()
-*/
-int SparseMarkovChain::CalculateStateID () {
-	int id = 0;
-        //int i;
-	int n = 1;
-
-	for (int i=1; i<=mem_size; i++, n*=n_states) {
-		id += memory[i-1]*n; 
-	}
-	return id;
-}
 
 
 //==========================================================

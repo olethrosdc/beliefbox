@@ -2,17 +2,21 @@
 
 lw=6;
 
-X=load("results/belief_uct/bandit/uct_is_l.out");
+X=load("results/belief_uct/bandit/uct_is_m.out");
+X = sortrows(X,1);
+X = sortrows(X,2);
+X = sortrows(X,3);
+X = sortrows(X,4);
 Y=load("results/belief_uct/bandit/baseline_long_double.out");
 #Z=load("uct_bnb.out");
-gamma = 0.999;
+gamma = 0.99999;
 n_arms=2;
 disc = 0;
 
 qa=1;
 qb=1;
-##effort=2;
-effort=9;
+effort=2;
+##effort=9;
 
 hold off;
 idx = Y(:,2)==gamma & Y(:,1)==0 & Y(:,3)== n_arms;

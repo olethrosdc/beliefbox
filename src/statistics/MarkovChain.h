@@ -28,6 +28,9 @@ protected:
 	int curr_state; ///< current address in history
 	int tot_states; ///< total number of representable states (mem_size*n_states)
 	std::vector<int> memory; ///< hold history in here
+
+    int CalculateStateID ();
+
 public:
     MarkovChain (int n_states, int mem_size);
     virtual ~MarkovChain ();
@@ -35,6 +38,8 @@ public:
     /* probabilities */
     virtual float getTransition (int src, int dst) = 0;
     virtual float getProbability (int src, int dst) = 0;
+    virtual void getProbabilities(int src, std::vector<real>& p) = 0;
+    virtual void getNextStateProbabilities(std::vector<real>& p) = 0;
     virtual float pdf(int src, Vector q) = 0;
     virtual void setTransition (int src, int dst, float value) = 0;
     virtual void setThreshold (float threshold) = 0;
@@ -46,6 +51,11 @@ public:
     virtual void Reset () = 0;
     virtual int GenerateStatic () = 0;
     virtual int generate () = 0;
+    int getCurrentState()
+    {
+        curr_state =  CalculateStateID ();
+        return curr_state;
+    }
 
     /* misc */
     int getTotalStates() {return tot_states;}
