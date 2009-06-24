@@ -9,11 +9,12 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#ifndef BAYESIAN_MARKOVCHAIN_H
-#define BAYESIAN_MARKOVCHAIN_H
+#ifndef BAYESIAN_PSR_H
+#define BAYESIAN_PSR_H
 
-#include "MarkovChain.h"
+#include "BayesianMarkovChain.h"
 #include <vector>
+#include <map>
 #include "Vector.h"
 
 /**
@@ -21,20 +22,32 @@
  */
 /*@{*/
 
+
+typedef std::map<int, real, std::greater<int> > BeliefMap;
+typedef BeliefMap::iterator BeliefMapIterator;
+
 /// A Markov Chain
-class BayesianMarkovChain {
+class BayesianPredictiveStateRepresentation : public BayesianMarkovChain
+{
 public:
-	int n_states; ///< number of distinct states
-	int n_models; ///< number of models
-    std::vector<MarkovChain*> mc; ///< Markov chain
-    std::vector<real> log_prior;
-    Vector Pr; ///< model probabilities
-    Vector Pr_next; ///< state probabilities
+    std::vector<BeliefMap> beliefs;
 
-    BayesianMarkovChain (int n_states, int n_models, float prior, bool dense = true);
-    virtual ~BayesianMarkovChain();
+    BayesianPredictiveStateRepresentation (int n_states, int n_models, float prior, bool dense = true);
 
 
+    inline real get_belief_param(int model, int src)
+    {
+        BeliefMapIterator i = beliefs[model].find(src);
+		if (i==beliefs[model].end()) {
+			return 0.0;
+		} else {
+			return i->second;
+		}
+    }
+
+    virtual ~BayesianPredictiveStateRepresentation();
+
+    
     /* Training and generation */
     virtual void ObserveNextState (int state);
     virtual float NextStateProbability (int state);
@@ -42,12 +55,6 @@ public:
     virtual int generate();
     virtual int generate_static();
     
-    /* Helper functions */  
-    int CalculateStateID ();
-    int  PushState (int state);
-    
-    /* Debug functions */
-    void ShowTransitions ();
 };
 /*@}*/
 #endif

@@ -37,6 +37,7 @@ public:
     virtual ~MountainCar();
     virtual void Reset();
     virtual bool Act(int action);
+    virtual void Simulate(int action);
 };
 
 real MountainCar::U_POS = 0.5;                // Upper bound on position
@@ -45,7 +46,7 @@ real MountainCar::U_VEL = 0.07;               // Upper bound on velocity
 real MountainCar::L_VEL = -0.07;            // Lower bound on velocity
 real MountainCar::INPUT = 0.001;           // contribution of input
 real MountainCar::GRAVITY = 0.0025;          // contribution of gravity
-real MountainCar::MCNOISE = 0.2
+real MountainCar::MCNOISE = 0.2;
 
 
 

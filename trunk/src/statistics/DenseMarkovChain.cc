@@ -101,6 +101,26 @@ float DenseMarkovChain::getProbability(int src, int dst)
 	return Pr[dst * tot_states + src];
 }
 
+/// Get the transition probability from \c src to \c dst
+void DenseMarkovChain::getProbabilities(int src, std::vector<real>& p)
+{
+    assert((src>=0)&&(src<tot_states));
+	assert((dst>=0)&&(dst<n_states));
+    EstimateProbabilities(src);
+    for (int i=0; i<n_states; ++i) {
+        p[i] = Pr[i * tot_states + src];
+    }
+}
+
+
+/// Get the transition probability from \c src to \c dst
+void DenseMarkovChain::getNextStateProbabilities(std::vector<real>& p)
+{
+    curr_state = CalculateStateID();
+    getProbabilities(curr_state, p);
+}
+
+
 /// Get the density of the transition probabilities \c p from \c src
 float DenseMarkovChain::pdf(int src, Vector p)
 {
@@ -237,33 +257,7 @@ int DenseMarkovChain::generate () {
 }
 
 
-//==========================================================
-// MarkovChainCalculateStateID()
-//----------------------------------------------------------
-/**
-   \brief Calculate a unique ID corresponding to the state history.
 
-   Calculates a unique state ID from the MC's state history.
-   The calculation is \f$\sum_i s_{t-i} N^i\f$, where \f$N\f$ is the number of
-   states, \f$i \in [0,M-1]\f$, where \f$M\f$ is the history size (the order of
-   the markov chain) and \f$s_{t}\f$ is the state at time \f$t\f$.
-
-   \return The id of the current state history.
-
-   SEE ALSO
-
-   - MarkovChainPushState(), MarkovChainReset()
-*/
-int DenseMarkovChain::CalculateStateID () {
-	int id = 0;
-	int i;
-	int n = 1;
-
-	for (i=1; i<=mem_size; i++, n*=n_states) {
-		id += memory[i-1]*n; 
-	}
-	return id;
-}
 
 
 //==========================================================
@@ -313,7 +307,6 @@ int DenseMarkovChain::ShowTransitions () {
 	int n_states = tot_states;
 	int j;
 	int i;
-	int curr;
 	float tot = 0.0f;
 
 	printf ("\nState transition dump\n\n");
@@ -322,11 +315,11 @@ int DenseMarkovChain::ShowTransitions () {
 	for (i=0; i<tot_states; i++) {
 		Reset ();
 		PushState (i);
-		printf ("Current state ID : %d\n", curr);
+		printf ("Current state ID : %d\n", curr_state);
 		printf ("Transition probabilities for next states:\n");
     
 		for (j=0; j<n_states; j++) {
-			printf ("->%d = %f\n", j, transitions[curr + j*tot_states]);
+			printf ("->%d = %f\n", j, transitions[curr_state + j*tot_states]);
 			tot += transitions[i + j*tot_states];
 		}
 		printf ("\nTOTAL: %f\n\n",tot);

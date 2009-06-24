@@ -14,6 +14,7 @@
 #define ENVIRONMENT_H
 
 #include "MDP.h"
+#include <cstdlib>
 
 template <typename S, typename A>
 class Environment

@@ -22,7 +22,6 @@
 class DenseMarkovChain : public MarkovChain
 {
 protected:
-    int CalculateStateID ();
     void EstimateProbabilities(int curr);
     int n_transitions; ///< total number of transitions
 	Vector transitions; ///< history-wide transition table
@@ -35,6 +34,8 @@ public:
     /* probabilities */
     virtual float getTransition (int src, int dst);
     virtual float getProbability (int src, int dst);
+    virtual void getProbabilities(int src, std::vector<real>& p);
+    virtual void getNextStateProbabilities(std::vector<real>& p);
     virtual float pdf(int src, Vector q);
     virtual void setTransition (int src, int dst, float value) ;
     virtual void setThreshold (float threshold);

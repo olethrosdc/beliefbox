@@ -12,6 +12,7 @@
  ***************************************************************************/
 
 #include "MountainCar.h"
+#include "Random.h"
 
 MountainCar::MountainCar()
 {
@@ -23,13 +24,13 @@ MountainCar::~MountainCar()
 {
     // nothing to do
 }
-void Reset()
+void MountainCar::Reset()
 {
     state[0] = urandom(L_POS, U_POS);
     state[1] = urandom(L_VEL, U_VEL);
     
 }
-bool Act(int action)
+bool MountainCar::Act(int action)
 {
     // make sure we tell the guy we have terminated
     if (endsim) {
@@ -37,12 +38,12 @@ bool Act(int action)
         return false;
     }
     
-    // run.
+    // run
     Simulate(action);
     return true;
 }
 
-void MountainCar::Simulate(int action);
+void MountainCar::Simulate(int action)
 {
     real input=0.0;
 
@@ -53,7 +54,7 @@ void MountainCar::Simulate(int action);
     default: Serror("Undefined action %d\n", action);
     }
 
-    real noise = uniform(-MCNOISE, MCNOISE);
+    real noise = urandom(-MCNOISE, MCNOISE);
     input += noise;
 
     state[1] = state[1] + INPUT*input - GRAVITY*cos(3.0*state[0]);

@@ -66,7 +66,33 @@ MarkovChain::MarkovChain (int n_states, int mem_size)
 
 }
 
+//==========================================================
+// MarkovChainCalculateStateID()
+//----------------------------------------------------------
+/**
+   \brief Calculate a unique ID corresponding to the state history.
 
+   Calculates a unique state ID from the MC's state history.
+   The calculation is \f$\sum_i s_{t-i} N^i\f$, where \f$N\f$ is the number of
+   states, \f$i \in [0,M-1]\f$, where \f$M\f$ is the history size (the order of
+   the markov chain) and \f$s_{t}\f$ is the state at time \f$t\f$.
+
+   \return The id of the current state history.
+
+   SEE ALSO
+
+   - MarkovChainPushState(), MarkovChainReset()
+*/
+int MarkovChain::CalculateStateID () {
+	int id = 0;
+	int i;
+	int n = 1;
+
+	for (i=1; i<=mem_size; i++, n*=n_states) {
+		id += memory[i-1]*n; 
+	}
+	return id;
+}
 
 
 /**
