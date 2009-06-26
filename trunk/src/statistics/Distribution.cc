@@ -176,11 +176,25 @@ real DiscreteDistribution::generate()
     return 0.0;
 }
 
-int DiscreteDistribution::generate(std::vector<real> x)
+int DiscreteDistribution::generate(std::vector<real>& x)
 {
     real d=urandom();
     real sum = 0.0;
     int n = x.size();
+    for (int i=0; i<n; i++) {
+        sum += x[i];
+        if (d < sum) {
+            return  i;
+        }
+    }
+    return rand()%n; 
+}
+
+int DiscreteDistribution::generate(Vector& x)
+{
+    real d=urandom();
+    real sum = 0.0;
+    int n = x.Size();
     for (int i=0; i<n; i++) {
         sum += x[i];
         if (d < sum) {

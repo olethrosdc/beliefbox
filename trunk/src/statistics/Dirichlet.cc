@@ -17,12 +17,12 @@ DirichletDistribution::DirichletDistribution()
 {
     n = 0;
 }
-DirichletDistribution::DirichletDistribution(int n)
+DirichletDistribution::DirichletDistribution(int n, real p)
 {
     this->n = n;
     a.Resize(n);
     for (int i=0; i<n; ++i) {
-        a[i] = 0;
+        a[i] = p;
     }
 }
 
@@ -39,21 +39,23 @@ DirichletDistribution::~DirichletDistribution()
 {
 }
 
-void DirichletDistribution::generate(Vector& x)
-{
-    x = generate();
-}
-
 Vector DirichletDistribution::generate()
 {
-    Vector y(n);
+    Vector x(n);
+    generate(x);
+    return x;
+}
+
+void DirichletDistribution::generate(Vector& y)
+{
+        //Vector y(n);
     real sum = 0.0;
     for (int i=0; i<n; i++) {
         y[i] = gengam(1.0, a[i]);
         sum += y[i];
     }
     real invsum = 1.0 / sum;
-    return y*invsum;
+     y *= invsum;
 }
 
 

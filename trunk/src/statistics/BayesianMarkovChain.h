@@ -31,7 +31,7 @@ public:
     Vector Pr; ///< model probabilities
     Vector Pr_next; ///< state probabilities
 
-    BayesianMarkovChain (int n_states, int n_models, float prior, bool dense = true);
+    BayesianMarkovChain (int n_states, int n_models, float prior, bool dense = false);
     virtual ~BayesianMarkovChain();
 
 
@@ -40,7 +40,7 @@ public:
     virtual float NextStateProbability (int state);
     virtual void Reset();
     virtual int generate();
-    virtual int generate_static();
+    virtual int predict();
     
     /* Helper functions */  
     int CalculateStateID ();
