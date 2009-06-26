@@ -14,6 +14,7 @@
 #include "DenseMarkovChain.h"
 #include "SparseMarkovChain.h"
 #include "Random.h"
+#include "Distribution.h"
 
 BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior, bool dense)
 {
@@ -26,14 +27,15 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
     Pr.Resize(n_models);
     Pr_next.Resize(n_states);
 
-    float sum = 0.0;
+
     for (int i=0; i<n_states; ++i) {
         Pr_next[i] = 1.0 / (float) n_states;
     }
 
+    float sum = 0.0;
     for (int i=0; i<n_models; ++i) {
-        Pr[i] = 1.0 / (1.0 + (float) i);
-        log_prior[i] = log(Pr[i]);
+            //Pr[i] = 1.0 / (1.0 + float(i)); 
+        Pr[i] = exp(-pow((real) n_states, (real) i));
         sum += Pr[i];
         if (dense) {
             mc[i] = new DenseMarkovChain(n_states, i);
@@ -44,12 +46,15 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
     }
     for (int i=0; i<n_models; ++i) {
         Pr[i] /= sum;
+        log_prior[i] = log(Pr[i]);
     }
 }
 
 BayesianMarkovChain::~BayesianMarkovChain()
 {
+    printf("Killing BMC\n");
     for (int i=0; i<n_models; ++i) {
+        mc[i]->ShowTransitions();
         delete mc[i];
     }
 }
@@ -80,9 +85,11 @@ void BayesianMarkovChain::ObserveNextState(int state)
 float BayesianMarkovChain::NextStateProbability(int state)
 {
     float sum = 0.0;
+
     for (int i=0; i<n_models; ++i) {
         sum += Pr[i] * mc[i]->NextStateProbability(state);
     }
+    
     return sum;
 }
 
@@ -95,7 +102,7 @@ float BayesianMarkovChain::NextStateProbability(int state)
 /// Side-effects: Changes the current state.
 int BayesianMarkovChain::generate()
 {
-    int i = generate_static();
+    int i = predict();
     for (int j=0; j<n_models; ++j) {
         mc[j]->PushState(i);
     }
@@ -109,28 +116,19 @@ int BayesianMarkovChain::generate()
 /// multinomial.  This allows us to more accurately generate random
 /// samples (does it ?)
 ///
-int BayesianMarkovChain::generate_static()
+int BayesianMarkovChain::predict()
 {
-    float sum = 0.0;
     for (int i=0; i<n_states; ++i) {
         Pr_next[i] = 0.0;
         for (int j=0; j<n_models; ++j) {
             Pr_next[i] += Pr[j] * mc[j]->NextStateProbability(i);
         }
+        Pr_next[i] = mc[n_models - 1]->NextStateProbability(i);
+        printf ("%f ", Pr_next[i]);
     }
+    printf("\n");
+    return DiscreteDistribution::generate(Pr_next);
 
-   sum = 0.0;
-    float X = urandom();
-    for (int i=0; i<n_states; ++i) {
-        sum += Pr_next[i];
-        if (X<sum && Pr_next[i] > 0.0f) {
-            return i;
-        }
-    }
-
-    //Swarning ("Multinomial generation failed.");
-    int i = rand()%n_states;
-    return i;
 }
 
 void BayesianMarkovChain::ShowTransitions()

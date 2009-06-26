@@ -66,6 +66,9 @@ public:
 		SourceMapIterator i = sources.find(src);
 		if (i==sources.end()) {
             std::vector<real> v(n_destinations);
+            for (int j=0; j<n_destinations; ++j) {
+                v[j] = 0.0;
+            } 
             v[dst] = 1.0;
             std::pair<SourceMapIterator, bool> ret = sources.insert(std::make_pair(src, v));
             return 1.0;

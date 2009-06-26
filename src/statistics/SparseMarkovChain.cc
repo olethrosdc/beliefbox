@@ -40,9 +40,10 @@ float SparseMarkovChain::ObserveNextState (int state)
 {
 	assert((state>=0)&&(state<n_states));
 	curr_state = CalculateStateID();
+	real Pr = getProbability(curr_state, state);
 	transitions.observe(curr_state, state);
     PushState (state);
-	return getProbability(curr_state, state);
+    return Pr;
 }
 
 
@@ -62,7 +63,7 @@ float SparseMarkovChain::NextStateProbability (int state)
 
 	curr_state = CalculateStateID ();
 	assert (curr_state>=0 && curr_state<tot_states);
-	return 0.0;
+	return getProbability(curr_state, state);
 }
 
 
@@ -79,7 +80,6 @@ float SparseMarkovChain::getTransition (int src, int dst)
 {
 	assert((src>=0)&&(src<n_states));
 	assert((dst>=0)&&(dst<n_states));
-
 	return transitions.get_weight(src, dst);
 }
 
@@ -95,7 +95,7 @@ float SparseMarkovChain::getProbability(int src, int dst)
 	float sum = 0.0;
 	int N = transitions.nof_destinations();
 	
-	for (int i=0; i<transitions.nof_destinations(); ++i) {
+	for (int i=0; i<N; ++i) {
 		sum += transitions.get_weight(src, i);
 	}
 	
@@ -112,13 +112,13 @@ void SparseMarkovChain::getProbabilities(int src, std::vector<real>& p)
 	real sum = 0.0;
 	int N = transitions.nof_destinations();
 	
-	for (int i=0; i<transitions.nof_destinations(); ++i) {
+	for (int i=0; i<N; ++i) {
         p[i] = threshold + transitions.get_weight(src, i);
 		sum += p[i];
 	}
 
     real invsum = 1.0 / sum;
-	for (int i=0; i<transitions.nof_destinations(); ++i) {
+	for (int i=0; i<N; ++i) {
         p[i] *= invsum;
 	}
 }
@@ -284,26 +284,15 @@ int  SparseMarkovChain::PushState (int state) {
 */
 
 int SparseMarkovChain::ShowTransitions () {
-	int n_states = tot_states;
-	int j;
-	int i;
-	int curr;
-	float tot = 0.0f;
-
-	printf ("\nState transition dump\n\n");
-  
-
-	for (i=0; i<tot_states; i++) {
-		Reset ();
-		PushState (i);
-            //printf ("Current state ID : %d\n", curr);
-		printf ("Transition probabilities for next states:\n");
-        
-		for (j=0; j<n_states; j++) {
-                //printf ("->%d = %f\n", j, transitions[curr + j*tot_states]);
-                //			tot += transitions[i + j*tot_states];
+	printf ("\nState transition dump %d\n", tot_states);
+	for (int i=0; i<tot_states; i++) {
+		printf ("Transition %d : ", i);
+        std::vector<real> p(n_states);
+        getProbabilities(i, p);
+		for (int j=0; j<n_states; j++) {
+            printf (" %f", p[j]);
 		}
-		printf ("\nTOTAL: %f\n\n",tot);
+        printf("\n");
 	}
 	return 0;
 }

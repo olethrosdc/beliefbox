@@ -24,7 +24,7 @@ protected:
     Vector a; ///< size of vector
 public:
     DirichletDistribution();
-    DirichletDistribution(int n);
+    DirichletDistribution(int n, real p = 1.0);
     virtual ~DirichletDistribution();
     virtual void generate(Vector& x);
     virtual Vector generate();

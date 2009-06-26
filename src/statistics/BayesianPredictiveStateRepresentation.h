@@ -30,19 +30,31 @@ typedef BeliefMap::iterator BeliefMapIterator;
 class BayesianPredictiveStateRepresentation : public BayesianMarkovChain
 {
 public:
+    int n_observations;
     std::vector<BeliefMap> beliefs;
 
-    BayesianPredictiveStateRepresentation (int n_states, int n_models, float prior, bool dense = true);
+    BayesianPredictiveStateRepresentation (int n_states, int n_models, float prior, bool dense = false);
 
-
-    inline real get_belief_param(int model, int src)
+    inline real get_belief_param(int model)
     {
+        int src = mc[model]->getCurrentState();
         BeliefMapIterator i = beliefs[model].find(src);
 		if (i==beliefs[model].end()) {
 			return 0.0;
 		} else {
 			return i->second;
 		}
+    }
+
+    inline void set_belief_param(int model, real value)
+    {
+        int src = mc[model]->getCurrentState();
+        BeliefMapIterator i =  beliefs[model].find(src);
+        if (i!=beliefs[model].end()) {
+            i->second = value;
+        } else {
+            beliefs[model].insert(std::make_pair(src, value));
+        }
     }
 
     virtual ~BayesianPredictiveStateRepresentation();
@@ -53,7 +65,7 @@ public:
     virtual float NextStateProbability (int state);
     virtual void Reset();
     virtual int generate();
-    virtual int generate_static();
+    virtual int predict();
     
 };
 /*@}*/

@@ -52,11 +52,12 @@ float DenseMarkovChain::ObserveNextState (int state)
 
 	curr_state = CalculateStateID();
     int index = state * tot_states + curr_state;
+    real Pr_next = Pr[index];
     assert(index>=0 && index<n_transitions);
 	transitions[index] += 1.0f;
     EstimateProbabilities(curr_state);
 	PushState (state);
-    return Pr[index];
+    return Pr_next;
 }
 
 
