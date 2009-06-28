@@ -26,7 +26,7 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
 
 BayesianPredictiveStateRepresentation::~BayesianPredictiveStateRepresentation()
 {
-    printf("Killing BPSR\n");
+    //printf("Killing BPSR\n");
 }
 
 void BayesianPredictiveStateRepresentation::Reset()
@@ -106,10 +106,41 @@ float BayesianPredictiveStateRepresentation::NextStateProbability(int state)
 ///
 int BayesianPredictiveStateRepresentation::predict()
 {
+    std::vector<real> weight(n_models);
+    Matrix Lkoi(n_models, n_states); // p obs given all models to k
+    Matrix P_obs(n_models, n_states); // probability of obs for model k
+    int top_model = std::min(n_models - 1, n_observations);
+
+        // calculate predictions for each model
+    for (int i=0; i<=top_model; ++i) {
+        std::vector<real> p(n_states);
+
+        for (int j=0; j<n_states; j++) {
+            P_obs(i,j) =  mc[i]->NextStateProbability(j);
+        }
+            //printf("p(%d): ", i);
+        if (i == 0) {
+            weight[i] = 1;
+            for (int j=0; j<n_states; j++) {
+                Lkoi(i,j) = P_obs(i,j);
+            }
+        } else {
+            weight[i] = exp(log_prior[i] + get_belief_param(i));
+            for (int j=0; j<n_states; j++) {
+                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i,j-1);
+            }
+        }
+    }
+    for (int i=0; i<n_states; ++i) {
+        Pr_next[i] = P_obs(top_model, i);
+    }
+
+#if 0
     for (int i=0; i<n_states; ++i) {
         printf ("%f ", Pr_next[i]);
     }
     printf("\n");
+#endif
 
     return DiscreteDistribution::generate(Pr_next);
 }

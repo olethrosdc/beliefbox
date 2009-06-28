@@ -134,8 +134,8 @@ public:
     virtual real pdf(real x) const;
     virtual Distribution* clone();
     virtual real getMean() const;
-    static int generate(std::vector<real>& x);
-    static int generate(Vector& x);
+    static int generate(const std::vector<real>& x);
+    static int generate(const Vector& x);
 };
 
 

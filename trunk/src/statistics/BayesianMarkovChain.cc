@@ -35,7 +35,7 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
     float sum = 0.0;
     for (int i=0; i<n_models; ++i) {
             //Pr[i] = 1.0 / (1.0 + float(i)); 
-        Pr[i] = exp(-pow((real) n_states, (real) i));
+        Pr[i] = exp(-0.5*pow((real) n_states, (real) (1+i)));
         sum += Pr[i];
         if (dense) {
             mc[i] = new DenseMarkovChain(n_states, i);
@@ -52,9 +52,9 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
 
 BayesianMarkovChain::~BayesianMarkovChain()
 {
-    printf("Killing BMC\n");
+    //printf("Killing BMC\n");
     for (int i=0; i<n_models; ++i) {
-        mc[i]->ShowTransitions();
+        //mc[i]->ShowTransitions();
         delete mc[i];
     }
 }
@@ -124,9 +124,9 @@ int BayesianMarkovChain::predict()
             Pr_next[i] += Pr[j] * mc[j]->NextStateProbability(i);
         }
         Pr_next[i] = mc[n_models - 1]->NextStateProbability(i);
-        printf ("%f ", Pr_next[i]);
+        //printf ("%f ", Pr_next[i]);
     }
-    printf("\n");
+    //printf("\n");
     return DiscreteDistribution::generate(Pr_next);
 
 }
