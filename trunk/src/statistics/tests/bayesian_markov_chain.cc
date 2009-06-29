@@ -145,7 +145,7 @@ int main (int argc, char** argv)
             int predicted_observation = DiscreteDistribution::generate(X[predicted_state]);
             int state = chain.generate();
             int observation = DiscreteDistribution::generate(X[state]);
-            printf("%d #obs\n", observation);
+            //printf("%d #obs\n", observation);
 
             //printf("%d |BHMC| ", state);
 
