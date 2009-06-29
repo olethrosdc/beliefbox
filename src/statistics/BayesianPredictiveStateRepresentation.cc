@@ -70,7 +70,9 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
     for (int i=top_model; i>=0; i--) {
         Pr[i] = p_w*weight[i];
         p_w *= (1.0 - weight[i]);
+
     }
+
     for (int i=0; i<n_states; ++i) {
         Pr_next[i] = P_obs(top_model, i);
         real Pr_i = 0;
@@ -131,8 +133,24 @@ int BayesianPredictiveStateRepresentation::predict()
             }
         }
     }
+
+    real p_w = 1.0;
+    for (int i=top_model; i>=0; i--) {
+        Pr[i] = p_w*weight[i];
+        p_w *= (1.0 - weight[i]);
+    }
+#if 0
+    for (int i=0; i<n_models; i++) {
+        printf ("%f ", Pr[i]);
+    }
+    printf("#BPSR \n");
+#endif
+    
     for (int i=0; i<n_states; ++i) {
-        Pr_next[i] = P_obs(top_model, i);
+        Pr_next[i] = 0.0;
+        for (int j=0; j<=top_model; j++) {
+            Pr_next[i] += Pr[j]*P_obs(j, i);
+        }
     }
 
 #if 0

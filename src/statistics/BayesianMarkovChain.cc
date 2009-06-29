@@ -126,7 +126,13 @@ int BayesianMarkovChain::predict()
         Pr_next[i] = mc[n_models - 1]->NextStateProbability(i);
         //printf ("%f ", Pr_next[i]);
     }
-    //printf("\n");
+
+#if 0
+    for (int i=0; i<n_models; i++) {
+        printf ("%f ", Pr[i]);
+    }
+    printf("# BMC\n");
+#endif
     return DiscreteDistribution::generate(Pr_next);
 
 }
