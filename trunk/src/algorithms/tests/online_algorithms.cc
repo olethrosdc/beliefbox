@@ -12,6 +12,7 @@
 
 #ifdef MAKE_MAIN
 #include "PolicyEvaluation.h"
+#include "PolicyIteration.h"
 #include "ValueIteration.h"
 #include "RandomMDP.h"
 #include "Gridworld.h"
@@ -28,6 +29,7 @@
 #include "DiscreteMDPCollection.h"
 #include "ContextBanditCollection.h"
 #include "RandomNumberFile.h"
+#include "MersenneTwister.h"
 
 struct EpisodeStatistics
 {
@@ -98,9 +100,15 @@ int main (int argc, char** argv)
     srand48(34987235);
     srand(34987235);
     setRandomSeed(34987235);
-   
-    RandomNumberFile random_file("/home/olethros/projects/beliefbox/dat/r1e7.bin");
-    RandomNumberGenerator* rng = (RandomNumberGenerator*) &random_file;
+
+    DiscreteMDPCounts* discrete_mdp = NULL;
+    
+    RandomNumberGenerator* rng;
+    
+    //RandomNumberFile random_file("/home/olethros/projects/beliefbox/dat/r1e7.bin");
+    //rng = (RandomNumberGenerator*) &random_file;
+    MersenneTwisterRNG mersenne_twister;
+    rng = (RandomNumberGenerator*) &mersenne_twister;
 
     std::cout << "Starting test program" << std::endl;
     
@@ -127,7 +135,7 @@ int main (int argc, char** argv)
                                      goal_value,
                                      rng,
                                      false);
-#elseif 0
+#elseif 1
         Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze3",
                                             16, 16);
         environment = gridworld;
@@ -171,9 +179,9 @@ int main (int argc, char** argv)
                                                alpha,
                                                exploration_policy);
         } else if (!strcmp(algorithm_name, "Model")) {
-            model= (MDPModel*)
-                new DiscreteMDPCounts(n_states,
-                                      n_actions);
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions);
+            model= (MDPModel*) discrete_mdp;
+
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
                                          gamma,
@@ -240,6 +248,52 @@ int main (int argc, char** argv)
             statistics.reward[i] += run_statistics.reward[i];
         }
         if (model) {
+            if (discrete_mdp) {
+                real threshold = 1e-6;
+                DiscreteMDP* mean_mdp = discrete_mdp->getMeanMDP();
+                PolicyIteration MPI(mean_mdp, gamma);
+                ValueIteration MVI(mean_mdp, gamma);
+                MPI.ComputeStateValues(threshold);
+                MVI.ComputeStateValues(threshold);
+                MVI.ComputeStateActionValues(threshold);
+                FixedDiscretePolicy* policy = MVI.getPolicy();
+                PolicyEvaluation MPE(policy, mean_mdp, gamma);
+                MPE.ComputeStateValues(threshold);
+
+                Vector hV(n_states);
+                Vector hU(n_states);
+                int n_samples = 100;
+                Vector Delta(n_samples);
+                for (int i=0; i<n_samples; ++i) {
+                    DiscreteMDP* sample_mdp = discrete_mdp->generate();
+                    PolicyEvaluation PE(policy, sample_mdp, gamma);
+                    PE.ComputeStateValues(threshold);
+                    ValueIteration VI(sample_mdp, gamma);
+                    VI.ComputeStateValues(threshold);
+                    VI.ComputeStateActionValues(threshold);
+                    Delta[i] = 0.0;
+                    for (int s=0; s<n_states; ++s) {
+                        hV[s] += PE.getValue(s);
+                        hU[s] += VI.getValue(s);
+                        Delta[i] += fabs(MVI.getValue(s) - hV[s] / (real) i);
+                    }
+                    printf ("%f #delta\n", Delta[i]);
+                    delete sample_mdp;
+                    
+                }
+                real inv_n = 1.0 / (real) n_samples;
+                for (int s=0; s<n_states; ++s) {
+                    hV[s] *= inv_n;
+                    hU[s] *= inv_n;
+                    printf ("V[%d] = %f %f %f | %f %f\n",
+                    s, MPI.getValue(s), MPE.getValue(s), MVI.getValue(s), hV[s], hU[s]);
+                    //printf ("%f %f #hV\n", MVI.getValue(s) hU[s]);
+
+                }
+                delete mean_mdp;
+                delete policy;
+
+            }
             delete model;
             model = NULL;
         }

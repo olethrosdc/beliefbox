@@ -25,12 +25,13 @@ protected:
     std::vector<DirichletDistribution> P;
     std::vector<MeanEstimator> ER;
     int N;
-    virtual int getID (int s, int a) const
+    int getID (int s, int a) const
     {
         assert(s>=0 && s<n_states);
         assert(a>=0 && a<n_actions);
         return s*n_actions + a;
     }
+    Vector getDirichletParameters (int s, int a) const;
 public:
     DiscreteMDPCounts (int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
     virtual ~DiscreteMDPCounts();
@@ -42,6 +43,9 @@ public:
     virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
     virtual void ShowModel() const;
+
+    virtual DiscreteMDP* generate();
+    virtual DiscreteMDP* getMeanMDP() const;
     //void SetNextReward(int s, int a, real r);
 };
 
