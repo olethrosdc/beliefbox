@@ -88,7 +88,12 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
 real PolicyEvaluation::getValue (int state, int action) const
 {
     real sum_over_states = 0.0;
-    for (int s2=0; s2<n_states; s2++) {
+    //for (int s2=0; s2<n_states; s2++) {
+    DiscreteStateSet next = mdp->getNextStates(state, action);
+    for (DiscreteStateSet::iterator i=next.begin();
+         i!=next.end();
+         ++i) {
+        int s2 = *i;
         real P = mdp->getTransitionProbability(state, action, s2);
         real R = mdp->getExpectedReward(state, action) - baseline;
         sum_over_states += P*(R + gamma*V[s2]);

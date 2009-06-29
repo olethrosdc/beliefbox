@@ -10,8 +10,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef MDP_MODEL_H
-#define MDP_MODEL_H
+#ifndef MDP_MODEL_H_
+#define MDP_MODEL_H_
 
 #include <cmath>
 #include <cassert>
@@ -23,15 +23,17 @@
 
 #undef DEBUG_MDP_MODELS
 
+
 #ifdef DEBUG_MDP_MODELS
 #define mdp_dbg  printf("%s:%d: %s(): ", __FILE__, __LINE__, __FUNCTION__); printf
 #else
 //#define mdp_dbg (void)
-void mdp_dbg(...)
+inline void mdp_dbg(...)
 {
     
 }
 #endif
+
 
 /**
    \ingroup MachineLearning

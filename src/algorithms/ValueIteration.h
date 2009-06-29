@@ -14,6 +14,7 @@
 #define VALUE_ITERATION_H
 
 #include "DiscreteMDP.h"
+#include "DiscretePolicy.h"
 #include "real.h"
 #include <vector>
 
@@ -51,7 +52,7 @@ public:
         assert(state>=0 && state < n_states);
         return V[state];
     }
-    
+    FixedDiscretePolicy* getPolicy();
 };
 
 #endif
