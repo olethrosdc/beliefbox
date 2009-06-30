@@ -72,7 +72,7 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
             real Q_a_max = -RAND_MAX;
             int a_max = 0;
             for (int a=0; a<n_actions; a++) {
-                real S = 0.0;
+                real Q_sa = 0.0;
                 DiscreteStateSet next = mdp->getNextStates(s, a);
                 for (DiscreteStateSet::iterator i=next.begin();
                      i!=next.end();
@@ -80,11 +80,12 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
                     int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
                     real R = mdp->getExpectedReward(s, a) + gamma * V[s2] - baseline;
-                    S += P * R;
+                    Q_sa += P * R;
                 }
-                if (a==0 || Q_a_max < S) {
+                Q[s][a] = Q_sa;
+                if (a==0 || Q_a_max < Q_sa) {
                     a_max = a;
-                    Q_a_max = S;
+                    Q_a_max = Q_sa;
                 }
             }
             V[s] = Q_a_max;

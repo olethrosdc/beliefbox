@@ -16,7 +16,9 @@
 #include "real.h"
 #include "RandomNumberGenerator.h"
 
-class MersenneTwister  {
+// This is a static Mersenne Twister random number generator
+class MersenneTwister 
+{
 protected:
 	static unsigned long initial_seed;
     static const int n;
@@ -44,7 +46,10 @@ public:
 };
 
 
-class MersenneTwisterRNG : public RandomNumberGenerator {
+// This Mersenne Twister random number generator can be passed
+// as an argument.
+class MersenneTwisterRNG : public RandomNumberGenerator
+{
 protected:
 	unsigned long initial_seed;
     const int n;

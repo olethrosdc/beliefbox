@@ -106,7 +106,6 @@ float DenseMarkovChain::getProbability(int src, int dst)
 void DenseMarkovChain::getProbabilities(int src, std::vector<real>& p)
 {
     assert((src>=0)&&(src<tot_states));
-	assert((dst>=0)&&(dst<n_states));
     EstimateProbabilities(src);
     for (int i=0; i<n_states; ++i) {
         p[i] = Pr[i * tot_states + src];
