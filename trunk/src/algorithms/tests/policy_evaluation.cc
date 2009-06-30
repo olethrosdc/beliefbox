@@ -18,12 +18,13 @@
 #include "InventoryManagement.h"
 #include "RandomMDP.h"
 #include "DiscretePolicy.h"
+#include "MersenneTwister.h"
 
 int main (void)
 {
     int period = 30;
     int max_items = 10;
-    real gamma = 1.0;
+    real gamma = 0.9;
     real demand = 0.1;
     real random = 0.0;
     real pit = -100.0;
@@ -31,10 +32,11 @@ int main (void)
     real step = -0.1;
     uint width = 8;
     uint height = 8;
+    MersenneTwisterRNG rng;
     InventoryManagement inventory_management (period, max_items, demand);
 
-    Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
-    RandomMDP random_mdp(2, 8, 0.001, 0.1, 0, 1, false);
+    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", width, height, 4, random, pit, goal, step);
+    RandomMDP random_mdp(2, 8, 0.001, 0.1, 0, 1, &rng, false);
     const DiscreteMDP* mdp = random_mdp.getMDP();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
@@ -54,8 +56,8 @@ int main (void)
     DiscretePolicy* policy = new FixedDiscretePolicy(p);
 
     PolicyEvaluation policy_evaluation(policy, mdp, gamma);
-    //ValueIteration value_iteration(mdp, gamma);
-    AverageValueIteration value_iteration(mdp);
+    ValueIteration value_iteration(mdp, gamma);
+    //AverageValueIteration value_iteration(mdp, false, false);
 
     std::vector<real> Q(n_actions);
 
@@ -75,14 +77,23 @@ int main (void)
    for (int iter=0; iter < 100; iter++) {
        printf ("ITER: %d, V = ", iter);
        value_iteration.ComputeStateValues(0.00, 1000);
+       FixedDiscretePolicy* vi_policy = value_iteration.getPolicy();
+       policy_evaluation.SetPolicy(vi_policy);
+       policy_evaluation.ComputeStateValues(0.0, 1000);
        for (int s=0; s<mdp->GetNStates(); s++) {
-           printf ("%1.f ", value_iteration.getValue(s));
+           printf ("%.1f (%.1f)",
+                   value_iteration.getValue(s),
+                   policy_evaluation.getValue(s));
        }
+       delete vi_policy;
+
        printf(", D = %.1f, b = %.1f\n",
               value_iteration.Delta,
               value_iteration.baseline);
    }
-   mdp->ShowModel();
+
+
+   //mdp->ShowModel();
    if (1) {
        FILE* f = fopen("test.dot", "w");
        if (f) {

@@ -136,8 +136,8 @@ int main (int argc, char** argv)
                                      rng,
                                      false);
 #elseif 1
-        Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze3",
-                                            16, 16);
+        Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",
+                                            8, 8);
         environment = gridworld;
 #else
         ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
@@ -249,16 +249,16 @@ int main (int argc, char** argv)
         }
         if (model) {
             if (discrete_mdp) {
-                real threshold = 1e-6;
+                real threshold = 0.0;
+                int max_iter = 1000;
                 DiscreteMDP* mean_mdp = discrete_mdp->getMeanMDP();
                 PolicyIteration MPI(mean_mdp, gamma);
                 ValueIteration MVI(mean_mdp, gamma);
-                MPI.ComputeStateValues(threshold);
-                MVI.ComputeStateValues(threshold);
-                MVI.ComputeStateActionValues(threshold);
+                MPI.ComputeStateValues(threshold, max_iter);
+                MVI.ComputeStateValues(threshold, max_iter);
                 FixedDiscretePolicy* policy = MVI.getPolicy();
                 PolicyEvaluation MPE(policy, mean_mdp, gamma);
-                MPE.ComputeStateValues(threshold);
+                MPE.ComputeStateValues(threshold, max_iter);
 
                 Vector hV(n_states);
                 Vector hU(n_states);
@@ -267,10 +267,10 @@ int main (int argc, char** argv)
                 for (int i=0; i<n_samples; ++i) {
                     DiscreteMDP* sample_mdp = discrete_mdp->generate();
                     PolicyEvaluation PE(policy, sample_mdp, gamma);
-                    PE.ComputeStateValues(threshold);
+                    PE.ComputeStateValues(threshold, max_iter);
                     ValueIteration VI(sample_mdp, gamma);
-                    VI.ComputeStateValues(threshold);
-                    VI.ComputeStateActionValues(threshold);
+                    VI.ComputeStateValues(threshold, max_iter);
+                    //VI.ComputeStateActionValues(threshold, max_iter);
                     Delta[i] = 0.0;
                     for (int s=0; s<n_states; ++s) {
                         hV[s] += PE.getValue(s);

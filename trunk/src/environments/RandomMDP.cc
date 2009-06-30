@@ -30,13 +30,13 @@ RandomMDP::RandomMDP(uint n_actions_,
     
     this->rng = rng;
 
-        // set up the mdp
-        //std::cout << "Making the MPD\n";
+    // set up the mdp
+    std::cout << "Making the MPD\n";
     mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
     
-        //std::cout << "Setting up rewards\n";
-        // set up rewards	
-    
+    // set up rewards	
+    std::cout << "Setting up rewards\n";
+        
     SingularDistribution* step_reward = new SingularDistribution(step_value);
     SingularDistribution* pit_reward = new SingularDistribution(pit_value);
     SingularDistribution* zero_reward = new SingularDistribution(0.0);
@@ -47,8 +47,8 @@ RandomMDP::RandomMDP(uint n_actions_,
     rewards.push_back(zero_reward);
     rewards.push_back(goal_reward);
     
-        //std::cout << "Assigning rewards\n";
-        // first the terminal state rewards
+    std::cout << "Assigning rewards\n";
+    // first the terminal state rewards
     if (termination) {
         for (uint a=0; a<n_actions; ++a) {
             mdp->setRewardDistribution(n_states - 1, a, zero_reward);
@@ -66,6 +66,7 @@ RandomMDP::RandomMDP(uint n_actions_,
     }
 
 
+    std::cout << "Setting pit/goal states\n";
     int pit_state = (int) floor(((real) n_states - 1) * rng->uniform());
     int goal_state = pit_state;
     while (goal_state == pit_state) {
@@ -81,9 +82,10 @@ RandomMDP::RandomMDP(uint n_actions_,
         }
     }
 
-
-        //std::cout << "Assigning transition probabilities\n";
-        // Step 1: set prior
+    
+    std::cout << "Assigning transition probabilities\n";
+    
+    // Step 1: set prior
     for (uint s=0; s<terminal_state; ++s) {   
         for (uint a=0; a<n_actions; ++a) {
             for (uint s2=0; s2<n_states - 1; s2++) {
@@ -92,7 +94,7 @@ RandomMDP::RandomMDP(uint n_actions_,
         }
     }
     
-        // Step 2: add target states
+    // Step 2: add target states
     for (uint s=0; s<terminal_state; s++) {   
         for (uint a=0; a<n_actions; ++a) {
             int s2 = (int) floor(((real) n_states) * rng->uniform());

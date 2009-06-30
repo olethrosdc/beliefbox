@@ -49,14 +49,16 @@ PolicyEvaluation::~PolicyEvaluation()
 
 /** ComputeStateValues
    
-threshold - exit when difference in Q is smaller than the threshold
-max_iter - exit when the number of iterations reaches max_iter
+    threshold - exit when difference in Q is smaller than the threshold
+    max_iter - exit when the number of iterations reaches max_iter
 
 */
 void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
 {
     std::vector<real> dV(n_states);
     std::vector<real> pV(n_states);
+
+    
     for (int s=0; s<n_states; s++) {
         dV[s] = 0.0;
     }
@@ -64,14 +66,14 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
         Delta = 0.0;
         for (int s=0; s<n_states; s++) {
             pV[s] =0.0;
-	    //printf ("V[%d] = %f, V' = ", s, V[s]);
+            //printf ("S: %d ", s);
             for (int a=0; a<n_actions; a++) {
-		real p_sa = policy->getActionProbability(s, a);
-		real V_sa = getValue(s, a);
-		//printf ("+ %f*%f ", p_sa, V_sa);
+                real p_sa = policy->getActionProbability(s, a);
+                real V_sa = getValue(s, a);
+                //printf ("+ %f*%f \n", p_sa, V_sa);
                 pV[s] += p_sa * V_sa;
             }
-	    //printf (" =  %f\n", pV[s]);
+            //printf (" =  %f\n", pV[s]);
             dV[s] = V[s] - pV[s];
             V[s] = pV[s];
         }
@@ -83,11 +85,41 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
         }
     } while((Delta >= threshold)  && max_iter);
     
+    /*
+      do {
+        Delta = 0.0;
+        for (int s=0; s<n_states; s++) {
+            real Vs = 0.0;
+            for (int a=0; a<n_actions; a++) {
+                real Q_sa = 0.0;
+                real p_sa = policy->getActionProbability(s, a);
+
+                DiscreteStateSet next = mdp->getNextStates(s, a);
+                for (DiscreteStateSet::iterator i=next.begin();
+                     i!=next.end();
+                     ++i) {
+                    int s2 = *i;
+                    real P = mdp->getTransitionProbability(s, a, s2);
+                    real R = mdp->getExpectedReward(s, a) + gamma * V[s2] - baseline;
+                    Q_sa += P * R;
+                }
+                Vs += p_sa * Q_sa;
+            }
+            V[s] = Vs;//Q_a_max;
+            dV[s] = pV[s] - V[s];
+            pV[s] = V[s];
+        }
+        Delta = Max(dV) - Min(dV);
+        max_iter--;
+
+    } while(Delta >= threshold && max_iter > 0);
+    */
+
 }
 
 real PolicyEvaluation::getValue (int state, int action) const
 {
-    real sum_over_states = 0.0;
+    real S = 0.0;
     //for (int s2=0; s2<n_states; s2++) {
     DiscreteStateSet next = mdp->getNextStates(state, action);
     for (DiscreteStateSet::iterator i=next.begin();
@@ -95,10 +127,10 @@ real PolicyEvaluation::getValue (int state, int action) const
          ++i) {
         int s2 = *i;
         real P = mdp->getTransitionProbability(state, action, s2);
-        real R = mdp->getExpectedReward(state, action) - baseline;
-        sum_over_states += P*(R + gamma*V[s2]);
+        real R = mdp->getExpectedReward(state, action) + gamma*V[s2]  - baseline;
+        S += P*R;
     }
-    return sum_over_states;
+    return S;
 }
 
 
