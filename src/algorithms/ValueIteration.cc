@@ -89,10 +89,10 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
                 }
             }
             V[s] = Q_a_max;
-            dV[s] = pV[s] - V[s];
+            dV[s] = fabs(pV[s] - V[s]);
             pV[s] = V[s];
         }
-        Delta = Max(dV) - Min(dV);
+        Delta = L1Norm(dV);
         max_iter--;
 
     } while(Delta >= threshold && max_iter > 0);

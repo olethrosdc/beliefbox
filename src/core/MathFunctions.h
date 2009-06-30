@@ -134,6 +134,18 @@ real Max (const std::vector<T>& x)
     return max;
 }
 
+/// Return the index of the maximum number in an array
+template<typename T>
+real L1Norm (const std::vector<T>& x)
+{
+    int n = x.size();
+    T sum = fabs(x[0]);
+    for (int i=1; i<n; i++) {
+        sum += fabs(x[1]);
+    }
+    return sum;
+}
+
 template<typename T>
 real Sum (const std::vector<T>& x)
 {

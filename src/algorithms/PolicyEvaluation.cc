@@ -74,11 +74,11 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
                 pV[s] += p_sa * V_sa;
             }
             //printf (" =  %f\n", pV[s]);
-            dV[s] = V[s] - pV[s];
+            dV[s] = fabs(V[s] - pV[s]);
             V[s] = pV[s];
         }
 	
-        Delta = Max(n_states, &dV[0]) - Min(n_states, &dV[0]);
+        Delta = L1Norm(dV);
 			
         if (max_iter > 0) {
             max_iter--;
