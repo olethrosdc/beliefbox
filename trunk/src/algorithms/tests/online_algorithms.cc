@@ -249,8 +249,8 @@ int main (int argc, char** argv)
         }
         if (model) {
             if (discrete_mdp) {
-                real threshold = 0.0;
-                int max_iter = 1000;
+                real threshold = 0;//10e-6; //0;
+                int max_iter = 100;//100;
                 DiscreteMDP* mean_mdp = discrete_mdp->getMeanMDP();
                 PolicyIteration MPI(mean_mdp, gamma);
                 ValueIteration MVI(mean_mdp, gamma);
@@ -262,7 +262,7 @@ int main (int argc, char** argv)
 
                 Vector hV(n_states);
                 Vector hU(n_states);
-                int n_samples = 100;
+                int n_samples = 1000;
                 Vector Delta(n_samples);
                 for (int i=0; i<n_samples; ++i) {
                     DiscreteMDP* sample_mdp = discrete_mdp->generate();
