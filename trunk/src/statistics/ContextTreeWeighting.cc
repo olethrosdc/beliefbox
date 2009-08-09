@@ -10,26 +10,25 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "BayesianPredictiveStateRepresentation.h"
+#include "ContextTreeWeighting.h"
 #include "DenseMarkovChain.h"
 #include "SparseMarkovChain.h"
 #include "Random.h"
 #include "Matrix.h"
 #include "Distribution.h"
 
-BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int n_states, int n_models, float prior, bool dense)
+ContextTreeWeighting::ContextTreeWeighting(int n_states, int n_models, float prior, bool dense)
     : BayesianMarkovChain(n_states, n_models, prior, dense)
 {
-    beliefs.resize(n_models);
     n_observations = 0;
 }
 
-BayesianPredictiveStateRepresentation::~BayesianPredictiveStateRepresentation()
+ContextTreeWeighting::~ContextTreeWeighting()
 {
     //printf("Killing BPSR\n");
 }
 
-void BayesianPredictiveStateRepresentation::Reset()
+void ContextTreeWeighting::Reset()
 {
     for (int i=0; i<n_models; ++i) {
         mc[i]->Reset();
@@ -38,7 +37,7 @@ void BayesianPredictiveStateRepresentation::Reset()
 
 
 /// Get the probability of the current state.
-void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
+void ContextTreeWeighting::ObserveNextState(int state)
 {
     std::vector<real> weight(n_models);
     Matrix Lkoi(n_models, n_states); // p obs given all models to k
@@ -59,7 +58,7 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
                 Lkoi(i,j) = P_obs(i,j);
             }
         } else {
-            weight[i] = exp(log_prior[i] + get_belief_param(i));
+            weight[i] = exp(log_prior[i]);
             for (int j=0; j<n_states; j++) {
                 Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i,j-1);
             }
@@ -88,14 +87,13 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
     
     for (int i=0; i<=top_model; ++i) {
         posterior[i] = weight[i] * P_obs(i, state) / Lkoi(i, state);
-        set_belief_param(i, log(posterior[i]) - log_prior[i]);
         mc[i]->ObserveNextState(state);
     }
     
 }
 
 /// Get the probability of the next state
-float BayesianPredictiveStateRepresentation::NextStateProbability(int state)
+float ContextTreeWeighting::NextStateProbability(int state)
 {
     return Pr_next[state];
 }
@@ -106,7 +104,7 @@ float BayesianPredictiveStateRepresentation::NextStateProbability(int state)
 /// multinomial.  This allows us to more accurately generate random
 /// samples (!) does it ?
 ///
-int BayesianPredictiveStateRepresentation::predict()
+int ContextTreeWeighting::predict()
 {
     std::vector<real> weight(n_models);
     Matrix Lkoi(n_models, n_states); // p obs given all models to k
@@ -127,7 +125,7 @@ int BayesianPredictiveStateRepresentation::predict()
                 Lkoi(i,j) = P_obs(i,j);
             }
         } else {
-            weight[i] = exp(log_prior[i] + get_belief_param(i));
+            weight[i] = exp(log_prior[i]);
             for (int j=0; j<n_states; j++) {
                 Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i,j-1);
             }
@@ -170,7 +168,7 @@ int BayesianPredictiveStateRepresentation::predict()
 /// samples (!) does it ?
 ///
 /// Side-effects: Changes the current state.
-int BayesianPredictiveStateRepresentation::generate()
+int ContextTreeWeighting::generate()
 {
     int i = predict();
     for (int j=0; j<n_models; ++j) {

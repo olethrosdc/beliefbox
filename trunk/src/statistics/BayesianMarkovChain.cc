@@ -34,8 +34,9 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
 
     float sum = 0.0;
     for (int i=0; i<n_models; ++i) {
-            //Pr[i] = 1.0 / (1.0 + float(i)); 
-        Pr[i] = exp(-0.5*pow((real) n_states, (real) (1+i)));
+        Pr[i] = 0.5; // (1.0 + float(i)); 
+        //Pr[i] = exp(-0.5*pow((real) n_states, (real) (1+i)));
+        //Pr[i] = pow(2,(real) -i);
         sum += Pr[i];
         if (dense) {
             mc[i] = new DenseMarkovChain(n_states, i);
@@ -133,7 +134,8 @@ int BayesianMarkovChain::predict()
     }
     printf("# BMC\n");
 #endif
-    return DiscreteDistribution::generate(Pr_next);
+    return ArgMax(&Pr_next);
+    //return DiscreteDistribution::generate(Pr_next);
 
 }
 
