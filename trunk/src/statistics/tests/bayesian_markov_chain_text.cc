@@ -49,19 +49,37 @@ int main (int argc, char** argv)
     int max_states = 4;
     float prior = 0.5f;
     int T = 100;
-    
+
+    int filename_arg = 1;    
+    int max_states_arg = 2;
+    int max_horizon_arg = 3;
+
+
     setRandomSeed(time(NULL));
 
-    if (argc > 1) {
-        max_states = atoi(argv[1]);
+    char* fname;
+    if (argc < 2) {
+        fprintf(stderr, "Usage: bayesian_markov_chain_text filename [max states [max horizon]]");
+        exit(-1);
+    } else {
+        fname = argv[filename_arg];
+    }
+
+    if (argc > max_states_arg) {
+        max_states = atoi(argv[max_states_arg]);
     }
 
 
-    FILE* file = fopen("data/ifmud.txt", "r");
+    FILE* file = fopen(fname, "r");
+    if (!file) {
+        fprintf (stderr, "Error: Could not open file %s\n", fname);
+        exit(-1);
+    }
+
     fscanf(file, "%d", &T);
 
-    if (argc > 2) {
-        int tmpT = atoi(argv[2]);
+    if (argc > max_horizon_arg) {
+        int tmpT = atoi(argv[max_horizon_arg]);
         if (tmpT < T)
             T = tmpT;
     }
