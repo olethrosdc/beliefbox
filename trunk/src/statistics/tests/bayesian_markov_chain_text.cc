@@ -23,9 +23,19 @@
 struct ErrorStatistics
 {
     std::vector<real> loss;
+    std::vector<real> accuracy;
+    ErrorStatistics(int T)
+    {
+        loss.resize(T);
+        accuracy.resize(T);
+    }
     real total_loss()
     {
         return Sum(loss);
+    }
+    real total_accuracy()
+    {
+        return Sum(accuracy);
     }
 };
 
@@ -104,12 +114,10 @@ int main (int argc, char** argv)
     double initial_time  = GetCPU();
     double elapsed_time = 0;
 
-    ErrorStatistics bmc_error;
-    ErrorStatistics bpsr_error;
-    ErrorStatistics ctw_error;
-    bmc_error.loss.resize(T);
-    bpsr_error.loss.resize(T);
-    ctw_error.loss.resize(T);
+    ErrorStatistics bmc_error(T);
+    ErrorStatistics bpsr_error(T);
+    ErrorStatistics ctw_error(T);
+
 
     //logmsg ("Making Bayesian Markov chain\n");
     // our model for the chains
@@ -131,16 +139,19 @@ int main (int argc, char** argv)
         int observation = data[t];
         
         int bmc_prediction = bmc.predict();
+        bmc_error.accuracy[t] = bmc.NextStateProbability(observation);
         if (bmc_prediction != observation) {
             bmc_error.loss[t] += 1.0;
         }
         
         int bpsr_prediction = bpsr.predict();
+        bpsr_error.accuracy[t] = bpsr.NextStateProbability(observation);
         if (bpsr_prediction != observation) {
             bpsr_error.loss[t] += 1.0;
         }
 
         int ctw_prediction = ctw.predict();
+        ctw_error.accuracy[t] = ctw.NextStateProbability(observation);
         if (ctw_prediction != observation) {
             ctw_error.loss[t] += 1.0;
         }
@@ -174,10 +185,13 @@ int main (int argc, char** argv)
     printf ("# Time -- BHMC: %f, BPSR: %f, CTW: %f\n", 
             bmc_time, bpsr_time, ctw_time);
 
-    printf ("%f %f %f # Error -- BHMC, BPSR, CTW\n", 
+    printf ("%1.f %1.f %1.f %1.f %1.f %1.f# Error -- BHMC, BPSR, CTW -- Accuracy\n", 
             bmc_error.total_loss(),
             bpsr_error.total_loss(),
-            ctw_error.total_loss());
+            ctw_error.total_loss(),
+            bmc_error.total_accuracy(),
+            bpsr_error.total_accuracy(),
+            ctw_error.total_accuracy());
 
     print_result("bmc_text.error", bmc_error);
     print_result("bpsr_text.error", bpsr_error);
