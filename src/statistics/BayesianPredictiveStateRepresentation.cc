@@ -97,6 +97,7 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
 /// Get the probability of the next state
 float BayesianPredictiveStateRepresentation::NextStateProbability(int state)
 {
+    Pr_next /= Pr_next.Sum();
     return Pr_next[state];
 }
 

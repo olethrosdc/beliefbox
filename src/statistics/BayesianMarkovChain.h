@@ -18,14 +18,15 @@
 
 /**
    \ingroup StatisticsGroup
- */
+*/
 /*@{*/
 
 /// A Markov Chain
-class BayesianMarkovChain {
+class BayesianMarkovChain
+{
 public:
-	int n_states; ///< number of distinct states
-	int n_models; ///< number of models
+    int n_states; ///< number of distinct states
+    int n_models; ///< number of models
     std::vector<MarkovChain*> mc; ///< Markov chain
     std::vector<real> log_prior;
     Vector Pr; ///< model probabilities
