@@ -34,9 +34,9 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
 
     float sum = 0.0;
     for (int i=0; i<n_models; ++i) {
-        Pr[i] = 0.5; // (1.0 + float(i)); 
+        //Pr[i] = 0.01; // (1.0 + float(i)); 
         //Pr[i] = exp(-0.5*pow((real) n_states, (real) (1+i)));
-        //Pr[i] = pow(2,(real) -i);
+        Pr[i] = pow(2,(real) -i);
         sum += Pr[i];
         if (dense) {
             mc[i] = new DenseMarkovChain(n_states, i);
@@ -70,28 +70,31 @@ void BayesianMarkovChain::Reset()
 /// Get the probability of the current state.
 void BayesianMarkovChain::ObserveNextState(int state)
 {
-    float sum = 0.0;
+    real log_sum = LOG_ZERO;
+
     for (int i=0; i<n_models; ++i) {
-        Pr[i] *= mc[i]->NextStateProbability(state);
-        sum += Pr[i];
+        log_prior[i] += log(mc[i]->NextStateProbability(state));
+        log_sum = logAdd(log_prior[i], log_sum);
     }
 
     for (int i=0; i<n_models; ++i) {
         mc[i]->ObserveNextState(state);
-        Pr[i] /= sum;
+        log_prior[i] -= log_sum;
+        Pr[i] = exp(log_prior[i]);
     }
 }
 
 /// Get the probability of the next state
 float BayesianMarkovChain::NextStateProbability(int state)
 {
-    float sum = 0.0;
-
+    real sum = 0.0;
+    real log_sum = LOG_ZERO;
     for (int i=0; i<n_models; ++i) {
-        sum += Pr[i] * mc[i]->NextStateProbability(state);
+        //sum += Pr[i] * mc[i]->NextStateProbability(state);
+        log_sum = logAdd(log_sum, Pr[i] + log(mc[i]->NextStateProbability(state)));
     }
     
-    return sum;
+    return exp(log_sum);
 }
 
 /// Generate the next state.

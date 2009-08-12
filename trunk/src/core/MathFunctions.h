@@ -188,6 +188,9 @@ real SquareNorm (real* a, real* b, int n);
 real LNorm (real* a, real* b, int n, real p);
 real Sum (real* a, int n);
 
+real logAdd(real x, real y);
+real logSub(real x, real y);
+
 inline bool approx_eq(real x, real y, real acc=10e-6)
 {
     return (fabs(x - y) <= acc);
