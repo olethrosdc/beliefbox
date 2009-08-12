@@ -31,6 +31,7 @@ public:
     std::vector<real> log_prior;
     Vector Pr; ///< model probabilities
     Vector Pr_next; ///< state probabilities
+    int n_observations;
 
     BayesianMarkovChain (int n_states, int n_models, float prior, bool dense = false);
     virtual ~BayesianMarkovChain();

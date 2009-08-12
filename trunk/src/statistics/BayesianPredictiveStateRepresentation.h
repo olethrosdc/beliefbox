@@ -30,7 +30,6 @@ typedef BeliefMap::iterator BeliefMapIterator;
 class BayesianPredictiveStateRepresentation : public BayesianMarkovChain
 {
 public:
-    int n_observations;
     std::vector<BeliefMap> beliefs;
 
     BayesianPredictiveStateRepresentation (int n_states, int n_models, float prior, bool dense = false);
