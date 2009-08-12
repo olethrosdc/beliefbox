@@ -123,3 +123,49 @@ real Sum (real* a, int n)
     }
     return sum;
 }
+
+
+#ifdef USE_DOUBLE
+#define MINUS_LOG_THRESHOLD -39.14
+#else
+#define MINUS_LOG_THRESHOLD -18.42
+#endif
+
+real logAdd(real x, real y)
+{
+    if (x < y) {
+        real tmp = x;
+        x = y;
+        y = tmp;
+    }
+
+    real minusdif = y - x;
+#ifdef DEBUG
+    if (isnan(minusdif))
+        fprintf (stderr, "LogAdd: minusdif (%f) y (%f) or x (%f) is nan",minusdif,y,x);
+#endif
+    if (minusdif < MINUS_LOG_THRESHOLD)
+        return x;
+    else
+        return x + log1p(exp(minusdif));
+}
+
+real logSub(real x, real y)
+{
+    if (x < y)
+        fprintf(stderr, "LogSub: x (%f) should be greater than y (%f)", x, y);
+
+    real minusdif = y - x;
+#ifdef DEBUG
+    if (isnan(minusdif))
+        fprintf(stderr, "LogSub: minusdif (%f) y (%f) or x (%f) is nan",minusdif,y,x);
+#endif
+    if (x == y)
+        return LOG_ZERO;
+    else if (minusdif < MINUS_LOG_THRESHOLD)
+        return x;
+    else
+        return x + log1p(-exp(minusdif));
+}
+
+

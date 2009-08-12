@@ -26,6 +26,10 @@ typedef float real;
 #endif /* USE_FIXED_POINT */
 
 #define LOG_ONE 0.0
+#define LOG_2_PI 1.83787706640934548355
+#define LOG_ZERO -INF
+
 #define INF std::numeric_limits<real>::infinity()
+
 
 #endif /* REAL_H */
