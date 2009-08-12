@@ -53,14 +53,14 @@ void ContextTreeWeighting::ObserveNextState(int state)
         }
             //printf("p(%d): ", i);
         if (i == 0) {
-            weight[i] = 1;
+            weight[i] = exp(log_prior[i]);
             for (int j=0; j<n_states; j++) {
                 Lkoi(i,j) = P_obs(i,j);
             }
         } else {
             weight[i] = exp(log_prior[i]);
             for (int j=0; j<n_states; j++) {
-                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i,j-1);
+                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i-1,j); // NOTE: was i, j-!!!
             }
         }
     }
@@ -127,7 +127,7 @@ int ContextTreeWeighting::predict()
         } else {
             weight[i] = exp(log_prior[i]);
             for (int j=0; j<n_states; j++) {
-                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i,j-1);
+                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i-1,j); //!!!!!!!!!! NOTE: was i, j-1
             }
         }
     }

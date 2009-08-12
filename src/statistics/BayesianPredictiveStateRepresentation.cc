@@ -21,7 +21,6 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
     : BayesianMarkovChain(n_states, n_models, prior, dense)
 {
     beliefs.resize(n_models);
-    n_observations = 0;
 }
 
 BayesianPredictiveStateRepresentation::~BayesianPredictiveStateRepresentation()
@@ -61,7 +60,7 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
         } else {
             weight[i] = exp(log_prior[i] + get_belief_param(i));
             for (int j=0; j<n_states; j++) {
-                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i,j-1);
+                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i-1,j); /// !!!!!!!! i, j-1!?
             }
         }
     }
@@ -130,7 +129,7 @@ int BayesianPredictiveStateRepresentation::predict()
         } else {
             weight[i] = exp(log_prior[i] + get_belief_param(i));
             for (int j=0; j<n_states; j++) {
-                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i,j-1);
+                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i-1,j);// NOTE: !!! i, j-1 !??
             }
         }
     }
@@ -140,8 +139,8 @@ int BayesianPredictiveStateRepresentation::predict()
         Pr[i] = p_w*weight[i];
         p_w *= (1.0 - weight[i]);
     }
-#if 0
-    for (int i=0; i<n_models; i++) {
+#if 1
+    for (int i=0; i<=top_model; i++) {
         printf ("%f ", Pr[i]);
     }
     printf("#BPSR \n");

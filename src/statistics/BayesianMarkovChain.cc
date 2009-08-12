@@ -16,10 +16,14 @@
 #include "Random.h"
 #include "Distribution.h"
 
+// BUG: It appeasr that the prior does not affect this chain.
+
 BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior, bool dense)
 {
     this->n_models = n_models;
     this->n_states = n_states;
+
+    n_observations = 0;
 
     mc.resize(n_models);
     log_prior.resize(n_models);
@@ -34,9 +38,9 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
 
     float sum = 0.0;
     for (int i=0; i<n_models; ++i) {
-        //Pr[i] = 0.01; // (1.0 + float(i)); 
-        //Pr[i] = exp(-0.5*pow((real) n_states, (real) (1+i)));
-        Pr[i] = pow(2,(real) -i);
+        Pr[i] = 0.5; // (1.0 + float(i)); 
+            //Pr[i] = pow((real) n_states, (real) (-i));
+            //Pr[i] = pow(2,(real) -i);
         sum += Pr[i];
         if (dense) {
             mc[i] = new DenseMarkovChain(n_states, i);
@@ -82,6 +86,7 @@ void BayesianMarkovChain::ObserveNextState(int state)
         log_prior[i] -= log_sum;
         Pr[i] = exp(log_prior[i]);
     }
+    n_observations++;
 }
 
 /// Get the probability of the next state
@@ -122,17 +127,19 @@ int BayesianMarkovChain::generate()
 ///
 int BayesianMarkovChain::predict()
 {
+    int top_model = std::min(n_models - 1, n_observations);
+  
     for (int i=0; i<n_states; ++i) {
         Pr_next[i] = 0.0;
-        for (int j=0; j<n_models; ++j) {
+        for (int j=0; j<=top_model; ++j) {
             Pr_next[i] += Pr[j] * mc[j]->NextStateProbability(i);
         }
         Pr_next[i] = mc[n_models - 1]->NextStateProbability(i);
         //printf ("%f ", Pr_next[i]);
     }
 
-#if 0
-    for (int i=0; i<n_models; i++) {
+#if 1
+    for (int i=0; i<=top_model; i++) {
         printf ("%f ", Pr[i]);
     }
     printf("# BMC\n");
