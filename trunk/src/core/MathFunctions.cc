@@ -114,6 +114,17 @@ real LNorm (real* a, real* b, int n, real p)
     return pow(sum,1.0/p);
 }
 
+/// Return \f$|\sum_i^n (a_i-b_i)|\f$
+real L1Norm (real* a, real* b, int n)
+{
+    real sum = 0;
+    for (int i=0; i<n; i++) {
+        register real d = (*a++) - (*b++);
+        sum += fabs(d);
+    }
+    return sum;
+}
+
 /// Return \f$\sum_i^n a_i\f$
 real Sum (real* a, int n)
 {

@@ -9,33 +9,47 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef KNNMODEL_H
-#define KNNMODEL_H
+#ifndef ORDERED_FIXED_LIST
+#define ORDERED_FIXED_LIST
 
-
-class KNN
+#include <iostream>
+#include <list>
+#include "real.h"
+class OrderedFixedList
 {
 protected:
-    std::vector<Vector> point_set;
-public:	
-    struct PointDistance
+    const uint N;
+    real lower_bound;
+    real upper_bound;
+public:
+    std::list<real> S;
+    OrderedFixedList(uint N_) : N(N_)
     {
-        Vector& x;
-        real d;
-    };
-
-    void AddElement(Vector x)
-    {
-        point_set.push_back(x);
+        lower_bound = -RAND_MAX;
+        upper_bound = RAND_MAX;
     }
-
-    std::vector<PointDistance> FindKNearestNeigbours(Vector x)
+    bool AddPerhaps(real x)
     {
-        std::vector<real> d(point_set.size());
-        for (uint i=1; i<point_set.size(); ++i) {
-            x.distance(L)
+        std::list<real>::iterator it;
+        if (S.size() < N) {
+            S.push_back(x);
+            S.sort();
+            lower_bound = S.front();
+            upper_bound = S.back();
+            return true;
         }
+        if (x < upper_bound) {
+            S.pop_back();
+            S.push_back(x);
+            S.sort();
+            upper_bound = S.back();
+            return true;
+        }
+        return false;
     }
+
+    
+
 };
 
 

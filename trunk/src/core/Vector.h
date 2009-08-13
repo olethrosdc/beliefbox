@@ -101,12 +101,14 @@ real Product (const Vector* const lhs, const Vector* const rhs);
 void Product (const Vector* lhs, const Vector* rhs, Matrix* res);
 real EuclideanNorm (const Vector* lhs, const Vector* rhs);
 real SquareNorm (const Vector* lhs, const Vector* rhs);
-real L1Norm (const Vector* lhs);
+real L1Norm (const Vector* lhs, const Vector* rhs);
+//real L1Norm (const Vector* lhs);
 real Max(const Vector* v);
 real Min(const Vector* v);
 int ArgMax(const Vector* v);
 int ArgMin(const Vector* v);
 real Span(const Vector* v);
+
 
 /*@}*/
 

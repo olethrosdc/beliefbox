@@ -186,6 +186,7 @@ void Normalise (real* src, real* dst, int n_elements);
 real EuclideanNorm (real* a, real* b, int n);
 real SquareNorm (real* a, real* b, int n);
 real LNorm (real* a, real* b, int n, real p);
+real L1Norm (real* a, real* b, int n);
 real Sum (real* a, int n);
 
 real logAdd(real x, real y);
