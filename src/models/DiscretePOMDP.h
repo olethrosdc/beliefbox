@@ -1,5 +1,6 @@
-/* -*- Mode: C++; -*- */
+// -*- Mode: c++ -*-
 // copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// $Revision$
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -9,35 +10,17 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef KNNMODEL_H
-#define KNNMODEL_H
+#ifndef DISCRETE_POMDP_H
+#define DISCRETE_POMDP_H
 
+#include "DiscreteMDP.h"
 
-template<typename X>
-class KNN
+class DiscreteMDP
 {
-protected:
-    std::vector<X> point_set;
-public:	
-    struct PointDistance
-    {
-        X& x;
-        real d;
-    };
-
-    void AddElement(X x)
-    {
-        point_set.push_back(x);
-    }
-
-    std::vector<PointDistance> FindKNearestNeigbours(X x)
-    {
-        std::vector<real> d(point_set.size());
-        for (uint i=1; i<point_set.size(); ++i) {
-            x.distance(L)
-        }
-    }
+public:
+    DiscreteMDP* mdp; ///< The underlying MDP
+    std::vector<Distribution*> R;
+    int GenererateObservation();
 };
-
 
 #endif
