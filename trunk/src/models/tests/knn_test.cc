@@ -9,35 +9,20 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef KNNMODEL_H
-#define KNNMODEL_H
+#ifdef MAKE_MAIN
+#include "KNNModel.h"
 
+#include "Vector.h"
+#include "NormalDistribution.h"
 
-template<typename X>
-class KNN
+int main (int argc, char** argv)
 {
-protected:
-    std::vector<X> point_set;
-public:	
-    struct PointDistance
-    {
-        X& x;
-        real d;
-    };
-
-    void AddElement(X x)
-    {
-        point_set.push_back(x);
-    }
-
-    std::vector<PointDistance> FindKNearestNeigbours(X x)
-    {
-        std::vector<real> d(point_set.size());
-        for (uint i=1; i<point_set.size(); ++i) {
-            x.distance(L)
-        }
-    }
-};
-
+    
+    int n_dim = 2;
+    Vector mean_a(n_dim);
+    Matrix std_a(n_dim, n_dim);
+    
+    
+}
 
 #endif
