@@ -81,6 +81,31 @@ KDNode* void_KDTree::FindNearestNeighbour(Vector& x)
 }
 
 
+OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(Vector& x, int K)
+{
+    int N = node_list.size();
+    OrderedFixedList<KDNode> knn_list(K);
+    for (int i=0; i<N; ++i) {
+        real dist = EuclideanNorm(&x, &node_list[i]->c);
+        knn_list.AddPerhaps(dist, node_list[i]);
+    }
+    return knn_list;
+}
+
+OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighbours(Vector& x, int K)
+{
+    OrderedFixedList<KDNode> knn_list(K);
+    if (!root) {
+        return knn_list;
+    }
+    real dist = RAND_MAX;
+    root->KNearestNeighbours(x, knn_list, dist);
+
+    return knn_list;
+}
+
+
+
 KDNode* KDNode::AddVector(Vector& x, Vector& inf, Vector& sup, void* object)
 {
     box_inf = inf;
@@ -150,6 +175,45 @@ void KDNode::NearestNeighbour(Vector& x, KDNode*& nearest, real& dist)
     // only check second if dist has a chance to be reduced
     if ((fabs(delta) < dist) && second) {
         second->NearestNeighbour(x, nearest, dist);
+    }
+
+}
+
+/** Find K nearest neighbour s
+
+    This is a simple generalization NearestNeighbour().
+    Instead of having a fixed distance bound, we, in addition,
+    have a dynamic bound based on the K-th neighbour found so far.
+ */
+void KDNode::KNearestNeighbours(Vector& x,
+                               OrderedFixedList<KDNode>& knn_list,
+                               real& dist)
+{
+    real c_dist = EuclideanNorm(&x, &c);
+    if (knn_list.AddPerhaps(c_dist, this)) {
+        dist = std::min(dist, knn_list.UpperBound());
+    }
+    real delta = x[a] - c[a];
+    
+    // check the set with the lowest bound first
+    KDNode* first;
+    KDNode* second;
+
+    if (delta <= 0) {
+        first = lower;
+        second = upper;
+    } else {
+        first = upper;
+        second = lower;
+    }
+        
+    // the first always has potential to reduce dist
+    if (first) {
+        first->KNearestNeighbours(x, knn_list, dist);
+    }
+    // only check second if dist has a chance to be reduced
+    if ((fabs(delta) < dist) && second) {
+        second->KNearestNeighbours(x, knn_list, dist);
     }
 
 }
