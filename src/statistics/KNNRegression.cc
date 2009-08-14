@@ -24,7 +24,7 @@ void KNNRegression::AddElement(PointPair p)
 void KNNRegression::Evaluate(Vector& x, Vector& y, int K)
 {
 
-    static RBF rbf(x, 1.0);
+    RBF rbf(x, 1.0);
 
     //basis.Evaluate(x);
     assert(N == y.Size());
