@@ -49,8 +49,14 @@ public:
         }
         return false;
     }
-
-    
+    real UpperBound()
+    {
+        return upper_bound;
+    }
+    real LowerBound()
+    {
+        return lower_bound;
+    }
 
 };
 

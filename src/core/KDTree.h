@@ -13,6 +13,7 @@
 #define KD_TREE_H
 
 #include "Vector.h"
+#include "OrderedFixedList.h"
 
 #include <list>
 
@@ -37,6 +38,7 @@ class KDNode
 
     KDNode* AddVector(Vector& x, Vector& inf, Vector& sup, void* object);
     void NearestNeighbour(Vector& x, KDNode*& nearest, real& dist);
+    void KNearestNeighbours(Vector& x,OrderedFixedList<KDNode>& knn_list, real& dist);
 };
 
 /** void_KD Tree
@@ -66,8 +68,8 @@ public:
     void Show();
     KDNode* FindNearestNeighbourLinear(Vector& x);
     KDNode* FindNearestNeighbour(Vector& x);
-    KDNode* FindNearestNeighbourLinear(Vector& x);
-    KDNode* FindNearestNeighbour(Vector& x);
+    OrderedFixedList<KDNode> FindKNearestNeighboursLinear(Vector& x, int K);
+    OrderedFixedList<KDNode> FindKNearestNeighbours(Vector& x, int K);
 };
 
 
@@ -98,10 +100,35 @@ class KDTree : public void_KDTree
     {
         return void_KDTree::FindNearestNeighbour(x);
     }
+
+    
+    T* FindKNearestObjectsLinear(Vector& x, int K)
+    {
+        KDNode* node = void_KDTree::FindKNearestNeighboursLinear(x, K);
+        return (T*) node->object;
+    }
+    T* FindKNearestObjects(Vector& x, int K)
+    {
+        KDNode* node = void_KDTree::FindKNearestNeighbours(x, K);
+        return (T*) node->object;
+    }
+    OrderedFixedList<KDNode> FindKNearestNeighboursLinear(Vector& x, int K)
+    {
+        return void_KDTree::FindKNearestNeighboursLinear(x, K);
+
+    }
+    OrderedFixedList<KDNode> FindKNearestNeighbours(Vector& x, int K)
+    {
+        return void_KDTree::FindKNearestNeighbours(x, K);
+    }
+
+
     T* getObject(KDNode* node)
     {
         return (T*) node->object;
     }
+    
+
     
 };
 
