@@ -17,7 +17,7 @@
 #include "Matrix.h"
 #include "EasyClock.h"
 
-bool knn_regression_test(int n_points, int K)
+real knn_regression_test(int n_points, int K)
 {
     std::vector<Vector> X(n_points);
     std::vector<Vector> Y(n_points);
@@ -60,22 +60,27 @@ bool knn_regression_test(int n_points, int K)
     for (int i=0; i<n_points; ++i) {
         knn_regression.Evaluate(X[i], Z, K);
         real err = EuclideanNorm(&Y[i], &Z);
-        printf ("%f\n", err);
+        //printf ("%f\n", err);
         knn_regression.AddElement(PointPair(X[i], Y[i]));
     }
     real end_time = GetCPU();
-    printf ("# TOTAL TIME: %f s \n", end_time - start_time);
     //for (int i=0; i<n_points; ++i) {
     //knn_regression.Evaluate(X[i], Z, K);
     //        printf ("%f %f %f\n", X[i][0], Y[i][0], Z[0]);
     //}
 
-    return true;
+    return end_time - start_time;
 
 }
 int main (void)
 {
-    knn_regression_test(1000000, 5);
+    for (int n_points=100; n_points<=10000; n_points*=10) {
+        for (int K=1; K<=16; ++K) {
+            real time = knn_regression_test(n_points, K);
+            time = knn_regression_test(n_points, K);
+            printf ("%d %d %f\n", n_points, K, time);
+        }
+    }
     return 0;
 }
 #endif
