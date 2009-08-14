@@ -19,13 +19,10 @@
 class RBF
 {
 public:
-    Vector center;
+    Vector& center;
     real beta;
-    RBF(Vector& c, real b)
+    RBF(Vector& c, real b) : center(c), beta(b)
     {
-        center.Resize(c.Size());
-        center = c;
-        beta = b;
         assert(b > 0);
     }
     real Evaluate(Vector& x)

@@ -128,6 +128,10 @@ class KDTree : public void_KDTree
         return (T*) node->object;
     }
     
+    void AddVectorObject(Vector& x, T* object)
+    {
+        AddVector(x, (void*) object);
+    }
 
     
 };

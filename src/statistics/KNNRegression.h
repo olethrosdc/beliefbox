@@ -9,47 +9,24 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef KNNMODEL_H
-#define KNNMODEL_H
+#ifndef KNN_REGRESSION_H
+#define KNN_REGRESSION_H
 
+#include "KDTree.h"
+#include "PointPair.h"
+#include "BasisSet.h"
 
-class TrajectorySample
-{
-    Vector s;
-    int a;
-    real r;
-    Vector s2;
-    TrajectorySample(Vector s_, int a_, real r_, Vector s2_)
-        : s(s_), a(a_), r(r_), s2(s2_)
-    {
-    }
-        
-    
-};
-
-class KNNModel
+class KNNRegression
 {
 protected:
-    std::vector<Vector> point_set;
+    int N;
+    KDTree<PointPair> kd_tree;
+    RBFBasisSet basis;
+    std::list<PointPair> pairs;
 public:	
-    struct PointDistance
-    {
-        Vector& x;
-        real d;
-    };
+    KNNRegression(int n);
+    void AddElement(PointPair p);
 
-    void AddElement(Vector x)
-    {
-        point_set.push_back(x);
-    }
-
-    std::vector<PointDistance> FindKNearestNeigbours(Vector x)
-    {
-        std::vector<real> d(point_set.size());
-        for (uint i=1; i<point_set.size(); ++i) {
-            x.distance(L)
-        }
-    }
 };
 
 

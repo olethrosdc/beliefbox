@@ -32,7 +32,7 @@ bool kd_tree_test(int n_points, int n_dimensions)
     std::vector<int> number(n_points);
     for (int i=0; i<n_points; i++) {
         number[i] = i;
-        tree.AddVector(X[i], &number[i]);
+        tree.AddVectorObject(X[i], &number[i]);
     }    
 
     //tree.Show();
