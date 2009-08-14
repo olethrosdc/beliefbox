@@ -36,16 +36,18 @@ int main(void)
 
 bool TestList (int N, int K)
 {
-    OrderedFixedList L(K);
+    OrderedFixedList<int> L(K);
     list<real> X;
+    vector<int> number(N);
     for (int i=0; i<N; ++i) {
         real x = floor(10*urandom());
+        number[i] = i;
         X.push_back(x);
-        L.AddPerhaps(x);
+        L.AddPerhaps(x, &number[i]);
     }
     X.sort();
     list<real>::iterator it; 
-    list<real>::iterator oit; 
+    list<pair<real,int*> >::iterator oit; 
 
     it = X.begin();
     oit = L.S.begin();
@@ -54,7 +56,7 @@ bool TestList (int N, int K)
         if (it == X.end() || oit == L.S.end()) {
             break;
         }
-        if (*it != *oit) {
+        if (*it != oit->first) {
             flag = false;
             break;
         }
@@ -66,7 +68,7 @@ bool TestList (int N, int K)
         for (int i=0; i<K; ++i, ++it, ++oit) {
             real x = *it;
             real y = *it;
-            if (approx_eq(x, y,0.1)) {
+            if (approx_eq(x, y)) {
                 cout <<  x << "=" << y << " ";
             } else {
                 cout <<  x << "!" << y << " ";

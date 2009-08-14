@@ -28,9 +28,11 @@ bool kd_tree_test(int n_points, int n_dimensions)
         }
     }
     
-    KDTree tree(n_dimensions);
+    KDTree<int> tree(n_dimensions);
+    std::vector<int> number(n_points);
     for (int i=0; i<n_points; i++) {
-        tree.AddVector(X[i]);
+        number[i] = i;
+        tree.AddVector(X[i], &number[i]);
     }    
 
     //tree.Show();
@@ -68,8 +70,8 @@ int main(void)
     int n_errors = 0;
     int n_tests = 10;
     for (int i=0; i<n_tests; ++i) {
-        int n_dim = ceil(urandom(1,10));
-        int n_points = ceil(urandom(1,10000));
+        int n_dim = (int) ceil(urandom(1,10));
+        int n_points = (int) ceil(urandom(1,10000));
         bool success = kd_tree_test(n_points, n_dim);
         if (!success) {
             n_errors ++;

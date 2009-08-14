@@ -1,27 +1,27 @@
 #include "KDTree.h"
 #include "Vector.h"
-KDTree::KDTree(int n) : n_dimensions(n), box_sup(n), box_inf(n), root(NULL)
+void_KDTree::void_KDTree(int n) : n_dimensions(n), box_sup(n), box_inf(n), root(NULL)
 {
     for(int i=0; i<n; ++i) {
         box_sup[i] = RAND_MAX;
         box_inf[i] = -RAND_MAX;
     }
 }
-KDTree::~KDTree()
+void_KDTree::~void_KDTree()
 {
     int N = node_list.size();
     for (int i=0; i<N; ++i) {
         delete node_list[i];
     }
 }
-void KDTree::AddVector(Vector& x)
+void void_KDTree::AddVector(Vector& x, void* object)
 {
     if (!root) {
-        root = new KDNode(x, 0, box_inf, box_sup);
+        root = new KDNode(x, 0, box_inf, box_sup, object);
         node_list.push_back(root);
         return;
     }
-    KDNode* node = root->AddVector(x, box_inf, box_sup);
+    KDNode* node = root->AddVector(x, box_inf, box_sup, object);
     if (node) {
         node_list.push_back(node);
     } else{
@@ -30,7 +30,7 @@ void KDTree::AddVector(Vector& x)
 }
 
 
-void KDTree::Show()
+void void_KDTree::Show()
 {
     int N = node_list.size();
     for (int i=0; i<N; ++i) {
@@ -52,7 +52,7 @@ void KDTree::Show()
     }
 }
     
-KDNode* KDTree::FindNearestNeighbourLinear(Vector& x)
+KDNode* void_KDTree::FindNearestNeighbourLinear(Vector& x)
 {
     int N = node_list.size();
     real min_dist = EuclideanNorm(&x, &node_list[0]->c);
@@ -67,7 +67,7 @@ KDNode* KDTree::FindNearestNeighbourLinear(Vector& x)
     return arg_min;
 }
 
-KDNode* KDTree::FindNearestNeighbour(Vector& x)
+KDNode* void_KDTree::FindNearestNeighbour(Vector& x)
 {
     if (!root) {
         // tree is empty
@@ -81,7 +81,7 @@ KDNode* KDTree::FindNearestNeighbour(Vector& x)
 }
 
 
-KDNode* KDNode::AddVector(Vector& x, Vector& inf, Vector& sup)
+KDNode* KDNode::AddVector(Vector& x, Vector& inf, Vector& sup, void* object)
 {
     box_inf = inf;
     box_sup = sup;
@@ -91,19 +91,19 @@ KDNode* KDNode::AddVector(Vector& x, Vector& inf, Vector& sup)
     if (x[a] <= c[a]) {
         sup[a] = c[a];
         if (lower) {
-            return lower->AddVector(x, inf, sup);
+            return lower->AddVector(x, inf, sup, object);
         } else {
             Vector diff = sup - inf;
-            lower = new KDNode(x, ArgMax(&diff), inf, sup);
+            lower = new KDNode(x, ArgMax(&diff), inf, sup, object);
             return lower;
         }
     } else {
         inf[a] = c[a];
         if (upper) {
-            return upper->AddVector(x, inf, sup);
+            return upper->AddVector(x, inf, sup, object);
         } else {
             Vector diff = sup-inf;
-            upper = new KDNode(x, ArgMax(&diff), inf, sup);
+            upper = new KDNode(x, ArgMax(&diff), inf, sup, object);
             return upper;
         }
     }
