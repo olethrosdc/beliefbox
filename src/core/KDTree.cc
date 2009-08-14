@@ -55,10 +55,10 @@ void KDTree::Show()
 KDNode* KDTree::FindNearestNeighbourLinear(Vector& x)
 {
     int N = node_list.size();
-    real min_dist = L1Norm(&x, &node_list[0]->c);
+    real min_dist = EuclideanNorm(&x, &node_list[0]->c);
     KDNode* arg_min = node_list[0];
     for (int i=1; i<N; ++i) {
-        real dist = L1Norm(&x, &node_list[i]->c);
+        real dist = EuclideanNorm(&x, &node_list[i]->c);
         if (dist < min_dist) {
             min_dist = dist;
             arg_min = node_list[i];
@@ -73,8 +73,10 @@ KDNode* KDTree::FindNearestNeighbour(Vector& x)
         // tree is empty
         return NULL; 
     }
+    real dist = RAND_MAX;
+    KDNode* node = NULL;
+    root->NearestNeighbour(x, node, dist);
 
-    KDNode* node = root->NearestNeighbour(x);
     return node;
 }
 
@@ -108,21 +110,46 @@ KDNode* KDNode::AddVector(Vector& x, Vector& inf, Vector& sup)
     return NULL;
 }
 
-KDNode* KDNode::NearestNeighbour(Vector& x, real dist)
+/** Find nearest neighbour
+
+    At each node \f$i\f$, corresponding to the subset \f$S_i$\f, find
+    all children \f$j \in C(i)\f$ with distance bound \f$D_L(x, S_j) <
+    d\f$. Look at the child with the smallest bound first.
+    
+    The distance bound is easy to calculate. If we are above \f$c_a\f$
+    then the upper subset has bound 0, while the lower partition has
+    bound \f$c_a - x_a\f$, since in the best case, the closest point
+    \f$y\f$ in that subset will have \f$y_k = x_k\f$ for all $k \neq
+    a$ and \f$y_a = c_a\f$.
+ */
+void KDNode::NearestNeighbour(Vector& x, KDNode*& nearest, real& dist)
 {
-    // if we already have a child, just go down
-    if (x[a] <= c[a]) {
-        if (lower) {
-            return lower->NearestNeighbour(x);
-        } else {
-            return this;
-        }
-    } else {
-        if (upper) {
-            return upper->NearestNeighbour(x);
-        } else {
-            return this;
-        }
+    real c_dist = EuclideanNorm(&x, &c);
+    if (c_dist < dist) {
+        nearest = this;
+        dist = c_dist;
     }
-    return NULL;
+    real delta = x[a] - c[a];
+    
+    // check the set with the lowest bound first
+    KDNode* first;
+    KDNode* second;
+
+    if (delta <= 0) {
+        first = lower;
+        second = upper;
+    } else {
+        first = upper;
+        second = lower;
+    }
+        
+    // the first always has potential to reduce dist
+    if (first) {
+        first->NearestNeighbour(x, nearest, dist);
+    }
+    // only check second if dist has a chance to be reduced
+    if ((fabs(delta) < dist) && second) {
+        second->NearestNeighbour(x, nearest, dist);
+    }
+
 }

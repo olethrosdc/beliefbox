@@ -25,7 +25,7 @@ GammaDistribution::GammaDistribution(real alpha_, real beta_) : alpha(alpha_), b
 
 
 /// Gamma has a support \f$[0, \infty)\f$, with pdf
-/// \f$x^{\alpha-1} \frac{\beta^\alpha \exp(-\beta x)}{\Gamma(\aplha)}\f$,
+/// \f$x^{\alpha-1} \frac{\beta^\alpha \exp(-\beta x)}{\Gamma(\alpha)}\f$,
 /// with $k\geq0$
 real GammaDistribution::pdf(real x)
 {
