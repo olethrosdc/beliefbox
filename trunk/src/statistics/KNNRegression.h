@@ -19,14 +19,15 @@
 class KNNRegression
 {
 protected:
+    int M;
     int N;
     KDTree<PointPair> kd_tree;
-    RBFBasisSet basis;
+    //RBFBasisSet basis;
     std::list<PointPair> pairs;
 public:	
-    KNNRegression(int n);
+    KNNRegression(int m, int n);
     void AddElement(PointPair p);
-
+    void Evaluate(Vector&x, Vector& y, int K);
 };
 
 

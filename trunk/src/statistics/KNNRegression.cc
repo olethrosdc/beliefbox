@@ -11,22 +11,42 @@
 
 #include "KNNRegression.h"
 
-KNNRegression::KNNRegression(int n) : N(n), kd_tree(n) 
+KNNRegression::KNNRegression(int m, int n) : M(m), N(n), kd_tree(m) 
 {
 }
 void KNNRegression::AddElement(PointPair p)
 {
     pairs.push_back(p);
     kd_tree.AddVectorObject(p.x, &pairs.back());
-    basis.AddCenter(p.x, 1.0);
+    //basis.AddCenter(p.x, 1.0);
 }
 
-void KNNRegression::Evaluate(Vector x, Vector& y)
+void KNNRegression::Evaluate(Vector& x, Vector& y, int K)
 {
-    std::vector<real> d(point_set.size());
-    for (uint i=1; i<point_set.size(); ++i) {
-        x.distance(L);
+
+    static RBF rbf(x, 1.0);
+
+    //basis.Evaluate(x);
+    assert(N == y.Size());
+    for (int i=0; i<N; ++i) {
+        y[i] = 0;
     }
+
+    OrderedFixedList<KDNode> node_list = kd_tree.FindKNearestNeighbours(x, K);
+    
+    std::list<std::pair<real, KDNode*> >::iterator it;
+    
+    real sum = 0;
+    for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
+        KDNode* node = it->second;
+        PointPair* point_pair = kd_tree.getObject(node);
+        rbf.center = point_pair->x;
+        real w = rbf.Evaluate(x);
+        y += point_pair->y * w;
+        sum += w;
+    }
+    y/=sum;
+    
 }
 
 

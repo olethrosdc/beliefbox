@@ -399,7 +399,7 @@ void Product (const Vector* lhs, const Vector* rhs, Matrix* res)
     }
 }
 
-
+#if 0
 /// Return \f$\|a-b\|_1\f$, the L1 norm between two vectors.
 real L1Norm (const Vector* lhs, const Vector* rhs)
 {
@@ -413,6 +413,7 @@ real EuclideanNorm (const Vector* lhs, const Vector* rhs)
     assert (lhs->n==rhs->n);
     return EuclideanNorm (lhs->x, rhs->x, lhs->n);
 }
+#endif
 /// Return \f$\|a-b\|^2\f$, the square of the euclidean norm between two
 /// vectors.
 real SquareNorm (const Vector* lhs, const Vector* rhs)

@@ -99,8 +99,21 @@ void Mul (const Vector* lhs, const Vector* rhs, Vector* res);
 void Div (const Vector* lhs, const Vector* rhs, Vector* res);
 real Product (const Vector* const lhs, const Vector* const rhs);
 void Product (const Vector* lhs, const Vector* rhs, Matrix* res);
-real EuclideanNorm (const Vector* lhs, const Vector* rhs);
-real SquareNorm (const Vector* lhs, const Vector* rhs);
+//real EuclideanNorm (const Vector* lhs, const Vector* rhs);
+//real SquareNorm (const Vector* lhs, const Vector* rhs);
+/// Return \f$\|a-b\|_1\f$, the L1 norm between two vectors.
+inline real L1Norm (const Vector* lhs, const Vector* rhs)
+{
+    assert (lhs->n==rhs->n);
+    return L1Norm (lhs->x, rhs->x, lhs->n);
+}
+
+/// Return \f$\|a-b\|\f$, the euclidean norm between two vectors.
+inline real EuclideanNorm (const Vector* lhs, const Vector* rhs)
+{
+    assert (lhs->n==rhs->n);
+    return EuclideanNorm (lhs->x, rhs->x, lhs->n);
+}
 real L1Norm (const Vector* lhs, const Vector* rhs);
 //real L1Norm (const Vector* lhs);
 real Max(const Vector* v);
