@@ -25,8 +25,9 @@ class KDNode
     int a;
     KDNode* lower;
     KDNode* upper;
-    
-    KDNode(Vector& c_, int a_, Vector& inf, Vector& sup) : c(c_), a(a_), lower(NULL), upper(NULL)
+    void* object; ///< easiest way to associate an object
+
+    KDNode(Vector& c_, int a_, Vector& inf, Vector& sup, void* object_) : c(c_), a(a_), lower(NULL), upper(NULL), object(object_)
     {
         assert(a >= 0 && a < c.Size());
         box_inf = inf;
@@ -34,12 +35,11 @@ class KDNode
         // nothing else to init.
     }
 
-    KDNode* AddVector(Vector& x, Vector& inf, Vector& sup);
+    KDNode* AddVector(Vector& x, Vector& inf, Vector& sup, void* object);
     void NearestNeighbour(Vector& x, KDNode*& nearest, real& dist);
-
 };
 
-/** KD Tree
+/** void_KD Tree
 
     The algorithm idea is very simple.
     
@@ -51,7 +51,7 @@ class KDNode
     Otherwise, we add a new node.
    
  */
-class KDTree
+class void_KDTree
 {
 protected:
     int n_dimensions;
@@ -60,13 +60,49 @@ protected:
     KDNode* root;
     std::vector<KDNode*> node_list;
 public:	
-    KDTree(int n);
-    ~KDTree();
-    void AddVector(Vector& x);
+    void_KDTree(int n);
+    virtual ~void_KDTree();
+    void AddVector(Vector& x, void* object);
     void Show();
+    KDNode* FindNearestNeighbourLinear(Vector& x);
+    KDNode* FindNearestNeighbour(Vector& x);
     KDNode* FindNearestNeighbourLinear(Vector& x);
     KDNode* FindNearestNeighbour(Vector& x);
 };
 
+
+template <typename T>
+class KDTree : public void_KDTree
+{
+ public:
+    KDTree(int n) : void_KDTree(n)
+    {
+    }
+                    
+    T* FindNearestObjectLinear(Vector& x)
+    {
+        KDNode* node = void_KDTree::FindNearestNeighbourLinear(x);
+        return (T*) node->object;
+    }
+    T* FindNearestObject(Vector& x)
+    {
+        KDNode* node = void_KDTree::FindNearestNeighbour(x);
+        return (T*) node->object;
+    }
+    KDNode* FindNearestNeighbourLinear(Vector& x)
+    {
+        return void_KDTree::FindNearestNeighbourLinear(x);
+
+    }
+    KDNode* FindNearestNeighbour(Vector& x)
+    {
+        return void_KDTree::FindNearestNeighbour(x);
+    }
+    T* getObject(KDNode* node)
+    {
+        return (T*) node->object;
+    }
+    
+};
 
 #endif

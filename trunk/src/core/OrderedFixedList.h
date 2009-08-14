@@ -15,6 +15,8 @@
 #include <iostream>
 #include <list>
 #include "real.h"
+
+template <typename T>
 class OrderedFixedList
 {
 protected:
@@ -22,27 +24,27 @@ protected:
     real lower_bound;
     real upper_bound;
 public:
-    std::list<real> S;
+    std::list<std::pair<real, T*> > S;
     OrderedFixedList(uint N_) : N(N_)
     {
         lower_bound = -RAND_MAX;
         upper_bound = RAND_MAX;
     }
-    bool AddPerhaps(real x)
+    bool AddPerhaps(real x, T* object)
     {
         std::list<real>::iterator it;
         if (S.size() < N) {
-            S.push_back(x);
+            S.push_back(std::make_pair(x, object));
             S.sort();
-            lower_bound = S.front();
-            upper_bound = S.back();
+            lower_bound = S.front().first;
+            upper_bound = S.back().first;
             return true;
         }
         if (x < upper_bound) {
             S.pop_back();
-            S.push_back(x);
+            S.push_back(std::make_pair(x, object));
             S.sort();
-            upper_bound = S.back();
+            upper_bound = S.back().first;
             return true;
         }
         return false;
