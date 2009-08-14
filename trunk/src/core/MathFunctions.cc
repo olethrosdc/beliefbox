@@ -81,7 +81,7 @@ void Normalise (real* src, real* dst, int n_elements)
     }
 }
 
-/// Return \f$|\sum_i^n (a_i-b_i)^2|\f$
+/// Return \f$\sum_i^n |a_i-b_i|^2\f$
 real SquareNorm (real* a, real* b, int n)
 {
     real sum = 0;
@@ -92,7 +92,7 @@ real SquareNorm (real* a, real* b, int n)
     return sum;
 }
 
-/// Return \f$|\sum_i^n (a_i-b_i)^2|^{1/2}\f$
+/// Return \f$\left(\sum_i^n |a_i-b_i|^2\right)^{1/2}\f$
 real EuclideanNorm (real* a, real* b, int n)
 {
     real sum = 0;
@@ -103,7 +103,7 @@ real EuclideanNorm (real* a, real* b, int n)
     return sqrt(sum);
 }
 
-/// Return \f$|\sum_i^n (a_i-b_i)^p|^{1/p}\f$
+/// Return \f$\left(\sum_i^n |a_i-b_i|^p\right)^{1/p}\f$
 real LNorm (real* a, real* b, int n, real p)
 {
     real sum = 0;
@@ -114,7 +114,7 @@ real LNorm (real* a, real* b, int n, real p)
     return pow(sum,1.0/p);
 }
 
-/// Return \f$|\sum_i^n (a_i-b_i)|\f$
+/// Return \f$\sum_i^n |a_i-b_i|\f$
 real L1Norm (real* a, real* b, int n)
 {
     real sum = 0;

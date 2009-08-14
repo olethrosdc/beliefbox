@@ -35,7 +35,7 @@ class KDNode
     }
 
     KDNode* AddVector(Vector& x, Vector& inf, Vector& sup);
-    KDNode* NearestNeighbour(Vector& x, real dist);
+    void NearestNeighbour(Vector& x, KDNode*& nearest, real& dist);
 
 };
 
@@ -43,11 +43,11 @@ class KDNode
 
     The algorithm idea is very simple.
     
-    Traverse the tree. At each node /f$i/f$ of the tree, find whether
-    we are in the upper or lower half of the limits, so whether /f$x
-    \in L_i/f$ or /f$x \in U_i/f$. Let us call this subset /f$X'_i/f$.
+    Traverse the tree. At each node \f$i\f$ of the tree, find whether
+    we are in the upper or lower half of the limits, so whether \f$x
+    \in L_i\f$ or \f$x \in U_i\f$. Let us call this subset \f$X'_i\f$.
     
-    If there already exists a node /f$j/f$ there then we repeat.
+    If there already exists a node \f$j\f$ there then we repeat.
     Otherwise, we add a new node.
    
  */
