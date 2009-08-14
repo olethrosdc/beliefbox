@@ -19,6 +19,9 @@ class PointPair
 public:
     Vector x;
     Vector y;
+    PointPair(Vector x_, Vector y_) : x(x_), y(y_)
+    {
+    }
 };
 
 #endif
