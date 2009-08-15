@@ -69,7 +69,25 @@ public:
     KDNode* FindNearestNeighbourLinear(Vector& x);
     KDNode* FindNearestNeighbour(Vector& x);
     OrderedFixedList<KDNode> FindKNearestNeighboursLinear(Vector& x, int K);
-    OrderedFixedList<KDNode> FindKNearestNeighbours(Vector& x, int K);
+    OrderedFixedList<KDNode> FindKNearestNeighbours(Vector& x, int K); 
+    int getNumberOfNodes()
+    {
+        return node_list.size();
+    }
+    int getNumberOfLeaves()
+    {
+        int n_leaves = 0;
+        int N = node_list.size();
+        for (int i=0; i<N; ++i) {
+            if (node_list[i]->lower == NULL) {
+                n_leaves++;
+            }
+            if (node_list[i]->upper == NULL) {
+                n_leaves++;
+            }
+        }
+        return n_leaves;
+    }
 };
 
 

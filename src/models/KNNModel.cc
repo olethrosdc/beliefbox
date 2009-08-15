@@ -9,39 +9,10 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef KNN_MODEL_H
-#define KNN_MODEL_H
+#include "KNNModel.h"
 
-
-class TrajectorySample
+KNNModel::KNNModel(int n_actions_, int n_dim_)
+    : n_actions(n_actions_), n_dim(n_dim_), kd_tree_list(n_actions_)
 {
-    Vector s;
-    int a;
-    real r;
-    Vector s2;
-    TrajectorySample(Vector s_, int a_, real r_, Vector s2_)
-        : s(s_), a(a_), r(r_), s2(s2_)
-    {
-    }
-        
-    
-};
 
-class KNNModel
-{
-protected:
-    int n_actions;
-    int n_dim;
-    std::vector<KDTree<TrajectorySample> > kd_tree_list;
-    //RBFBasisSet basis;
-    std::list<TrajectorySample> pairs;
-public:	
-    KNNModel(int n_actions, int n_dim);
-    void AddElement(TrajectorySample p);
-    void Evaluate(Vector&x, Vector& y, int K);
-};
-
-
-
-
-#endif
+}
