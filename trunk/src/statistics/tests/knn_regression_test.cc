@@ -17,12 +17,17 @@
 #include "Matrix.h"
 #include "EasyClock.h"
 
-real knn_regression_test(int n_points, int K)
+struct TimeStatistics
+{
+    real combined_time;
+    real search_time;
+};
+TimeStatistics knn_regression_test(int n_points, int K)
 {
     std::vector<Vector> X(n_points);
     std::vector<Vector> Y(n_points);
 
-
+    TimeStatistics time_statistics;
     
     int n_in = 8;
     int n_out = 2;
@@ -59,26 +64,26 @@ real knn_regression_test(int n_points, int K)
     real start_time = GetCPU();
     for (int i=0; i<n_points; ++i) {
         knn_regression.Evaluate(X[i], Z, K);
-        real err = EuclideanNorm(&Y[i], &Z);
-        //printf ("%f\n", err);
         knn_regression.AddElement(PointPair(X[i], Y[i]));
     }
     real end_time = GetCPU();
-    //for (int i=0; i<n_points; ++i) {
-    //knn_regression.Evaluate(X[i], Z, K);
-    //        printf ("%f %f %f\n", X[i][0], Y[i][0], Z[0]);
-    //}
-
-    return end_time - start_time;
+    time_statistics.combined_time = end_time - start_time;
+    start_time = end_time;
+    for (int i=0; i<n_points; ++i) {
+        knn_regression.Evaluate(X[i], Z, K);
+    }
+    end_time = GetCPU();
+    time_statistics.search_time = end_time - start_time;
+    return time_statistics;
 
 }
 int main (void)
 {
-    for (int n_points=100; n_points<=10000; n_points*=10) {
-        for (int K=1; K<=16; ++K) {
-            real time = knn_regression_test(n_points, K);
-            time = knn_regression_test(n_points, K);
-            printf ("%d %d %f\n", n_points, K, time);
+    for (int n_points=100; n_points<=100000; n_points*=2) {
+        for (int K=2; K<=16; ++K) {
+            TimeStatistics time_statistics = knn_regression_test(n_points, K);
+            printf ("%d %d %f %f\n", n_points, K, time_statistics.combined_time, time_statistics.search_time);
+            fflush(stdout);
         }
     }
     return 0;

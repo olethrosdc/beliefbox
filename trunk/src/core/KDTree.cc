@@ -80,6 +80,10 @@ KDNode* void_KDTree::FindNearestNeighbour(Vector& x)
     return node;
 }
 
+int void_KDTree::getNumberOfNodes()
+{
+    
+}
 
 OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(Vector& x, int K)
 {

@@ -86,7 +86,7 @@ bool kd_tree_test(int n_points, int n_dimensions)
         }
     }        
 
-    
+    printf ("%d/%d\n", tree.getNumberOfLeaves(), tree.getNumberOfNodes());
 
     return true;
     
