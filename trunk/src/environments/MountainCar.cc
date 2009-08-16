@@ -14,6 +14,14 @@
 #include "MountainCar.h"
 #include "Random.h"
 
+real MountainCar::U_POS = 0.5;                // Upper bound on position
+real MountainCar::L_POS = -1.2;             // Lower bound on position
+real MountainCar::U_VEL = 0.07;               // Upper bound on velocity
+real MountainCar::L_VEL = -0.07;            // Lower bound on velocity
+real MountainCar::INPUT = 0.001;           // contribution of input
+real MountainCar::GRAVITY = 0.0025;          // contribution of gravity
+real MountainCar::MCNOISE = 0.2;
+
 MountainCar::MountainCar()
 {
     state.Resize(2);
