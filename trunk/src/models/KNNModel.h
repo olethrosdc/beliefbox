@@ -45,6 +45,7 @@ public:
     ~KNNModel();
     void AddSample(TrajectorySample x);
     void GetExpectedTransition(Vector& x, int a, real& r, Vector& y, int K, real b);
+    void GetExpectedTransitionDiff(Vector& x, int a, real& r, Vector& y, int K, real b);
 };
 
 
