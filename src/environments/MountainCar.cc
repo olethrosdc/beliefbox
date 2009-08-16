@@ -36,7 +36,8 @@ void MountainCar::Reset()
 {
     state[0] = urandom(L_POS, U_POS);
     state[1] = urandom(L_VEL, U_VEL);
-    
+    endsim = false;
+    reward = 0.0;
 }
 bool MountainCar::Act(int action)
 {
@@ -64,25 +65,24 @@ void MountainCar::Simulate(int action)
 
     real noise = urandom(-MCNOISE, MCNOISE);
     input += noise;
-
+    
     state[1] = state[1] + INPUT*input - GRAVITY*cos(3.0*state[0]);
-    if (state[1]>U_VEL) {
-        state[1]=U_VEL;
+    if (state[1] > U_VEL) {
+        state[1] = U_VEL;
     }
-    if (state[1]<L_VEL) {
-        state[1]=L_VEL;
+    if (state[1] < L_VEL) {
+        state[1] = L_VEL;
     }
 
     state[0] = state[0] + state[1];
-    if (state[0]>U_POS) {
-        state[0]=U_POS;
-        state[1]=0.0;
+    if (state[0] > U_POS) {
+        state[0] = U_POS;
     }
-    if (state[0]<L_POS) {
-        state[0]=L_POS;
-        state[1]=0.0;
+    if (state[0] < L_POS) {
+        state[0] = L_POS + 0.01;
+        state[1] = 0.01;
     }
-  
+        //printf ("S: %f %f\n", state[0], state[1]);
     if (state[0] == U_POS) {
         reward = 0.0;
         endsim = true;
