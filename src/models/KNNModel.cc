@@ -10,6 +10,7 @@
  ***************************************************************************/
 
 #include "KNNModel.h"
+#include "BasisSet.h"
 
 KNNModel::KNNModel(int n_actions_, int n_dim_)
     : n_actions(n_actions_), n_dim(n_dim_), kd_tree(n_actions_)
@@ -26,38 +27,44 @@ KNNModel::~KNNModel()
     }
 }
 
-KNNModel::AddElement(TrajectorySample x)
+void KNNModel::AddSample(TrajectorySample x)
 {
     samples.push_back(x);
-    kd_tree[x.a].AddVectorObject(x.s, &samples.back());
+    kd_tree[x.a]->AddVectorObject(x.s, &samples.back());
 }
 
-void KNNRegression::Evaluate(Vector& x, Vector& y, real& r, int K)
+/// Predict the next reward and a state
+///
+/// This is the simplest type of predictor.
+/// It just predicts the next vector mean, no distribution is used.
+void KNNModel::GetExpectedTransition(Vector& x, int a, real& r, Vector& y, int K, real b)
 {
 
-    RBF rbf(x, 1.0);
+    RBF rbf(x, b);
 
     //basis.Evaluate(x);
-    assert(N == y.Size());
-    for (int i=0; i<N; ++i) {
+    assert(n_dim == y.Size());
+    r = 0.0;
+    for (int i=0; i<n_dim; ++i) {
         y[i] = 0;
     }
 
-    OrderedFixedList<KDNode> node_list = kd_tree.FindKNearestNeighbours(x, K);
+    OrderedFixedList<KDNode> node_list = kd_tree[a]->FindKNearestNeighbours(x, K);
     
     std::list<std::pair<real, KDNode*> >::iterator it;
     
     real sum = 0;
     for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
         KDNode* node = it->second;
-        PointPair* point_pair = kd_tree.getObject(node);
-        rbf.center = point_pair->x;
+        TrajectorySample* sample = kd_tree[a]->getObject(node);
+        rbf.center = sample->s;
         real w =  rbf.Evaluate(x);
-        y += point_pair->y * w;
+        y += sample->s2 * w;
+        r += sample->r * w;
         sum += w;
     }
-    y/=sum;
-    
+    y /= sum;
+    r /= sum;
 }
 
 

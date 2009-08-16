@@ -19,6 +19,7 @@
 
 class TrajectorySample
 {
+public:
     Vector s;
     int a;
     real r;
@@ -42,8 +43,8 @@ protected:
 public:	
     KNNModel(int n_actions, int n_dim);
     ~KNNModel();
-    void AddElement(TrajectorySample x);
-    void Evaluate(Vector&x, Vector& y, real& r, int K);
+    void AddSample(TrajectorySample x);
+    void GetExpectedTransition(Vector& x, int a, real& r, Vector& y, int K, real b);
 };
 
 
