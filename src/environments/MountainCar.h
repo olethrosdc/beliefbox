@@ -38,6 +38,10 @@ public:
     virtual void Reset();
     virtual bool Act(int action);
     virtual void Simulate(int action);
+    void setNoise(real noise)
+    {
+        MCNOISE = noise;
+    }
 };
 
 

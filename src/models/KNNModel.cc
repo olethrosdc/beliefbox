@@ -69,3 +69,37 @@ void KNNModel::GetExpectedTransition(Vector& x, int a, real& r, Vector& y, int K
 
 
 
+/// Predict the next reward and a state
+///
+/// This is the simplest type of predictor.
+/// It just predicts the next vector mean, no distribution is used.
+void KNNModel::GetExpectedTransitionDiff(Vector& x, int a, real& r, Vector& y, int K, real b)
+{
+
+    RBF rbf(x, b);
+
+    //basis.Evaluate(x);
+    assert(n_dim == y.Size());
+    r = 0.0;
+    for (int i=0; i<n_dim; ++i) {
+        y[i] = 0;
+    }
+
+    OrderedFixedList<KDNode> node_list = kd_tree[a]->FindKNearestNeighbours(x, K);
+    
+    std::list<std::pair<real, KDNode*> >::iterator it;
+    
+    real sum = 0;
+    for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
+        KDNode* node = it->second;
+        TrajectorySample* sample = kd_tree[a]->getObject(node);
+        rbf.center = sample->s;
+        real w =  rbf.Evaluate(x);
+        y += (sample->s2 - sample->s)* w;
+        r += sample->r * w;
+        sum += w;
+    }
+    y /= sum;
+    y += x;
+    r /= sum;
+}

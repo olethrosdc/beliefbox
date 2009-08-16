@@ -15,7 +15,7 @@
 #include "NormalDistribution.h"
 #include "Random.h"
 #include "Vector.h"
-
+#include "EasyClock.h"
 #include "MountainCar.h"
 
 bool knn_test(int n_neighbours, real rbf_beta)
@@ -55,11 +55,9 @@ bool knn_test(int n_neighbours, real rbf_beta)
     return true;
 }
 
-bool knn_mountain_car_test(int n_neighbours, real rbf_beta)
+bool knn_mountain_car_test(int n_neighbours, real rbf_beta, real dt, real T)
 {
     int n_actions, n_dim;
-    real T = 100.0;
-    real dt = 0.01;
     n_actions = 2;
     n_dim = 2;
 
@@ -70,14 +68,17 @@ bool knn_mountain_car_test(int n_neighbours, real rbf_beta)
     Vector s2(n_dim);
     real r = 0.0;
     Vector predicted_state(n_dim);
-    real predicted_reward;
+    real predicted_reward = 0.0;
 
     MountainCar environment;
+    environment.setNoise(0.0);
     environment.Reset();
     s = environment.getState();
+    predicted_state = s;
     for (real t=0; t<=T; t += dt) {
         int action = rand()%n_actions;
         bool action_ok = environment.Act(action);
+            
         s2 = environment.getState();
         r = environment.getReward();
         TrajectorySample sample(s, action, r, s2);
@@ -85,7 +86,12 @@ bool knn_mountain_car_test(int n_neighbours, real rbf_beta)
         model.GetExpectedTransition(s, 0, predicted_reward, predicted_state, n_neighbours, rbf_beta);
         real err = EuclideanNorm(&s2, &predicted_state);
         printf ("%f %f %f\n", s[0], s[1], err);
-        s = s2;
+        if (action_ok) {
+            s = s2;
+        } else {
+            environment.Reset();
+            s = environment.getState();
+        }
     }
     return true;
 }
@@ -93,8 +99,20 @@ bool knn_mountain_car_test(int n_neighbours, real rbf_beta)
 int main (int argc, char** argv)
 {
     printf ("# knn_test.cc: testing model adaptation\n");
-    bool success = knn_test(5, 1.0);
-    success = (success && knn_mountain_car_test(5, 1.0));
+    if (argc != 3) {
+        fprintf (stderr, "usage: knn_test n_neighbours rbf_beta\n");
+        exit(-1);
+    }
+    bool success = true;//knn_test(5, 1.0);
+    int n_neighbours = atoi(argv[1]);
+    real rbf_beta = atof(argv[2]);
+    printf ("# neighbours: %d - RBF beta: %f\n", n_neighbours, rbf_beta);
+
+    real start_time = GetCPU();
+    success = (success && knn_mountain_car_test(n_neighbours, rbf_beta, 0.01, 1000.0));
+    real end_time = GetCPU();
+    printf ("# Time: %f\n", end_time - start_time);
+
     if (success)  {
         printf ("# Test succeeded\n");
         return 0;
