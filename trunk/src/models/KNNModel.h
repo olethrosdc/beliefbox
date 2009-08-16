@@ -12,6 +12,10 @@
 #ifndef KNN_MODEL_H
 #define KNN_MODEL_H
 
+#include "Vector.h"
+#include "KDTree.h"
+#include <list>
+#include <vector>
 
 class TrajectorySample
 {
@@ -32,13 +36,14 @@ class KNNModel
 protected:
     int n_actions;
     int n_dim;
-    std::vector<KDTree<TrajectorySample> > kd_tree_list;
+    std::vector<KDTree<TrajectorySample>*> kd_tree;
     //RBFBasisSet basis;
-    std::list<TrajectorySample> pairs;
+    std::list<TrajectorySample> samples;
 public:	
     KNNModel(int n_actions, int n_dim);
-    void AddElement(TrajectorySample p);
-    void Evaluate(Vector&x, Vector& y, int K);
+    ~KNNModel();
+    void AddElement(TrajectorySample x);
+    void Evaluate(Vector&x, Vector& y, real& r, int K);
 };
 
 
