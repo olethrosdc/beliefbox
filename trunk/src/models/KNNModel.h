@@ -24,9 +24,10 @@ public:
     int a;
     real r;
     Vector s2;
-    real V;
-    TrajectorySample(Vector s_, int a_, real r_, Vector s2_)
-        : s(s_), a(a_), r(r_), s2(s2_), V(0.0)
+    real V, dV;
+    bool terminal;
+    TrajectorySample(Vector s_, int a_, real r_, Vector s2_, bool terminal_=false)
+        : s(s_), a(a_), r(r_), s2(s2_), V(0.0), dV(1.0), terminal(terminal_)
     {
     }
         
@@ -43,17 +44,18 @@ protected:
     std::list<TrajectorySample> samples;
     real gamma;
     bool optimistic_values;
+    real optimism;
+    real r_max;
 public:	
-    KNNModel(int n_actions, int n_dim, real gamma_ = 0.9);
+    KNNModel(int n_actions, int n_dim, real gamma_ = 0.9, bool optimistic = true, real optimism_=0.1, real r_max_=0.0);
     ~KNNModel();
     void AddSample(TrajectorySample x);
-    void GetExpectedTransition(Vector& x, int a, real& r, Vector& y, int K, real b);
-    void GetExpectedTransitionDiff(Vector& x, int a, real& r, Vector& y, int K, real b);
+    void GetExpectedTransition(real alpha, Vector& x, int action, real& reward, Vector& y, int K, real b);
     real GetExpectedActionValue(Vector& x, int a, int K, real b);
     real GetExpectedValue(Vector& x, int K, real b);
-    int GetBestAction(Vector& x, int K, real b);
-    void UpdateValue(TrajectorySample& start_sample, int K, real b);
-    void ValueIteration(int K, real b);
+    int GetBestAction(Vector& x, int K, real b, real epsilon = 0.0);
+    void UpdateValue(TrajectorySample& start_sample, real alpha, int K, real b);
+    void ValueIteration(real alpha, int K, real b);
 };
 
 

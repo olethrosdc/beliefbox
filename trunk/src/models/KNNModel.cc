@@ -12,14 +12,15 @@
 #include "KNNModel.h"
 #include "BasisSet.h"
 #include "Distribution.h"
+#include "Random.h"
 
-KNNModel::KNNModel(int n_actions_, int n_dim_, real gamma_)
-    : n_actions(n_actions_), n_dim(n_dim_), kd_tree(n_actions_), gamma(gamma_)
+KNNModel::KNNModel(int n_actions_, int n_dim_, real gamma_, bool optimistic, real optimism_, real r_max_)
+    : n_actions(n_actions_), n_dim(n_dim_), kd_tree(n_actions_), gamma(gamma_),
+      optimistic_values(optimistic), optimism(optimism_), r_max(r_max_)
 {
     for (int i=0; i<n_actions; ++i) {
         kd_tree[i] = new KDTree<TrajectorySample> (n_dim);
     }
-    optimistic_values = true;
 }
 
 KNNModel::~KNNModel()
@@ -35,84 +36,61 @@ void KNNModel::AddSample(TrajectorySample x)
     kd_tree[x.a]->AddVectorObject(x.s, &samples.back());
 }
 
-/// Predict the next reward and a state
-///
-/// This is the simplest type of predictor.
-/// It just predicts the next vector mean, no distribution is used.
-void KNNModel::GetExpectedTransition(Vector& x, int a, real& r, Vector& y, int K, real b)
+
+
+/** Predict the next reward and a state
+    
+    This is the simplest type of predictor.
+    It just predicts the next vector mean, no distribution is used.
+    
+    \param alpha absolute-to-relative parameter. Set to 0 for absolute predictions, 1 for predictions relative to the current state.
+    \param x starting state.
+    \param action action
+    \param reward reward reference (to return).
+    \param y end state reference (to return).
+    \param K numbers of neighbours to consider.
+    \param b RBF width to use.
+*/
+void KNNModel::GetExpectedTransition(real alpha, Vector& x, int action, real& reward, Vector& y, int K, real b)
 {
-    Vector dummy(n_dim);
-    RBF rbf(dummy, b);
+
+    RBF rbf(x, b);
 
     //basis.Evaluate(x);
     assert(n_dim == y.Size());
-    r = 0.0;
+    reward = 0.0;
     for (int i=0; i<n_dim; ++i) {
         y[i] = 0;
     }
 
-    OrderedFixedList<KDNode> node_list = kd_tree[a]->FindKNearestNeighbours(x, K);
+    OrderedFixedList<KDNode> node_list = kd_tree[action]->FindKNearestNeighbours(x, K);
     
     std::list<std::pair<real, KDNode*> >::iterator it;
     
     real sum = 0;
-    for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
+    Vector w(K);
+    int i=0;
+    for (it = node_list.S.begin(); it != node_list.S.end(); ++it, ++i) {
         KDNode* node = it->second;
-        TrajectorySample* sample = kd_tree[a]->getObject(node);
-        rbf.center = sample->s;
-        real w =  rbf.Evaluate(x);
-        y += sample->s2 * w;
-        r += sample->r * w;
-        sum += w;
+        TrajectorySample* sample = kd_tree[action]->getObject(node);
+        w[i] =  rbf.Evaluate(sample->s);
+        sum += w[i];
     }
-    y /= sum;
-    r /= sum;
+    w /= sum;
+    i = 0;
+    for (it = node_list.S.begin(); it != node_list.S.end(); ++it, ++i) {
+        KDNode* node = it->second;
+        TrajectorySample* sample = kd_tree[action]->getObject(node);
+        y += (sample->s2 + (x - sample->s)*alpha)* w[i];
+        reward += sample->r * w[i];
+    }
 }
 
-
-
-/// Predict the next reward and a state
-///
-/// This is the simplest type of predictor.
-/// It just predicts the next vector mean, no distribution is used.
-void KNNModel::GetExpectedTransitionDiff(Vector& x, int a, real& r, Vector& y, int K, real b)
+real KNNModel::GetExpectedActionValue(Vector& x, int action, int K, real b)
 {
+    RBF rbf(x, b);
 
-    Vector dummy(n_dim);
-    RBF rbf(dummy, b);
-
-    //basis.Evaluate(x);
-    assert(n_dim == y.Size());
-    r = 0.0;
-    for (int i=0; i<n_dim; ++i) {
-        y[i] = 0;
-    }
-
-    OrderedFixedList<KDNode> node_list = kd_tree[a]->FindKNearestNeighbours(x, K);
-    
-    std::list<std::pair<real, KDNode*> >::iterator it;
-    
-    real sum = 0;
-    for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
-        KDNode* node = it->second;
-        TrajectorySample* sample = kd_tree[a]->getObject(node);
-        rbf.center = sample->s;
-        real w =  rbf.Evaluate(x);
-        y += (sample->s2 - sample->s)* w;
-        r += sample->r * w;
-        sum += w;
-    }
-    y /= sum;
-    y += x;
-    r /= sum;
-}
-
-real KNNModel::GetExpectedActionValue(Vector& x, int a, int K, real b)
-{
-    Vector dummy(n_dim);
-    RBF rbf(dummy, b);
-
-    OrderedFixedList<KDNode> node_list = kd_tree[a]->FindKNearestNeighbours(x, K);
+    OrderedFixedList<KDNode> node_list = kd_tree[action]->FindKNearestNeighbours(x, K);
     
     std::list<std::pair<real, KDNode*> >::iterator it;
     
@@ -120,27 +98,25 @@ real KNNModel::GetExpectedActionValue(Vector& x, int a, int K, real b)
     real Q = 0.0;
     for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
         KDNode* node = it->second;
-        TrajectorySample* sample = kd_tree[a]->getObject(node);
-        rbf.center = sample->s;
-        real w =  rbf.Evaluate(x);
+        TrajectorySample* sample = kd_tree[action]->getObject(node);
+        real w =  rbf.Evaluate(sample->s);
         Q += sample->V * w;
         sum += w;
     }
     if (optimistic_values)
     {
-        real w = 0.01;
-        Q += 1.0 *w;
-        sum += w;
+        sum += r_max * optimism;
     }
     Q /= sum;
+    if (isnan(Q)) {
+        Q = 0.0;
+    }
     return Q;
 }
 
 // Return the expected value of a state according to our model
 real KNNModel::GetExpectedValue(Vector& x, int K, real b)
 {
-
-
     Vector Q(n_actions);
     for (int a=0; a<n_actions; a++) {
         Q[a] = GetExpectedActionValue(x, a, K, b);
@@ -150,51 +126,84 @@ real KNNModel::GetExpectedValue(Vector& x, int K, real b)
 }
 
 // Return the expected value of a state according to our model
-int KNNModel::GetBestAction(Vector& x, int K, real b)
+int KNNModel::GetBestAction(Vector& x, int K, real b, real epsilon)
 {
 
     Vector Q(n_actions);
     Vector p(n_actions);
     for (int a=0; a<n_actions; a++) {
         Q[a] = GetExpectedActionValue(x, a, K, b);
-
     }
-    SoftMax(Q.Size(), &Q[0], &p[0], 1.0);
-    return DiscreteDistribution::generate(p);
+    //SoftMax(Q.Size(), &Q[0], &p[0], greedy);
+    //return DiscreteDistribution::generate(p);
+    if (urandom() < epsilon) {
+        return rand()%n_actions;
+    }
+    return ArgMax(&Q);
 }
 
 
 /// Update the value of the current state
-void KNNModel::UpdateValue(TrajectorySample& start_sample, int K, real b)
+void KNNModel::UpdateValue(TrajectorySample& start_sample, real alpha, int K, real b)
 {
+    if (start_sample.terminal) {
+        start_sample.V = start_sample.r;
+        start_sample.dV = 0.0;
+        return;
+    }
+
+    RBF rbf(start_sample.s, b);
     Vector Q(n_actions);
+
     for (int a=0; a<n_actions; ++a) {
-        RBF rbf(start_sample.s, b);
         OrderedFixedList<KDNode> node_list = kd_tree[a]->FindKNearestNeighbours(start_sample.s, K);
         
         std::list<std::pair<real, KDNode*> >::iterator it;
     
         real sum = 0;
         Q[a] = 0.0;
+        //printf("Action %d: ", a);
         for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
             KDNode* node = it->second;
             TrajectorySample* sample = kd_tree[a]->getObject(node);
-            rbf.center = sample->s;
-            real w =  rbf.Evaluate(start_sample.s);
-            Q[a] += sample->r + gamma*GetExpectedValue(sample->s2, K, b);
+            Vector y = sample->s2 + (start_sample.s - sample->s) * alpha;
+            real w =  rbf.Evaluate(sample->s);
+            real Qa_i = (sample->r + gamma*GetExpectedValue(y, K, b));
+            if (isnan(Qa_i)) {
+                Qa_i = 0.0;
+            }
+            //printf ("%f ", Qa_i);
+            Q[a] += Qa_i*w;
             sum += w;
         }
         Q[a] /= sum;
+        if (node_list.S.size() == 0) {
+            Q[a] = 0.0;
+        }
+        //printf ("-> %f\n", Q[a]);
     }
-    start_sample.V = Max(&Q);
+
+    real new_V = Max(&Q);
+    if (isnan(new_V)) {
+        new_V = 0.0;
+    }
+    start_sample.dV = fabs(start_sample.V - new_V);
+    start_sample.V = new_V;
     
 }
 
-void KNNModel::ValueIteration(int K, real b)
+/** Perform value iteration
+    
+    Iterate over all states and update their values
+ */
+
+void KNNModel::ValueIteration(real alpha, int K, real b)
 {
     for (std::list<TrajectorySample>::iterator it = samples.begin();
          it != samples.end(); ++it) {
-        UpdateValue(*it, K, b);
+        if (it->dV > 0.0) {
+            UpdateValue(*it, alpha, K, b);
+        }
     }
     
 }
