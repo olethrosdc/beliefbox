@@ -114,6 +114,45 @@ inline real EuclideanNorm (const Vector* lhs, const Vector* rhs)
     assert (lhs->n==rhs->n);
     return EuclideanNorm (lhs->x, rhs->x, lhs->n);
 }
+
+
+/// Return \f$\|a-b\|^2\f$, the square of the euclidean norm between two
+/// vectors.
+inline real SquareNorm (const Vector* lhs, const Vector* rhs)
+{
+    assert (lhs->n==rhs->n);
+    return SquareNorm (lhs->x, rhs->x, lhs->n);
+}
+
+/// Get maximum element
+inline real Max(const Vector* v)
+{
+    return Max(v->Size(), v->x);
+}
+
+/// Get minimum element
+inline real Min(const Vector* v)
+{
+    return Min(v->Size(), v->x);
+}
+
+/// Get maximum element
+inline int ArgMax(const Vector* v)
+{
+    return ArgMax(v->Size(), v->x);
+}
+
+/// Get minimum element
+inline int ArgMin(const Vector* v)
+{
+    return ArgMin(v->Size(), v->x);
+}
+
+inline real Span(const Vector* v)
+{
+    return Max(v) - Min(v);
+}
+#if 0
 real L1Norm (const Vector* lhs, const Vector* rhs);
 //real L1Norm (const Vector* lhs);
 real Max(const Vector* v);
@@ -121,7 +160,7 @@ real Min(const Vector* v);
 int ArgMax(const Vector* v);
 int ArgMin(const Vector* v);
 real Span(const Vector* v);
-
+#endif
 
 /*@}*/
 

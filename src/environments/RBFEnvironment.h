@@ -1,6 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-// $Revision$
+// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -10,46 +9,37 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ENVIRONMENT_H
+#ifndef RBF_ENVIRONMENT_H
 #define ENVIRONMENT_H
 
-#include "MDP.h"
-#include <cstdlib>
-/**
-   \defgroup EnvironmentGroup Environments
- */
-/**
-   \ingroup EnvironmentGroup
- */
-/*@{*/
-/// Template for environments
-template <typename S, typename A>
-class Environment
+#include "Environment.h"
+#include "BasisSet.h"
+
+
+class RBF_Environment : DiscreteEnvironment
 {
 protected:
-    S state; ///< The current state
-    real reward; ///< The current reward
+    RBF_Environment<Vector, int>& environment;
 public:
-    virtual ~Environment() 
+    RBF_Environment(Environment<Vector, int>& environment_) 
+        : environment(environment_)
+    {
+    }
+    virtual ~RBF_Environment() 
     {
     }
 
-    /// put the environment in its "natural: state
+    /// put the environment in its natural state
     virtual void Reset() = 0;
 
-    /// returns true if the action succeeds, false if it does not.
-    ///
-    /// The usual of false is that the environment is in a terminal
-    /// absorbing state.
+    /// returns true if the action succeeds
     virtual bool Act(A action) = 0;
-    
-    /// Return a full MDP model of the environment. 
-    /// This may not be possible for some environments
+
     virtual MDP<S, A>* getMDP() const
     {
         return NULL;
     }
-    /// returns a (copy of) the current state
+    /// returns the current state
     S getState()
     {
         return state;
@@ -63,9 +53,7 @@ public:
 
 };
 
-/// Default type for discrete environments
 typedef Environment<int, int> DiscreteEnvironment;
 
-/*@}*/
 
 #endif

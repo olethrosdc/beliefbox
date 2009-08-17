@@ -413,7 +413,7 @@ real EuclideanNorm (const Vector* lhs, const Vector* rhs)
     assert (lhs->n==rhs->n);
     return EuclideanNorm (lhs->x, rhs->x, lhs->n);
 }
-#endif
+
 /// Return \f$\|a-b\|^2\f$, the square of the euclidean norm between two
 /// vectors.
 real SquareNorm (const Vector* lhs, const Vector* rhs)
@@ -450,3 +450,4 @@ real Span(const Vector* v)
 {
     return Max(v) - Min(v);
 }
+#endif
