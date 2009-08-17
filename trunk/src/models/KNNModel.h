@@ -42,6 +42,7 @@ protected:
     //RBFBasisSet basis;
     std::list<TrajectorySample> samples;
     real gamma;
+    bool optimistic_values;
 public:	
     KNNModel(int n_actions, int n_dim, real gamma_ = 0.9);
     ~KNNModel();

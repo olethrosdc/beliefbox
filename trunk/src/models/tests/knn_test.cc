@@ -56,7 +56,7 @@ bool knn_test(int n_neighbours, real rbf_beta)
     return true;
 }
 
-bool knn_mountain_car_test(int n_neighbours, real rbf_beta, real dt, real T)
+bool knn_environment_test(Environment<Vector, int>& environment, int n_neighbours, real rbf_beta, int T)
 {
     int n_actions, n_dim;
     n_actions = 3;
@@ -65,43 +65,49 @@ bool knn_mountain_car_test(int n_neighbours, real rbf_beta, real dt, real T)
 
     KNNModel model(n_actions, n_dim, 0.99);
     
-    Vector s(n_dim);
-    Vector s2(n_dim);
-    real r = 0.0;
+    Vector state(n_dim);
+    Vector next_state(n_dim);
+    real reward = 0.0;
     Vector predicted_state(n_dim);
-    real predicted_reward = 0.0;
+    //real predicted_reward = 0.0;
 
-    MountainCar environment;
-    Environment<Vector, int>* env = (Environment<Vector, int>*) &environment;
-        //environment.setNoise(0.0);
     environment.Reset();
 
     int action = rand()%n_actions;
-    for (real t=0; t<=T; t += dt) {
-        s = environment.getState();
-            //printf ("%f %f ", s[0], s[1]);
-        action = model.GetBestAction(s, n_neighbours, rbf_beta);
+    for (int t=0; t<T; ++t) {
+        state = environment.getState();
+        Vector state_copy = state;
+        action = model.GetBestAction(state_copy, n_neighbours, rbf_beta);
         bool action_ok = environment.Act(action);
 
 
-        s2 = environment.getState();
-        r = environment.getReward();
-        TrajectorySample sample(s, action, r, s2);
+        next_state = environment.getState();
+        reward = environment.getReward();
+        TrajectorySample sample(state, action, reward, next_state);
         model.AddSample(sample);
-        model.GetExpectedTransition(s, action, predicted_reward, predicted_state, n_neighbours, rbf_beta);
-        real err = EuclideanNorm(&s2, &predicted_state);
-            printf ("%f %f %f %f %d\n", s[0], s[1], err, r, action);
+        state_copy = state;
+        //        model.GetExpectedTransition(state_copy, action, predicted_reward, predicted_state, n_neighbours, rbf_beta);        
+        //real err = EuclideanNorm(&next_state, &predicted_state);
+        //printf ("%f %f %f %f %d\n", state[0], state[1], err, reward, action);
+        real V = model.GetExpectedValue(state_copy, n_neighbours, rbf_beta);
+        printf ("%f %f %f\n", state[0], state[1], V);
         if (action_ok) {
             model.ValueIteration(n_neighbours, rbf_beta);
-                //action = model.GetBestAction(s, n_neighbours, rbf_beta);
         } else {
             printf ("# BEEP\n");
             environment.Reset();
         }
-        s = s2;
     }
-
     
+    for (real x = -1; x<1; x += 0.01) {
+        for (real y = -1; y<1; y += 0.01) {
+            state[0] = x;
+            state[1] = y;
+            real V = model.GetExpectedValue(state, n_neighbours, rbf_beta);
+            printf ("%f ",  V);
+        }
+        printf ("# V\n");
+    }
     return true;
 }
 
@@ -117,8 +123,9 @@ int main (int argc, char** argv)
     real rbf_beta = atof(argv[2]);
     printf ("# neighbours: %d - RBF beta: %f\n", n_neighbours, rbf_beta);
 
+    MountainCar mountain_car;
     real start_time = GetCPU();
-    success = (success && knn_mountain_car_test(n_neighbours, rbf_beta, 0.01, 10.0));
+    success = knn_environment_test(mountain_car, n_neighbours, rbf_beta, 100);
     real end_time = GetCPU();
     printf ("# Time: %f\n", end_time - start_time);
 

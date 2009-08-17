@@ -19,6 +19,7 @@ KNNModel::KNNModel(int n_actions_, int n_dim_, real gamma_)
     for (int i=0; i<n_actions; ++i) {
         kd_tree[i] = new KDTree<TrajectorySample> (n_dim);
     }
+    optimistic_values = true;
 }
 
 KNNModel::~KNNModel()
@@ -40,8 +41,8 @@ void KNNModel::AddSample(TrajectorySample x)
 /// It just predicts the next vector mean, no distribution is used.
 void KNNModel::GetExpectedTransition(Vector& x, int a, real& r, Vector& y, int K, real b)
 {
-
-    RBF rbf(x, b);
+    Vector dummy(n_dim);
+    RBF rbf(dummy, b);
 
     //basis.Evaluate(x);
     assert(n_dim == y.Size());
@@ -77,7 +78,8 @@ void KNNModel::GetExpectedTransition(Vector& x, int a, real& r, Vector& y, int K
 void KNNModel::GetExpectedTransitionDiff(Vector& x, int a, real& r, Vector& y, int K, real b)
 {
 
-    RBF rbf(x, b);
+    Vector dummy(n_dim);
+    RBF rbf(dummy, b);
 
     //basis.Evaluate(x);
     assert(n_dim == y.Size());
@@ -107,7 +109,9 @@ void KNNModel::GetExpectedTransitionDiff(Vector& x, int a, real& r, Vector& y, i
 
 real KNNModel::GetExpectedActionValue(Vector& x, int a, int K, real b)
 {
-    RBF rbf(x, b);    
+    Vector dummy(n_dim);
+    RBF rbf(dummy, b);
+
     OrderedFixedList<KDNode> node_list = kd_tree[a]->FindKNearestNeighbours(x, K);
     
     std::list<std::pair<real, KDNode*> >::iterator it;
@@ -120,6 +124,12 @@ real KNNModel::GetExpectedActionValue(Vector& x, int a, int K, real b)
         rbf.center = sample->s;
         real w =  rbf.Evaluate(x);
         Q += sample->V * w;
+        sum += w;
+    }
+    if (optimistic_values)
+    {
+        real w = 0.01;
+        Q += 1.0 *w;
         sum += w;
     }
     Q /= sum;
