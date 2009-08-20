@@ -18,6 +18,7 @@
 #include "EasyClock.h"
 #include "MountainCar.h"
 #include "Pendulum.h"
+#include "ContinuousChain.h"
 
 bool knn_test(int n_neighbours, real rbf_beta)
 {
@@ -59,15 +60,15 @@ bool knn_test(int n_neighbours, real rbf_beta)
     return true;
 }
 
-bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int n_neighbours, real rbf_beta, int T)
+bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int n_neighbours, real rbf_beta, real gamma, int T, int max_samples)
 {
-    int n_actions, n_dim;
-    n_actions = 3;
-    n_dim = 2;
+    int n_actions = environment.getNActions();
+    int n_dim = environment.getNStates();
+    printf ("# Starting test with %d state dimensions and %d actions.\n", n_dim, n_actions);
 
-    real gamma = 1.0;
-    KNNModel model(n_actions, n_dim, gamma, true, 0.001, 0.0);
-    
+    KNNModel model(n_actions, n_dim, gamma, false, 0.0001, 1.0);
+    model.SetMaxSamples(max_samples);
+
     Vector state(n_dim);
     Vector next_state(n_dim);
     real reward = 0.0;
@@ -81,23 +82,18 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
     for (int t=0; t<T; ++t) {
         n_steps++;
         // select an action
-        real epsilon = 100.0 / (100.0 + (real) t);
+        real epsilon = 1000.0 / (1000.0 + (real) t);
 
         state = environment.getState();
         if (t < n_actions) {
             action = t;
         } else {
-            action = model.GetBestAction(state, n_neighbours, rbf_beta, epsilon);
-        }
-        if (t < 10) {
-            action = 1;
-            if (state[0] + 0.1* state[1] > 0.125) {
-                action = 2;
-            } else if (state[0] + 0.1*state[1] < -0.125) {
-                action = 0;
+            if (urandom() < epsilon) {
+                action = rand()%n_actions;
+            } else {
+                action = model.GetBestAction(state, n_neighbours, rbf_beta);
             }
         }
-
 
 
         // act
@@ -107,81 +103,143 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
 
         // update model
         TrajectorySample sample(state, action, reward, next_state, !action_ok);
-        if (t < 1000) {
-            model.AddSample(sample);
-        }
+        model.AddSample(sample);
 
         // predict next state
         model.GetExpectedTransition(alpha, state, action, predicted_reward, predicted_state, n_neighbours, rbf_beta);        
         real err = EuclideanNorm(&next_state, &predicted_state);
-
+        for (int i=0; i<=10; ++i) {
+            model.ValueIteration(alpha, n_neighbours, rbf_beta);
+        }
         // update value function
         real V = model.GetExpectedValue(state, n_neighbours, rbf_beta);
-        printf ("%f %f %d %f %f %f %f\n", state[0], state[1], action, epsilon, V, err, reward);
+        if (n_dim == 2) {
+            printf ("%f %f %d %f %f %f %f\n", state[0], state[1], action, epsilon, V, err, reward);
+        } else {
+            printf ("%f %d %f %f %f %f\n", state[0], action, epsilon, V, err, reward);
+        }
 
         // see if we are successful
-        if (action_ok) {
-            for (int iter=0; iter<1; ++iter) {
-                model.ValueIteration(alpha, n_neighbours, rbf_beta);
+        if (!action_ok) {
+            for (int a=0; a<=n_actions; ++a) {
+                TrajectorySample sample(environment.getState(), action, reward, environment.getState(), true);
             }
-        } else {
-            printf ("%d # steps: %f %f\n", n_steps, state[0], state[1]);
+            model.AddSample(sample);
+
+            //printf ("%d # steps: %f %f\n", n_steps, state[0], state[1]);
+
             n_steps = 0;
+            
             environment.Reset();
         }
     }
     
-    
-    // print out value function
-    real x_min = -1.5;
-    real x_max = 1.5;
-    real y_min = -3.0;
-    real y_max = 3.0;
-    real dx = (x_max - x_min) / 100.0;
-    real dy = (y_max - y_min) / 100.0;
+    printf ("## final round of value iteration\n");
+    for (int i=0; i<10000; i++) {
+        model.ValueIteration(alpha, n_neighbours, rbf_beta);
+    }    
 
-    for (real x = x_min; x<x_max; x += dx) {
-        for (real y = y_min; y<y_max; y += dy) {
+    if (n_dim == 1) {
+        real x_min = -1.5;
+        real x_max = 1.5;
+        real dx = (x_max - x_min) / 100.0;
+        for (real x = x_min; x<x_max; x += dx) {
             state[0] = x;
-            state[1] = y;
             real V = model.GetExpectedValue(state, n_neighbours, rbf_beta);
-            printf ("%f ",  V);
+            printf ("%f %f # V\n",  x, V);
         }
         printf ("# V\n");
-    }
 
-    for (int a=0; a<n_actions; ++a) {
+        for (real x = x_min; x<x_max; x += dx) {
+            state[0] = x;
+            printf ("%f ", x);
+            for (int a=0; a<n_actions; ++a) {
+                real V = model.GetExpectedActionValue(state, a, n_neighbours, rbf_beta);
+                printf ("%f ",  V);
+            }
+            printf ("# Q\n");
+        }
+
+        for (real x = x_min; x<x_max; x += dx) {
+            Vector next_state(n_dim);
+            real next_reward;
+            state[0] = x;
+            printf ("%f ", x);
+            for (int a=0; a<n_actions; ++a) {
+                //model.GetExpectedTransition(alpha, state, action, predicted_reward, predicted_state, n_neighbours, rbf_beta);        
+                model.GetExpectedTransition(alpha, state, a, next_reward, next_state,n_neighbours, rbf_beta);
+                printf ("%f ",  next_state[0]);
+            }
+            printf ("# STATE\n");
+        }
+    } else if (n_dim == 2) {
+    // print out value function
+        real x_min = -1.5;
+        real x_max = 1.5;
+        real y_min = -3.0;
+        real y_max = 3.0;
+        real dx = (x_max - x_min) / 100.0;
+        real dy = (y_max - y_min) / 100.0;
+        
         for (real x = x_min; x<x_max; x += dx) {
             for (real y = y_min; y<y_max; y += dy) {
                 state[0] = x;
                 state[1] = y;
-                real V = model.GetExpectedActionValue(state, a, n_neighbours, rbf_beta);
+                real V = model.GetExpectedValue(state, n_neighbours, rbf_beta);
                 printf ("%f ",  V);
             }
-            printf ("# Q%d\n", a);
+            printf ("# V\n");
+        }
+        
+        for (real x = x_min; x<x_max; x += dx) {
+            for (real y = y_min; y<y_max; y += dy) {
+                state[0] = x;
+                state[1] = y;
+                for (int a=0; a<n_actions; ++a) {
+                    real V = model.GetExpectedActionValue(state, a, n_neighbours, rbf_beta);
+                    printf ("%f ",  V);
+                }
+                printf ("# Q\n");
+            }
         }
     }
+
+    
+
+    model.Show();
+
     return true;
 }
 
 int main (int argc, char** argv)
 {
     printf ("# knn_test.cc: testing model adaptation\n");
-    if (argc != 4) {
-        fprintf (stderr, "usage: knn_test alpha n_neighbours rbf_beta\n");
+    if (argc != 8) {
+        fprintf (stderr, "usage: knn_test task alpha n_neighbours rbf_beta gamma horizon n_samples\n");
+        fprintf (stderr, "task in {chain, pendulum, car}\n alpha in [0,1]\n n_neighbours in {1, 2, ...}\n rbf_beta > 0\n");
         exit(-1);
     }
     bool success = true;//knn_test(5, 1.0);
-    real alpha = atof(argv[1]);
-    int n_neighbours = atoi(argv[2]);
-    real rbf_beta = atof(argv[3]);
+    char* task = argv[1];
+    real alpha = atof(argv[2]);
+    int n_neighbours = atoi(argv[3]);
+    real rbf_beta = atof(argv[4]);
+    real gamma = atof(argv[5]);
+    int horizon = atoi(argv[6]);
+    int n_samples = atoi(argv[7]);
     printf ("# neighbours: %d - RBF beta: %f\n", n_neighbours, rbf_beta);
 
     MountainCar mountain_car;
     Pendulum pendulum;
+    ContinuousChain continuous_chain;
     real start_time = GetCPU();
-    success = knn_environment_test(mountain_car, alpha, n_neighbours, rbf_beta, 10000);
-    //success = knn_environment_test(pendulum, alpha, n_neighbours, rbf_beta, 20000);
+    if (!strcmp(task, "car")) {
+        success = knn_environment_test(mountain_car, alpha, n_neighbours, rbf_beta, gamma, horizon, n_samples);
+    } else  if (!strcmp(task, "pendulum")) {
+        success = knn_environment_test(pendulum, alpha, n_neighbours, rbf_beta, gamma, horizon, n_samples);
+    } else if (!strcmp(task, "chain")) {
+        success = knn_environment_test(continuous_chain, alpha, n_neighbours, rbf_beta, gamma, horizon, n_samples);
+    }
     real end_time = GetCPU();
     printf ("# Time: %f\n", end_time - start_time);
 

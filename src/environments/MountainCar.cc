@@ -22,9 +22,9 @@ real MountainCar::INPUT = 0.001;           // contribution of input
 real MountainCar::GRAVITY = 0.0025;          // contribution of gravity
 real MountainCar::MCNOISE = 0.2;
 
-MountainCar::MountainCar()
+MountainCar::MountainCar() : Environment<Vector, int>(2, 3)
 {
-    state.Resize(2);
+    state.Resize(n_states);
     endsim = false;
 }
 

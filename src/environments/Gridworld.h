@@ -77,7 +77,7 @@ public:
 protected:
     uint height;
     uint width;
-    uint n_actions;
+    //uint n_aactions;
     real random;
     real pit_value;
     real goal_value;

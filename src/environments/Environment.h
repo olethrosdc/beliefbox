@@ -29,7 +29,18 @@ class Environment
 protected:
     S state; ///< The current state
     real reward; ///< The current reward
+    uint n_states; ///< The state dimension
+    uint n_actions; ///< The action dimension
 public:
+    Environment() : n_states(1), n_actions(1)
+    {
+    }
+
+    Environment(int n_states_, int n_actions_)
+  : n_states(n_states_), n_actions(n_actions_)
+    {
+    }
+
     virtual ~Environment() 
     {
     }
@@ -60,7 +71,15 @@ public:
     {
         return reward;
     }
-
+    /// returns the number of state dimensions
+    uint getNStates()
+    {
+        return n_states;
+    }
+    uint getNActions()
+    {
+        return n_actions;
+    }
 };
 
 /// Default type for discrete environments

@@ -24,10 +24,11 @@ Gridworld::Gridworld(const char* fname,
                      real pit_,
                      real goal_,
                      real step_)
-    :  height(height_), width(width_), n_actions(n_actions_),
+    :  height(height_), width(width_), 
        random(random_), pit_value(pit_), goal_value(goal_), step_value(step_)
 {
-    uint n_states = width * height + 1; // plus a terminal state
+    n_states = width * height + 1; // plus a terminal state
+    n_actions = n_actions_;
     terminal_state = n_states - 1;
     
     std::ifstream ifs(fname, std::ifstream::in);
@@ -43,7 +44,7 @@ Gridworld::Gridworld(const char* fname,
     uint y = 0;
     while (getline(ifs, line)) {// && y<height) {
         if (line.length() != width) {
-            Serror ("Line length (%d) does not match width (%d)",
+            Serror ("Line length (%ld) does not match width (%d)",
                     line.length(), width);
             exit(-1);
         }

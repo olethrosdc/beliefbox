@@ -16,7 +16,8 @@
 
 KNNModel::KNNModel(int n_actions_, int n_dim_, real gamma_, bool optimistic, real optimism_, real r_max_)
     : n_actions(n_actions_), n_dim(n_dim_), kd_tree(n_actions_), gamma(gamma_),
-      optimistic_values(optimistic), optimism(optimism_), r_max(r_max_)
+      optimistic_values(optimistic), optimism(optimism_), r_max(r_max_),
+      max_samples(-1)
 {
     for (int i=0; i<n_actions; ++i) {
         kd_tree[i] = new KDTree<TrajectorySample> (n_dim);
@@ -32,8 +33,12 @@ KNNModel::~KNNModel()
 
 void KNNModel::AddSample(TrajectorySample x)
 {
-    samples.push_back(x);
-    kd_tree[x.a]->AddVectorObject(x.s, &samples.back());
+    if (max_samples < 0 || samples.size() < (uint) max_samples) {
+        samples.push_back(x);
+        kd_tree[x.a]->AddVectorObject(x.s, &samples.back());
+        x.dV = 1.0;
+        x.V = x.r;
+    }
 }
 
 
@@ -86,6 +91,11 @@ void KNNModel::GetExpectedTransition(real alpha, Vector& x, int action, real& re
     }
 }
 
+/** Get the expected value for an action
+    
+    Add the probability that there is a posibility to go to an 
+    unknown terminal state with highish value.
+ */
 real KNNModel::GetExpectedActionValue(Vector& x, int action, int K, real b)
 {
     RBF rbf(x, b);
@@ -103,9 +113,9 @@ real KNNModel::GetExpectedActionValue(Vector& x, int action, int K, real b)
         Q += sample->V * w;
         sum += w;
     }
-    if (optimistic_values)
-    {
-        sum += r_max * optimism;
+    if (optimistic_values) {
+        Q += optimism * r_max / (1.0 - gamma);
+        sum += optimism;
     }
     Q /= sum;
     if (isnan(Q)) {
@@ -126,7 +136,7 @@ real KNNModel::GetExpectedValue(Vector& x, int K, real b)
 }
 
 // Return the expected value of a state according to our model
-int KNNModel::GetBestAction(Vector& x, int K, real b, real epsilon)
+int KNNModel::GetBestAction(Vector& x, int K, real b)
 {
 
     Vector Q(n_actions);
@@ -136,9 +146,6 @@ int KNNModel::GetBestAction(Vector& x, int K, real b, real epsilon)
     }
     //SoftMax(Q.Size(), &Q[0], &p[0], greedy);
     //return DiscreteDistribution::generate(p);
-    if (urandom() < epsilon) {
-        return rand()%n_actions;
-    }
     return ArgMax(&Q);
 }
 
@@ -151,7 +158,7 @@ void KNNModel::UpdateValue(TrajectorySample& start_sample, real alpha, int K, re
         start_sample.dV = 0.0;
         return;
     }
-
+    
     RBF rbf(start_sample.s, b);
     Vector Q(n_actions);
 
@@ -172,7 +179,7 @@ void KNNModel::UpdateValue(TrajectorySample& start_sample, real alpha, int K, re
             if (isnan(Qa_i)) {
                 Qa_i = 0.0;
             }
-            //printf ("%f ", Qa_i);
+            //printf ("%f (%f) ", Qa_i, w);
             Q[a] += Qa_i*w;
             sum += w;
         }
@@ -201,9 +208,26 @@ void KNNModel::ValueIteration(real alpha, int K, real b)
 {
     for (std::list<TrajectorySample>::iterator it = samples.begin();
          it != samples.end(); ++it) {
-        if (it->dV > 0.0) {
+        if (it->dV > 0) {//10e-6) {
             UpdateValue(*it, alpha, K, b);
         }
+    }
+    
+}
+
+
+void KNNModel::Show()
+{
+    for (std::list<TrajectorySample>::iterator it = samples.begin();
+         it != samples.end(); ++it) {
+        for (int i=0; i<n_dim; ++i) {
+            printf ("%f ", it->s[i]);
+        }
+        printf ("%d %f ", it->a, it->r);
+        for (int i=0; i<n_dim; ++i) {
+            printf ("%f ", it->s2[i]);
+        }
+        printf ("%f %d # SAMPLE\n", it->V, it->terminal);
     }
     
 }
