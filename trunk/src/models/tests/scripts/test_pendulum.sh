@@ -1,8 +1,8 @@
 #! /bin/bash
 alpha=0.5
 knn=5
-rbf=.1
-../bin/knn_test $alpha $knn $rbf | tee out
+rbf=.5
+../bin/knn_test pendulum $alpha $knn $rbf >out
 grep V out >Vout
 grep Q0 out >Q0out
 grep Q1 out >Q1out

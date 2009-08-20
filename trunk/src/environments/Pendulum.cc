@@ -20,7 +20,7 @@ Pendulum::Pendulum(real pendulum_mass_,
                    real gravity_,
                    real max_noise_,
                    real Dt_)
-    : //state(2),
+    : Environment<Vector, int>(2, 3),
       pendulum_mass(pendulum_mass_),
       cart_mass(cart_mass_),
       pendulum_length(pendulum_length_),
@@ -107,10 +107,10 @@ void Pendulum::Simulate(int action)
     }
   
     if (fabs(state[0]) > M_PI/2.0) {
-        reward = -1.0;
+        reward = 0.0;
         endsim = true;
     } else {
-        reward = 0.0;
+        reward = 1.0;
         endsim = false;
     }
   
