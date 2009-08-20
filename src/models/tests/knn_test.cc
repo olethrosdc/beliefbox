@@ -104,7 +104,7 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
         // update model
         TrajectorySample sample(state, action, reward, next_state, !action_ok);
         model.AddSample(sample);
-
+        model.UpdateValue(sample, alpha, n_neighbours, rbf_beta);
         // predict next state
         model.GetExpectedTransition(alpha, state, action, predicted_reward, predicted_state, n_neighbours, rbf_beta);        
         real err = EuclideanNorm(&next_state, &predicted_state);

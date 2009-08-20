@@ -14,6 +14,17 @@
 #include "Distribution.h"
 #include "Random.h"
 
+/** Create a model
+    
+    \param n_actions_ set the number of actions for the model
+    \param n_dim_ the number of dimensions in the state space
+    \param gamma_ discoutn factor
+    \param optimistic whether to be optimistic
+    \param optimism_ the optimism weight
+    \param r_max_ the maximum reward obtainable
+    
+    As a side-effect, initialise the kd_tree list
+ */
 KNNModel::KNNModel(int n_actions_, int n_dim_, real gamma_, bool optimistic, real optimism_, real r_max_)
     : n_actions(n_actions_), n_dim(n_dim_), kd_tree(n_actions_), gamma(gamma_),
       optimistic_values(optimistic), optimism(optimism_), r_max(r_max_),
@@ -24,6 +35,7 @@ KNNModel::KNNModel(int n_actions_, int n_dim_, real gamma_, bool optimistic, rea
     }
 }
 
+/// Delete model, as well as the kd_tree
 KNNModel::~KNNModel()
 {
     for (int i=0; i< n_actions; ++i) {
@@ -31,13 +43,22 @@ KNNModel::~KNNModel()
     }
 }
 
-void KNNModel::AddSample(TrajectorySample x)
+/** Add a sample to the model
+    
+    \param sample sample to add
+    
+    Add a sample if not too many samples have been added.
+    The sample is added to the list of samples.
+    It is also added to the tree and the value is initialised.
+    
+ */
+void KNNModel::AddSample(TrajectorySample sample)
 {
     if (max_samples < 0 || samples.size() < (uint) max_samples) {
-        samples.push_back(x);
-        kd_tree[x.a]->AddVectorObject(x.s, &samples.back());
-        x.dV = 1.0;
-        x.V = x.r;
+        samples.push_back(sample);
+        kd_tree[sample.a]->AddVectorObject(sample.s, &samples.back());
+        sample.dV = 1.0;
+        sample.V = sample.r;
     }
 }
 
