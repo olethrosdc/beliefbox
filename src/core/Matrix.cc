@@ -140,6 +140,27 @@ Matrix& Matrix::operator= (const Matrix& rhs)
     return *this;
 }
 
+/// Resize matrix
+void Matrix::Resize (int rows_, int columns_)
+{
+    transposed = false;
+    columns = columns_;
+    rows = rows_;
+
+    const int M = rows;
+    const int N = columns;
+    const int K = M*N;
+    
+    x = (real*) realloc (x, sizeof(real)*K);
+
+    for (int m=0; m<M; ++m) {
+        for (int n=0; n<N; ++n) {
+            (*this)(m,n) = 0.0;
+        }
+    }
+}
+
+
 /// Boolean equality operator
 bool Matrix::operator== (const Matrix& rhs) const
 {

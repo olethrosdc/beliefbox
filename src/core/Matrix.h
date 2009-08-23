@@ -28,11 +28,13 @@ public:
     enum BoundsCheckingStatus {NO_CHECK_BOUNDS=0, CHECK_BOUNDS=1};
     static Matrix Null(int rows, int columns, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     static Matrix Unity(int rows, int columns, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
-    Matrix (int rows, int columns,  enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
+
+    Matrix (int rows = 1, int columns = 1,  enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     Matrix (int rows, int columns, real* y, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     Matrix (const Vector& v, enum BoundsCheckingStatus check_ = NO_CHECK_BOUNDS);
     Matrix (const Matrix& rhs, bool clone = true);
     ~Matrix();
+    void Resize(int rows_, int columns_);
     Matrix& operator= (const Matrix& rhs);
     bool operator== (const Matrix& rhs) const;
     bool operator!= (const Matrix& rhs) const;
