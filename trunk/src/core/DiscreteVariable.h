@@ -19,11 +19,27 @@ class DiscreteVariable
  public:
     int n_values; // number of values the discrete variable can take
     DiscreteVariable(int n) {n_values = n;}
+    DiscreteVariable() {n_values = 2;}
 };
 
 
 // maybe this should be a class rather than a typedef
-typedef std::vector<DiscreteVariable> DiscreteVector;
+class DiscreteVector
+{
+public:
+    std::vector<DiscreteVariable> V;
+    DiscreteVector(std::vector<int>& x) : V(x.size())
+    {
+        for (uint i=0; i<V.size(); ++i) {
+            V[i].n_values = x[i];
+        }
+    }
+    int size(int i)
+    {
+        return V[i].n_values;
+    }
+};
+
 
 
 #endif

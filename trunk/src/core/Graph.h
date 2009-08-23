@@ -26,6 +26,10 @@ struct Edge
     int src;
     int dst;
     real w;
+    Edge (int src_, int dst_, real w_ = 1.0)
+    : src(src_), dst(dst_), w(w_)
+    {
+    }
 };
 
 /** Structure holding a half-edge
