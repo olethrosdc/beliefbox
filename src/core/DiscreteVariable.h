@@ -26,13 +26,21 @@ class DiscreteVariable
 // maybe this should be a class rather than a typedef
 class DiscreteVector
 {
-public:
+protected:
     std::vector<DiscreteVariable> V;
+    int n_combinations;
+public:
     DiscreteVector(std::vector<int>& x) : V(x.size())
     {
+        n_combinations = 1;
         for (uint i=0; i<V.size(); ++i) {
             V[i].n_values = x[i];
+            n_combinations *= x[i];
         }
+    }
+    int getNCombinations()
+    {
+        return n_combinations;
     }
     int size(int i)
     {
@@ -57,6 +65,7 @@ public:
 
         return carry;
     }
+
 };
 
 

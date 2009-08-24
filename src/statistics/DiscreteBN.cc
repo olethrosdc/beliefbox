@@ -130,19 +130,19 @@ Vector DiscreteBN::generate()
             int permutations = 1;
 
             // how many permutations from the conditioning variables?
-            printf ("# Pr[X_%d | ", node);
+            //printf ("# Pr[X_%d | ", node);
             for (int p=0; p<graph.n_parents(node); ++p, ++e) {
                 int val = (int) x[e->node];
-                printf ("X_%d=%d", e->node, val);
+                //printf ("X_%d=%d", e->node, val);
                 index += permutations * val;
                 permutations *= values.size(e->node);
             }
-            printf("] = ");
-            Vector probs = Pr[node].getRow(index);
-            for (int j=0; j<probs.Size(); ++j) {
-                printf ("%.2f ", probs[j]);
-            }
-            printf (" -- %d x %d\n", Pr[node].Rows(), Pr[node].Columns());
+            //printf("] = ");
+            //Vector probs = Pr[node].getRow(index);
+            //for (int j=0; j<probs.Size(); ++j) {
+            //printf ("%.2f ", probs[j]);
+            //}
+            //printf (" -- %d x %d\n", Pr[node].Rows(), Pr[node].Columns());
             MultinomialDistribution p(Pr[node].getRow(index));
             x[node] = p.generateInt();
         }
@@ -155,8 +155,7 @@ Vector DiscreteBN::generate()
  */
 real DiscreteBN::getLogProbability(std::vector<int>& x)
 {
-    int n_variables = graph.n_nodes();
-    assert((int) x.size() == n_variables);
+    assert((int) x.size() == graph.n_nodes());
     real log_p = 0;
     for (uint depth=0; depth<depth_list.size(); ++depth) {
         for (uint i=0; i<depth_list[depth].size(); ++i) {
@@ -202,12 +201,9 @@ Matrix DiscreteBN::getJointDistribution()
     while(!flag) {
         for (int i=0; i<n_variables; i++) {
             P(r, i) = x[i];
-            printf ("%d ", (int) P(r,i));
 
         }
         P(r, n_variables) = getProbability(x);
-        printf ("%f\n", P(r, n_variables));
-        
         flag = values.permute(x);
     }
     
