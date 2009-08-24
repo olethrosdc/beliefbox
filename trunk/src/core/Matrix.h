@@ -55,6 +55,8 @@ public:
     real gaussian_elimination_forward(real epsilon = 0.000001);
     std::vector<Matrix> LUDecomposition(real& determinant, real epsilon = 0.000001);
     void Transpose();
+    Vector getColumn(int c);
+    Vector getRow(int r);
     int Rows() const;
     int Columns() const;
     real& operator() (int i, int j);
@@ -115,7 +117,7 @@ real& Matrix::operator() (int i, int j)
 	    fprintf(stderr, "bad access: (%d, %d) on a %d x %d matrix\n",
 		    i, j, rows, columns);
 	    fflush (stderr);
-            throw std::out_of_range("matrix index out of range");
+        throw std::out_of_range("matrix index out of range");
         }
     }
     return x[i*columns + j];

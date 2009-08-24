@@ -38,6 +38,25 @@ public:
     {
         return V[i].n_values;
     }
+    int size()
+    {
+        return V.size();
+    }
+    bool permute(std::vector<int>&x)
+    {
+        bool carry = false;
+        int index = 0;
+        do {
+            carry = false;
+            if (++x[index] == size(index)) {
+                x[index] = 0;
+                carry = true;
+                index++;
+            }
+        } while (carry && index < size());
+
+        return carry;
+    }
 };
 
 

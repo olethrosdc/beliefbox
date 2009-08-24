@@ -34,7 +34,7 @@ DiscreteDBN::DiscreteDBN(DiscreteVector _values, SparseGraph& _graph, int prior)
         throw std::domain_error("A Bayesian ");
     }
     unsigned int N = graph.n_nodes();
-    assert(N==values.size());
+    assert(N==(uint) values.size());
     n_parents.resize(N);
     Nc.resize(N);
 
@@ -60,7 +60,7 @@ DiscreteDBN::DiscreteDBN(DiscreteVector _values, SparseGraph& _graph, int prior)
 int DiscreteDBN::getCountIndex(int n, std::vector<int> X)
 {
     //n_parents[n] = graph.n_parents(n);
-    assert(values.size()==X.size());
+    assert((uint) values.size()==X.size());
     HalfEdgeListIterator e = graph.getFirstParent(n);
     
     int index = X[n];

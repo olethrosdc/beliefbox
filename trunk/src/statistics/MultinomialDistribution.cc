@@ -80,7 +80,7 @@ Vector MultinomialDistribution::generate()
 
 /// Gives the pdf at any vector on R^n even though it is normally non-zero
 /// only on a simplex.
-real MultinomialDistribution::pdf(Vector* x)
+real MultinomialDistribution::pdf(Vector* x) const
 {
 	int n = p.Size();
 	real log_density = LOG_ONE;
@@ -89,7 +89,7 @@ real MultinomialDistribution::pdf(Vector* x)
 	}
 	return exp(log_density);
 }
-real MultinomialDistribution::pdf(Vector& x)
+real MultinomialDistribution::pdf(Vector& x) const
 {
     return pdf(&x);
 }

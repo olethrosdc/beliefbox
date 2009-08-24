@@ -28,8 +28,8 @@ public:
 	virtual void generate(Vector* x);
 	virtual Vector generate();
     int generateInt();
-	virtual real pdf(Vector* x);
-    virtual real pdf(Vector& x);
+	virtual real pdf(Vector* x) const;
+    virtual real pdf(Vector& x) const;
     virtual void generate(Vector& x);
 
 };

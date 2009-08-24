@@ -578,3 +578,19 @@ real Matrix::RowSum(int r)
     }
     return sum;
 }
+Vector Matrix::getColumn(int c)
+{
+    Vector column(rows);
+    for (int i=0; i<rows; i++) {
+        column[i] = (*this)(i,c);
+    }
+    return column;
+}
+Vector Matrix::getRow(int r)
+{
+    Vector row(columns);
+    for (int i=0; i<columns; i++) {
+        row[i] = (*this)(r,i);
+    }
+    return row;
+}

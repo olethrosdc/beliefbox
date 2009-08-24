@@ -30,9 +30,22 @@ protected:
     //std::vector<Matrix> Nc; ///< A matrix of outcome counts, one for each variable
     std::vector<Matrix> Pr; ///< A matrix of probabilities, one for each variable
     DiscreteVector values; ///< A vector of possible values that each variable can take
+    std::vector<std::vector<uint> > depth_list; ///< a vector opf nodes at each depth.
+
+    void _calculate_depth();  ///< calculate the depth of all nodes
+    void _calculate_depth_rec(std::vector<uint>& depth, int node, uint d); ///< recursionfor calculating the depth of all nodes
  public:
     DiscreteBN(DiscreteVector _values, SparseGraph& _graph);
     Matrix& getProbabilityMatrix(int n);
     void setProbabilityMatrix(int n, Matrix& P);
+    void dotFile(const char* fname);
+    Vector generate();
+    real getLogProbability(std::vector<int>& x);
+    real getProbability(std::vector<int>& x)
+    {
+        return exp(getLogProbability(x));
+    }
+    Matrix getJointDistribution();
+
 };
 #endif
