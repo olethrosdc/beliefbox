@@ -70,9 +70,10 @@ bool test_dbn(int n_variables, int max_values, int n_samples)
         for (int i=0; i<v.Size(); ++i) {
             printf("%d ",  (int) v[i]);
         }
-        printf("\n");
+        printf("# DATA\n");
     }
     
+    Matrix P = dbn.getJointDistribution();
     delete graph;
 
     return true;
@@ -85,7 +86,7 @@ int main (void)
     for (int i=0; i<n_iter; ++i) {
         int n_vars = (int) ceil(urandom(1,8));
         int max_values = 2;
-        test_dbn(n_vars, max_values, 16);
+        test_dbn(n_vars, max_values, 16384);
     }
     return 0;
 }

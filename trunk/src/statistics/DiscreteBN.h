@@ -1,5 +1,5 @@
 /* -*- Mode: C++; -*- */
-// copyright (c) 2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DiscreteBN_H
-#define DiscreteBN_H
+#ifndef DISCRETE_BN_H
+#define DISCRETE_BN_H
 
 #include "DiscreteVariable.h"
 #include "SparseGraph.h"
