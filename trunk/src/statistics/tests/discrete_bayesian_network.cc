@@ -13,6 +13,7 @@
 #include "DiscreteBN.h"
 #include "Dirichlet.h"
 #include "SparseGraph.h"
+#include "DiscretePolyaTree.h"
 #include "Random.h"
 
 bool test_dbn(int n_variables, int max_values, int n_samples)
@@ -46,7 +47,7 @@ bool test_dbn(int n_variables, int max_values, int n_samples)
     }
     DiscreteVector variable_specification(variable_space);
     
-    DiscreteBN dbn(variable_space, *graph);
+    DiscreteBN dbn(variable_specification, *graph);
 
     for (int n=0; n<n_variables; n++) {
         Matrix& P = dbn.getProbabilityMatrix(n);
@@ -64,16 +65,28 @@ bool test_dbn(int n_variables, int max_values, int n_samples)
     }
 
     dbn.dotFile("dbn.dot");
-    
+
+    DiscretePolyaTree polya_tree(variable_specification);
+
+    std::vector<int> v(n_variables);
     for (int t=0; t<n_samples; ++t) {
-        Vector v = dbn.generate();
-        for (int i=0; i<v.Size(); ++i) {
-            printf("%d ",  (int) v[i]);
-        }
-        printf("# DATA\n");
+        dbn.generate(v);
+        polya_tree.Observe(v);
+        //for (uint i=0; i<v.size(); ++i) {
+        ////            printf("%d ",  v[i]);
+        //}
+        //printf("# DATA\n");
     }
     
     Matrix P = dbn.getJointDistribution();
+    Matrix Q = polya_tree.getJointDistribution();
+    assert(P.Rows()==Q.Rows());
+    for (int i=0; i<P.Rows(); ++i) {
+        for (int j=0; j<P.Columns(); ++j) {
+            printf ("(%f %f) ", P(i, j), Q(i, j));
+        }
+        printf("\n");
+    }
     delete graph;
 
     return true;
@@ -84,9 +97,9 @@ int main (void)
 {
     int n_iter = 1;
     for (int i=0; i<n_iter; ++i) {
-        int n_vars = (int) ceil(urandom(1,8));
+        int n_vars = 3;//(int) ceil(urandom(1,8));
         int max_values = 2;
-        test_dbn(n_vars, max_values, 16384);
+        test_dbn(n_vars, max_values, 163840);
     }
     return 0;
 }

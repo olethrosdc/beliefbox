@@ -27,26 +27,51 @@
 class PolyaNode
 {
 public:
-    const int n_values;
     const int depth;
+    const int n_values;
     std::vector<class PolyaNode*> nodes;
     std::vector<real> w;
     PolyaNode(int depth_, DiscreteVector& values_)
         : depth(depth_),
           n_values(values_.size(depth)),
-          nodes(n_values), w(n_values)
+          w(n_values)
     {
         for (int i=0; i<n_values; ++i) {
             w[i] = 0.5;
-            nodes[i] = new PolyaNode(depth + 1, values_);
         }
+        if (depth + 1 < values_.size()) {
+            nodes.resize(n_values);
+            for (int i=0; i<n_values; ++i) {
+                nodes[i] = new PolyaNode(depth + 1, values_);
+            }
+        }
+
+    }
+    ~PolyaNode()
+    {            
+        for (uint i=0; i<nodes.size(); ++i) {
+            delete nodes[i];
+        }
+        
     }
     void Observe(std::vector<int>& x)
     {
         int i = x[depth];
         w[i] += 1.0;
-        nodes[i]->Observe(x);
+        if (nodes.size()) {
+            nodes[i]->Observe(x);
+        }
     }
+    real getProbability(std::vector<int>& x)
+    {
+        int i = x[depth];
+        real p = w[i] / Sum(w);
+        if (nodes.size()) {
+            p *= nodes[i]->getProbability(x);
+        }
+        return p;
+    }
+
 };
 
 
@@ -57,7 +82,11 @@ protected:
     PolyaNode* root;
 public:
     DiscretePolyaTree(DiscreteVector values_);
+    ~DiscretePolyaTree();
+    void Observe(std::vector<int>& x);
     void Observe(Vector& x);
+    Matrix getJointDistribution();
+    real getProbability(std::vector<int>& x);
 };
 
 #endif
