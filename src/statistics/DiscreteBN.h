@@ -26,6 +26,7 @@ variable has some parents.
 class DiscreteBN
 {
 protected:
+    int n_variables;
     SparseGraph& graph; ///< The garph of dependencies between variables
     //std::vector<Matrix> Nc; ///< A matrix of outcome counts, one for each variable
     std::vector<Matrix> Pr; ///< A matrix of probabilities, one for each variable
@@ -39,7 +40,13 @@ protected:
     Matrix& getProbabilityMatrix(int n);
     void setProbabilityMatrix(int n, Matrix& P);
     void dotFile(const char* fname);
-    Vector generate();
+    void generate(std::vector<int>& x);
+    std::vector<int> generate()
+    {
+        std::vector<int> x(n_variables);
+        generate(x);
+        return x;
+    }
     real getLogProbability(std::vector<int>& x);
     real getProbability(std::vector<int>& x)
     {

@@ -35,12 +35,12 @@ DiscreteBN::DiscreteBN(DiscreteVector _values, SparseGraph& _graph) : graph(_gra
     if (graph.hasCycles()) {
         throw std::domain_error("A Bayesian network can not have cycles");
     }
-    unsigned int N = graph.n_nodes();
-    assert(N==(uint) values.size());
-    Pr.resize(N);
+    n_variables = graph.n_nodes();
+    assert(n_variables == values.size());
+    Pr.resize(n_variables);
 
     // find the parents of each node in the graph
-    for (unsigned int n=0; n<N; ++n) {
+    for (int n=0; n<n_variables; ++n) {
         HalfEdgeListIterator e = graph.getFirstParent(n);
         // how many values can our conditioned variable take?
         int permutations = 1;
@@ -94,7 +94,7 @@ void DiscreteBN::dotFile(const char* fname)
 
     fprintf (fout, "digraph DBN {\n");
     fprintf (fout, "ranksep=2; rankdir=LR; \n");
-    int n_variables = graph.n_nodes();
+
     for (int n=0; n<n_variables; n++) {
         HalfEdgeListIterator e = graph.getFirstParent(n);
         if (graph.n_parents(n)) {
@@ -114,41 +114,31 @@ void DiscreteBN::dotFile(const char* fname)
     fclose(fout);
 }
 
+
 /** Generate a vector of samples
     
     Iterate through all depths, generating values for each one.
  */
-Vector DiscreteBN::generate()
+void  DiscreteBN::generate(std::vector<int>& x)
 {
-    int n_variables = graph.n_nodes();
-    Vector x(n_variables);
     for (uint depth=0; depth<depth_list.size(); ++depth) {
         for (uint i=0; i<depth_list[depth].size(); ++i) {
             int node = depth_list[depth][i];
             HalfEdgeListIterator e = graph.getFirstParent(node);
             int index = 0;
             int permutations = 1;
-
             // how many permutations from the conditioning variables?
-            //printf ("# Pr[X_%d | ", node);
             for (int p=0; p<graph.n_parents(node); ++p, ++e) {
                 int val = (int) x[e->node];
-                //printf ("X_%d=%d", e->node, val);
                 index += permutations * val;
                 permutations *= values.size(e->node);
             }
-            //printf("] = ");
-            //Vector probs = Pr[node].getRow(index);
-            //for (int j=0; j<probs.Size(); ++j) {
-            //printf ("%.2f ", probs[j]);
-            //}
-            //printf (" -- %d x %d\n", Pr[node].Rows(), Pr[node].Columns());
             MultinomialDistribution p(Pr[node].getRow(index));
             x[node] = p.generateInt();
         }
     }
-    return x;
 }
+
 
 /** The probability of the vector of variables obtaining a particular value.
 
@@ -188,7 +178,6 @@ real DiscreteBN::getLogProbability(std::vector<int>& x)
  */
 Matrix DiscreteBN::getJointDistribution()
 {  
-    int n_variables = graph.n_nodes();
     std::vector<int> x(n_variables);
     int permutations = 1;
     for (int i=0; i<n_variables; ++i) {
@@ -205,6 +194,7 @@ Matrix DiscreteBN::getJointDistribution()
         }
         P(r, n_variables) = getProbability(x);
         flag = values.permute(x);
+        r++;
     }
     
     return P;
@@ -224,8 +214,6 @@ void DiscreteBN::_calculate_depth_rec(std::vector<uint>& depth, int node, uint d
 
 void DiscreteBN::_calculate_depth()
 {
-    int n_variables = graph.n_nodes();
-
     std::vector<uint> depth(n_variables);
     for (int n=0; n<n_variables; n++) {
         depth[n] = n_variables;
