@@ -19,8 +19,12 @@
 #include <set>
 #include <vector>
 
-/// blah
-class DiscreteMDPCollection : MDPModel
+/** A collection of discrete MDPs
+    
+    
+    this is just a collection
+ */
+class DiscreteMDPCollection : public MDPModel
 {
 protected:
     std::vector<DiscreteMDPCounts*> A;

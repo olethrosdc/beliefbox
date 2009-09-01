@@ -13,6 +13,7 @@
 #include "DiscreteMDPCollection.h"
 #include "MultinomialDistribution.h"
 
+/// Make a (random) collection.
 DiscreteMDPCollection::DiscreteMDPCollection(int n_aggregates, int n_states, int n_actions) : MDPModel(n_states, n_actions)
 {
     mdp_dbg("Creating DiscreteMDPCollection of %d aggregates, from %d states and %d actions\n",  n_aggregates, n_states, n_actions);
@@ -23,7 +24,7 @@ DiscreteMDPCollection::DiscreteMDPCollection(int n_aggregates, int n_states, int
         if (i==0) {
             A[i] = new DiscreteMDPCounts(n_states, n_actions);
         } else {
-            int n = floor(log(n_states) / log(2));
+            int n = (int) floor(log(n_states) / log(2));
             // make sure 1 < n_sets < n_states
             int n_sets = 1 + n_states >> (((i-1) % n) + 1);
             mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);
@@ -32,6 +33,7 @@ DiscreteMDPCollection::DiscreteMDPCollection(int n_aggregates, int n_states, int
     }
 }
 
+/// Make a collection based on a grid world
 DiscreteMDPCollection::DiscreteMDPCollection(Gridworld& gridworld, int n_aggregates, int n_states, int n_actions) : MDPModel(n_states, n_actions)
 {
     mdp_dbg("Creating DiscreteMDPCollection of %d aggregates, from %d states and %d actions\n",  n_aggregates, n_states, n_actions);
@@ -42,7 +44,7 @@ DiscreteMDPCollection::DiscreteMDPCollection(Gridworld& gridworld, int n_aggrega
         if (i==0) {
             A[i] = new DiscreteMDPCounts(n_states, n_actions);
         } else {
-            int n = floor(log(n_states) / log(2));
+            int n = (int) floor(log(n_states) / log(2));
             // make sure 1 < n_sets < n_states
             int n_sets = 1 + (n_states >> (((i-1) % n) + 1));
             mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);
