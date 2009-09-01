@@ -26,7 +26,7 @@ DiscreteMDPCollection::DiscreteMDPCollection(int n_aggregates, int n_states, int
         } else {
             int n = (int) floor(log(n_states) / log(2));
             // make sure 1 < n_sets < n_states
-            int n_sets = 1 + n_states >> (((i-1) % n) + 1);
+            int n_sets = 1 + (n_states >> (((i-1) % n) + 1)); /// warning
             mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);
             A[i] = new DiscreteMDPAggregate(n_states, n_sets, n_actions);
         }

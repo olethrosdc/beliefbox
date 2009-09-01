@@ -32,7 +32,7 @@ class SimpleStateActionEstimator : public StateActionEstimator
     SimpleStateActionEstimator(int n_states, int actions, real gamma, real init_val = 0.0f);
     virtual ~SimpleStateActionEstimator();
     virtual void Reset();
-    virtual void Observe(int s_p, int a, real r, int s=-1, int a=-1) = 0;
+    virtual void Observe(int s_p, int a_p, real r, int s=-1, int a=-1) = 0;
     virtual real TransProbability(int s_p, int a, int s);
     virtual int SampleTransition(int s, int a) ;
     virtual real GetTransitionPrior(int s_p, int a, int s, real x);
@@ -45,7 +45,7 @@ class MaxStateActionEstimator : public SimpleStateActionEstimator
  public:
     MaxStateActionEstimator(int n_states, int actions, real alpha, real gamma, real init_val = 0.0f);
     virtual ~MaxStateActionEstimator();
-    virtual void Observe(int s_p, int a, real r, int s=-1, int a=-1);
+    virtual void Observe(int s_p, int a_p, real r, int s=-1, int a=-1);
     real MaxActionValue(int state)
     {
         return Max(n_actions, Q[state]);
@@ -57,7 +57,7 @@ class SarsaStateActionEstimator : public SimpleStateActionEstimator
  public:
     SarsaStateActionEstimator(int n_actions, int n_states, real alpha, real gamma, real init_val = 0.0f);
     virtual ~SarsaStateActionEstimator();
-    virtual void Observe(int s_p, int a, real r, int s=-1, int a=-1);
+    virtual void Observe(int s_p, int a_p, real r, int s=-1, int a=-1);
 };
 
 

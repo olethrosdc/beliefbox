@@ -49,6 +49,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <cstdlib>
 
 /// Asert class
 class Assert {

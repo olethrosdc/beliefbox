@@ -25,11 +25,24 @@ typedef float real;
 
 #endif /* USE_FIXED_POINT */
 
+#define INF std::numeric_limits<real>::infinity()
+
 #define LOG_ONE 0.0
 #define LOG_2_PI 1.83787706640934548355
 #define LOG_ZERO -INF
 
-#define INF std::numeric_limits<real>::infinity()
+
+#ifndef INT_MAX
+#define INT_MAX std::numeric_limits<int>::max()
+#endif
+
+#ifndef uint
+typedef unsigned int uint;
+#endif
+
+#ifndef ulong
+typedef unsigned long ulong;
+#endif
 
 
 #endif /* REAL_H */

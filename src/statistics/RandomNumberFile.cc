@@ -12,6 +12,7 @@
 #include "RandomNumberFile.h"
 #include <string>
 #include <limits>
+#include <cstdlib>
 
 RandomNumberFile::RandomNumberFile(std::string filename)
 {
