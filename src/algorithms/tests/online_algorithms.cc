@@ -30,6 +30,7 @@
 #include "ContextBanditCollection.h"
 #include "RandomNumberFile.h"
 #include "MersenneTwister.h"
+#include <cstring>
 
 struct EpisodeStatistics
 {
