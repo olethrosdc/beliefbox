@@ -11,6 +11,7 @@
  ***************************************************************************/
 
 #include "SarsaDirichlet.h"
+#include <limits>
 
 SarsaDirichlet::SarsaDirichlet(int n_states_,
                                int n_actions_,
@@ -33,7 +34,7 @@ SarsaDirichlet::SarsaDirichlet(int n_states_,
     real lambda_count;
     if (lambda == 0.0) {
         Swarning("Lambda is 0\n");
-        lambda_count = (real) INT_MAX;
+        lambda_count = (real) std::numeric_limits<int>::max();
     } else { 
         lambda_count = (real) n_states / (lambda) - (real) n_states;
     }

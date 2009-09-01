@@ -4,6 +4,7 @@
 #define REAL_H
 
 #include <limits>
+#include <cmath>
 
 #ifdef real
 
@@ -32,9 +33,6 @@ typedef float real;
 #define LOG_ZERO -INF
 
 
-#ifndef INT_MAX
-#define INT_MAX std::numeric_limits<int>::max()
-#endif
 
 #ifndef uint
 typedef unsigned int uint;
