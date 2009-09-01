@@ -12,10 +12,11 @@
 #ifndef MATH_FUNCTIONS_H
 #define MATH_FUNCTIONS_H
 
-#include "real.h"
+
 #include <cmath>
 #include <vector>
 #include <limits>
+#include "real.h"
 
 /**
    \defgroup MathGroup Mathematical functions

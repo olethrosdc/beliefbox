@@ -11,6 +11,7 @@
  ***************************************************************************/
 
 #include "QLearningDirichlet.h"
+#include <limits>
 
 QLearningDirichlet::QLearningDirichlet(int n_states_,
                                        int n_actions_,
@@ -37,7 +38,7 @@ QLearningDirichlet::QLearningDirichlet(int n_states_,
     real lambda_count;
     if (lambda == 0.0) {
         Swarning("Lambda is 1\n");
-        lambda_count = INT_MAX;
+        lambda_count = std::numeric_limits<int>::max();
     } else { 
         lambda_count = (real) n_states / (lambda) - (real) n_states;
     }

@@ -499,6 +499,8 @@ real test_hoeffding_bound(int n_trials, int horizon, real delta)
     real prior = 0.5; // the actual prior
 
     Vector stats(horizon);
+    
+    int int_max = std::numeric_limits<int>::max();
 
     real C = 2.0*log(1.0/delta);
     for (int trial=0; trial<n_trials; trial++) {
@@ -511,12 +513,12 @@ real test_hoeffding_bound(int n_trials, int horizon, real delta)
 
         int n_actions=2;
         real Er[2] = {0.5, 0.5};
-        int N[2] = {INT_MAX, 0};
+        int N[2] = {int_max, 0};
         real Sr[2] = {0.0, 0.0};
 
         for (int t=0; t<horizon; t++) {
             for (int i=0; i<n_actions; i++) {
-                if (N[i]==INT_MAX) {
+                if (N[i]==int_max) {
                     Sr[i] = 0.0;
                 } else if (N[i]==0) {
                     Sr[i] = 1.0;
@@ -536,7 +538,7 @@ real test_hoeffding_bound(int n_trials, int horizon, real delta)
                     r = 0.0;
                 }
             }
-            if (N[a]<INT_MAX) {
+            if (N[a]<int_max) {
                 N[a]++;
                 Er[a] += (r-Er[a])/((real) N[a]);
             }

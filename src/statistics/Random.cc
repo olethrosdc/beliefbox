@@ -63,7 +63,7 @@ real true_random(bool blocking)
 		do {
 			unsigned int i;
 			fread(&i, sizeof(unsigned int), 1, rand_device);
-			x = ((double) i / (double) INT_MAX);
+			x = ((double) i / (double) std::numeric_limits<int>::max());
 		} while (x>=1.0);
 		fclose (rand_device);
 		return x;
