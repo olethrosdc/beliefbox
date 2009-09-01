@@ -13,6 +13,7 @@
 #define DISCRETE_VARIABLE_H
 
 #include <vector>
+#include "real.h"
 
 class DiscreteVariable
 {
