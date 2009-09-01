@@ -95,7 +95,7 @@ public:
     virtual bool edge (int src, int dst) = 0; 
 
     /// Value of a node
-    virtual V Value (int src, int dst) = 0; 
+    virtual V Value (int node) = 0; 
 
     /// Value of an edge
     virtual Q Value (int src, int dst) = 0;
