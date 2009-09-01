@@ -20,7 +20,7 @@
 #include <vector>
 
 /// blah
-class ContextBanditCollection : MDPModel
+class ContextBanditCollection : public MDPModel
 {
 protected:
     std::vector<ContextBanditGaussian*> A;
