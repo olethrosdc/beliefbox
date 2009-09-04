@@ -17,6 +17,7 @@
 #include <vector>
 #include "Vector.h"
 #include "Matrix.h"
+#include "real.h"
 
 /** A Bayesian Network.
 
