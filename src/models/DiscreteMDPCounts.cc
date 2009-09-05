@@ -32,6 +32,30 @@ DiscreteMDPCounts::~DiscreteMDPCounts()
     //ShowModel();
 }
 
+#if 1
+DiscreteMDP* DiscreteMDPCounts::CreateMDP()
+{
+    mdp_dbg("Making a DiscreteMDP with %d states, %d actions from model\n", n_states, n_actions);
+    DiscreteMDP* mdp = getMeanMDP();
+    for (int i=0; i<n_states; ++i) {
+        for (int a=0; a<n_actions; ++a) {
+            real sum_p = 0.0;
+            for (int j=0; j<n_states; ++j) {
+                real p = mdp->getTransitionProbability(i, a, j);
+                sum_p += p;
+            }
+            if (fabs(sum_p - 1.0) > 0.001) {
+                printf ("sum_s' p(s'|s=%d, a=%d) = %f\n", i, a, sum_p);
+                assert(0);
+                exit(-1);
+            }
+        }
+    }
+    mdp->Check();
+    return mdp;
+}
+#endif
+
 void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
 {
     int ID = getID (s, a);

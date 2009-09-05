@@ -25,11 +25,12 @@ DiscreteMDP* MDPModel::CreateMDP()
             SingularDistribution* ER = new SingularDistribution(getExpectedReward(i, a));
             mdp->addRewardDistribution(i, a, ER);
             real sum_p = 0.0;
+
             for (int j=0; j<n_states; ++j) {
                 real p = getTransitionProbability(i, a, j);
+                sum_p += p;
                 if (p) {
                     mdp->setTransitionProbability(i, a, j, p);
-                    sum_p += p;
                     //printf("p(s'=%d|s=%d, a=%d)=%f\n", j, i, a, p);
                 }
             }

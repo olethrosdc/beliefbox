@@ -46,6 +46,9 @@ public:
 
     virtual DiscreteMDP* generate();
     virtual DiscreteMDP* getMeanMDP() const;
+
+    virtual DiscreteMDP* CreateMDP();
+
     //void SetNextReward(int s, int a, real r);
 };
 

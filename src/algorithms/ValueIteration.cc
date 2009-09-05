@@ -124,7 +124,7 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
             int s = s0;
             for (int a=0; a<n_actions; a++) {
                 real sum = 0.0;
-                
+
                 DiscreteStateSet next = mdp->getNextStates(s, a);
                 for (DiscreteStateSet::iterator i=next.begin();
                      i!=next.end();
