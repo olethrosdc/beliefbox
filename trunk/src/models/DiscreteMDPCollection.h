@@ -27,8 +27,8 @@
 class DiscreteMDPCollection : public MDPModel
 {
 protected:
-    std::vector<DiscreteMDPCounts*> A;
-    std::vector<real> P;
+    std::vector<DiscreteMDPCounts*> A; ///< Pointers to the MDPs
+    std::vector<real> P; ///< Probabilities of MDPs
 public:
     DiscreteMDPCollection(int n_aggregates, int n_states, int n_actions);
     DiscreteMDPCollection(Gridworld& gridworld, int n_aggregates, int n_states, int n_actions);
@@ -39,6 +39,9 @@ public:
     virtual real getTransitionProbability (int s, int a, int s2) const;
     virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
+    int get_n_models();
+    std::vector<real> & GetModelProbabilities();
+    std::vector<DiscreteMDPCounts*> & GetModels();
 };
 
 

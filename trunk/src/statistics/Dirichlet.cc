@@ -112,6 +112,7 @@ Vector DirichletDistribution::GetMean() const
             p[i] = invs;
         }
     }
+    //printf ("sum: %f\n", p.Sum());
     assert(fabs(p.Sum()-1.0) < 0.0001);
 	return p;
 }

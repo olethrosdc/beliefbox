@@ -132,3 +132,16 @@ void DiscreteMDPCollection::Reset()
     }  
     //printf("\n");
 }
+
+int DiscreteMDPCollection::get_n_models()
+{
+    return P.size();
+}
+std::vector<real> & DiscreteMDPCollection::GetModelProbabilities()
+{
+    return P;
+}
+std::vector<DiscreteMDPCounts*> & DiscreteMDPCollection::GetModels()
+{
+    return A;
+}

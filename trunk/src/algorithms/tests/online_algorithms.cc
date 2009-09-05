@@ -24,6 +24,7 @@
 #include "QLearning.h"
 #include "QLearningDirichlet.h"
 #include "ModelBasedRL.h"
+#include "ModelCollectionRL.h"
 #include "ContextBanditGaussian.h"
 #include "ContextBandit.h"
 #include "DiscreteMDPCollection.h"
@@ -38,6 +39,14 @@ struct EpisodeStatistics
     real discounted_reward;
     int steps;
     real mse;
+    EpisodeStatistics()
+        : total_reward(0.0),
+          discounted_reward(0.0),
+          steps(0),
+          mse(0)
+    {
+
+    }
 };
 
 struct Statistics
@@ -68,8 +77,8 @@ int main (int argc, char** argv)
     uint n_episodes = 1000;
     uint n_steps = 100;
 
-    if (argc != 10) {
-        std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm\n";
+    if (argc != 11) {
+        std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment\n";
         return -1;
     }
     n_states = atoi(argv[1]);
@@ -97,6 +106,7 @@ int main (int argc, char** argv)
     assert (n_steps > 0);
 
     char* algorithm_name = argv[9];
+    char* environment_name = argv[10];
 
     srand48(34987235);
     srand(34987235);
@@ -127,23 +137,27 @@ int main (int argc, char** argv)
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
-#if 0
-        environment = new RandomMDP (n_actions,
-                                     n_states,
-                                     randomness,
-                                     step_value,
-                                     pit_value,
-                                     goal_value,
-                                     rng,
-                                     false);
-#elseif 1
-        Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",
-                                            8, 8);
-        environment = gridworld;
-#else
+        RandomMDP* random_mdp = new RandomMDP (n_actions,
+                                               n_states,
+                                               randomness,
+                                               step_value,
+                                               pit_value,
+                                               goal_value,
+                                               rng,
+                                               false);
+        Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
         ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
-        environment = context_bandit;
-#endif
+        if (!strcmp(environment_name, "RandomMDP")) { 
+            environment = random_mdp;
+        } else if (!strcmp(environment_name, "Gridworld")) { 
+            environment = gridworld;
+        } else if (!strcmp(environment_name, "ContextBandit")) { 
+            environment = context_bandit;
+        } else {
+            fprintf(stderr, "Uknown environment %s\n", environment_name);
+        }
+        environment = gridworld;
+
     
         // making sure the number of states & actions is correct
         n_states = environment->getMDP()->GetNStates();
@@ -158,6 +172,7 @@ int main (int argc, char** argv)
         //std::cout << "Creating online algorithm" << std::endl;
         OnlineAlgorithm<int, int>* algorithm = NULL;
         MDPModel* model = NULL;
+        //Gridworld* g2 = gridworld;
         if (!strcmp(algorithm_name, "Sarsa")) { 
             algorithm = new Sarsa(n_states,
                                   n_actions,
@@ -210,28 +225,22 @@ int main (int argc, char** argv)
                                          gamma,
                                          epsilon,
                                          model,
-                                         false);
+                                         true);
         } else if (!strcmp(algorithm_name, "Collection")) {
-#if 1
-            //new DiscreteMDPCollection(8,
-            model= (MDPModel*) 
-                new ContextBanditCollection(2,
-                                          n_states,
-                                          n_actions,
-                                          0.5, 0.0, 1.0);
-#else
-            model= (MDPModel*)
+            
+            DiscreteMDPCollection* collection = 
                 new DiscreteMDPCollection(*gridworld, 
                                           4,
                                           n_states,
                                           n_actions);
-#endif
-            algorithm = new ModelBasedRL(n_states,
-                                         n_actions,
-                                         gamma,
-                                         epsilon,
-                                         model,
-                                         false);
+            model= (MDPModel*) collection;
+
+            algorithm = new ModelCollectionRL(n_states,
+                                              n_actions,
+                                              gamma,
+                                              epsilon,
+                                              collection,
+                                              true);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
         }
@@ -249,9 +258,10 @@ int main (int argc, char** argv)
             statistics.reward[i] += run_statistics.reward[i];
         }
         if (model) {
+#if 0
             if (discrete_mdp) {
-                real threshold = 0;//10e-6; //0;
-                int max_iter = 100;//100;
+                real threshold = 10e-6; //0;
+                int max_iter = 10;//100;
                 DiscreteMDP* mean_mdp = discrete_mdp->getMeanMDP();
                 PolicyIteration MPI(mean_mdp, gamma);
                 ValueIteration MVI(mean_mdp, gamma);
@@ -263,7 +273,7 @@ int main (int argc, char** argv)
 
                 Vector hV(n_states);
                 Vector hU(n_states);
-                int n_samples = 1000;
+                int n_samples = 1;
                 Vector Delta(n_samples);
                 for (int i=0; i<n_samples; ++i) {
                     DiscreteMDP* sample_mdp = discrete_mdp->generate();
@@ -295,10 +305,14 @@ int main (int argc, char** argv)
                 delete policy;
 
             }
+#endif
             delete model;
             model = NULL;
         }
-        delete environment;
+        //delete environment;
+        delete gridworld;
+        delete random_mdp;
+        delete context_bandit;
         delete algorithm;
         delete exploration_policy;
     }
@@ -309,6 +323,8 @@ int main (int argc, char** argv)
         statistics.ep_stats[i].discounted_reward /= (float) n_runs;
         statistics.ep_stats[i].steps /= n_runs;
         statistics.ep_stats[i].mse /= n_runs;
+        std::cout << i << "i" << std::endl;
+
         std::cout << statistics.ep_stats[i].total_reward << " "
                   << statistics.ep_stats[i].discounted_reward << "# REWARD"
                   << std::endl;
@@ -345,7 +361,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
         exit(-1);
     }
     std:: cout << "(value iteration)" << std::endl;
-    value_iteration.ComputeStateActionValues(10e-6,1000);
+    value_iteration.ComputeStateActionValues(10e-6,100);
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
 
