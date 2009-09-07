@@ -138,7 +138,7 @@ int BayesianMarkovChain::predict()
         //printf ("%f ", Pr_next[i]);
     }
 
-#if 1
+#if 0
     for (int i=0; i<=top_model; i++) {
         printf ("%f ", Pr[i]);
     }
