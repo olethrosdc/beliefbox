@@ -139,7 +139,7 @@ int BayesianPredictiveStateRepresentation::predict()
         Pr[i] = p_w*weight[i];
         p_w *= (1.0 - weight[i]);
     }
-#if 1
+#if 0
     for (int i=0; i<=top_model; i++) {
         printf ("%f ", Pr[i]);
     }

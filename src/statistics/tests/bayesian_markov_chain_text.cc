@@ -184,10 +184,6 @@ int main (int argc, char** argv)
     
     printf ("# Time -- BHMC: %f, BPSR: %f, CTW: %f\n", 
             bmc_time, bpsr_time, ctw_time);
-
-    printf ("%1.f %1.f %1.f %1.f %1.f %1.f# Error -- BHMC, BPSR, CTW -- Accuracy\n", 
-            bmc_error.total_loss(),
-            bpsr_error.total_loss(),
             ctw_error.total_loss(),
             bmc_error.total_accuracy(),
             bpsr_error.total_accuracy(),
