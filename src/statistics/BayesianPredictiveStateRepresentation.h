@@ -16,6 +16,7 @@
 #include <vector>
 #include <map>
 #include "Vector.h"
+#include "Matrix.h"
 
 /**
    \ingroup StatisticsGroup
@@ -29,10 +30,15 @@ typedef BeliefMap::iterator BeliefMapIterator;
 /// A Markov Chain
 class BayesianPredictiveStateRepresentation : public BayesianMarkovChain
 {
+protected:
+    bool polya;
+    Matrix P_obs; ///< Probability of observations for model k
+    Matrix Lkoi; ///< Probability of observations for all models up to k
+    std::vector<real> weight; ///< temporary weight of model
 public:
     std::vector<BeliefMap> beliefs;
 
-    BayesianPredictiveStateRepresentation (int n_states, int n_models, float prior, bool dense = false);
+    BayesianPredictiveStateRepresentation (int n_states, int n_models, float prior, bool polya_, bool dense = false);
 
     inline real get_belief_param(int model)
     {

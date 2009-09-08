@@ -37,39 +37,52 @@ struct ErrorStatistics
     {
         return Sum(accuracy);
     }
+    void print_result(const char* fname)
+    {
+        FILE* f = fopen(fname, "w");
+        if (!f) return;
+        
+        int T = loss.size();
+        for (int t=0; t<T; ++t) {
+            fprintf (f, " %f", loss[t]);
+        }
+        fprintf (f, "\n");
+        fclose (f);
+    }
+    void print_accuracy(const char* fname)
+    {
+        FILE* f = fopen(fname, "w");
+        if (!f) return;
+        
+        int T = loss.size();
+        for (int t=0; t<T; ++t) {
+            fprintf (f, " %f", accuracy[t]);
+        }
+        fprintf (f, "\n");
+        fclose (f);
+    }
 };
 
-void print_result(const char* fname, ErrorStatistics& error)
-{
-    FILE* f = fopen(fname, "w");
-    if (!f) return;
-    
-    int T = error.loss.size();
-    for (int t=0; t<T; ++t) {
-        fprintf (f, " %f", error.loss[t]);
-    }
-    fprintf (f, "\n");
-    fclose (f);
-}
+
 
 
 int main (int argc, char** argv)
 {
     int n_observations = 4;
     int max_states = 4;
-    float prior = 0.5f;
+    real prior = 0.5f;
     int T = 100;
 
     int filename_arg = 1;    
     int max_states_arg = 2;
     int max_horizon_arg = 3;
-
+    int prior_arg = 4;
 
     setRandomSeed(time(NULL));
 
     char* fname;
     if (argc < 2) {
-        fprintf(stderr, "Usage: bayesian_markov_chain_text filename [max states [max horizon]]");
+        fprintf(stderr, "Usage: bayesian_markov_chain_text filename [max states [max horizon [prior]]]");
         exit(-1);
     } else {
         fname = argv[filename_arg];
@@ -77,6 +90,10 @@ int main (int argc, char** argv)
 
     if (argc > max_states_arg) {
         max_states = atoi(argv[max_states_arg]);
+    }
+
+    if (argc > prior_arg) {
+        prior = atof(argv[prior_arg]);
     }
 
 
@@ -109,6 +126,7 @@ int main (int argc, char** argv)
 
     double bmc_time = 0;
     double bpsr_time = 0;
+    double polya_time = 0;
     double ctw_time = 0;
 
     double initial_time  = GetCPU();
@@ -116,6 +134,7 @@ int main (int argc, char** argv)
 
     ErrorStatistics bmc_error(T);
     ErrorStatistics bpsr_error(T);
+    ErrorStatistics polya_error(T);
     ErrorStatistics ctw_error(T);
 
 
@@ -123,7 +142,8 @@ int main (int argc, char** argv)
     // our model for the chains
     bool dense = false;
     BayesianMarkovChain bmc(n_observations, 1+max_states, prior, dense);
-    BayesianPredictiveStateRepresentation bpsr(n_observations, 1+max_states, prior, dense);
+    BayesianPredictiveStateRepresentation bpsr(n_observations, 1+max_states, prior, false, dense);
+    BayesianPredictiveStateRepresentation polya(n_observations, 1+max_states, prior, true, dense);
     ContextTreeWeighting ctw(n_observations, 1+max_states, prior, dense);
 
     //logmsg ("Making Markov chain\n");
@@ -150,6 +170,12 @@ int main (int argc, char** argv)
             bpsr_error.loss[t] += 1.0;
         }
 
+        int polya_prediction = polya.predict();
+        polya_error.accuracy[t] = polya.NextStateProbability(observation);
+        if (polya_prediction != observation) {
+            polya_error.loss[t] += 1.0;
+        }
+
         int ctw_prediction = ctw.predict();
         ctw_error.accuracy[t] = ctw.NextStateProbability(observation);
         if (ctw_prediction != observation) {
@@ -170,6 +196,12 @@ int main (int argc, char** argv)
         end_time = GetCPU();
         bpsr_time += end_time - start_time;
 
+        // polya
+        end_time = start_time;
+        polya.ObserveNextState(observation);
+        end_time = GetCPU();
+        polya_time += end_time - start_time;
+
         // ctw
         end_time = start_time;
         ctw.ObserveNextState(observation);
@@ -182,16 +214,28 @@ int main (int argc, char** argv)
     initial_time = end_time;
         
     
-    printf ("# Time -- BHMC: %f, BPSR: %f, CTW: %f\n", 
-            bmc_time, bpsr_time, ctw_time);
-            ctw_error.total_loss(),
+    printf ("# Time -- BHMC: %f, BPSR: %f, POLYA: %f, CTW: %f\n", 
+            bmc_time, bpsr_time, polya_time, ctw_time);
+    printf ("%.1f %.1f %.1f %.1f # Err\n",
+            bmc_error.total_loss(),
+            bpsr_error.total_loss(),
+            polya_error.total_loss(),
+            ctw_error.total_loss());
+    printf ("%.1f %.1f %.1f %.1f # Acc\n",
             bmc_error.total_accuracy(),
             bpsr_error.total_accuracy(),
+            polya_error.total_accuracy(),
             ctw_error.total_accuracy());
 
-    print_result("bmc_text.error", bmc_error);
-    print_result("bpsr_text.error", bpsr_error);
-    print_result("ctw_text.error", ctw_error);
+    bmc_error.print_result("bmc_text.error");
+    bpsr_error.print_result("bpsr_text.error");
+    polya_error.print_result("polya_text.error");
+    ctw_error.print_result("ctw_text.error");
+
+    bmc_error.print_accuracy("bmc_text.accuracy");
+    bpsr_error.print_accuracy("bpsr_text.accuracy");
+    polya_error.print_accuracy("polya_text.accuracy");
+    ctw_error.print_accuracy("ctw_text.accuracy");
     
 }
 
