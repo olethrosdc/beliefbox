@@ -92,14 +92,18 @@ void BayesianMarkovChain::ObserveNextState(int state)
 /// Get the probability of the next state
 float BayesianMarkovChain::NextStateProbability(int state)
 {
-    real sum = 0.0;
+#if 0
     real log_sum = LOG_ZERO;
     for (int i=0; i<n_models; ++i) {
-        //sum += Pr[i] * mc[i]->NextStateProbability(state);
         log_sum = logAdd(log_sum, Pr[i] + log(mc[i]->NextStateProbability(state)));
     }
-    
-    return exp(log_sum);
+#else
+    real sum = 0.0;
+    for (int i=0; i<n_models; ++i) {
+        sum += Pr[i] * mc[i]->NextStateProbability(state);
+    }
+    return sum;
+#endif
 }
 
 /// Generate the next state.

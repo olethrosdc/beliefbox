@@ -17,8 +17,12 @@
 #include "Matrix.h"
 #include "Distribution.h"
 
-BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int n_states, int n_models, float prior, bool dense)
-    : BayesianMarkovChain(n_states, n_models, prior, dense)
+BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int n_states, int n_models, float prior, bool polya_, bool dense)
+    : BayesianMarkovChain(n_states, n_models, prior, dense),
+      polya(polya_),
+      P_obs(n_models, n_states), 
+      Lkoi(n_models, n_states),
+      weight(n_models)
 {
     beliefs.resize(n_models);
 }
@@ -36,59 +40,69 @@ void BayesianPredictiveStateRepresentation::Reset()
 }
 
 
-/// Get the probability of the current state.
+/// Adapt the model given the next state
 void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
 {
-    std::vector<real> weight(n_models);
-    Matrix Lkoi(n_models, n_states); // p obs given all models to k
-    Matrix P_obs(n_models, n_states); // probability of obs for model k
+
+//    Matrix P_obs(n_models, n_states);
+//    Matrix Lkoi(n_models, n_states);
+
     int top_model = std::min(n_models - 1, n_observations);
 
         // calculate predictions for each model
-    for (int i=0; i<=top_model; ++i) {
+    for (int model=0; model<=top_model; ++model) {
         std::vector<real> p(n_states);
 
         for (int j=0; j<n_states; j++) {
-            P_obs(i,j) =  mc[i]->NextStateProbability(j);
+            P_obs(model, j) =  mc[model]->NextStateProbability(j);
         }
             //printf("p(%d): ", i);
-        if (i == 0) {
-            weight[i] = 1;
+        if (model == 0) {
+            weight[model] = 1;
             for (int j=0; j<n_states; j++) {
-                Lkoi(i,j) = P_obs(i,j);
+                Lkoi(model,j) = P_obs(model,j);
             }
         } else {
-            weight[i] = exp(log_prior[i] + get_belief_param(i));
+            weight[model] = exp(log_prior[model] + get_belief_param(model));
             for (int j=0; j<n_states; j++) {
-                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i-1,j); /// !!!!!!!! i, j-1!?
+                Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model-1, j); 
             }
         }
     }
     
     real p_w = 1.0;
-    for (int i=top_model; i>=0; i--) {
-        Pr[i] = p_w*weight[i];
-        p_w *= (1.0 - weight[i]);
+    for (int model=top_model; model>=0; model--) {
+        Pr[model] = p_w * weight[model];
+        p_w *= (1.0 - weight[model]);
 
     }
 
-    for (int i=0; i<n_states; ++i) {
-        Pr_next[i] = P_obs(top_model, i);
-        real Pr_i = 0;
-        for (int j=0; j<=top_model; ++j) {
-            Pr_i += Pr[i]*P_obs(j, i);
+    real sum_pr_s = 0.0;
+    for (int s=0; s<n_states; ++s) {
+        real Pr_s = 0;
+        for (int model=0; model<=top_model; ++model) {
+            Pr_s += Pr[model]*P_obs(model, s);
         }
-        Pr_next[i] = Pr_i;
+        Pr_next[s] = Pr_s;
+        sum_pr_s += Pr_s;
     }
-
+    if (fabs(sum_pr_s - 1.0) > 0.001) {
+        fprintf(stderr, "sum: %f\n", sum_pr_s);
+        exit(-1);
+    }
         // insert new observations
     n_observations++;
     Vector posterior(n_models);
     
-    for (int i=0; i<=top_model; ++i) {
-        posterior[i] = weight[i] * P_obs(i, state) / Lkoi(i, state);
-        set_belief_param(i, log(posterior[i]) - log_prior[i]);
-        mc[i]->ObserveNextState(state);
+    for (int model=0; model<=top_model; ++model) {
+        if (polya) {
+            real par = exp(get_belief_param(model));
+            set_belief_param(model, log(1.0 + par));
+        } else {
+            posterior[model] = weight[model] * P_obs(model, state) / Lkoi(model, state);
+            set_belief_param(model, log(posterior[model]) - log_prior[model]);
+        }
+        mc[model]->ObserveNextState(state);
     }
     
 }
@@ -100,17 +114,16 @@ float BayesianPredictiveStateRepresentation::NextStateProbability(int state)
     return Pr_next[state];
 }
 
-/// Generate the next state.,
+
+/// Predict the next state
 ///
 /// We are flattening the hierarchical distribution to a simple
-/// multinomial.  This allows us to more accurately generate random
-/// samples (!) does it ?
+/// multinomial.  
 ///
 int BayesianPredictiveStateRepresentation::predict()
 {
-    std::vector<real> weight(n_models);
-    Matrix Lkoi(n_models, n_states); // p obs given all models to k
-    Matrix P_obs(n_models, n_states); // probability of obs for model k
+//    Matrix P_obs(n_models, n_states);
+//    Matrix Lkoi(n_models, n_states);
     int top_model = std::min(n_models - 1, n_observations);
 
         // calculate predictions for each model
@@ -154,8 +167,9 @@ int BayesianPredictiveStateRepresentation::predict()
     }
 
 #if 0
+    printf ("# BPSR ");
     for (int i=0; i<n_states; ++i) {
-        printf ("%f ", Pr_next[i]);
+        printf ("(%f %f", Pr_next[i], Lkoi(top_model,i));
     }
     printf("\n");
 #endif
