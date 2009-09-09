@@ -82,7 +82,7 @@ int main (int argc, char** argv)
 
     char* fname;
     if (argc < 2) {
-        fprintf(stderr, "Usage: bayesian_markov_chain_text filename [max states [max horizon [prior]]]");
+        fprintf(stderr, "Usage: bayesian_markov_chain_text filename [max states [max horizon [prior]]]\n");
         exit(-1);
     } else {
         fname = argv[filename_arg];
@@ -191,19 +191,19 @@ int main (int argc, char** argv)
         bmc_time += end_time - start_time;
 
         // bpsr
-        end_time = start_time;
+        start_time = end_time;
         bpsr.ObserveNextState(observation);
         end_time = GetCPU();
         bpsr_time += end_time - start_time;
 
         // polya
-        end_time = start_time;
+        start_time = end_time;
         polya.ObserveNextState(observation);
         end_time = GetCPU();
         polya_time += end_time - start_time;
 
         // ctw
-        end_time = start_time;
+        start_time = end_time;
         ctw.ObserveNextState(observation);
         end_time = GetCPU();
         ctw_time += end_time - start_time;

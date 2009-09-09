@@ -76,7 +76,7 @@ void SparseMarkovChain::getNextStateProbabilities(std::vector<real>& p)
 
 
 /// Get the number of transitions from \c src to \c dst
-float SparseMarkovChain::getTransition (int src, int dst)
+float SparseMarkovChain::getTransition (MCState src, int dst)
 {
 	assert((src>=0)&&(src<n_states));
 	assert((dst>=0)&&(dst<n_states));
@@ -88,7 +88,7 @@ float SparseMarkovChain::getTransition (int src, int dst)
 /// Get the transition probability from \c src to \c dst
 ///
 /// Takes into account the threshold.
-float SparseMarkovChain::getProbability(int src, int dst)
+float SparseMarkovChain::getProbability(MCState src, int dst)
 {
 	assert((src>=0)&&(src<tot_states));
 	assert((dst>=0)&&(dst<n_states));
@@ -105,10 +105,10 @@ float SparseMarkovChain::getProbability(int src, int dst)
 /// Get the transition probabilities
 ///
 /// Takes into account the threshold.
-void SparseMarkovChain::getProbabilities(int src, std::vector<real>& p)
+void SparseMarkovChain::getProbabilities(MCState src, std::vector<real>& p)
 {
 	assert((src>=0)&&(src<tot_states));
-	assert(p.size()==n_states);
+	assert((int) p.size()== n_states);
 	real sum = 0.0;
 	int N = transitions.nof_destinations();
 	
@@ -125,7 +125,7 @@ void SparseMarkovChain::getProbabilities(int src, std::vector<real>& p)
 
 
 /// Get the density of the transition probabilities \c p from \c src
-float SparseMarkovChain::pdf(int src, Vector p)
+float SparseMarkovChain::pdf(MCState src, Vector p)
 {
 	assert((src>=0)&&(src<tot_states));
 	Swarning("Not implemented\n");
@@ -135,7 +135,7 @@ float SparseMarkovChain::pdf(int src, Vector p)
 
 
 /// Set the transition probability from \c src to \c dst
-void SparseMarkovChain::setTransition (int src, int dst, float value)
+void SparseMarkovChain::setTransition (MCState src, int dst, float value)
 {
 	assert((src>=0)&&(src<tot_states));
 	assert((dst>=0)&&(dst<n_states));
@@ -284,7 +284,7 @@ int  SparseMarkovChain::PushState (int state) {
 */
 
 int SparseMarkovChain::ShowTransitions () {
-	printf ("\nState transition dump %d\n", tot_states);
+	printf ("\nState transition dump %ld\n", tot_states);
 	for (int i=0; i<tot_states; i++) {
 		printf ("Transition %d : ", i);
         std::vector<real> p(n_states);
