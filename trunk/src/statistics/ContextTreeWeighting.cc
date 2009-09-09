@@ -76,7 +76,7 @@ void ContextTreeWeighting::ObserveNextState(int state)
         Pr_next[i] = P_obs(top_model, i);
         real Pr_i = 0;
         for (int j=0; j<=top_model; ++j) {
-            Pr_i += Pr[i]*P_obs(j, i);
+            Pr_i += Pr[j]*P_obs(j, i);
         }
         Pr_next[i] = Pr_i;
     }
