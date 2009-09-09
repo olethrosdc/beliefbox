@@ -44,6 +44,7 @@ public:
     const real& operator[] (int index) const; ///< return element for read
     int Size() const { return n;}
     real Sum() const;
+    real Sum(int start, int end) const;
     Vector operator+ (const Vector& rhs);
     Vector operator- (const Vector& rhs);
     Vector operator* (const Vector& rhs);

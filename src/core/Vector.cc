@@ -111,7 +111,22 @@ real Vector::Sum() const
 {
     real sum = 0;
     for (int i=0; i<n; ++i) {
-	sum += x[i];
+        sum += x[i];
+    }
+    return sum;
+}
+
+/// Sum a range of a vector
+real Vector::Sum(int start, int end) const
+{
+    if (checking_bounds) {
+        if (start < 0 || end >= n) {
+            throw std::out_of_range("index out of range");
+        }
+    }
+    real sum = 0;
+    for (int i=start; i<=end; ++i) {
+        sum += x[i];
     }
     return sum;
 }

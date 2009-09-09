@@ -87,8 +87,11 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
         sum_pr_s += Pr_s;
     }
     if (fabs(sum_pr_s - 1.0) > 0.001) {
+        if (polya) {
+            fprintf (stderr, "polya ");
+        }
         fprintf(stderr, "sum: %f\n", sum_pr_s);
-        exit(-1);
+        //exit(-1);
     }
         // insert new observations
     n_observations++;
@@ -96,8 +99,8 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
     
     for (int model=0; model<=top_model; ++model) {
         if (polya) {
-            real par = exp(get_belief_param(model));
-            set_belief_param(model, log(1.0 + par));
+            real par = exp(get_belief_param(model) + log_prior[model]);
+            set_belief_param(model, log(1.0 + par)- log_prior[model]);
         } else {
             posterior[model] = weight[model] * P_obs(model, state) / Lkoi(model, state);
             set_belief_param(model, log(posterior[model]) - log_prior[model]);
@@ -127,30 +130,31 @@ int BayesianPredictiveStateRepresentation::predict()
     int top_model = std::min(n_models - 1, n_observations);
 
         // calculate predictions for each model
-    for (int i=0; i<=top_model; ++i) {
+    for (int model=0; model<=top_model; ++model) {
         std::vector<real> p(n_states);
 
-        for (int j=0; j<n_states; j++) {
-            P_obs(i,j) =  mc[i]->NextStateProbability(j);
+        for (int state=0; state<n_states; state++) {
+            P_obs(model, state) =  mc[model]->NextStateProbability(state);
         }
             //printf("p(%d): ", i);
-        if (i == 0) {
-            weight[i] = 1;
-            for (int j=0; j<n_states; j++) {
-                Lkoi(i,j) = P_obs(i,j);
+        if (model == 0) {
+            weight[model] = 1;
+            for (int state=0; state<n_states; state++) {
+                Lkoi(model, state) = P_obs(model, state);
             }
         } else {
-            weight[i] = exp(log_prior[i] + get_belief_param(i));
-            for (int j=0; j<n_states; j++) {
-                Lkoi(i,j) = weight[i] * P_obs(i,j) + (1.0 - weight[i])*Lkoi(i-1,j);// NOTE: !!! i, j-1 !??
+            weight[model] = exp(log_prior[model] + get_belief_param(model));
+            for (int state=0; state<n_states; state++) {
+                Lkoi(model,state) = weight[model] * P_obs(model, state)
+                    + (1.0 - weight[model]) * Lkoi(model - 1, state);
             }
         }
     }
 
     real p_w = 1.0;
-    for (int i=top_model; i>=0; i--) {
-        Pr[i] = p_w*weight[i];
-        p_w *= (1.0 - weight[i]);
+    for (int model=top_model; model>=0; model--) {
+        Pr[model] = p_w * weight[model];
+        p_w *= (1.0 - weight[model]);
     }
 #if 0
     for (int i=0; i<=top_model; i++) {
@@ -159,13 +163,36 @@ int BayesianPredictiveStateRepresentation::predict()
     printf("#BPSR \n");
 #endif
     
-    for (int i=0; i<n_states; ++i) {
-        Pr_next[i] = 0.0;
-        for (int j=0; j<=top_model; j++) {
-            Pr_next[i] += Pr[j]*P_obs(j, i);
+    Pr /= Pr.Sum(0, top_model);
+    for (int state=0; state<n_states; ++state) {
+        Pr_next[state] = 0.0;
+        for (int model=0; model<=top_model; model++) {
+            Pr_next[state] += Pr[model]*P_obs(model, state);
         }
     }
 
+#if 1
+    for (int model=0; model<=top_model; model++) {
+        real s = P_obs.RowSum(model);
+        if (fabs(s - 1.0) > 0.001) {
+            if (polya) {
+                fprintf (stderr, "polya ");
+            }
+            fprintf(stderr, "sum[%d]: %f\n", model, s);
+        }
+    }
+    real sum_pr_s = Pr_next.Sum();
+    if (fabs(sum_pr_s - 1.0) > 0.001) {
+        if (polya) {
+            fprintf (stderr, "polya ");
+        }
+        fprintf(stderr, "sum2: %f\n", sum_pr_s);
+        fprintf(stderr, "model sum: %f\n", Pr.Sum(0, top_model));
+        //exit(-1);
+    }
+#endif
+ 
+    
 #if 0
     printf ("# BPSR ");
     for (int i=0; i<n_states; ++i) {

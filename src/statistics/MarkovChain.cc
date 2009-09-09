@@ -83,12 +83,11 @@ MarkovChain::MarkovChain (int n_states, int mem_size)
 
    - MarkovChainPushState(), MarkovChainReset()
 */
-int MarkovChain::CalculateStateID () {
-	int id = 0;
-	int i;
-	int n = 1;
+MCState MarkovChain::CalculateStateID () {
+	MCState id = 0;
+	MCState n = 1;
 
-	for (i=1; i<=mem_size; i++, n*=n_states) {
+	for (MCState i=1; i<=mem_size; i++, n*=n_states) {
 		id += memory[i-1]*n; 
 	}
 	return id;
