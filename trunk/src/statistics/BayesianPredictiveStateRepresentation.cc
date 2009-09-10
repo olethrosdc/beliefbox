@@ -86,6 +86,7 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
         Pr_next[s] = Pr_s;
         sum_pr_s += Pr_s;
     }
+#if 0
     if (fabs(sum_pr_s - 1.0) > 0.001) {
         if (polya) {
             fprintf (stderr, "polya ");
@@ -93,14 +94,16 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
         fprintf(stderr, "sum: %f\n", sum_pr_s);
         //exit(-1);
     }
-        // insert new observations
+#endif
+      
+  // insert new observations
     n_observations++;
     Vector posterior(n_models);
     
     for (int model=0; model<=top_model; ++model) {
         if (polya) {
-            real par = exp(get_belief_param(model) + log_prior[model]);
-            set_belief_param(model, log(1.0 + par)- log_prior[model]);
+            real par = exp(get_belief_param(model));// + log_prior[model]);
+            set_belief_param(model, log(1.0 + par));//- log_prior[model]);
         } else {
             posterior[model] = weight[model] * P_obs(model, state) / Lkoi(model, state);
             set_belief_param(model, log(posterior[model]) - log_prior[model]);
@@ -171,7 +174,7 @@ int BayesianPredictiveStateRepresentation::predict()
         }
     }
 
-#if 1
+#if 0
     for (int model=0; model<=top_model; model++) {
         real s = P_obs.RowSum(model);
         if (fabs(s - 1.0) > 0.001) {
