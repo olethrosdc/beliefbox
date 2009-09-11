@@ -24,10 +24,21 @@ public:
 	MultinomialDistribution(std::vector<real> p_);
 	MultinomialDistribution(Vector p_);
 	MultinomialDistribution(int n);
+	MultinomialDistribution();
 	virtual ~MultinomialDistribution();
+	void Resize(int n);
 	virtual void generate(Vector* x);
 	virtual Vector generate();
     int generateInt();
+    virtual Vector getMean()
+    {
+        return p;
+    }
+    inline real& Pr(int i)
+    {
+        return p[i];
+    }
+    
 	virtual real pdf(Vector* x) const;
     virtual real pdf(Vector& x) const;
     virtual void generate(Vector& x);
