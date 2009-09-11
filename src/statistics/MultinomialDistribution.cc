@@ -1,6 +1,6 @@
 /* -*- Mode: C++; -*- */
 /* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
-// copyright (c) 2004-2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2004-2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,6 +17,11 @@ MultinomialDistribution::MultinomialDistribution(Vector p_)
     : p(p_)
 {
 }
+
+MultinomialDistribution::MultinomialDistribution()
+{
+}
+
 MultinomialDistribution::MultinomialDistribution(int n)
 {
 	p.Resize(n);
@@ -24,8 +29,9 @@ MultinomialDistribution::MultinomialDistribution(int n)
 	for (int i=0; i<n; i++) {
 		p[i] = prior;
 	}
-		
 }
+
+
 MultinomialDistribution::MultinomialDistribution(std::vector<real> p_)
 {
     int n = p_.size();
@@ -38,6 +44,17 @@ MultinomialDistribution::MultinomialDistribution(std::vector<real> p_)
 MultinomialDistribution::~MultinomialDistribution()
 {
 }
+
+void MultinomialDistribution::Resize(int n)
+{
+	p.Resize(n);
+	real prior = 1.0 / (real) n;
+	for (int i=0; i<n; i++) {
+		p[i] = prior;
+	}
+}
+
+
 void MultinomialDistribution::generate(Vector* x)
 {
 	*x = generate();
