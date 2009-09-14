@@ -30,7 +30,7 @@ real BinomialDistribution::pdf(real x) const
 {
     real logp = log(p);
     real log1mp = log(1-p);
-    return binomial(t,x) * exp(logp*x + log1mp*(t-x));
+    return binomial(t, (uint) x) * exp(logp*x + log1mp*(t-x));
 }
 void BinomialDistribution::setPeriod(long t)
 {

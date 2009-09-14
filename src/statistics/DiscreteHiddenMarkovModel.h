@@ -66,6 +66,7 @@ public:
     {
         return P_X[s].Pr(x);
     }
+    void Show();
 };
 
 

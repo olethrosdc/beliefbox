@@ -62,6 +62,24 @@ int DiscreteHiddenMarkovModel::generate_static()
     return P_X[current_state].generateInt();
 }
 
+void DiscreteHiddenMarkovModel::Show()
+{
+  for (int i=0; i<n_states; ++i) {
+      for (int j=0; j<n_states; ++j) {
+          printf ("%f ", PrS(i, j));
+      }
+      printf ("# hP_S\n");
+  }
+
+  for (int i=0; i<n_states; ++i) {
+      for (int j=0; j<n_observations; ++j) {
+          printf ("%f ", PrX(i, j));
+      }
+      printf ("# hP_X\n");
+  }
+}
+
+
 
 DiscreteHiddenMarkovModelStateBelief::DiscreteHiddenMarkovModelStateBelief(DiscreteHiddenMarkovModel* hmm_) : B(hmm_->getNStates()), n_states(hmm_->getNStates()), hmm(hmm_)
 {

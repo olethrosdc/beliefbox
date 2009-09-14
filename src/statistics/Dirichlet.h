@@ -34,6 +34,10 @@ public:
     void Observation(int i);
     Vector GetParameters() const;
     Vector GetMean() const;
+    real& Alpha(int i)
+    {
+        return a[i];
+    }
     int size() const
     {
         return n;
