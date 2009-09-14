@@ -63,6 +63,10 @@ int DiscreteHiddenMarkovModel::generate_static()
 }
 
 
+DiscreteHiddenMarkovModelStateBelief::DiscreteHiddenMarkovModelStateBelief(DiscreteHiddenMarkovModel* hmm_) : B(hmm_->getNStates()), n_states(hmm_->getNStates()), hmm(hmm_)
+{
+}
+
 DiscreteHiddenMarkovModelStateBelief::DiscreteHiddenMarkovModelStateBelief(int n_states_) : B(n_states_), n_states(n_states_)
 {
 }
@@ -110,4 +114,17 @@ real DiscreteHiddenMarkovModelStateBelief::Observe(int x)
 Vector DiscreteHiddenMarkovModelStateBelief::getBelief()
 {
     return B.getMean();
+}
+
+Vector DiscreteHiddenMarkovModelStateBelief::getPrediction()
+{
+    int n_observations = hmm->getNObservations();
+    Vector Px(n_observations);
+    for (int x=0; x<n_observations; ++x) {
+        Px[x] = 0;
+        for (int s=0; s<n_states; ++s) {
+            Px[x] += B.Pr(s) * hmm->PrX(s,x);
+        }
+    }
+    return Px;
 }

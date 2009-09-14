@@ -153,6 +153,37 @@ inline real Span(const Vector* v)
 {
     return Max(v) - Min(v);
 }
+
+/// Get maximum element
+inline real Max(const Vector& v)
+{
+    return Max(v.Size(), v.x);
+}
+
+/// Get minimum element
+inline real Min(const Vector& v)
+{
+    return Min(v.Size(), v.x);
+}
+
+/// Get maximum element
+inline int ArgMax(const Vector& v)
+{
+    return ArgMax(v.Size(), v.x);
+}
+
+/// Get minimum element
+inline int ArgMin(const Vector& v)
+{
+    return ArgMin(v.Size(), v.x);
+}
+
+inline real Span(const Vector& v)
+{
+    return Max(v) - Min(v);
+}
+
+
 #if 0
 real L1Norm (const Vector* lhs, const Vector* rhs);
 //real L1Norm (const Vector* lhs);
