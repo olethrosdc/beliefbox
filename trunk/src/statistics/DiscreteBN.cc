@@ -229,7 +229,7 @@ void DiscreteBN::_calculate_depth()
         }
     }
 
-    int max_depth = Max(depth);
+    int max_depth = (int) ceil(Max(depth));
     depth_list.resize(max_depth + 1);
     for (uint d=0; d<depth_list.size(); ++d) {
         //depth_list[d].resize(0);
