@@ -40,6 +40,14 @@ public:
     }
     virtual int generate();
     virtual int generate_static();
+    int getNStates()
+    {
+        return n_states;
+    }
+    int getNObservations()
+    {
+        return n_observations;
+    }
     std::vector<MultinomialDistribution>& getStateProbablities()
     {
         return P_S;
@@ -60,6 +68,10 @@ public:
     }
 };
 
+
+
+
+
 class DiscreteHiddenMarkovModelStateBelief
 {
 protected:
@@ -67,11 +79,13 @@ protected:
     int n_states;
 public:
     DiscreteHiddenMarkovModel* hmm;
+    DiscreteHiddenMarkovModelStateBelief(DiscreteHiddenMarkovModel* hmm_);
     DiscreteHiddenMarkovModelStateBelief(int n_states_);
     DiscreteHiddenMarkovModelStateBelief(int n_states_, int start_state);
     DiscreteHiddenMarkovModelStateBelief(int n_states_, MultinomialDistribution& initial_distribution);
     real Observe(int x);
     Vector getBelief();
+    Vector getPrediction();
 };
 
 
