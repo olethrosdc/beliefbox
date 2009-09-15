@@ -70,7 +70,7 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 {
     real threshold = 0.5;
     real stationarity = 0.9;
-    int n_particles = 1024;
+    int n_particles = 128;
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
     DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     //    int n_states = hmm->getNStates();

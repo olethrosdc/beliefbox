@@ -41,7 +41,10 @@ public:
     ~DiscreteHiddenMarkovModelPF();
     real Observe(int x);
     Vector getPrediction();
+    Vector Reset();
 };
+
+
 
 
 /*@}*/
