@@ -14,7 +14,7 @@
 #include "DiscreteHiddenMarkovModel.h"
 #include "Vector.h"
 #include "Dirichlet.h"
-
+#include "FiniteMixture.h"
 #include <vector>
 
 /**
@@ -41,11 +41,52 @@ public:
     ~DiscreteHiddenMarkovModelPF();
     real Observe(int x);
     Vector getPrediction();
-    Vector Reset();
+    void Reset();
 };
 
+class DHMM_PF_Mixture
+{
+protected:
+    int n_observations;
+    int n_particles;
+    int max_states;
+    FiniteMixture<DiscreteHiddenMarkovModelPF, int, Vector> mixture;
+public:
+    DHMM_PF_Mixture(real threshold,
+                    real stationarity,
+                    int n_observations_,
+                    int n_particles_,
+                    int max_states_) : n_observations(n_observations_),
+                                       n_particles(n_particles_),
+                                       max_states(max_states_),
+                                       mixture(max_states)
+    {
+        Vector P(max_states);
+        for (int i=0; i<max_states; ++i) {
+            P[i] = exp(- (real) i);
+        }
+        P /= P.Sum();
+        mixture.SetPrior(P);
+        for (int i=0; i<max_states; ++i) {
+            DiscreteHiddenMarkovModelPF* hmm = new DiscreteHiddenMarkovModelPF(threshold, stationarity, i, n_observations, n_particles);
+            mixture.SetComponent(hmm, i);
+        }
+    }
+    
+    real Observe(int x)
+    {
+        return mixture.Observe(x);
+    }
 
-
+    Vector getPrediction()
+    {
+        Vector p(n_observations);
+        for (int k=0; k<max_states; ++k) {
+            p += mixture.getPrediction(k) * mixture.getWeight(k);
+        }
+        return p;
+    }
+};
 
 /*@}*/
 #endif

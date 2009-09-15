@@ -48,13 +48,18 @@ Vector::Vector(int N_, enum BoundsCheckingStatus check)
     if (n==0) {
         x = NULL;
     } else {
+#if 0
         x = (real*) malloc(sizeof(real)*n);
         for (int i=0; i<n; i++) {
             x[i] = 0.0;
         }
+#else
+        x = (real*) calloc(n, sizeof(real));
+#endif
     }
     checking_bounds = check;
 }
+
 
 Vector::Vector (int N_, real* y, enum BoundsCheckingStatus check)
 {
@@ -467,4 +472,46 @@ real Span(const Vector* v)
 {
     return Max(v) - Min(v);
 }
+
+#if 0
+/// Exponentiation
+Vector exp (const Vector& rhs)
+{
+    int n = rhs.Size();
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = exp(rhs[i]);
+    }
+    return lhs;
+}
+#endif
+
+/// Logarithmication
+Vector log (const Vector& rhs)
+{
+    int n = rhs.Size();
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = log(rhs[i]);
+    }
+    return lhs;
+}
+
+
+void exp(const Vector& v, Vector& res)
+{
+    assert(v.Size() == res.Size());
+    for (int i=0; i<v.Size(); ++i) {
+        res[i] = exp(v[i]);
+    }
+}
+
+void log(const Vector& v, Vector& res)
+{
+    assert(v.Size() == res.Size());
+    for (int i=0; i<v.Size(); ++i) {
+        res[i] = log(v[i]);
+    }
+}
+
 #endif
