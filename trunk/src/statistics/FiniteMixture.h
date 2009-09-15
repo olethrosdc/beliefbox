@@ -73,6 +73,14 @@ public:
         assert (n_components > 0);
         ResetPriorToUniform();
     }
+
+    ~FiniteMixture()
+    {
+        for (int k=0; k<n_components; ++k) {
+            printf ("%f ", Pr[k]);
+        }
+        printf("# final weight\n");
+    }
     
     /// Reset to a uniform prior
     void ResetPriorToUniform()
@@ -124,6 +132,11 @@ public:
         // log p(k|x) = log p(x,k) - log  p(x)
         log_Pr = log_L - log_sum;
         Pr = exp(log_Pr);
+
+        for (int k=0; k<n_components; ++k) {
+            printf ("%f ", Pr[k]);
+        }
+        printf("# weight\n");
         return exp(log_sum);
     }
 
