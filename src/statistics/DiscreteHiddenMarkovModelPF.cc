@@ -91,12 +91,8 @@ real DiscreteHiddenMarkovModelPF::Observe(int x)
     }
     
     // p(k|x) = p(x|k) / p(x)
-    for (int k=0; k<n_particles; ++k) {
-        log_w[k] = log_P_x[k] - log_sum;
-        w[k] = exp(log_w[k]);
-        printf ("%f ", w[k]);
-    }
-    printf(" # weights\n");
+    log_w = log_P_x - log_sum;
+    w = exp(log_w);
 
     return exp(log_sum);
 }
@@ -115,3 +111,6 @@ Vector DiscreteHiddenMarkovModelPF::getPrediction()
     return p_x;
 }
 
+void DiscreteHiddenMarkovModelPF::Reset()
+{
+}

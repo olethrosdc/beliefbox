@@ -185,7 +185,8 @@ inline real Span(const Vector& v)
     return Max(v) - Min(v);
 }
 
-Vector exp (const Vector& rhs)
+/// Exponentiation
+inline Vector exp (const Vector& rhs)
 {
     int n = rhs.Size();
     Vector lhs (n);
@@ -196,30 +197,14 @@ Vector exp (const Vector& rhs)
 }
 
 /// Logarithmication
-Vector log (const Vector& rhs)
-{
-    int n = rhs.Size();
-    Vector lhs (n);
-    for (int i=0; i<n; i++) {
-        lhs.x[i] = log(rhs[i]);
-    }
-    return lhs;
-}
-inline void exp(const Vector& v, Vector& res)
-{
-    assert(v.Size() == res.Size());
-    for (int i=0; i<v.Size(); ++i) {
-        res[i] = exp(v[i]);
-    }
-}
+Vector log (const Vector& rhs);
 
-inline void log(const Vector& v, Vector& res)
-{
-    assert(v.Size() == res.Size());
-    for (int i=0; i<v.Size(); ++i) {
-        res[i] = log(v[i]);
-    }
-}
+/// exponentiate to a target vector
+void exp(const Vector& v, Vector& res);
+
+/// logarthimicate to a target vector
+void log(const Vector& v, Vector& res);
+
 #if 0
 real L1Norm (const Vector* lhs, const Vector* rhs);
 //real L1Norm (const Vector* lhs);

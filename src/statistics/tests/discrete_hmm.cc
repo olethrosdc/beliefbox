@@ -66,14 +66,18 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
                  int T,
                  Stats& state_stats,
                  Stats& observation_stats,
-                 Stats& pf_stats)
+                 Stats& pf_stats,
+                 Stats& pf_mix_stats)
 {
     real threshold = 0.5;
     real stationarity = 0.9;
     int n_particles = 128;
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
     DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-    //    int n_states = hmm->getNStates();
+
+    int max_states = 16; //Max(16, 2 * hmm->getNStates())
+
+    DHMM_PF_Mixture hmm_pf_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
 
     for (int t=0; t<T; ++t) {
         // perdict next observation
@@ -102,6 +106,7 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         }
         state_stats.accuracy[t] += Ps_t[s];
         
+        // --- particle filter ---
         // predict observation by PF
         Px_t = hmm_pf.getPrediction();
         predicted_observation = ArgMax(Px_t);
@@ -112,6 +117,19 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 
         // adapt PF
         hmm_pf.Observe(x);
+
+        // --- particle filter mixture ---
+        // predict observation by PFM
+        Px_t = hmm_pf_mixture.getPrediction();
+        predicted_observation = ArgMax(Px_t);
+        if (predicted_observation != x) {
+            pf_mix_stats.loss[t] += 1;
+        }
+        pf_mix_stats.accuracy[t] += Px_t[x];
+
+        // adapt PF
+        hmm_pf_mixture.Observe(x);
+
     }
 
     printf("Real model\n");
@@ -140,28 +158,34 @@ int main(int argc, char** argv)
         fprintf (stderr, "Invalid stationarity %f\n", stationarity);
     }
     
+    Vector x(10);
+    Vector y = exp(x);
+
     int T = 1000;
     Stats state_stats(T);
     Stats observation_stats(T);
     Stats pf_stats(T);
+    Stats pf_mix_stats(T);
     
     int n_iter = 1;
     for (int i=0; i<n_iter; ++i) {
         DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM(n_states,  n_observations, stationarity);
-        TestBelief(hmm, T, state_stats, observation_stats, pf_stats);
+        TestBelief(hmm, T, state_stats, observation_stats, pf_stats, pf_mix_stats);
         delete hmm;
     }
     
     real norm = 1.0 / (real) n_iter;
 
     for (int t=0; t<T; ++t) {
-        printf ("%f %f %f %f %f %f\n", 
+        printf ("%f %f %f %f %f %f %f %f\n", 
                 state_stats.loss[t]*norm,
                 state_stats.accuracy[t]*norm,
                 observation_stats.loss[t]*norm,
                 observation_stats.accuracy[t]*norm,
                 pf_stats.loss[t]*norm,
-                pf_stats.accuracy[t]*norm);
+                pf_stats.accuracy[t]*norm,
+                pf_mix_stats.loss[t]*norm,
+                pf_mix_stats.accuracy[t]*norm);
 
     }
     return 0;

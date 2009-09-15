@@ -90,7 +90,7 @@ public:
     }
 };
 
-
+/// This template makes the void* type safe.
 template <typename T>
 class KDTree : public void_KDTree
 {
