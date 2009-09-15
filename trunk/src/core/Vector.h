@@ -8,9 +8,11 @@
 #include "real.h"
 #include "MathFunctions.h"
 #include "Object.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cassert>
+#include <cmath>
+
 /**
    \ingroup MathGroup
 */
@@ -183,7 +185,41 @@ inline real Span(const Vector& v)
     return Max(v) - Min(v);
 }
 
+Vector exp (const Vector& rhs)
+{
+    int n = rhs.Size();
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = exp(rhs[i]);
+    }
+    return lhs;
+}
 
+/// Logarithmication
+Vector log (const Vector& rhs)
+{
+    int n = rhs.Size();
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = log(rhs[i]);
+    }
+    return lhs;
+}
+inline void exp(const Vector& v, Vector& res)
+{
+    assert(v.Size() == res.Size());
+    for (int i=0; i<v.Size(); ++i) {
+        res[i] = exp(v[i]);
+    }
+}
+
+inline void log(const Vector& v, Vector& res)
+{
+    assert(v.Size() == res.Size());
+    for (int i=0; i<v.Size(); ++i) {
+        res[i] = log(v[i]);
+    }
+}
 #if 0
 real L1Norm (const Vector* lhs, const Vector* rhs);
 //real L1Norm (const Vector* lhs);

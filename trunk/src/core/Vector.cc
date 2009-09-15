@@ -296,6 +296,8 @@ Vector& Vector::operator/= (const real& rhs)
     return *this;
 }
 
+/// Exponentiation
+
 
 /* --------------- INDEXING ------------------- */
 /// index
