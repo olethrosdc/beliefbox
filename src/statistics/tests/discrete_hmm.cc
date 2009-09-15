@@ -71,11 +71,11 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 {
     real threshold = 0.5;
     real stationarity = 0.9;
-    int n_particles = 128;
+    int n_particles = 1024;
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
     DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
 
-    int max_states = 16; //Max(16, 2 * hmm->getNStates())
+    int max_states = 8; //Max(16, 2 * hmm->getNStates())
 
     DHMM_PF_Mixture hmm_pf_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
 
@@ -177,7 +177,7 @@ int main(int argc, char** argv)
     real norm = 1.0 / (real) n_iter;
 
     for (int t=0; t<T; ++t) {
-        printf ("%f %f %f %f %f %f %f %f\n", 
+        printf ("%f %f %f %f %f %f %f %f # loss\n", 
                 state_stats.loss[t]*norm,
                 state_stats.accuracy[t]*norm,
                 observation_stats.loss[t]*norm,

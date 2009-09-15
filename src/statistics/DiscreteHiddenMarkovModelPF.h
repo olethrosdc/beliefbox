@@ -68,7 +68,7 @@ public:
         P /= P.Sum();
         mixture.SetPrior(P);
         for (int i=0; i<max_states; ++i) {
-            DiscreteHiddenMarkovModelPF* hmm = new DiscreteHiddenMarkovModelPF(threshold, stationarity, i, n_observations, n_particles);
+            DiscreteHiddenMarkovModelPF* hmm = new DiscreteHiddenMarkovModelPF(threshold, stationarity, i + 1, n_observations, n_particles);
             mixture.SetComponent(hmm, i);
         }
     }
