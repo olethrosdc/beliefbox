@@ -76,10 +76,12 @@ public:
 
     ~FiniteMixture()
     {
+#if 0
         for (int k=0; k<n_components; ++k) {
             printf ("%f ", Pr[k]);
         }
         printf("# final weight\n");
+#endif
     }
     
     /// Reset to a uniform prior
@@ -133,10 +135,6 @@ public:
         log_Pr = log_L - log_sum;
         Pr = exp(log_Pr);
 
-        for (int k=0; k<n_components; ++k) {
-            printf ("%f ", Pr[k]);
-        }
-        printf("# weight\n");
         return exp(log_sum);
     }
 

@@ -26,7 +26,7 @@ DiscreteHiddenMarkovModel::DiscreteHiddenMarkovModel(Matrix& Pr_S, Matrix& Pr_X)
     : n_states(Pr_S.Rows()), n_observations(Pr_X.Columns()),
       P_S(n_states), P_X(n_states)
 {
-    printf("# Making HMM with %d states and %d observations\n", n_states, n_observations);
+    //    printf("# Making HMM with %d states and %d observations\n", n_states, n_observations);
    for (int i=0; i<n_states; ++i) {
         P_S[i].Resize(n_states);
         for (int j=0; j<n_states; ++j) {
