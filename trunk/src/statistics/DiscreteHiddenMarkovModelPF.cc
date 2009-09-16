@@ -68,8 +68,8 @@ DiscreteHiddenMarkovModelPF::DiscreteHiddenMarkovModelPF(real threshold, real st
 
 DiscreteHiddenMarkovModelPF::~DiscreteHiddenMarkovModelPF()
 {
-    int max_k = ArgMax(w);
-    hmm[max_k]->Show();
+    //int max_k = ArgMax(w);
+    //hmm[max_k]->Show();
   
     for (int k=0; k<n_particles; ++k) {
         delete hmm[k];

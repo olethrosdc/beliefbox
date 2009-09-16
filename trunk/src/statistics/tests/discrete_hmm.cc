@@ -51,27 +51,24 @@ DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observation
 
 struct Stats
 {
-    std::vector<real> loss;
-    std::vector<real> accuracy;
+    Vector loss;
+    Vector accuracy;
     Stats(int T) : loss(T), accuracy(T)
     {
-        for (int t=0; t<T; ++t) {
-            loss[t] = 0;
-            accuracy[t] = 0;
-        }
     }
 };
 
+
 void TestBelief (DiscreteHiddenMarkovModel* hmm,
                  int T,
+                 real threshold,
+                 real stationarity,
+                 int n_particles,
                  Stats& state_stats,
                  Stats& observation_stats,
                  Stats& pf_stats,
                  Stats& pf_mix_stats)
 {
-    real threshold = 0.5;
-    real stationarity = 0.9;
-    int n_particles = 1024;
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
     DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
 
@@ -132,15 +129,15 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 
     }
 
-    printf("Real model\n");
-    hmm->Show();
+    //printf("Real model\n");
+    //hmm->Show();
 }
 
 
 int main(int argc, char** argv)
 {
-    if (argc != 4) {
-        fprintf(stderr, "Usage: discrete_hmm n_states n_observations stationarity\n");
+    if (argc != 7) {
+        fprintf(stderr, "Usage: discrete_hmm n_states n_observations stationarity n_particles T n_iter\n");
         return -1;
     }
     int n_states = atoi(argv[1]);
@@ -157,20 +154,38 @@ int main(int argc, char** argv)
     if (stationarity < 0 || stationarity > 1) {
         fprintf (stderr, "Invalid stationarity %f\n", stationarity);
     }
+
+    int n_particles = atoi(argv[4]);
+    if (n_particles <= 0) {
+        fprintf (stderr, "Invalid n_particles %d\n", n_particles);
+    }
+
+    int T = atoi(argv[5]);
+    if (T <= 0) {
+        fprintf (stderr, "Invalid T %d\n", T);
+    }
+
+    int n_iter = atoi(argv[6]);
+    if (n_iter <= 0) {
+        fprintf (stderr, "Invalid n_iter %d\n", n_iter);
+    }
     
+
+    real threshold = 0.5; // threshold for the prior in the estimated HMMs.
+
     Vector x(10);
     Vector y = exp(x);
 
-    int T = 1000;
+
     Stats state_stats(T);
     Stats observation_stats(T);
     Stats pf_stats(T);
     Stats pf_mix_stats(T);
     
-    int n_iter = 1;
     for (int i=0; i<n_iter; ++i) {
+        fprintf (stderr, "Iter: %d / %d\n", i + 1, n_iter);
         DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM(n_states,  n_observations, stationarity);
-        TestBelief(hmm, T, state_stats, observation_stats, pf_stats, pf_mix_stats);
+        TestBelief(hmm, T, threshold, stationarity, n_particles, state_stats, observation_stats, pf_stats, pf_mix_stats);
         delete hmm;
     }
     
@@ -186,8 +201,18 @@ int main(int argc, char** argv)
                 pf_stats.accuracy[t]*norm,
                 pf_mix_stats.loss[t]*norm,
                 pf_mix_stats.accuracy[t]*norm);
-
     }
+    
+    printf ("%f %f %f %f %f %f %f %f # total\n", 
+            state_stats.loss.Sum()*norm,
+            state_stats.accuracy.Sum()*norm,
+            observation_stats.loss.Sum()*norm,
+            observation_stats.accuracy.Sum()*norm,
+            pf_stats.loss.Sum()*norm,
+            pf_stats.accuracy.Sum()*norm,
+            pf_mix_stats.loss.Sum()*norm,
+            pf_mix_stats.accuracy.Sum()*norm);
+    
     return 0;
 }
 
