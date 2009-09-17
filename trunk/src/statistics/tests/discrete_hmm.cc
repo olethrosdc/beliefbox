@@ -3,6 +3,7 @@
 #include "Matrix.h"
 #include "Dirichlet.h"
 #include "Random.h"
+#include "CumulativeStats.h"
 
 DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observations, real stationarity)
 {
@@ -49,14 +50,6 @@ DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observation
     return new DiscreteHiddenMarkovModel (Pr_S, Pr_X);
 }
 
-struct Stats
-{
-    Vector loss;
-    Vector accuracy;
-    Stats(int T) : loss(T), accuracy(T)
-    {
-    }
-};
 
 
 void TestBelief (DiscreteHiddenMarkovModel* hmm,
@@ -64,10 +57,10 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
                  real threshold,
                  real stationarity,
                  int n_particles,
-                 Stats& state_stats,
-                 Stats& observation_stats,
-                 Stats& pf_stats,
-                 Stats& pf_mix_stats)
+                 CumulativeStats& state_stats,
+                 CumulativeStats& observation_stats,
+                 CumulativeStats& pf_stats,
+                 CumulativeStats& pf_mix_stats)
 {
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
     DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
@@ -87,9 +80,10 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         
         // add observation error
         if (predicted_observation != x) {
-            observation_stats.loss[t] += 1;
+            observation_stats.SetValue(t, 1);
+        } else {
+            observation_stats.SetValue(t, 0);
         }
-        observation_stats.accuracy[t] += Px_t[x];
 
         // adapt belief state to observation
         hmm_belief_state.Observe(x);
@@ -99,18 +93,21 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         int predicted_state = ArgMax(Ps_t);
 
         if (predicted_state!=s) {
-            state_stats.loss[t] += 1;
+            state_stats.SetValue(t, 1);
+        } else {
+            state_stats.SetValue(t, 0);
         }
-        state_stats.accuracy[t] += Ps_t[s];
+
         
         // --- particle filter ---
         // predict observation by PF
         Px_t = hmm_pf.getPrediction();
         predicted_observation = ArgMax(Px_t);
         if (predicted_observation != x) {
-            pf_stats.loss[t] += 1;
+            pf_stats.SetValue(t, 1);
+        } else {
+            pf_stats.SetValue(t, 0);
         }
-        pf_stats.accuracy[t] += Px_t[x];
 
         // adapt PF
         hmm_pf.Observe(x);
@@ -120,9 +117,10 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         Px_t = hmm_pf_mixture.getPrediction();
         predicted_observation = ArgMax(Px_t);
         if (predicted_observation != x) {
-            pf_mix_stats.loss[t] += 1;
+            pf_mix_stats.SetValue(t, 1);
+        } else {
+            pf_mix_stats.SetValue(t, 0);
         }
-        pf_mix_stats.accuracy[t] += Px_t[x];
 
         // adapt PF
         hmm_pf_mixture.Observe(x);
@@ -177,42 +175,59 @@ int main(int argc, char** argv)
     Vector y = exp(x);
 
 
-    Stats state_stats(T);
-    Stats observation_stats(T);
-    Stats pf_stats(T);
-    Stats pf_mix_stats(T);
+    CumulativeStats state_stats(T, n_iter);
+    CumulativeStats observation_stats(T, n_iter);
+    CumulativeStats pf_stats(T, n_iter);
+    CumulativeStats pf_mix_stats(T, n_iter);
     
     for (int i=0; i<n_iter; ++i) {
+        state_stats.SetSequence(i);
+        observation_stats.SetSequence(i);
+        pf_stats.SetSequence(i);
+        pf_mix_stats.SetSequence(i);
         fprintf (stderr, "Iter: %d / %d\n", i + 1, n_iter);
         DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM(n_states,  n_observations, stationarity);
         TestBelief(hmm, T, threshold, stationarity, n_particles, state_stats, observation_stats, pf_stats, pf_mix_stats);
         delete hmm;
     }
     
-    real norm = 1.0 / (real) n_iter;
+    
+    real percentile = 0.1;
+    
+    //Matrix M = pf_stats.C;
+    CumulativeStats pf_to_mix_stats(pf_stats.C - pf_mix_stats.C);
 
+    observation_stats.Sort();
+    Vector hmm_mean = observation_stats.Mean();
+    Vector hmm_top = observation_stats.TopPercentile(percentile);
+    Vector hmm_bottom = observation_stats.BottomPercentile(percentile); 
+    
+    pf_stats.Sort();
+    Vector pf_mean = pf_stats.Mean();
+    Vector pf_top = pf_stats.TopPercentile(percentile);
+    Vector pf_bottom = pf_stats.BottomPercentile(percentile);
+    
+    pf_mix_stats.Sort();
+    Vector pf_mix_mean = pf_mix_stats.Mean();
+    Vector pf_mix_top = pf_mix_stats.TopPercentile(percentile);
+    Vector pf_mix_bottom = pf_mix_stats.BottomPercentile(percentile);
     for (int t=0; t<T; ++t) {
-        printf ("%f %f %f %f %f %f %f %f # loss\n", 
-                state_stats.loss[t]*norm,
-                state_stats.accuracy[t]*norm,
-                observation_stats.loss[t]*norm,
-                observation_stats.accuracy[t]*norm,
-                pf_stats.loss[t]*norm,
-                pf_stats.accuracy[t]*norm,
-                pf_mix_stats.loss[t]*norm,
-                pf_mix_stats.accuracy[t]*norm);
+        printf ("%f %f %f %f %f %f %f %f %f # loss\n", 
+                hmm_bottom[t], hmm_mean[t], hmm_top[t],
+                pf_bottom[t], pf_mean[t], pf_top[t],
+                pf_mix_bottom[t], pf_mix_mean[t], pf_mix_top[t]);
     }
     
-    printf ("%f %f %f %f %f %f %f %f # total\n", 
-            state_stats.loss.Sum()*norm,
-            state_stats.accuracy.Sum()*norm,
-            observation_stats.loss.Sum()*norm,
-            observation_stats.accuracy.Sum()*norm,
-            pf_stats.loss.Sum()*norm,
-            pf_stats.accuracy.Sum()*norm,
-            pf_mix_stats.loss.Sum()*norm,
-            pf_mix_stats.accuracy.Sum()*norm);
-    
+
+    pf_to_mix_stats.Sort();
+    Vector pf_to_mix_mean = pf_to_mix_stats.Mean();
+    Vector pf_to_mix_top = pf_to_mix_stats.TopPercentile(percentile);
+    Vector pf_to_mix_bottom = pf_to_mix_stats.BottomPercentile(percentile);
+    for (int t=0; t<T; ++t) {
+        printf ("%f %f %f # pf_to_mix\n", 
+                pf_to_mix_bottom[t], pf_to_mix_mean[t], pf_to_mix_top[t]);
+    }
+
     return 0;
 }
 

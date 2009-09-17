@@ -57,6 +57,10 @@ public:
     void Transpose();
     Vector getColumn(int c);
     Vector getRow(int r);
+    void setColumn(int c, Vector& x);
+    void setRow(int r, Vector& x);
+    void SortRow(int r);
+    void SortColumn(int r);
     int Rows() const;
     int Columns() const;
     real& operator() (int i, int j);
