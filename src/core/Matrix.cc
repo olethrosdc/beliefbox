@@ -586,6 +586,7 @@ Vector Matrix::getColumn(int c)
     }
     return column;
 }
+
 Vector Matrix::getRow(int r)
 {
     Vector row(columns);
@@ -593,4 +594,49 @@ Vector Matrix::getRow(int r)
         row[i] = (*this)(r,i);
     }
     return row;
+}
+
+
+void Matrix::setColumn(int c, Vector& x)
+{
+    assert(columns == x.Size());
+    for (int i=0; i<rows; i++) {
+        (*this)(i,c) = x[i];
+    }
+}
+
+void Matrix::setRow(int r, Vector& x)
+{
+    assert(columns == x.Size());
+    for (int i=0; i<columns; i++) {
+        (*this)(r,i) = x[i];
+    }
+
+}
+
+
+void Matrix::SortRow(int r)
+{
+    Vector row(columns);
+    for (int i=0; i<columns; i++) {
+        row[i] = (*this)(r,i);
+    }
+    std::sort(&row[0], &row[columns]);
+    for (int i=0; i<columns; i++) {
+        (*this)(r,i) = row[i];
+    }
+}
+
+
+void Matrix::SortColumn(int c)
+{
+    Vector column(rows);
+    for (int i=0; i<rows; i++) {
+        column[i] = (*this)(i,c);
+    }
+
+    std::sort(&column[0], &column[rows]);
+    for (int i=0; i<rows; i++) {
+        (*this)(i,c) = column[i];
+    }
 }
