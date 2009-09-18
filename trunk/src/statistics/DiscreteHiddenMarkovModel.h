@@ -87,6 +87,11 @@ public:
     real Observe(int x);
     Vector getBelief();
     Vector getPrediction();
+    int predict()
+    {
+        return ArgMax(getPrediction());
+    }
+    void Reset();
 };
 
 

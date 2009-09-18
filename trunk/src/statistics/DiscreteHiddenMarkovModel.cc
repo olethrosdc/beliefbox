@@ -146,3 +146,11 @@ Vector DiscreteHiddenMarkovModelStateBelief::getPrediction()
     }
     return Px;
 }
+
+void DiscreteHiddenMarkovModelStateBelief::Reset()
+{
+    real p = 1.0 / (real) n_states;
+    for (int s=0; s<n_states; ++s) {
+        B.Pr(s) = p;
+    }
+}

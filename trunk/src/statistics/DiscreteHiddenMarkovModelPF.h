@@ -41,9 +41,14 @@ public:
     ~DiscreteHiddenMarkovModelPF();
     real Observe(int x);
     Vector getPrediction();
+    int predict()
+    {
+        return ArgMax(getPrediction());
+    }
     void Reset();
 };
 
+/** This is a mixture of discrete HMM particle filters */
 class DHMM_PF_Mixture
 {
 protected:
@@ -63,7 +68,7 @@ public:
     {
         Vector P(max_states);
         for (int i=0; i<max_states; ++i) {
-            P[i] = exp(- (real) i);
+            P[i] = exp(- (real) i * (i + n_observations));
         }
         P /= P.Sum();
         mixture.SetPrior(P);
@@ -85,6 +90,20 @@ public:
             p += mixture.getPrediction(k) * mixture.getWeight(k);
         }
         return p;
+    }
+    
+    Vector getWeights()
+    {
+        Vector p(max_states);
+        for (int k=0; k<max_states; ++k) {
+            p[k] = mixture.getWeight(k);
+        }
+        return p;
+    }
+
+    int predict()
+    {
+        return ArgMax(getPrediction());
     }
 };
 
