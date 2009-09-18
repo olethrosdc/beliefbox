@@ -60,12 +60,14 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
                  CumulativeStats& state_stats,
                  CumulativeStats& observation_stats,
                  CumulativeStats& pf_stats,
-                 CumulativeStats& pf_mix_stats)
+                 CumulativeStats& pf_mix_stats,
+                 Vector& model_stats)
 {
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
     DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
 
     int max_states = 8; //Max(16, 2 * hmm->getNStates())
+    model_stats.Resize(max_states);
 
     DHMM_PF_Mixture hmm_pf_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
 
@@ -127,8 +129,8 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 
     }
 
-    //printf("Real model\n");
-    //hmm->Show();
+    // add mixture statistics
+    model_stats += hmm_pf_mixture.getWeights();
 }
 
 
@@ -179,7 +181,8 @@ int main(int argc, char** argv)
     CumulativeStats observation_stats(T, n_iter);
     CumulativeStats pf_stats(T, n_iter);
     CumulativeStats pf_mix_stats(T, n_iter);
-    
+    Vector mixture_statistics;
+
     for (int i=0; i<n_iter; ++i) {
         state_stats.SetSequence(i);
         observation_stats.SetSequence(i);
@@ -187,7 +190,7 @@ int main(int argc, char** argv)
         pf_mix_stats.SetSequence(i);
         fprintf (stderr, "Iter: %d / %d\n", i + 1, n_iter);
         DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM(n_states,  n_observations, stationarity);
-        TestBelief(hmm, T, threshold, stationarity, n_particles, state_stats, observation_stats, pf_stats, pf_mix_stats);
+        TestBelief(hmm, T, threshold, stationarity, n_particles, state_stats, observation_stats, pf_stats, pf_mix_stats, mixture_statistics);
         delete hmm;
     }
     
@@ -228,6 +231,12 @@ int main(int argc, char** argv)
                 pf_to_mix_bottom[t], pf_to_mix_mean[t], pf_to_mix_top[t]);
     }
 
+    mixture_statistics /= (real) n_iter;
+    for (int k=0; k<mixture_statistics.Size(); ++k) {
+        printf ("%f ", mixture_statistics[k]);
+    }
+    printf (" # mixture\n");
+    
     return 0;
 }
 

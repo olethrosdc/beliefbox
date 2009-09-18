@@ -138,17 +138,19 @@ public:
         return exp(log_sum);
     }
 
-    /// Get the prediction of the
+    /// Get the prediction of the k-th component
     W getPrediction(int k)
     {
         return Q[k]->getPrediction();
     }
 
-    /// Get the prediction of the
+    /// Get the weight of the
     real getWeight(int k)
     {
         return Pr[k];
     }
+
+    
     
 };
 /*@}*/

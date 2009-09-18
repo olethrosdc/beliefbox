@@ -11,6 +11,8 @@
  ***************************************************************************/
 
 #ifdef MAKE_MAIN
+#include "DiscreteHiddenMarkovModel.h"
+#include "DiscreteHiddenMarkovModelPF.h"
 #include "BayesianPredictiveStateRepresentation.h"
 #include "BayesianMarkovChain.h"
 #include "Random.h"
@@ -37,6 +39,50 @@ void print_result(const char* fname, ErrorStatistics& error)
     fclose (f);
 }
 
+DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observations, real stationarity)
+{
+    assert (n_states > 0);
+    assert (n_observations > 0);
+    assert (stationarity >= 0 && stationarity <= 1);
+
+    Matrix Pr_S(n_states, n_states);
+    Matrix Pr_X(n_states, n_observations);
+    for (int i=0; i<n_states; ++i) {
+        real sum = 0.0;
+        for (int j=0; j<n_observations; ++j) {
+            Pr_X(i,j) = 0.1*true_random(false);
+            if (i==j) {
+                Pr_X(i,j) += 1.0;
+            }
+            sum += Pr_X(i,j);
+        }
+        for (int j=0; j<n_observations; ++j) {
+            Pr_X(i,j) /=  sum;
+        }
+        
+    }
+    Matrix S(n_states, n_states);
+    for (int src=0; src<n_states; ++src) {
+        Vector P(n_states);
+        for (int i=0; i<n_states; ++i) {
+            if (i<=src) {
+                P[i] = exp(true_random(false));
+            } else {
+                P[i] = exp(10.0*true_random(false));
+            }
+        }
+        P /= P.Sum();
+        P *= (1 - stationarity);
+        P[src] += stationarity;
+        P /= P.Sum();
+            //real sum = 0.0;
+        for (int dst=0; dst<n_states; ++dst) {
+            Pr_S(src,dst) = P[dst];
+        }
+    }
+
+    return new DiscreteHiddenMarkovModel (Pr_S, Pr_X);
+}
 
 int main (int argc, char** argv)
 {
@@ -46,7 +92,7 @@ int main (int argc, char** argv)
     float prior = 1.0f;
     int T = 100;
     int n_iter = 100;
-    real stationarity = 0.99;
+    //real stationarity = 0.99;
     
     setRandomSeed(time(NULL));
 
@@ -70,8 +116,10 @@ int main (int argc, char** argv)
         n_mc_states = atoi(argv[5]);
     }
 
+    double oracle_time = 0;
     double bmc_time = 0;
     double bpsr_time = 0;
+    double hmm_time = 0;
 
     double initial_time  = GetCPU();
     double elapsed_time = 0;
@@ -79,11 +127,14 @@ int main (int argc, char** argv)
     ErrorStatistics oracle_error;
     ErrorStatistics bmc_error;
     ErrorStatistics bpsr_error;
+    ErrorStatistics hmm_error;
     oracle_error.loss.resize(T);
     bmc_error.loss.resize(T);
     bpsr_error.loss.resize(T);
+    hmm_error.loss.resize(T);
 
     for (int iter=0; iter<n_iter; iter++) {
+        real stationarity = 0.9;
         double remaining_time = (real) (n_iter - iter) * elapsed_time / (real) iter;
         printf ("# iter: %d, %.1f running, %.1f remaining\n", iter, elapsed_time, remaining_time);
         
@@ -92,64 +143,31 @@ int main (int argc, char** argv)
         // our model for the chains
         bool dense = false;
         BayesianMarkovChain bmc(n_observations, 1+max_states, prior, dense);
-        
         BayesianPredictiveStateRepresentation bpsr(n_observations, 1+max_states, prior, dense);
 
         //logmsg ("Making Markov chain\n");
-        // the actual chain that generates the data
-        DenseMarkovChain chain(n_mc_states, 1);
-        DirichletDistribution dirichlet(n_mc_states, 1.0);
-        std::vector<std::vector<real> >X(n_mc_states);
-        for (int i=0; i<n_mc_states; ++i) {
-            X[i].resize(n_observations);
-            real sum = 0.0;
-            for (int j=0; j<n_observations; ++j) {
-                X[i][j] = 0.1*true_random(false);
-                if (i==j) {
-                    X[i][j] += 1.0;
-                }
-                sum += X[i][j];
-            }
-            for (int j=0; j<n_observations; ++j) {
-                X[i][j] /=  sum;
-            }
+        // the actual model that generates the data
+        DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM (n_mc_states,  n_observations,  stationarity);
+        DiscreteHiddenMarkovModelStateBelief oracle(hmm);
 
-        }
-        //logmsg ("Creating transitions for Markov chain\n");
-        for (int src=0; src<n_mc_states; ++src) {
-            Vector Pr(n_mc_states);
-            for (int i=0; i<n_mc_states; ++i) {
-                Pr[i] = exp(10.0*true_random(false));
-            }
-            Pr /= Pr.Sum();
-            Pr *= (1 - stationarity);
-            Pr[src] += stationarity;
-            Pr /= Pr.Sum();
-            real sum = 0.0;
-            for (int dst=0; dst<n_observations; ++dst) {
-                //printf ("P(%d|%d)=%f\n", dst, src, Pr[dst]);
-                chain.setTransition(src, dst, Pr[dst]);
-                sum += Pr[dst];
-            }
-            //printf("  Tot: %f\n", sum);
-        }
+        real hmm_threshold = 0.5;
+        real hmm_stationarity = 0.9;
+        real hmm_particles = 16;
+        //DiscreteHiddenMarkovModelPF hmm_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
+        DHMM_PF_Mixture hmm_pf(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
 
         //logmsg ("Observing chain outputs\n");
+        oracle.Reset();
         bmc.Reset();
         bpsr.Reset();
-        chain.Reset();
+        hmm->Reset();
         
 
         for (int t=0; t<T; ++t) {
-            int predicted_state = chain.GenerateStatic();
-            int predicted_observation = DiscreteDistribution::generate(X[predicted_state]);
-            int state = chain.generate();
-            int observation = DiscreteDistribution::generate(X[state]);
-            //printf("%d #obs\n", observation);
+            int observation = hmm->generate();
 
-            //printf("%d |BHMC| ", state);
-
-            if (predicted_observation != observation) {
+            int oracle_prediction = oracle.predict();
+            if (oracle_prediction != observation) {
                 oracle_error.loss[t] += 1.0;
             }
 
@@ -158,42 +176,58 @@ int main (int argc, char** argv)
                 bmc_error.loss[t] += 1.0;
             }
 
-            //printf("  |BPSR| ");
             int bpsr_prediction = bpsr.predict();
             if (bpsr_prediction != observation) {
                 bpsr_error.loss[t] += 1.0;
             }
-                
-            //bmc.NextStateProbability(observation);
-            //bpsr.NextStateProbability(observation);
-            double start_time = GetCPU();
+
+            int hmm_prediction = hmm_pf.predict();
+            if (hmm_prediction != observation) {
+                hmm_error.loss[t] += 1.0;
+            }
+            
+            double start_time, end_time;
+
+            start_time = GetCPU();
+            oracle.Observe(observation);
+            end_time = GetCPU();
+            oracle_time += end_time - start_time;
+
+            start_time = end_time;
             bmc.ObserveNextState(observation);
-                                
-            double end_time = GetCPU();
+            end_time = GetCPU();
             bmc_time += end_time - start_time;
 
-            end_time = start_time;
-            bpsr.ObserveNextState(observation);
-                                
+            start_time = end_time;;
+            bpsr.ObserveNextState(observation);                               
             end_time = GetCPU();
             bpsr_time += end_time - start_time;
+
+
+            start_time = end_time;;
+            hmm_pf.Observe(observation);                               
+            end_time = GetCPU();
+            hmm_time += end_time - start_time;
         }
 
         double end_time = GetCPU();
         elapsed_time += end_time - initial_time;
         initial_time = end_time;
-        
+
+        delete hmm;
     }
 
-    printf ("# Time -- BHMC: %f, BPSR: %f\n", 
-            bmc_time, bpsr_time);
+    printf ("# Time -- Oracle: %f, HMM: %f, BHMC: %f, BPSR: %f\n", 
+            oracle_time, hmm_time, bmc_time, bpsr_time);
 
     real inv_iter = 1.0 / (real) n_iter;
     for (int t=0; t<T; ++t) {
+        hmm_error.loss[t] *= inv_iter;
         oracle_error.loss[t] *= inv_iter;
         bmc_error.loss[t] *= inv_iter;
         bpsr_error.loss[t] *= inv_iter;
     }
+    print_result("hmm.error", hmm_error);
     print_result("oracle.error", oracle_error);
     print_result("bmc.error", bmc_error);
     print_result("bpsr.error", bpsr_error);
