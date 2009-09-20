@@ -129,6 +129,15 @@ real DiscreteHiddenMarkovModelStateBelief::Observe(int x)
     return sum;
 }
 
+real DiscreteHiddenMarkovModelStateBelief::Observe(std::vector<int> x)
+{
+    real sum = 0.0;
+    for (uint i=0; i<x.size(); ++i) {
+        sum += Observe(x[i]);
+    }
+    return sum;
+}
+
 Vector DiscreteHiddenMarkovModelStateBelief::getBelief()
 {
     return B.getMean();

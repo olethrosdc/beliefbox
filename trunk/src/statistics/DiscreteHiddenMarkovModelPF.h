@@ -38,24 +38,59 @@ public:
     std::vector<DirichletDistribution*> state_prior;
     std::vector<DirichletDistribution*> observation_prior;
     DiscreteHiddenMarkovModelPF(real threshold, real stationarity, int n_states_, int n_observations_, int n_particles_);
-    ~DiscreteHiddenMarkovModelPF();
-    real Observe(int x);
     Vector getPrediction();
     int predict()
     {
         return ArgMax(getPrediction());
     }
-    void Reset();
+    virtual ~DiscreteHiddenMarkovModelPF();
+    virtual real Observe(int x);
+    virtual void Reset();
 };
 
+// Replace lowest thing
+class DiscreteHiddenMarkovModelPF_ReplaceLowest : public DiscreteHiddenMarkovModelPF
+{
+public:
+    real replacement_threshold;
+    DiscreteHiddenMarkovModelPF_ReplaceLowest(real threshold, real stationarity, int n_states_, int n_observations_, int n_particles_) : 
+        DiscreteHiddenMarkovModelPF(threshold, stationarity, n_states_, n_observations_,  n_particles_)
+    {
+        replacement_threshold = - 2 * log((real) n_particles);
+    }  
+    virtual ~DiscreteHiddenMarkovModelPF_ReplaceLowest()
+    {
+    }
+    virtual real Observe(int x);
+};
+
+// Replace lowest particle
+class DiscreteHiddenMarkovModelPF_ReplaceLowestExact: public DiscreteHiddenMarkovModelPF
+{
+public:
+    real replacement_threshold;
+    std::vector<int> history; ///< observation history
+    DiscreteHiddenMarkovModelPF_ReplaceLowestExact(real threshold, real stationarity, int n_states_, int n_observations_, int n_particles_) : 
+        DiscreteHiddenMarkovModelPF(threshold, stationarity, n_states_, n_observations_,  n_particles_)
+    {
+        replacement_threshold = - 2 * log((real) n_particles);
+    }  
+    virtual ~DiscreteHiddenMarkovModelPF_ReplaceLowestExact()
+    {
+    }
+    virtual real Observe(int x);
+};
+
+
 /** This is a mixture of discrete HMM particle filters */
+template <class DHMM_Filter>
 class DHMM_PF_Mixture
 {
 protected:
     int n_observations;
     int n_particles;
     int max_states;
-    FiniteMixture<DiscreteHiddenMarkovModelPF, int, Vector> mixture;
+    FiniteMixture<DHMM_Filter, int, Vector> mixture;
 public:
     DHMM_PF_Mixture(real threshold,
                     real stationarity,
@@ -73,11 +108,18 @@ public:
         P /= P.Sum();
         mixture.SetPrior(P);
         for (int i=0; i<max_states; ++i) {
-            DiscreteHiddenMarkovModelPF* hmm = new DiscreteHiddenMarkovModelPF(threshold, stationarity, i + 1, n_observations, n_particles);
+            DHMM_Filter* hmm = new DHMM_Filter(threshold, stationarity, i + 1, n_observations, n_particles);
             mixture.SetComponent(hmm, i);
         }
     }
     
+    ~DHMM_PF_Mixture()
+    {
+        for (int i=0; i<max_states; ++i) {
+            delete mixture.GetComponent(i);
+        }
+    }
+
     real Observe(int x)
     {
         return mixture.Observe(x);
