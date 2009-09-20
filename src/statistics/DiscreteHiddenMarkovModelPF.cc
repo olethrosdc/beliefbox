@@ -70,7 +70,10 @@ DiscreteHiddenMarkovModelPF::~DiscreteHiddenMarkovModelPF()
 {
     //int max_k = ArgMax(w);
     //hmm[max_k]->Show();
-  
+    for (int i=0; i<n_states; ++i) {
+        delete state_prior[i];
+        delete observation_prior[i];
+    }
     for (int k=0; k<n_particles; ++k) {
         delete hmm[k];
         delete belief[k];
@@ -113,4 +116,95 @@ Vector DiscreteHiddenMarkovModelPF::getPrediction()
 
 void DiscreteHiddenMarkovModelPF::Reset()
 {
+}
+
+//------------------ DiscreteHiddenMarkovModelPF_ReplaceLowest ---------------//
+
+
+real DiscreteHiddenMarkovModelPF_ReplaceLowest::Observe(int x)
+{
+    int min_k = ArgMin(log_w);
+    while (log_w[min_k] < replacement_threshold) {
+        int k = DiscreteDistribution::generate(w);
+        real alpha = 0.5;
+        std::vector<MultinomialDistribution>& PS_k = hmm[k]->getStateProbablities();
+        std::vector<MultinomialDistribution>& PX_k = hmm[k]->getObservationProbablities();
+        std::vector<MultinomialDistribution>& PS_min = hmm[min_k]->getStateProbablities();
+        std::vector<MultinomialDistribution>& PX_min = hmm[min_k]->getObservationProbablities();
+        for (int i=0; i<n_states; ++i) {
+            for (int j=0; j<n_states; ++j) {
+                PS_min[i].Pr(j) = PS_k[i].Pr(j) * alpha + PS_min[i].Pr(j) * (1 - alpha);
+            }
+            for (int j=0; j<n_observations; ++j) {
+                PX_min[i].Pr(j) = PX_k[i].Pr(j) * alpha + PX_min[i].Pr(j) * (1 - alpha);
+            }
+        }
+        log_w[min_k] = logAdd(log(alpha) + log_w[k], log(1 - alpha) + log_w[min_k]);
+        min_k = ArgMin(log_w);
+    }
+    // normalise weights
+    log_w -= log_w.logSum();
+        
+    real log_sum = LOG_ZERO;
+
+    // calculate p(x|k) and p(x) = sum_k p(x,k)
+    for (int k=0; k<n_particles; ++k) {
+        P_x[k] = belief[k]->Observe(x);
+        log_P_x[k] = log(P_x[k]) + log_w[k];
+        log_sum = logAdd(log_sum, log_P_x[k]);
+    }
+    
+    // p(k|x) = p(x|k) / p(x)
+    log_w = log_P_x - log_sum;
+    w = exp(log_w);
+
+
+    return exp(log_sum);
+}
+
+//------------- DiscreteHiddenMarkovModelPF_ReplaceLowestExact --------------//
+
+
+
+real DiscreteHiddenMarkovModelPF_ReplaceLowestExact::Observe(int x)
+{
+    history.push_back(x);
+    int min_k = ArgMin(log_w);
+    while (log_w[min_k] < replacement_threshold) {
+        int k = DiscreteDistribution::generate(w);
+        real alpha = 0.5;
+        std::vector<MultinomialDistribution>& PS_k = hmm[k]->getStateProbablities();
+        std::vector<MultinomialDistribution>& PX_k = hmm[k]->getObservationProbablities();
+        std::vector<MultinomialDistribution>& PS_min = hmm[min_k]->getStateProbablities();
+        std::vector<MultinomialDistribution>& PX_min = hmm[min_k]->getObservationProbablities();
+        for (int i=0; i<n_states; ++i) {
+            for (int j=0; j<n_states; ++j) {
+                PS_min[i].Pr(j) = PS_k[i].Pr(j) * alpha + PS_min[i].Pr(j) * (1 - alpha);
+            }
+            for (int j=0; j<n_observations; ++j) {
+                PX_min[i].Pr(j) = PX_k[i].Pr(j) * alpha + PX_min[i].Pr(j) * (1 - alpha);
+            }
+        }
+        log_w[min_k] = logAdd(log(alpha) + log_w[k], log(1 - alpha) + log_w[min_k]);
+        belief[min_k]->Reset();
+        belief[min_k]->Observe(history);
+        min_k = ArgMin(log_w);
+    }
+    // normalise weights
+    log_w -= log_w.logSum();
+   
+    real log_sum = LOG_ZERO;
+
+    // calculate p(x|k) and p(x) = sum_k p(x,k)
+    for (int k=0; k<n_particles; ++k) {
+        P_x[k] = belief[k]->Observe(x);
+        log_P_x[k] = log(P_x[k]) + log_w[k];
+        log_sum = logAdd(log_sum, log_P_x[k]);
+    }
+    
+    // p(k|x) = p(x|k) / p(x)
+    log_w = log_P_x - log_sum;
+    w = exp(log_w);
+
+    return exp(log_sum);
 }

@@ -111,6 +111,16 @@ Vector& Vector::operator= (const Vector& rhs)
     return *this;
 }
 
+/// log Sum of all in vector
+real Vector::logSum() const
+{
+    real log_sum = LOG_ZERO;
+    for (int i=0; i<n; ++i) {
+        log_sum = logAdd (log_sum, x[i]);
+    }
+    return log_sum;
+}
+
 /// Sum of all in vector
 real Vector::Sum() const
 {

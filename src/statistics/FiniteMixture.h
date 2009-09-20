@@ -134,7 +134,7 @@ public:
         // log p(k|x) = log p(x,k) - log  p(x)
         log_Pr = log_L - log_sum;
         Pr = exp(log_Pr);
-
+        assert(approx_eq(Pr.Sum(), 1));
         return exp(log_sum);
     }
 

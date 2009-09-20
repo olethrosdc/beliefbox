@@ -24,6 +24,8 @@
 struct ErrorStatistics
 {
     std::vector<real> loss;
+    ErrorStatistics(int T) : loss(T)
+    {}
 };
 
 void print_result(const char* fname, ErrorStatistics& error)
@@ -120,21 +122,20 @@ int main (int argc, char** argv)
     double bmc_time = 0;
     double bpsr_time = 0;
     double hmm_time = 0;
+    double hmm_rep_time = 0;
 
     double initial_time  = GetCPU();
     double elapsed_time = 0;
 
-    ErrorStatistics oracle_error;
-    ErrorStatistics bmc_error;
-    ErrorStatistics bpsr_error;
-    ErrorStatistics hmm_error;
-    oracle_error.loss.resize(T);
-    bmc_error.loss.resize(T);
-    bpsr_error.loss.resize(T);
-    hmm_error.loss.resize(T);
+    ErrorStatistics oracle_error(T);
+    ErrorStatistics bmc_error(T);
+    ErrorStatistics bpsr_error(T);
+    ErrorStatistics hmm_error(T);
+    ErrorStatistics hmm_rep_error(T);
 
     for (int iter=0; iter<n_iter; iter++) {
-        real stationarity = 0.9;
+        //real stationarity = 0.9;
+        real true_stationarity = 0.5 + 0.5*urandom();
         double remaining_time = (real) (n_iter - iter) * elapsed_time / (real) iter;
         printf ("# iter: %d, %.1f running, %.1f remaining\n", iter, elapsed_time, remaining_time);
         
@@ -147,14 +148,15 @@ int main (int argc, char** argv)
 
         //logmsg ("Making Markov chain\n");
         // the actual model that generates the data
-        DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM (n_mc_states,  n_observations,  stationarity);
+        DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM (n_mc_states,  n_observations,  true_stationarity);
         DiscreteHiddenMarkovModelStateBelief oracle(hmm);
 
         real hmm_threshold = 0.5;
         real hmm_stationarity = 0.9;
-        real hmm_particles = 16;
+        real hmm_particles = 128;
         //DiscreteHiddenMarkovModelPF hmm_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
-        DHMM_PF_Mixture hmm_pf(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
+        DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF> hmm_pf(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
+        DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_rep(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
 
         //logmsg ("Observing chain outputs\n");
         oracle.Reset();
@@ -185,6 +187,11 @@ int main (int argc, char** argv)
             if (hmm_prediction != observation) {
                 hmm_error.loss[t] += 1.0;
             }
+
+            int hmm_rep_prediction = hmm_pf_rep.predict();
+            if (hmm_rep_prediction != observation) {
+                hmm_rep_error.loss[t] += 1.0;
+            }
             
             double start_time, end_time;
 
@@ -203,11 +210,15 @@ int main (int argc, char** argv)
             end_time = GetCPU();
             bpsr_time += end_time - start_time;
 
-
             start_time = end_time;;
             hmm_pf.Observe(observation);                               
             end_time = GetCPU();
             hmm_time += end_time - start_time;
+
+            start_time = end_time;;
+            hmm_pf_rep.Observe(observation);                               
+            end_time = GetCPU();
+            hmm_rep_time += end_time - start_time;
         }
 
         double end_time = GetCPU();
@@ -217,17 +228,19 @@ int main (int argc, char** argv)
         delete hmm;
     }
 
-    printf ("# Time -- Oracle: %f, HMM: %f, BHMC: %f, BPSR: %f\n", 
-            oracle_time, hmm_time, bmc_time, bpsr_time);
+    printf ("# Time -- Oracle: %f, HMM: %f, HMM R: %f, BHMC: %f, BPSR: %f\n", 
+            oracle_time, hmm_time, hmm_rep_time, bmc_time, bpsr_time);
 
     real inv_iter = 1.0 / (real) n_iter;
     for (int t=0; t<T; ++t) {
         hmm_error.loss[t] *= inv_iter;
+        hmm_rep_error.loss[t] *= inv_iter;
         oracle_error.loss[t] *= inv_iter;
         bmc_error.loss[t] *= inv_iter;
         bpsr_error.loss[t] *= inv_iter;
     }
     print_result("hmm.error", hmm_error);
+    print_result("hmm_rep.error", hmm_rep_error);
     print_result("oracle.error", oracle_error);
     print_result("bmc.error", bmc_error);
     print_result("bpsr.error", bpsr_error);
