@@ -153,9 +153,9 @@ int main (int argc, char** argv)
 
         real hmm_threshold = 0.5;
         real hmm_stationarity = 0.9;
-        real hmm_particles = 128;
-        //DiscreteHiddenMarkovModelPF hmm_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
-        DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF> hmm_pf(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
+        int hmm_particles = 128;
+        DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
+        //DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF> hmm_pf(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
         DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_rep(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
 
         //logmsg ("Observing chain outputs\n");
