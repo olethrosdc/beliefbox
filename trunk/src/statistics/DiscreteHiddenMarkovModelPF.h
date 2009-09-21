@@ -46,6 +46,7 @@ public:
     virtual ~DiscreteHiddenMarkovModelPF();
     virtual real Observe(int x);
     virtual void Reset();
+    void Show();
 };
 
 // Replace lowest thing

@@ -95,7 +95,7 @@ DiscreteHiddenMarkovModelStateBelief::DiscreteHiddenMarkovModelStateBelief(int n
 {
 }
 
-/** Update belief from observations
+/** Update belief from next observation
     
     \f[
     b_{t+1}(s_{t+1})
@@ -129,7 +129,9 @@ real DiscreteHiddenMarkovModelStateBelief::Observe(int x)
     return sum;
 }
 
-real DiscreteHiddenMarkovModelStateBelief::Observe(std::vector<int> x)
+/** Update belief from a sequence of observations
+ */
+real DiscreteHiddenMarkovModelStateBelief::Observe(std::vector<int>& x)
 {
     real sum = 0.0;
     for (uint i=0; i<x.size(); ++i) {
@@ -138,11 +140,13 @@ real DiscreteHiddenMarkovModelStateBelief::Observe(std::vector<int> x)
     return sum;
 }
 
+/// Get the current belief
 Vector DiscreteHiddenMarkovModelStateBelief::getBelief()
 {
     return B.getMean();
 }
 
+/// Get the current prediction
 Vector DiscreteHiddenMarkovModelStateBelief::getPrediction()
 {
     int n_observations = hmm->getNObservations();
@@ -156,6 +160,7 @@ Vector DiscreteHiddenMarkovModelStateBelief::getPrediction()
     return Px;
 }
 
+/// Reset the belief to uniform
 void DiscreteHiddenMarkovModelStateBelief::Reset()
 {
     real p = 1.0 / (real) n_states;

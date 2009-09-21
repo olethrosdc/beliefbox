@@ -85,7 +85,7 @@ public:
     DiscreteHiddenMarkovModelStateBelief(int n_states_, int start_state);
     DiscreteHiddenMarkovModelStateBelief(int n_states_, MultinomialDistribution& initial_distribution);
     real Observe(int x);
-    real Observe(std::vector<int> x);
+    real Observe(std::vector<int>& x);
     Vector getBelief();
     Vector getPrediction();
     int predict()

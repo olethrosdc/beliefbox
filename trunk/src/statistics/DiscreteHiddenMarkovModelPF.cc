@@ -118,6 +118,14 @@ void DiscreteHiddenMarkovModelPF::Reset()
 {
 }
 
+void DiscreteHiddenMarkovModelPF::Show()
+{
+    for (int k=0; k<n_particles; ++k) {
+        printf ("w[%d] = %f\n", k, w[k]);
+        hmm[k]->Show();
+    }
+}
+
 //------------------ DiscreteHiddenMarkovModelPF_ReplaceLowest ---------------//
 
 
@@ -126,7 +134,7 @@ real DiscreteHiddenMarkovModelPF_ReplaceLowest::Observe(int x)
     int min_k = ArgMin(log_w);
     while (log_w[min_k] < replacement_threshold) {
         int k = DiscreteDistribution::generate(w);
-        real alpha = 0.5;
+        real alpha = 0.1;
         std::vector<MultinomialDistribution>& PS_k = hmm[k]->getStateProbablities();
         std::vector<MultinomialDistribution>& PX_k = hmm[k]->getObservationProbablities();
         std::vector<MultinomialDistribution>& PS_min = hmm[min_k]->getStateProbablities();
@@ -172,7 +180,7 @@ real DiscreteHiddenMarkovModelPF_ReplaceLowestExact::Observe(int x)
     int min_k = ArgMin(log_w);
     while (log_w[min_k] < replacement_threshold) {
         int k = DiscreteDistribution::generate(w);
-        real alpha = 0.5;
+        real alpha = 0.1;
         std::vector<MultinomialDistribution>& PS_k = hmm[k]->getStateProbablities();
         std::vector<MultinomialDistribution>& PX_k = hmm[k]->getObservationProbablities();
         std::vector<MultinomialDistribution>& PS_min = hmm[min_k]->getStateProbablities();
