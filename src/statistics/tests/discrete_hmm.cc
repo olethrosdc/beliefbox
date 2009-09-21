@@ -130,6 +130,18 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
     model_stats += hmm_pf_mixture.getWeights();
     rep_model_stats += hmm_pf_rep_mixture.getWeights();
     rep_ex_model_stats += hmm_pf_rep_ex_mixture.getWeights();
+
+    printf ("## True HMM\n");
+    hmm->Show();
+
+    printf ("## PF HMM\n");
+    hmm_pf.Show();
+
+    printf ("## PF Rep HMM\n");
+    hmm_rep_pf.Show();
+
+    printf ("## PF Rep Exact HMM\n");
+    hmm_rep_ex_pf.Show();
 }
 
 
