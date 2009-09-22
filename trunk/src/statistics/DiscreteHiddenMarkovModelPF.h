@@ -22,6 +22,7 @@
  */
 /*@{*/
 
+/// This is a generic particle filter for estimating hidden Markov models
 class DiscreteHiddenMarkovModelPF
 {
 protected:
@@ -49,7 +50,7 @@ public:
     void Show();
 };
 
-// Replace lowest thing
+/// This particle filter only replaces particles with very small weight
 class DiscreteHiddenMarkovModelPF_ReplaceLowest : public DiscreteHiddenMarkovModelPF
 {
 public:
@@ -65,7 +66,23 @@ public:
     virtual real Observe(int x);
 };
 
-// Replace lowest particle
+/// This particle filter only replaces particles with very small weight
+class DiscreteHiddenMarkovModelPF_ISReplaceLowest : public DiscreteHiddenMarkovModelPF
+{
+public:
+    real replacement_threshold;
+    DiscreteHiddenMarkovModelPF_ISReplaceLowest(real threshold, real stationarity, int n_states_, int n_observations_, int n_particles_) : 
+        DiscreteHiddenMarkovModelPF(threshold, stationarity, n_states_, n_observations_,  n_particles_)
+    {
+        replacement_threshold = - 2 * log((real) n_particles);
+    }  
+    virtual ~DiscreteHiddenMarkovModelPF_ISReplaceLowest()
+    {
+    }
+    virtual real Observe(int x);
+};
+
+/// This particle filter only replaces some particles but uses all history to 
 class DiscreteHiddenMarkovModelPF_ReplaceLowestExact: public DiscreteHiddenMarkovModelPF
 {
 public:
@@ -81,6 +98,26 @@ public:
     }
     virtual real Observe(int x);
 };
+
+
+/// This particle filter only replaces particles with very small weight
+class DiscreteHiddenMarkovModelPF_Resample : public DiscreteHiddenMarkovModelPF
+{
+protected:
+    long t;
+public:
+    DiscreteHiddenMarkovModelPF_Resample(real threshold, real stationarity, int n_states_, int n_observations_, int n_particles_) : 
+        DiscreteHiddenMarkovModelPF(threshold, stationarity, n_states_, n_observations_,  n_particles_), t(0)
+    {
+    }  
+    virtual ~DiscreteHiddenMarkovModelPF_Resample()
+    {
+    }
+    virtual real Observe(int x);
+    virtual void Reset();
+};
+
+
 
 
 /** This is a mixture of discrete HMM particle filters */
