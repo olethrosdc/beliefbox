@@ -172,7 +172,16 @@ real DiscreteHiddenMarkovModelPF_ReplaceLowest::Observe(int x)
 
 //------------------ DiscreteHiddenMarkovModelPF_ISReplaceLowest ---------------//
 
+/** Replace particles under threshold, but adjust the weight first.
+    
+    This is the same as the standard filter.
 
+    First, calculate
+    \f[
+    P_{t+1}(q_i) = P_t (q_i | x_{t+1}).
+    f\]
+    Then replace low-weight particles by doing
+ */
 real DiscreteHiddenMarkovModelPF_ISReplaceLowest::Observe(int x)
 {
     real log_sum = LOG_ZERO;

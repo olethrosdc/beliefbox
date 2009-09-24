@@ -81,10 +81,10 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
                  Vector& rep_ex_model_stats)
 {
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
-    DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
+    DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     DiscreteHiddenMarkovModelPF_ReplaceLowest hmm_rep_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     //DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-    DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
+    DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
 
     int max_states = 8; //Max(16, 2 * hmm->getNStates())
     model_stats.Resize(max_states);
@@ -94,7 +94,7 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         rep_model_stats[i] = 0;
     }
 
-    DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF> hmm_pf_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
+    DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ISplaceLowest> hmm_pf_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
 
     DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_rep_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
 

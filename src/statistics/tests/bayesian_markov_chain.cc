@@ -121,8 +121,10 @@ int main (int argc, char** argv)
     double oracle_time = 0;
     double bmc_time = 0;
     double bpsr_time = 0;
-    double hmm_time = 0;
-    double hmm_rep_time = 0;
+    double hmm_pf_time = 0;
+    double hmm_is_pf_time = 0;
+    double hmm_pf_exact_time = 0;
+    double hmm_pf_mix_time = 0;
 
     double initial_time  = GetCPU();
     double elapsed_time = 0;
@@ -130,8 +132,10 @@ int main (int argc, char** argv)
     ErrorStatistics oracle_error(T);
     ErrorStatistics bmc_error(T);
     ErrorStatistics bpsr_error(T);
-    ErrorStatistics hmm_error(T);
-    ErrorStatistics hmm_rep_error(T);
+    ErrorStatistics hmm_pf_error(T);
+    ErrorStatistics hmm_is_pf_error(T);
+    ErrorStatistics hmm_pf_exact_error(T);
+    ErrorStatistics hmm_pf_mix_error(T);
 
     for (int iter=0; iter<n_iter; iter++) {
         //real stationarity = 0.9;
@@ -155,15 +159,21 @@ int main (int argc, char** argv)
         real hmm_stationarity = 0.9;
         int hmm_particles = 128;
         DiscreteHiddenMarkovModelPF_ReplaceLowest hmm_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
+        DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_is_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
+        DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_pf_exact(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
         //DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF> hmm_pf(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
-        DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_rep(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
+        DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_mix(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
 
         //logmsg ("Observing chain outputs\n");
         oracle.Reset();
         bmc.Reset();
         bpsr.Reset();
         hmm->Reset();
-        
+        hmm_pf.Reset();
+        hmm_is_pf.Reset();
+        hmm_pf_exact.Reset();
+        hmm_pf_mix.Reset();
+
 
         for (int t=0; t<T; ++t) {
             int observation = hmm->generate();
@@ -183,14 +193,24 @@ int main (int argc, char** argv)
                 bpsr_error.loss[t] += 1.0;
             }
 
-            int hmm_prediction = hmm_pf.predict();
-            if (hmm_prediction != observation) {
-                hmm_error.loss[t] += 1.0;
+            int hmm_pf_prediction = hmm_pf.predict();
+            if (hmm_pf_prediction != observation) {
+                hmm_pf_error.loss[t] += 1.0;
             }
 
-            int hmm_rep_prediction = hmm_pf_rep.predict();
-            if (hmm_rep_prediction != observation) {
-                hmm_rep_error.loss[t] += 1.0;
+            int hmm_is_pf_prediction = hmm_is_pf.predict();
+            if (hmm_is_pf_prediction != observation) {
+                hmm_is_pf_error.loss[t] += 1.0;
+            }
+
+            int hmm_pf_exact_prediction = hmm_pf_exact.predict();
+            if (hmm_pf_exact_prediction != observation) {
+                hmm_pf_exact_error.loss[t] += 1.0;
+            }
+
+            int hmm_pf_mix_prediction = hmm_pf_mix.predict();
+            if (hmm_pf_mix_prediction != observation) {
+                hmm_pf_mix_error.loss[t] += 1.0;
             }
             
             double start_time, end_time;
@@ -213,12 +233,22 @@ int main (int argc, char** argv)
             start_time = end_time;;
             hmm_pf.Observe(observation);                               
             end_time = GetCPU();
-            hmm_time += end_time - start_time;
+            hmm_pf_time += end_time - start_time;
 
             start_time = end_time;;
-            hmm_pf_rep.Observe(observation);                               
+            hmm_is_pf.Observe(observation);                               
             end_time = GetCPU();
-            hmm_rep_time += end_time - start_time;
+            hmm_is_pf_time += end_time - start_time;
+
+            start_time = end_time;;
+            hmm_pf_exact.Observe(observation);                               
+            end_time = GetCPU();
+            hmm_pf_exact_time += end_time - start_time;
+
+            start_time = end_time;;
+            hmm_pf_mix.Observe(observation);                               
+            end_time = GetCPU();
+            hmm_pf_mix_time += end_time - start_time;
         }
 
         double end_time = GetCPU();
@@ -228,19 +258,23 @@ int main (int argc, char** argv)
         delete hmm;
     }
 
-    printf ("# Time -- Oracle: %f, HMM: %f, HMM R: %f, BHMC: %f, BPSR: %f\n", 
-            oracle_time, hmm_time, hmm_rep_time, bmc_time, bpsr_time);
+    printf ("# Time -- Oracle: %f, HMM PF: %f, HMM IS PF: %f, HMM PF EX: %f, HMM PF MIX: %f, BHMC: %f, BPSR: %f\n", 
+            oracle_time, hmm_pf_time, hmm_is_pf_time, hmm_pf_exact_time, hmm_pf_mix_time, bmc_time, bpsr_time);
 
     real inv_iter = 1.0 / (real) n_iter;
     for (int t=0; t<T; ++t) {
-        hmm_error.loss[t] *= inv_iter;
-        hmm_rep_error.loss[t] *= inv_iter;
+        hmm_pf_error.loss[t] *= inv_iter;
+        hmm_is_pf_error.loss[t] *= inv_iter;
+        hmm_pf_exact_error.loss[t] *= inv_iter;
+        hmm_pf_mix_error.loss[t] *= inv_iter;
         oracle_error.loss[t] *= inv_iter;
         bmc_error.loss[t] *= inv_iter;
         bpsr_error.loss[t] *= inv_iter;
     }
-    print_result("hmm.error", hmm_error);
-    print_result("hmm_rep.error", hmm_rep_error);
+    print_result("hmm_pf.error", hmm_pf_error);
+    print_result("hmm_is_pf.error", hmm_is_pf_error);
+    print_result("hmm_pf_exact.error", hmm_pf_exact_error);
+    print_result("hmm_pf_mix.error", hmm_pf_mix_error);
     print_result("oracle.error", oracle_error);
     print_result("bmc.error", bmc_error);
     print_result("bpsr.error", bpsr_error);

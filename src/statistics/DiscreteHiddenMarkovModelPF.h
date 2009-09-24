@@ -185,6 +185,12 @@ public:
     {
         return ArgMax(getPrediction());
     }
+    void Reset()
+    {
+        for (int k=0; k<max_states; ++k) {
+            mixture.GetComponent(k)->Reset();
+        }
+    }
 };
 
 /*@}*/
