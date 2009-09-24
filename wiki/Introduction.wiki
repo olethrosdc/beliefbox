@@ -1,0 +1,9 @@
+#summary A (Bayesian) belief code base for sequential decision making
+
+= Introduction =
+
+This project implements a number of common algorithms for
+problems in sequential inference and decision making.
+
+It also includes some highly experimental code. The codebase
+is extremely unstable and the API likely to change at any time.
