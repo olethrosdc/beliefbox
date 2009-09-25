@@ -67,6 +67,7 @@ public:
         return P_X[s].Pr(x);
     }
     void Show();
+    void ExpectationMaximisation(std::vector<int>& observations, int n_iterations);
 };
 
 
