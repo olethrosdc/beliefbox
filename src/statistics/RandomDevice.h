@@ -16,24 +16,49 @@
 #include "real.h"
 #include "RandomNumberGenerator.h"
 
-class RandomDevice : public RandomNumberGenerator  {
+/** This is a 'high quality' random device */
+class RandomDevice : public RandomNumberGenerator 
+{
 protected:
     bool blocking;
 public:
-    virtual ~RandomDevice() {};
-    /// Initializes the random number generator with the computer clock.
-    static void seed();
-    /// Initializes the random number generator with the given long "the_seed_".
-    static void manualSeed(unsigned long the_seed_);
+    RandomDevice(bool blocking_) : blocking(blocking_)
+    {
+    }
+    virtual ~RandomDevice() 
+    {
+    }
+
+    /// Nothing here
+    virtual void seed()
+    {
+    }
+
+    /// Nothing to be done here
+    virtual void manualSeed(unsigned long the_seed_)
+    {
+    }
 
     /// Returns the starting seed used.
-    static unsigned long getInitialSeed();
+    virtual unsigned long getInitialSeed()
+    {
+        return 0;
+    }
 	
     /// Generates a uniform 32 bits integer.
-    static unsigned long random();
+    virtual unsigned long random()
+    {
+        return true_random_bits(blocking);
+    }
 
     /// Generates a uniform random number on [0,1[.
-    static real uniform();
+    virtual real uniform()
+    {
+        return true_random(blocking);
+    }
 };
 
 #endif
+
+
+

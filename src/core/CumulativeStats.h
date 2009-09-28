@@ -58,12 +58,16 @@ struct CumulativeStats
     {
         assert(p>=0 && p<=1);
         int k = (int) ceil(p * (real) K);
+        k = std::min(k, C.Rows() - 1);
+        assert(k >= 0 && k < K);
         return C.getRow(k);
     }
     Vector TopPercentile(real p)
     {
         assert(p>=0 && p<=1);
         int k = (int) ceil(p * (real) K);
+        k = std::min(k, C.Rows() - 1) + 1;
+        assert(K - k >= 0 && K - k < K);
         return C.getRow(K - k);
     }
     Vector Mean()
