@@ -40,7 +40,8 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 {
     RandomDevice rng(false);
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
-    DiscreteHiddenMarkovModel* estimated_hmm_ptr = hmm;//MakeRandomDiscreteHMM(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng);
+    //DiscreteHiddenMarkovModel* estimated_hmm_ptr = hmm;
+    DiscreteHiddenMarkovModel* estimated_hmm_ptr = MakeRandomDiscreteHMM(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng);
     DiscreteHiddenMarkovModel& estimated_hmm = *estimated_hmm_ptr;
 
     ExpectationMaximisation<DiscreteHiddenMarkovModel, int> EM_algo(estimated_hmm);
@@ -61,7 +62,7 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         em_state_stats.SetValue(t, belief(t, s[t]));
         //printf ("%d %f\n", t, belief(t, s[t]));
     }
-    //delete estimated_hmm_ptr;
+    delete estimated_hmm_ptr;
 }
 
 

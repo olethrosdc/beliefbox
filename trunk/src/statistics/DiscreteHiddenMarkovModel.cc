@@ -80,11 +80,11 @@ void DiscreteHiddenMarkovModel::Show()
   }
 }
 
-void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matrix& belief)
+void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matrix& forward_belief, Matrix& backward_belief)
 {
     int T = observations.size();
-    assert (belief.Rows() == T);
-    assert (belief.Columns() == n_states);
+    assert (forward_belief.Rows() == T);
+    assert (forward_belief.Columns() == n_states);
 
 
     //Show();
@@ -106,7 +106,7 @@ void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
         } else {    
             for (int src=0; src<n_states; ++src) {
                 for (int dst=0; dst<n_states; ++dst) {
-                    B_next[dst] += PrS(src, dst) * belief(t - 1, src);
+                    B_next[dst] += PrS(src, dst) * forward_belief(t - 1, src);
                 }
             }
         }
@@ -114,26 +114,33 @@ void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
         //b'(s') = p(x'|s') b(s') / sum_i b(x',s'=i) 
         real sum = 0.0;
         for (int s=0; s<n_states; ++s) {
-            belief(t, s) = PrX(s, observations[t]) * B_next[s];
-            sum += belief(t,s);
+            forward_belief(t, s) = PrX(s, observations[t]) * B_next[s];
+            sum += forward_belief(t,s);
         }
         real invsum = 1.0 / sum;
         for (int s=0; s<n_states; ++s) {
-            belief(t, s) *= invsum;
+            forward_belief(t, s) *= invsum;
         }
         //B_next.print(stdout);
     }
     
-    printf ("Expectation forward pass\n");
-    belief.print(stdout);
+    //printf ("Expectation forward pass\n");
+    //forward_belief.print(stdout);
+
+    for (int s=0; s<n_states; ++s) {
+        backward_belief(T - 1, s) = forward_belief(T - 1, s);
+    }
 
     // calculate backward pass
     Matrix MB(n_states, n_states);
     for (int t=T-2; t>=0; --t) {
+
+        // P(s|x^T) = sum_j P(s,s'=j | x^T)
+        //          = sum_j P(s|s'=j,x^T) P(s'=j|x^T)
         for (int j=0; j<n_states; ++j) {
             real sum = 0.0;
             for (int k=0; k<n_states; ++k) {
-                MB(k, j) = PrS(k, j) * belief(t, k);
+                MB(k, j) = PrS(k, j) * forward_belief(t, k);
                 sum += MB(k, j);
             }
             real invsum = 1.0 / sum;
@@ -142,14 +149,14 @@ void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
             }
         }
         
-        // P(s|s',x_{1:T}) = P(s|s',x^T) P(s'|x^T)
+        // P(s|x^T) = sum_j P(s|x_T) P(s'=j|x^T)
         real sum = 0.0;
         for (int k=0; k<n_states; ++k) {
-            belief(t, k) = 0;
+            backward_belief(t, k) = 0;
             for (int j=0; j<n_states; ++j) {
-                belief(t, k) += MB(k, j) * belief(t + 1, j);
+                backward_belief(t, k) += MB(k, j) * backward_belief(t + 1, j);
             }
-            sum += belief(t, k);
+            sum += backward_belief(t, k);
         }
         assert(approx_eq(sum, 1.0));
     }
@@ -158,53 +165,68 @@ void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
     for (int t=0; t<T; ++t) {
         real p = 0;
         for (int s=0; s<n_states; ++s) {
-            p += belief(t, s) * PrX(s, observations[t]);
+            p += backward_belief(t, s) * PrX(s, observations[t]);
         }
         log_likelihood += log(p);
     }
 
     printf("log likelihood: %f\n", log_likelihood);
-    printf ("Expectation backward pass\n");
-    belief.print(stdout);
+    //printf ("Expectation backward pass\n");
+    //belief.print(stdout);
 }
 
-void DiscreteHiddenMarkovModel::Maximisation(Matrix& belief)
+void DiscreteHiddenMarkovModel::Maximisation(Matrix& forward_belief, Matrix& backward_belief)
 {
     // states first
     // a_ij = sum_t P(x_{t-1} = i, x_t = j | y)/sum_t P(x_{t-1} = i | y)
-    int T = belief.Rows();
-    assert (belief.Columns() == n_states);
+    int T = forward_belief.Rows();
+    assert (forward_belief.Columns() == n_states);
 
     Matrix hPS(n_states, n_states);
-    for (int t=0; t < T ; t++) {
-        for (int i=0; i<n_states; ++i) {
-            real sum = 0;
-            for (int j=0; j<n_states; ++j) {
-                real P = belief(t, i) * PrS(i,j);
-                hPS(i,j) += P;
-                sum += P;
+
+    for (int i=0; i<n_states; ++i) {
+        real sum = 0.0;
+        for (int j=0; j<n_states; ++j) {
+            real P_ss = 0;
+            real P_s = 0;
+            for (int t=0; t < T - 1; ++t) {
+                real Z = 0;
+                for (int k=0; k<n_states; ++k ) {
+                    Z += forward_belief(t, k) * PrS(k, j);
+                }
+                P_ss += forward_belief(t, i) * PrS(i, j) * backward_belief(t + 1, j) / Z;
+                P_s += backward_belief(t, i);
             }
-            real invsum = 1.0 / sum;
-            for (int j=0; j<n_states; ++j) {
-                hPS(i,j) *= invsum;
-            }
+            hPS(i,j) = P_ss / P_s;
+            sum += hPS(i, j);
         }
+        assert(approx_eq(sum, 1));
     }
     
     // b_jk = sum_t P(x_t = j, y_t = k | y) / sum_t P(x_t = j | y) 
     Matrix hPX(n_states, n_observations);
-    for (int t=0; t < T; t++) {
+    for (int j=0; j<n_states; ++j) {
+        for (int k=0; k<n_observations; ++k) {
+            real P_sx = 0;
+            real P_s = 0;
+            for (int t=0; t < T; t++) {
+                P_sx += backward_belief(t, j) * PrX(j, k);
+                P_s += backward_belief(t,j);
+            }
+            hPX(j, k) = P_sx / P_s;
+        }
+    }
+
+    hPS.print(stdout);
+    hPX.print(stdout);
+    
+    // copy results
+    for (int i=0; i<n_states; ++i) {
         for (int j=0; j<n_states; ++j) {
-            real sum = 0;
-            for (int k=0; k<n_observations; ++k) {
-                real P = belief(t, j) * PrX(j,k);
-                hPX(j,k) += P;
-                sum += P;
-            }
-            real invsum = 1.0 / sum;
-            for (int k=0; k<n_observations; ++k) {
-                hPX(j,k) *= invsum;
-            }
+            PrS(i, j) = hPS(i, j);
+        }
+        for (int j=0; j<n_observations; ++j) {
+            PrX(i, j) = hPX(i, j);
         }
     }
 }
@@ -223,13 +245,14 @@ void DiscreteHiddenMarkovModel::ExpectationMaximisation(std::vector<int>& observ
 
     int T = observations.size();
     _belief.Resize(T, n_states);
- 
+    Matrix forward_belief(T, n_states);
+
     for (int iter=0; iter<n_iterations; ++iter) {
         // Expectation step.
-        Expectation(observations, _belief);
+        Expectation(observations, forward_belief, _belief);
 
         // maximisation step
-        Maximisation(_belief);
+        Maximisation(forward_belief, _belief);
     }
 }
 
