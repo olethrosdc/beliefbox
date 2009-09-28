@@ -29,6 +29,7 @@ protected:
     std::vector<MultinomialDistribution> P_S; ///< Transition distribution
     std::vector<MultinomialDistribution> P_X; ///< Emission distribution
     int current_state;
+    Matrix _belief; ///< state belief, for EM
 public:
     DiscreteHiddenMarkovModel(Matrix& Pr_S, Matrix& Pr_X);
     DiscreteHiddenMarkovModel(int n_states_, int n_observations_);
@@ -67,11 +68,18 @@ public:
         return P_X[s].Pr(x);
     }
     void Show();
+    void Expectation(std::vector<int>& observations, Matrix& belief);
+    void Maximisation(Matrix& belief);
     void ExpectationMaximisation(std::vector<int>& observations, int n_iterations);
+    Matrix& getBelief()
+    {
+        return _belief;
+    }
 };
 
 
-
+class RandomNumberGenerator;
+DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observations, real stationarity, RandomNumberGenerator* rng);
 
 
 class DiscreteHiddenMarkovModelStateBelief

@@ -99,6 +99,14 @@ Vector::~Vector()
     }
 }
 
+void Vector::print(FILE* f)
+{
+    for (int i=0; i<n; ++i) {
+        fprintf (f, "%f ", x[i]);
+    }
+    fprintf(f, "\n");
+}
+
 /// Assignment operator
 Vector& Vector::operator= (const Vector& rhs)
 {

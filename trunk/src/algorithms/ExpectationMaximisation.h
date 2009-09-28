@@ -26,7 +26,7 @@ public:
     std::vector<X> observations;
     ExpectationMaximisation(Model& model_) : model(model_)
     {
-        model->Reset();
+        model.Reset();
     }
     
     void Observe(X x)
@@ -34,7 +34,7 @@ public:
         observations.push_back(x);
     }
     void Iterate(int n_iterations) {
-        model->ExpectationMaximisation(observations, n_iterations);
+        model.ExpectationMaximisation(observations, n_iterations);
     }
 };
 

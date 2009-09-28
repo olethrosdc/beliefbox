@@ -1,54 +1,25 @@
+/* -*- Mode: C++; -*- */
+/* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
+// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+
+#ifdef MAKE_MAIN
+
 #include "DiscreteHiddenMarkovModel.h"
 #include "DiscreteHiddenMarkovModelPF.h"
 #include "Matrix.h"
 #include "Dirichlet.h"
 #include "Random.h"
 #include "CumulativeStats.h"
+#include "RandomDevice.h"
 
-DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observations, real stationarity)
-{
-    assert (n_states > 0);
-    assert (n_observations > 0);
-    assert (stationarity >= 0 && stationarity <= 1);
-
-    Matrix Pr_S(n_states, n_states);
-    Matrix Pr_X(n_states, n_observations);
-    for (int i=0; i<n_states; ++i) {
-        real sum = 0.0;
-        for (int j=0; j<n_observations; ++j) {
-            Pr_X(i,j) = 0.1*true_random(false);
-            if (i==j) {
-                Pr_X(i,j) += 1.0;
-            }
-            sum += Pr_X(i,j);
-        }
-        for (int j=0; j<n_observations; ++j) {
-            Pr_X(i,j) /=  sum;
-        }
-        
-    }
-    Matrix S(n_states, n_states);
-    for (int src=0; src<n_states; ++src) {
-        Vector P(n_states);
-        for (int i=0; i<n_states; ++i) {
-            if (i<=src) {
-                P[i] = exp(true_random(false));
-            } else {
-                P[i] = exp(10.0*true_random(false));
-            }
-        }
-        P /= P.Sum();
-        P *= (1 - stationarity);
-        P[src] += stationarity;
-        P /= P.Sum();
-            //real sum = 0.0;
-        for (int dst=0; dst<n_states; ++dst) {
-            Pr_S(src,dst) = P[dst];
-        }
-    }
-
-    return new DiscreteHiddenMarkovModel (Pr_S, Pr_X);
-}
 
 
 template <typename T>
@@ -94,7 +65,7 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         rep_model_stats[i] = 0;
     }
 
-    DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ISplaceLowest> hmm_pf_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
+    DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ISReplaceLowest> hmm_pf_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
 
     DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_rep_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
 
@@ -202,6 +173,8 @@ int main(int argc, char** argv)
     Vector mixture_statistics;
     Vector rep_mixture_statistics;
     Vector rep_ex_mixture_statistics;
+    
+    RandomDevice random_device(false);
 
     for (int i=0; i<n_iter; ++i) {
         real true_stationarity = 0.5 + 0.5 * urandom();
@@ -214,7 +187,7 @@ int main(int argc, char** argv)
         pf_rep_mix_stats.SetSequence(i);
         pf_rep_ex_mix_stats.SetSequence(i);
         fprintf (stderr, "Iter: %d / %d\n", i + 1, n_iter);
-        DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM(n_states,  n_observations, true_stationarity);
+        DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM(n_states,  n_observations, true_stationarity, &random_device);
         TestBelief(hmm, T, threshold, stationarity, n_particles, state_stats, observation_stats, pf_stats, pf_rep_stats, pf_rep_ex_stats, pf_mix_stats, pf_rep_mix_stats, pf_rep_ex_mix_stats, mixture_statistics, rep_mixture_statistics, rep_ex_mixture_statistics);
         delete hmm;
     }
@@ -315,3 +288,4 @@ int main(int argc, char** argv)
     return 0;
 }
 
+#endif
