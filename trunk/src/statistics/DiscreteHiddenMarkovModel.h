@@ -68,7 +68,7 @@ public:
         return P_X[s].Pr(x);
     }
     void Show();
-    void Expectation(std::vector<int>& observations, Matrix& forward_belief, Matrix& backward_belief);
+    real Expectation(std::vector<int>& observations, Matrix& forward_belief, Matrix& backward_belief);
     void Maximisation(Matrix& forward_belief, Matrix& backward_belief);
     void ExpectationMaximisation(std::vector<int>& observations, int n_iterations);
     Matrix& getBelief()

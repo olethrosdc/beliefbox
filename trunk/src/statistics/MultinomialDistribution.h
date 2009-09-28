@@ -26,7 +26,7 @@ public:
 	MultinomialDistribution(int n);
 	MultinomialDistribution();
 	virtual ~MultinomialDistribution();
-	void Resize(int n);
+	virtual void Resize(int n);
 	virtual void generate(Vector* x);
 	virtual Vector generate();
     int generateInt();

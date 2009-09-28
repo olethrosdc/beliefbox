@@ -11,6 +11,8 @@
 
 #include "DiscreteHiddenMarkovModel.h"
 #include "RandomNumberGenerator.h"
+#include <cassert>
+#include <cmath>
 
 DiscreteHiddenMarkovModel::DiscreteHiddenMarkovModel(int n_states_, int n_observations_)
     : n_states(n_states_), n_observations(n_observations_),
@@ -80,13 +82,18 @@ void DiscreteHiddenMarkovModel::Show()
   }
 }
 
-void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matrix& forward_belief, Matrix& backward_belief)
+real DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matrix& forward_belief, Matrix& backward_belief)
 {
     int T = observations.size();
     assert (forward_belief.Rows() == T);
     assert (forward_belief.Columns() == n_states);
 
-
+    for (int t=0; t<T; ++t) {
+        for (int i=0; i<n_states; ++i) {
+            forward_belief(t, i) = -1;
+            backward_belief(t, i) = -1;
+        }
+    }
     //Show();
     
     // initialise the first belief
@@ -117,6 +124,8 @@ void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
             forward_belief(t, s) = PrX(s, observations[t]) * B_next[s];
             sum += forward_belief(t,s);
         }
+        assert (!isnan(sum));
+        assert (sum > 0);
         real invsum = 1.0 / sum;
         for (int s=0; s<n_states; ++s) {
             forward_belief(t, s) *= invsum;
@@ -143,9 +152,16 @@ void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
                 MB(k, j) = PrS(k, j) * forward_belief(t, k);
                 sum += MB(k, j);
             }
-            real invsum = 1.0 / sum;
-            for (int k=0; k<n_states; ++k) {
-                MB(k, j) *= invsum;
+            if (sum == 0) {
+                real inv = 1.0 / (real) n_states;
+                for (int k=0; k<n_states; ++k) {
+                    MB(k, j) = inv;
+                }
+            } else {                
+                real invsum = 1.0 / sum;
+                for (int k=0; k<n_states; ++k) {
+                    MB(k, j) *= invsum;
+                }
             }
         }
         
@@ -158,7 +174,6 @@ void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
             }
             sum += backward_belief(t, k);
         }
-        assert(approx_eq(sum, 1.0));
     }
 
     real log_likelihood = 0;
@@ -170,9 +185,10 @@ void DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
         log_likelihood += log(p);
     }
 
-    printf("log likelihood: %f\n", log_likelihood);
+    //printf("log likelihood: %f\n", log_likelihood);
     //printf ("Expectation backward pass\n");
     //belief.print(stdout);
+    return log_likelihood;
 }
 
 void DiscreteHiddenMarkovModel::Maximisation(Matrix& forward_belief, Matrix& backward_belief)
@@ -185,7 +201,6 @@ void DiscreteHiddenMarkovModel::Maximisation(Matrix& forward_belief, Matrix& bac
     Matrix hPS(n_states, n_states);
 
     for (int i=0; i<n_states; ++i) {
-        real sum = 0.0;
         for (int j=0; j<n_states; ++j) {
             real P_ss = 0;
             real P_s = 0;
@@ -198,9 +213,7 @@ void DiscreteHiddenMarkovModel::Maximisation(Matrix& forward_belief, Matrix& bac
                 P_s += backward_belief(t, i);
             }
             hPS(i,j) = P_ss / P_s;
-            sum += hPS(i, j);
         }
-        assert(approx_eq(sum, 1));
     }
     
     // b_jk = sum_t P(x_t = j, y_t = k | y) / sum_t P(x_t = j | y) 
@@ -217,11 +230,13 @@ void DiscreteHiddenMarkovModel::Maximisation(Matrix& forward_belief, Matrix& bac
         }
     }
 
-    hPS.print(stdout);
-    hPX.print(stdout);
-    
+    //hPS.print(stdout);
+    //hPX.print(stdout);
+
     // copy results
     for (int i=0; i<n_states; ++i) {
+        assert(approx_eq(hPS.RowSum(i), 1));
+        assert(approx_eq(hPX.RowSum(i), 1));
         for (int j=0; j<n_states; ++j) {
             PrS(i, j) = hPS(i, j);
         }
@@ -255,6 +270,7 @@ void DiscreteHiddenMarkovModel::ExpectationMaximisation(std::vector<int>& observ
         Maximisation(forward_belief, _belief);
     }
 }
+
 
 //----------------------------------------------------------------------//
 
