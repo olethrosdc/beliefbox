@@ -297,7 +297,7 @@ real DiscreteHiddenMarkovModelPF_Resample::Observe(int x)
 
     // fill in sampling distribution values
     for (int k=0; k<n_particles; ++k) {
-        real alpha = sqrt(real (t));
+        //real alpha = sqrt(real (t));
         std::vector<MultinomialDistribution>& PS_k = hmm[k]->getStateProbablities();
         std::vector<MultinomialDistribution>& PX_k = hmm[k]->getObservationProbablities();
         for (int i=0; i<n_states; ++i) {
