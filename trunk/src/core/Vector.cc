@@ -346,6 +346,12 @@ const real& Vector::operator[] (int index) const
 }
 
 /// Change size
+void Vector::Clear()
+{ 
+    memset(x, 0, sizeof(real) * n);
+}
+
+/// Change size
 void Vector::Resize(int N_)
 { 
     n = N_;
