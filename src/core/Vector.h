@@ -37,6 +37,7 @@ public:
     Vector (const Vector& rhs);
     ~Vector ();
     Vector& operator= (const Vector& rhs);
+    void Clear();
     void Resize(int N_);
     void CheckBounds(enum BoundsCheckingStatus check = CHECK_BOUNDS)
     {

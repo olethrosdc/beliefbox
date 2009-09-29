@@ -77,7 +77,7 @@ int MultinomialDistribution::generateInt()
             return i;
         }
     }
-
+    return rand()%n;
 }
 Vector MultinomialDistribution::generate()
 {
