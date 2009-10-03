@@ -13,6 +13,7 @@
 #ifdef MAKE_MAIN
 
 #include "DiscreteHiddenMarkovModel.h"
+#include "DiscreteHiddenMarkovModelOnlineEM.h"
 #include "DiscreteHiddenMarkovModelPF.h"
 #include "Matrix.h"
 #include "Dirichlet.h"
@@ -55,8 +56,8 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
     DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     DiscreteHiddenMarkovModelPF_ReplaceLowest hmm_rep_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     //DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-    DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-
+    //DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
+    DiscreteHiddenMarkovModelOnlineEM hmm_rep_ex_pf(hmm->getNStates(), hmm->getNObservations());
     int max_states = 8; //Max(16, 2 * hmm->getNStates())
     model_stats.Resize(max_states);
     rep_model_stats.Resize(max_states);
@@ -170,9 +171,9 @@ int main(int argc, char** argv)
     CumulativeStats pf_mix_stats(T, n_iter);
     CumulativeStats pf_rep_mix_stats(T, n_iter);
     CumulativeStats pf_rep_ex_mix_stats(T, n_iter);
-    Vector mixture_statistics;
-    Vector rep_mixture_statistics;
-    Vector rep_ex_mixture_statistics;
+    Vector mixture_statistics(8);
+    Vector rep_mixture_statistics(8);
+    Vector rep_ex_mixture_statistics(8);
     
     RandomDevice random_device(false);
 

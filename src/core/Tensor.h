@@ -31,11 +31,12 @@ public:
         K = 1;
         for (int i=0; i<n; ++i) {
             if (X[i] == 0) {
-                fprintf(stderr, "Tensor.h: Cannot allocate a dimension of size zero\n");
+                fprintf(stderr, "Tensor.h: Cannot allocate a dimension (%d) of size zero\n", i);
                 exit(-1);
             }
             K *= X[i];
         }
+        //printf ("Making Tensor with %ld elements\n", K);
         data = (real*) calloc(K, sizeof(real));
     }
 
