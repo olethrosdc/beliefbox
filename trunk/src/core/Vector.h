@@ -45,6 +45,16 @@ public:
     }
     real& operator[] (int index); ///< return element for read-write
     const real& operator[] (int index) const; ///< return element for read
+    /// return element for read-write
+    inline real& operator() (int index) 
+    {
+        return (*this)[index];
+    }
+    /// return element for read
+    inline const real& operator() (int index) const 
+    {
+        return (*this)[index];
+    }
     int Size() const { return n;}
     real logSum() const;
     real Sum() const;
