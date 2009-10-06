@@ -61,8 +61,8 @@ DiscreteHiddenMarkovModelOnlineEM::~DiscreteHiddenMarkovModelOnlineEM()
 real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
 {
     assert(x >= 0 && x < n_observations);
-    real eta = 1.0 / T;
     T++;
+    real eta = 1.0 / T;
 
     // Calculate gamma
     Matrix gamma(n_states, n_states);
@@ -72,15 +72,17 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
             AB(l,h) = PrS(l, h) * PrX(h, x);
         }
     }
+
+    real Z_gamma = 0;
+    for (int m=0; m<n_states; ++m) {
+        for (int n=0; n<n_states; ++n) {
+            Z_gamma += q[m] * AB(m,n);
+        }
+    }
+
     for (int l=0; l<n_states; ++l) {
         for (int h=0; h<n_states; ++h) {
-            real Z = 0;
-            for (int m=0; m<n_states; ++m) {
-                for (int n=0; n<n_states; ++n) {
-                    Z += q[m] * AB(m,n);
-                }
-            }
-            gamma(l, h) = AB(l,h) / Z;
+            gamma(l, h) = AB(l,h) / Z_gamma;
         }
     }
 
