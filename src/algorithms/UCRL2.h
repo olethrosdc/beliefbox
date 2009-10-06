@@ -18,7 +18,7 @@
 #include "real.h"
 #include <vector>
 
-class QLearning
+class UCRL2
 {
 protected:
     const int n_states; ///< number of states
@@ -27,17 +27,11 @@ protected:
 
 public:
     UCRL2(int n_states_,
-          int n_actions_,
-          real gamma_,
-          real lambda_,
-          real alpha_ = 0.1,
-          real initial_value_= 0.0,
-          real baseline_ = 0.0);
+          int n_actions_);
     ~UCRL2();
     void Reset();
     real Observe (int action, int next_state, real reward);
     real getValue (int s, int a);
-    
 };
 
 #endif
