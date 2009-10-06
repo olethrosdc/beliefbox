@@ -42,22 +42,25 @@ void DiscreteHiddenMarkovModelOnlineEM::Reset()
 {
     DiscreteHiddenMarkovModel::Reset();
     Phi->Reset();
-    q.Clear();
-    q[0] = 1;
+    real p = 1.0 / (real) n_states;
+    for (int i=0; i<n_states; ++i) {
+        q[i] = p;
+    }
+    
     T = 0;
 }
 
 DiscreteHiddenMarkovModelOnlineEM::~DiscreteHiddenMarkovModelOnlineEM()
 {
-        // nothing to do
+    // nothing to do
     delete Phi;
 }
 
 /** Update EM estimate
    
-    Based on: G. Mongillo and S. Deneve, "Online learning with hidden
-    Markov models", Neural computation 20, 1706-1716 (2008).
- */
+Based on: G. Mongillo and S. Deneve, "Online learning with hidden
+Markov models", Neural computation 20, 1706-1716 (2008).
+*/
 real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
 {
     assert(x >= 0 && x < n_observations);
@@ -70,7 +73,8 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
     for (int l=0; l<n_states; ++l) {
         for (int h=0; h<n_states; ++h) {
             AB(l,h) = PrS(l, h) * PrX(h, x);
-        }
+            printf ("AB %d %d = %f\n", l, h, AB(l,h));
+		}
     }
 
     real Z_gamma = 0;
@@ -101,6 +105,8 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
                     Vector phi_prev(n_states);
                     for (h=0; h<n_states; ++h) {
                         phi_prev(h) = Phi->Y(index);
+                        printf ("phi_{%d %d %d}^%d(T-1) = %f\n",
+                                i, j, k, h, phi_prev(h));
                     }
                     
                     // caclulate new set of values for phi_{ijk}^h
@@ -114,6 +120,8 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
                             sum += gamma(l, h) * (phi_prev(l) + eta  * (hq - phi_prev(l)));
                         } // l
                         Phi->Y(index) = sum;
+                        printf ("phi_{%d %d %d}^%d(T) = %f\n",
+                                i, j, k, h, Phi->Y(index));
                     } // k
                 } // h
             } // j
@@ -130,6 +138,7 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
         }
         q(l) = sum;
         log_p_x += log(q(l)) + log(PrX(l, x));
+        printf ("q(%d) = %f\n", l, q(l));
     }
     
     // update A
@@ -140,18 +149,19 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
         int& j = index[2];
         int& k = index[3];
         for (i=0; i<n_states; ++i) {
-            real sum_aj = 0.0;
+            real sum_ai = 0.0;
             for (j=0; j<n_states; ++j) {
                 real sum = 0.0;
                 for (k=0; k<n_observations; ++k) {
                     for (h=0; h<n_states; ++h) {
-                        sum += Phi->Y(index);
+                        sum += Phi->Y(index) + 0.000001;
                     }
                 }
                 PrS(i, j) = sum;
-                sum_aj += sum;
+                sum_ai += sum;
             }
-            real inv_sum = 1.0 / sum_aj;
+            printf ("sum_%d: %f\n", i, sum_ai);
+            real inv_sum = 1.0 / sum_ai;
             for (j=0; j<n_states; ++j) {
                 PrS(i, j) *= inv_sum;
             }
