@@ -82,10 +82,22 @@ class RandomNumberGenerator;
 DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observations, real stationarity, RandomNumberGenerator* rng);
 
 
+/** Maintain a belief about the current state
+     
+    Given a hidden Markov model, maintain a multinomial distribution
+    over the states given the history of observations.
+    
+    More specifically, for a prior $\pi$ over states and HMM parameters
+    $\theta$, the multinomial distribution $B$ has parameters
+    \[
+    b(i) = \pi(s_t = i | x^t, \theta).
+    \]
+      
+ */
 class DiscreteHiddenMarkovModelStateBelief
 {
-protected:
-    MultinomialDistribution B;
+protected: 
+    MultinomialDistribution B; /// \pi(s_t | x^t)
     int n_states;
 public:
     DiscreteHiddenMarkovModel* hmm;

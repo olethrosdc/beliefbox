@@ -389,12 +389,20 @@ Vector DiscreteHiddenMarkovModelStateBelief::getBelief()
 /// Get the current prediction
 Vector DiscreteHiddenMarkovModelStateBelief::getPrediction()
 {
+
+    Vector Ps(n_states);
+    for (int s2=0; s2<n_states; ++s2) {
+        for (int s=0; s<n_states; ++s) {
+            Ps[s2] += B.Pr(s) * hmm->PrS(s,s2);
+        }
+    }
+
     int n_observations = hmm->getNObservations();
     Vector Px(n_observations);
     for (int x=0; x<n_observations; ++x) {
         Px[x] = 0;
         for (int s=0; s<n_states; ++s) {
-            Px[x] += B.Pr(s) * hmm->PrX(s,x);
+            Px[x] += Ps(s) * hmm->PrX(s,x);
         }
     }
     return Px;

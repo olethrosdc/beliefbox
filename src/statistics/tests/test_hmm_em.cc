@@ -11,6 +11,7 @@
 
 #ifdef MAKE_MAIN
 #include "DiscreteHiddenMarkovModel.h"
+#include "DiscreteHiddenMarkovModelEM.h"
 #include "ExpectationMaximisation.h"
 #include "Matrix.h"
 #include "Dirichlet.h"
@@ -40,32 +41,45 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 {
     RandomDevice rng(false);
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
-    //DiscreteHiddenMarkovModel* estimated_hmm_ptr = hmm;
-    DiscreteHiddenMarkovModel* estimated_hmm_ptr = MakeRandomDiscreteHMM(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng);
-    DiscreteHiddenMarkovModel& estimated_hmm = *estimated_hmm_ptr;
+    //DiscreteHiddenMarkovModel* estimated_hmm_ptr = MakeRandomDiscreteHMM(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng);
+    //DiscreteHiddenMarkovModel& estimated_hmm = *estimated_hmm_ptr;
 
-    ExpectationMaximisation<DiscreteHiddenMarkovModel, int> EM_algo(estimated_hmm);
-    
+    //ExpectationMaximisation<DiscreteHiddenMarkovModel, int> EM_algo(estimated_hmm);
+    DiscreteHiddenMarkovModelEM EM_hmm(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng, n_em_iter);
     std::vector<int> s(T);
     for (int t=0; t<T; ++t) {
         // generate next observation 
         int x = hmm->generate();
         s[t] = hmm->getCurrentState();
-        EM_algo.Observe(x);
-        if (t > 0) {
-            EM_algo.Iterate(1);
+        int oracle_x = hmm_belief_state.predict();
+        real oracle_loss = 0;
+        if (oracle_x != x) {
+            oracle_loss = 1;
         }
+        int em_hmm_x = EM_hmm.predict();
+        real em_hmm_loss = 0;
+        if (em_hmm_x != x) {
+            em_hmm_loss = 1;
+        }
+        oracle_state_stats.SetValue(t, oracle_loss);
+        em_state_stats.SetValue(t, em_hmm_loss);
+        
+        //EM_algo.Observe(x);
+        //if (t > 0) {
+        //    EM_algo.Iterate(1);
+        //}
         hmm_belief_state.Observe(x);
-        oracle_state_stats.SetValue(t, hmm_belief_state.getBelief()[s[t]]);
+        EM_hmm.Observe(x);
+        //oracle_state_stats.SetValue(t, hmm_belief_state.getBelief()[s[t]]);
     }
 
         //    EM_algo.Iterate(n_em_iter);
-    Matrix& belief = estimated_hmm.getBelief();
-    for (int t=0; t<T; ++t) {
-        em_state_stats.SetValue(t, belief(t, s[t]));
+    //Matrix& belief = estimated_hmm.getBelief();
+    //for (int t=0; t<T; ++t) {
+    //        em_state_stats.SetValue(t, belief(t, s[t]));
         //printf ("%d %f\n", t, belief(t, s[t]));
-    }
-    delete estimated_hmm_ptr;
+    //}
+    //delete estimated_hmm_ptr;
 }
 
 
