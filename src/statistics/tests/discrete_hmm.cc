@@ -14,6 +14,7 @@
 
 #include "DiscreteHiddenMarkovModel.h"
 #include "DiscreteHiddenMarkovModelOnlineEM.h"
+#include "DiscreteHiddenMarkovModelEM.h"
 #include "DiscreteHiddenMarkovModelPF.h"
 #include "Matrix.h"
 #include "Dirichlet.h"
@@ -57,7 +58,10 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
     DiscreteHiddenMarkovModelPF_ReplaceLowest hmm_rep_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     //DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     //DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-    DiscreteHiddenMarkovModelOnlineEM hmm_rep_ex_pf(hmm->getNStates(), hmm->getNObservations());
+    //DiscreteHiddenMarkovModelOnlineEM hmm_rep_ex_pf(hmm->getNStates(), hmm->getNObservations(), rng);    
+    RandomDevice rng(false);
+
+    DiscreteHiddenMarkovModelEM hmm_rep_ex_pf(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng, 1);
     int max_states = 8; //Max(16, 2 * hmm->getNStates())
     model_stats.Resize(max_states);
     rep_model_stats.Resize(max_states);
