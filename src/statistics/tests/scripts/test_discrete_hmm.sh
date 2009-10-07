@@ -14,9 +14,9 @@ n_iter=10
 
 for n_obs in 2 4 8 16
 do
-    for n_states in  2 3 4 5 6 7 8
+    for n_states in  2 4 8 16
     do
-        for n_par in 16 128
+        for n_par in 16
         do
             for stat in 0.5 0.9
             do
