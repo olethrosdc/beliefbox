@@ -14,8 +14,11 @@
 #include <cassert>
 #include <cmath>
 
-#if 0
-#define dbg_printf (void)
+#if 1
+inline void dbg_printf(...)
+{
+}
+
 #else
 #define dbg_printf printf
 #endif
