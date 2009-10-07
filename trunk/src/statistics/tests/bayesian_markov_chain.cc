@@ -12,6 +12,7 @@
 
 #ifdef MAKE_MAIN
 #include "DiscreteHiddenMarkovModel.h"
+#include "DiscreteHiddenMarkovModelEM.h"
 #include "DiscreteHiddenMarkovModelPF.h"
 #include "BayesianPredictiveStateRepresentation.h"
 #include "BayesianMarkovChain.h"
@@ -20,6 +21,7 @@
 #include "SparseMarkovChain.h"
 #include "EasyClock.h"
 #include "Dirichlet.h"
+#include "RandomDevice.h"
 #include <ctime>
 struct ErrorStatistics
 {
@@ -39,51 +41,6 @@ void print_result(const char* fname, ErrorStatistics& error)
     }
     fprintf (f, "\n");
     fclose (f);
-}
-
-DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observations, real stationarity)
-{
-    assert (n_states > 0);
-    assert (n_observations > 0);
-    assert (stationarity >= 0 && stationarity <= 1);
-
-    Matrix Pr_S(n_states, n_states);
-    Matrix Pr_X(n_states, n_observations);
-    for (int i=0; i<n_states; ++i) {
-        real sum = 0.0;
-        for (int j=0; j<n_observations; ++j) {
-            Pr_X(i,j) = 0.1*true_random(false);
-            if (i==j) {
-                Pr_X(i,j) += 1.0;
-            }
-            sum += Pr_X(i,j);
-        }
-        for (int j=0; j<n_observations; ++j) {
-            Pr_X(i,j) /=  sum;
-        }
-        
-    }
-    Matrix S(n_states, n_states);
-    for (int src=0; src<n_states; ++src) {
-        Vector P(n_states);
-        for (int i=0; i<n_states; ++i) {
-            if (i<=src) {
-                P[i] = exp(true_random(false));
-            } else {
-                P[i] = exp(10.0*true_random(false));
-            }
-        }
-        P /= P.Sum();
-        P *= (1 - stationarity);
-        P[src] += stationarity;
-        P /= P.Sum();
-            //real sum = 0.0;
-        for (int dst=0; dst<n_states; ++dst) {
-            Pr_S(src,dst) = P[dst];
-        }
-    }
-
-    return new DiscreteHiddenMarkovModel (Pr_S, Pr_X);
 }
 
 int main (int argc, char** argv)
@@ -123,7 +80,7 @@ int main (int argc, char** argv)
     double bpsr_time = 0;
     double hmm_pf_time = 0;
     double hmm_is_pf_time = 0;
-    double hmm_pf_exact_time = 0;
+    double hmm_em_time = 0;
     double hmm_pf_mix_time = 0;
 
     double initial_time  = GetCPU();
@@ -134,9 +91,10 @@ int main (int argc, char** argv)
     ErrorStatistics bpsr_error(T);
     ErrorStatistics hmm_pf_error(T);
     ErrorStatistics hmm_is_pf_error(T);
-    ErrorStatistics hmm_pf_exact_error(T);
+    ErrorStatistics hmm_em_error(T);
     ErrorStatistics hmm_pf_mix_error(T);
-
+    RandomDevice random_device(false);
+    
     for (int iter=0; iter<n_iter; iter++) {
         //real stationarity = 0.9;
         real true_stationarity = 0.5 + 0.5*urandom();
@@ -152,7 +110,7 @@ int main (int argc, char** argv)
 
         //logmsg ("Making Markov chain\n");
         // the actual model that generates the data
-        DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM (n_mc_states,  n_observations,  true_stationarity);
+        DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM (n_mc_states,  n_observations,  true_stationarity, &random_device);
         DiscreteHiddenMarkovModelStateBelief oracle(hmm);
 
         real hmm_threshold = 0.5;
@@ -160,7 +118,7 @@ int main (int argc, char** argv)
         int hmm_particles = 128;
         DiscreteHiddenMarkovModelPF_ReplaceLowest hmm_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
         DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_is_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
-        DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_pf_exact(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
+        DiscreteHiddenMarkovModelEM hmm_em(n_mc_states, n_observations, hmm_stationarity, &random_device, 1);
         //DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF> hmm_pf(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
         DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_mix(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
 
@@ -171,7 +129,7 @@ int main (int argc, char** argv)
         hmm->Reset();
         hmm_pf.Reset();
         hmm_is_pf.Reset();
-        hmm_pf_exact.Reset();
+        hmm_em.Reset();
         hmm_pf_mix.Reset();
 
 
@@ -203,9 +161,9 @@ int main (int argc, char** argv)
                 hmm_is_pf_error.loss[t] += 1.0;
             }
 
-            int hmm_pf_exact_prediction = hmm_pf_exact.predict();
-            if (hmm_pf_exact_prediction != observation) {
-                hmm_pf_exact_error.loss[t] += 1.0;
+            int hmm_em_prediction = hmm_em.predict();
+            if (hmm_em_prediction != observation) {
+                hmm_em_error.loss[t] += 1.0;
             }
 
             int hmm_pf_mix_prediction = hmm_pf_mix.predict();
@@ -241,9 +199,9 @@ int main (int argc, char** argv)
             hmm_is_pf_time += end_time - start_time;
 
             start_time = end_time;;
-            hmm_pf_exact.Observe(observation);                               
+            hmm_em.Observe(observation);                               
             end_time = GetCPU();
-            hmm_pf_exact_time += end_time - start_time;
+            hmm_em_time += end_time - start_time;
 
             start_time = end_time;;
             hmm_pf_mix.Observe(observation);                               
@@ -259,13 +217,13 @@ int main (int argc, char** argv)
     }
 
     printf ("# Time -- Oracle: %f, HMM PF: %f, HMM IS PF: %f, HMM PF EX: %f, HMM PF MIX: %f, BHMC: %f, BPSR: %f\n", 
-            oracle_time, hmm_pf_time, hmm_is_pf_time, hmm_pf_exact_time, hmm_pf_mix_time, bmc_time, bpsr_time);
+            oracle_time, hmm_pf_time, hmm_is_pf_time, hmm_em_time, hmm_pf_mix_time, bmc_time, bpsr_time);
 
     real inv_iter = 1.0 / (real) n_iter;
     for (int t=0; t<T; ++t) {
         hmm_pf_error.loss[t] *= inv_iter;
         hmm_is_pf_error.loss[t] *= inv_iter;
-        hmm_pf_exact_error.loss[t] *= inv_iter;
+        hmm_em_error.loss[t] *= inv_iter;
         hmm_pf_mix_error.loss[t] *= inv_iter;
         oracle_error.loss[t] *= inv_iter;
         bmc_error.loss[t] *= inv_iter;
@@ -273,7 +231,7 @@ int main (int argc, char** argv)
     }
     print_result("hmm_pf.error", hmm_pf_error);
     print_result("hmm_is_pf.error", hmm_is_pf_error);
-    print_result("hmm_pf_exact.error", hmm_pf_exact_error);
+    print_result("hmm_em.error", hmm_em_error);
     print_result("hmm_pf_mix.error", hmm_pf_mix_error);
     print_result("oracle.error", oracle_error);
     print_result("bmc.error", bmc_error);

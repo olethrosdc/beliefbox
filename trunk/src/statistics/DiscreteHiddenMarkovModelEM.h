@@ -86,6 +86,14 @@ public:
     {
         return ArgMax(getPrediction());
     }
+    void Reset()
+    {
+        for (int i=0; i<n_states; ++i) {
+            B.Pr(i) = 1.0 / (real) n_states;
+        }
+        hmm->Reset();
+        EM_algo->Reset();
+    }
 
 };
 
