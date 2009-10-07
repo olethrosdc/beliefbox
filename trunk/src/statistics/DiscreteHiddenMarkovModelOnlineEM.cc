@@ -109,7 +109,7 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
     for (int l=0; l<n_states; ++l) {
         for (int h=0; h<n_states; ++h) {
             AB(l,h) = PrS(l, h) * PrX(h, x);
-                //dbg_printf ("P_S(%d %d) = %f, P_X(%d %d)= %f\n", l, h, PrS(l,h), h, x, PrX(h, x));
+            //dbg_printf ("P_S(%d %d) = %f, P_X(%d %d)= %f\n", l, h, PrS(l,h), h, x, PrX(h, x));
 		}
     }
 
