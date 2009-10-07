@@ -9,7 +9,7 @@ n_states=4
 n_obs=4
 stat=0.9
 n_par=16
-T=1000
+T=10000
 n_iter=10
 
 for n_obs in 2 4 8 16
