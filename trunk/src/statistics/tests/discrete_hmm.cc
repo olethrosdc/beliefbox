@@ -65,7 +65,7 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         model_stats[i] = 0;
         rep_model_stats[i] = 0;
     }
-
+    
     DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ISReplaceLowest> hmm_pf_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
 
     DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_rep_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
@@ -104,18 +104,9 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
     rep_model_stats += hmm_pf_rep_mixture.getWeights();
     rep_ex_model_stats += hmm_pf_rep_ex_mixture.getWeights();
 
-#if 0
+#if 1
     printf ("## True HMM\n");
     hmm->Show();
-
-    printf ("## PF HMM\n");
-    hmm_pf.Show();
-
-    printf ("## PF Rep HMM\n");
-    hmm_rep_pf.Show();
-
-    printf ("## PF Rep Exact HMM\n");
-    hmm_rep_ex_pf.Show();
 #endif
 }
 
