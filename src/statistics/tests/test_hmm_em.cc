@@ -52,11 +52,14 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         int x = hmm->generate();
         s[t] = hmm->getCurrentState();
         EM_algo.Observe(x);
+        if (t > 0) {
+            EM_algo.Iterate(1);
+        }
         hmm_belief_state.Observe(x);
         oracle_state_stats.SetValue(t, hmm_belief_state.getBelief()[s[t]]);
     }
 
-    EM_algo.Iterate(n_em_iter);
+        //    EM_algo.Iterate(n_em_iter);
     Matrix& belief = estimated_hmm.getBelief();
     for (int t=0; t<T; ++t) {
         em_state_stats.SetValue(t, belief(t, s[t]));
@@ -69,7 +72,7 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 int main(int argc, char** argv)
 {
     if (argc != 7) {
-        fprintf(stderr, "Usage: test_hmm_em n_states n_observations stationarity n_particles T n_iter\n");
+        fprintf(stderr, "Usage: test_hmm_em n_states n_observations stationarity  EM_iter T n_iter\n");
         return -1;
     }
     int n_states = atoi(argv[1]);
