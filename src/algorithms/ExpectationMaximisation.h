@@ -36,6 +36,11 @@ public:
     void Iterate(int n_iterations) {
         model.ExpectationMaximisation(observations, n_iterations);
     }
+    void Reset()
+    {
+        observations.resize(0);
+    }
+
 };
 
 /*@}*/
