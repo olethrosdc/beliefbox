@@ -152,7 +152,7 @@ int main (int argc, char** argv)
 
     bmc.Reset();
     bpsr.Reset();
-    //ctw.Reset();
+    ctw.Reset();
     
     
     for (int t=0; t<T; ++t) {

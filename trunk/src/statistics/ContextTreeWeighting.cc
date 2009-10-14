@@ -92,7 +92,7 @@ void ContextTreeWeighting::ObserveNextState(int state)
     
 }
 
-/// Get the probability of the next state
+/// Get the probability of the next state - assumes prediction has been made
 float ContextTreeWeighting::NextStateProbability(int state)
 {
     return Pr_next[state];
@@ -106,6 +106,7 @@ float ContextTreeWeighting::NextStateProbability(int state)
 ///
 int ContextTreeWeighting::predict()
 {
+        //return ArgMax(&Pr_next);
     std::vector<real> weight(n_models);
     Matrix Lkoi(n_models, n_states); // p obs given all models to k
     Matrix P_obs(n_models, n_states); // probability of obs for model k
