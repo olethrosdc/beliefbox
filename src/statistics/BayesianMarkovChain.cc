@@ -98,8 +98,9 @@ float BayesianMarkovChain::NextStateProbability(int state)
         log_sum = logAdd(log_sum, Pr[i] + log(mc[i]->NextStateProbability(state)));
     }
 #else
+    int top_model = std::min(n_models - 1, n_observations);
     real sum = 0.0;
-    for (int i=0; i<n_models; ++i) {
+    for (int i=0; i<=top_model; ++i) {
         sum += Pr[i] * mc[i]->NextStateProbability(state);
     }
     return sum;
@@ -126,11 +127,16 @@ int BayesianMarkovChain::generate()
 /// Generate the next state.
 ///
 /// We are flattening the hierarchical distribution to a simple
-/// multinomial.  This allows us to more accurately generate random
-/// samples (does it ?)
+/// multinomial.  
 ///
 int BayesianMarkovChain::predict()
 {
+    
+    for (int i=0; i<n_states; ++i) {
+        Pr_next[i] = NextStateProbability(i);
+    }
+    return ArgMax(&Pr_next);
+
     int top_model = std::min(n_models - 1, n_observations);
   
     for (int i=0; i<n_states; ++i) {
