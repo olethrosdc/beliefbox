@@ -100,8 +100,8 @@ public:
 };
 
 
-/// This particle filter only replaces particles with very small weight
-class DiscreteHiddenMarkovModelPF_Resample : public DiscreteHiddenMarkovModelPF
+/// This particle replaces all particles 
+class DiscreteHiddenMarkovModelPBPF : public DiscreteHiddenMarkovModelPF
 {
 protected:
     long t;

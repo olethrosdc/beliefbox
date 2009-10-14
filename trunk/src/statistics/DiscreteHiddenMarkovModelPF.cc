@@ -287,7 +287,7 @@ real DiscreteHiddenMarkovModelPF_ReplaceLowestExact::Observe(int x)
 
 
 /// Here we resample from the Dirichlet created by the PF.
-real DiscreteHiddenMarkovModelPF_Resample::Observe(int x)
+real DiscreteHiddenMarkovModelPBPF::Observe(int x)
 {
     t++; // increase number of observations
 
@@ -327,7 +327,7 @@ real DiscreteHiddenMarkovModelPF_Resample::Observe(int x)
     return exp(log_sum);
 }
 
-void DiscreteHiddenMarkovModelPF_Resample::Reset()
+void DiscreteHiddenMarkovModelRBPF::Reset()
 {
     t = 0;
 }
