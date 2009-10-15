@@ -68,7 +68,6 @@ int MultinomialDistribution::generateInt()
 {
     real d=urandom();
     real sum = 0.0;
-	int z = 0;
 	int n = p.Size();
 
     for (int i=0; i<n; i++) {

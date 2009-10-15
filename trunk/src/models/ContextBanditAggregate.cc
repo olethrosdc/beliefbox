@@ -55,7 +55,7 @@ void ContextBanditAggregate::BuildRandomAggregate()
                 zeros++;
             }
         }
-        int s = floor(urandom() * ((real) n_states));
+        int s = (int) floor(urandom() * ((real) n_states));
         while (zeros && X[s].size()!=0) {
             s = (s+1) % n_states;
         }
