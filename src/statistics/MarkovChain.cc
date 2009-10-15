@@ -44,7 +44,7 @@
 */
 MarkovChain::MarkovChain (int n_states, int mem_size)
 {
-    Vector::BoundsCheckingStatus bounds_checking = Vector::NO_CHECK_BOUNDS;
+    //Vector::BoundsCheckingStatus bounds_checking = Vector::NO_CHECK_BOUNDS;
     
     if (mem_size) {
         memory.resize(mem_size);

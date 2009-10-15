@@ -21,6 +21,7 @@
 #include "Random.h"
 #include "CumulativeStats.h"
 #include "RandomDevice.h"
+#include "MersenneTwister.h"
 
 
 
@@ -55,13 +56,16 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 {
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
     DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-    DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichlet hmm_rep_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-    //DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-    //DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
+    DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_rep_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
+    DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     //DiscreteHiddenMarkovModelOnlineEM hmm_rep_ex_pf(hmm->getNStates(), hmm->getNObservations(), rng);    
     RandomDevice rng(false);
 
-    DiscreteHiddenMarkovModelEM hmm_rep_ex_pf(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng, 1);
+    DiscreteHiddenMarkovModelEM hmm_pf_mixture(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng, 1);
+
+    DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichlet hmm_pf_rep_mixture(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
+    DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichletExact hmm_pf_rep_ex_mixture(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
+
     int max_states = 8; //Max(16, 2 * hmm->getNStates())
     model_stats.Resize(max_states);
     rep_model_stats.Resize(max_states);
@@ -70,11 +74,11 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         rep_model_stats[i] = 0;
     }
     
-    DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ISReplaceLowest> hmm_pf_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
-
-    DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_rep_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
-
-    DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowestExact> hmm_pf_rep_ex_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
+    //DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ISReplaceLowest> hmm_pf_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
+    
+    //DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_rep_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
+    
+    //DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowestExact> hmm_pf_rep_ex_mixture(threshold, stationarity, hmm->getNObservations(), n_particles, max_states);
 
     for (int t=0; t<T; ++t) {
         // generate next observation 
@@ -104,9 +108,9 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
     }
 
     // add mixture statistics
-    model_stats += hmm_pf_mixture.getWeights();
-    rep_model_stats += hmm_pf_rep_mixture.getWeights();
-    rep_ex_model_stats += hmm_pf_rep_ex_mixture.getWeights();
+    //    model_stats += hmm_pf_mixture.getWeights();
+    //    rep_model_stats += hmm_pf_rep_mixture.getWeights();
+    //    rep_ex_model_stats += hmm_pf_rep_ex_mixture.getWeights();
 
 #if 1
     printf ("## True HMM\n");
@@ -170,7 +174,12 @@ int main(int argc, char** argv)
     Vector rep_mixture_statistics(8);
     Vector rep_ex_mixture_statistics(8);
     
+    // use this for high quality random generation
     RandomDevice random_device(false);
+
+    // use this for consistent experiments
+    MersenneTwisterRNG fixed_mersenne_twister;
+    fixed_mersenne_twister.manualSeed(0xDEADBEEF);
 
     for (int i=0; i<n_iter; ++i) {
         real true_stationarity = 0.5 + 0.5 * urandom();
@@ -183,7 +192,7 @@ int main(int argc, char** argv)
         pf_rep_mix_stats.SetSequence(i);
         pf_rep_ex_mix_stats.SetSequence(i);
         fprintf (stderr, "Iter: %d / %d\n", i + 1, n_iter);
-        DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM(n_states,  n_observations, true_stationarity, &random_device);
+        DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM(n_states,  n_observations, true_stationarity, &fixed_mersenne_twister);
         TestBelief(hmm, T, threshold, stationarity, n_particles, state_stats, observation_stats, pf_stats, pf_rep_stats, pf_rep_ex_stats, pf_mix_stats, pf_rep_mix_stats, pf_rep_ex_mix_stats, mixture_statistics, rep_mixture_statistics, rep_ex_mixture_statistics);
         delete hmm;
     }

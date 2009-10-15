@@ -48,7 +48,7 @@ void DiscreteMDPAggregate::BuildRandomAggregate()
                 zeros++;
             }
         }
-        int s = floor(urandom() * ((real) n_states));
+        int s = (int) floor(urandom() * ((real) n_states));
         while (zeros && X[s].size()!=0) {
             s = (s+1) % n_states;
         }
@@ -107,7 +107,7 @@ void DiscreteMDPAggregate::BuildGridworldAggregate(Gridworld& gridworld)
                 zeros++;
             }
         }
-        int s = floor(urandom() * ((real) n_states));
+        int s = (int) floor(urandom() * ((real) n_states));
         // make sure you fill in at least one empty aggregated state
         while (zeros && X[s].size()!=0) {
             s = (s+1) % n_states;

@@ -14,6 +14,8 @@
 #include "Matrix.h"
 #include <cmath>
 
+#undef REPLACE_ALL_LOW
+
 DiscreteHiddenMarkovModelPF::DiscreteHiddenMarkovModelPF(real threshold, real stationarity, int n_states_, int n_observations_, int n_particles_)
     :  n_states(n_states_), n_observations(n_observations_), 
        n_particles(n_particles_), hmm(n_particles), belief(n_particles),
@@ -132,7 +134,12 @@ void DiscreteHiddenMarkovModelPF::Show()
 real DiscreteHiddenMarkovModelPF_ReplaceLowest::Observe(int x)
 {
     int min_k = ArgMin(log_w);
-    while (log_w[min_k] < replacement_threshold) {
+#ifdef REPLACE_ALL_LOW
+    int reps = n_particles;
+    while (log_w[min_k] < replacement_threshold && reps-- > 0) {
+#else
+    if (log_w[min_k] < replacement_threshold) {
+#endif
         int k = DiscreteDistribution::generate(w);
         real alpha = 0.1;
         std::vector<MultinomialDistribution>& PS_k = hmm[k]->getStateProbablities();
@@ -196,7 +203,12 @@ real DiscreteHiddenMarkovModelPF_ISReplaceLowest::Observe(int x)
     log_w = log_P_x - log_sum;
 
     int min_k = ArgMin(log_w);
-    while (log_w[min_k] < replacement_threshold) {
+#ifdef REPLACE_ALL_LOW
+    int reps = n_particles;
+    while (log_w[min_k] < replacement_threshold && reps-- > 0) {
+#else
+    if (log_w[min_k] < replacement_threshold) {
+#endif
             /// mix weight with k
         int k = DiscreteDistribution::generate(w);
         real alpha = 0.1;
@@ -236,7 +248,7 @@ real DiscreteHiddenMarkovModelPF_ISReplaceLowest::Observe(int x)
 
 
 
-//------------------ DiscreteHiddenMarkovModelPF_ISReplaceLowest ---------------//
+//------------ DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichlet ---------//
 
 /** Replace particles under threshold, but adjust the weight first.
     
@@ -265,7 +277,12 @@ real DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichlet::Observe(int x)
     log_w = log_P_x - log_sum;
 
     int min_k = ArgMin(log_w);
+#ifdef REPLACE_ALL_LOW
+    int reps = n_particles;
+    while (log_w[min_k] < replacement_threshold && reps-- > 0) {
+#else
     if (log_w[min_k] < replacement_threshold) {
+#endif
             /// mix weight with k
         int k = DiscreteDistribution::generate(w);
         std::vector<MultinomialDistribution>& PS_k = hmm[k]->getStateProbablities();
@@ -319,6 +336,92 @@ real DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichlet::Observe(int x)
 }
 
 
+//----- DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichletExact -----------//
+real DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichletExact::Observe(int x)
+{
+    T++;
+    history.push_back(x);
+    real scale = (real) T;
+    real log_sum = LOG_ZERO;
+    // calculate p(x|k) and p(x) = sum_k p(x,k)
+    for (int k=0; k<n_particles; ++k) {
+        P_x[k] = belief[k]->Observe(x);
+        log_P_x[k] = log(P_x[k]) + log_w[k];
+        log_sum = logAdd(log_sum, log_P_x[k]);
+    }
+    
+    // p(k|x) = p(x|k) / p(x)
+    log_w = log_P_x - log_sum;
+
+    int min_k = ArgMin(log_w);
+#ifdef REPLACE_ALL_LOW
+    int reps = n_particles;
+    while (log_w[min_k] < replacement_threshold && reps-- > 0) {
+#else
+    if (log_w[min_k] < replacement_threshold) {
+#endif
+            /// mix weight with k
+        int k = DiscreteDistribution::generate(w);
+        std::vector<MultinomialDistribution>& PS_k = hmm[k]->getStateProbablities();
+        std::vector<MultinomialDistribution>& PX_k = hmm[k]->getObservationProbablities();
+        std::vector<MultinomialDistribution>& PS_min = hmm[min_k]->getStateProbablities();
+        std::vector<MultinomialDistribution>& PX_min = hmm[min_k]->getObservationProbablities();
+            // create Dirichlet and sample
+        for (int i=0; i<n_states; ++i) {
+                // state Dirichlet
+            Vector v_s(n_states);
+            for (int j=0; j<n_states; ++j) {
+                v_s[j] = scale * PS_k[i].Pr(j);
+            }
+            DirichletDistribution dir_s(v_s);
+            dir_s.generate(v_s);
+            for (int j=0; j<n_states; ++j) {
+                PS_min[i].Pr(j) = v_s[j];
+            }
+            
+                // observation Dirichlet
+            Vector v_x(n_observations);
+            for (int j=0; j<n_observations; ++j) {
+                v_x[j] = scale * PX_k[i].Pr(j);
+            }
+            DirichletDistribution dir_x(v_x);
+            dir_x.generate(v_x);
+            for (int j=0; j<n_observations; ++j) {
+                PX_min[i].Pr(j) = v_x[j];
+            }
+        }
+        log_w[min_k] = log_w[k] - (real) n_particles;
+        belief[min_k]->Reset();
+        belief[min_k]->Observe(history);
+        min_k = ArgMin(log_w);
+    }
+    // normalise weights
+    log_w -= log_w.logSum();
+        
+    log_sum = LOG_ZERO;
+    // calculate p(x|k) and p(x) = sum_k p(x,k)
+    for (int k=0; k<n_particles; ++k) {
+        P_x[k] = belief[k]->Observe(x);
+        log_P_x[k] = log(P_x[k]) + log_w[k];
+        log_sum = logAdd(log_sum, log_P_x[k]);
+    }
+    
+    // p(k|x) = p(x|k) / p(x)
+    log_w = log_P_x - log_sum;
+    w = exp(log_w);
+
+
+    return exp(log_sum);
+}
+
+
+//----- DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichletExact -----------//
+real DiscreteHiddenMarkovModelPF_BootstrapDirichletExact::Observe(int x)
+{
+    // TODO
+}
+
+
 //------------- DiscreteHiddenMarkovModelPF_ReplaceLowestExact --------------//
 
 
@@ -327,7 +430,12 @@ real DiscreteHiddenMarkovModelPF_ReplaceLowestExact::Observe(int x)
 {
     history.push_back(x);
     int min_k = ArgMin(log_w);
-    while (log_w[min_k] < replacement_threshold) {
+#ifdef REPLACE_ALL_LOW
+    int reps = n_particles;
+    while (log_w[min_k] < replacement_threshold && reps-- > 0) {
+#else
+    if (log_w[min_k] < replacement_threshold) {
+#endif
         int k = DiscreteDistribution::generate(w);
         real alpha = 0.1;
         std::vector<MultinomialDistribution>& PS_k = hmm[k]->getStateProbablities();
