@@ -13,16 +13,27 @@
 #include "Dirichlet.h"
 #include "ranlib.h"
 
+/// Create a placeholder Dirichlet
 DirichletDistribution::DirichletDistribution()
 {
     n = 0;
 }
+
+/// Create a Dirichlet with uniform parameters
 DirichletDistribution::DirichletDistribution(int n, real p)
 {
     this->n = n;
     a.Resize(n);
     for (int i=0; i<n; ++i) {
         a[i] = p;
+    }
+}
+
+/// Initialise parameters from a vector
+DirichletDistribution::DirichletDistribution(Vector& x) : n(x.Size()), a(x)
+{
+    for (int i=0; i<n; ++i) {
+        assert(a[i] >= 0);
     }
 }
 
