@@ -112,7 +112,7 @@ public:
 };
 
 /// This particle filter only replaces particles with very small weight
-class DiscreteHiddenMarkovModelPF_BooststraptDirichletExact : public DiscreteHiddenMarkovModelPF
+class DiscreteHiddenMarkovModelPF_BootstrapDirichletExact : public DiscreteHiddenMarkovModelPF
 {
 public:
     real replacement_threshold;
@@ -164,6 +164,23 @@ public:
         replacement_threshold = - 2 * log((real) n_particles);
     }  
     virtual ~DiscreteHiddenMarkovModelPF_ReplaceLowestExact()
+    {
+    }
+    virtual real Observe(int x);
+};
+
+/// This particle filter only replaces some particles but uses all history to keep state
+class DiscreteHiddenMarkovModelPF_ISReplaceLowestExact: public DiscreteHiddenMarkovModelPF
+{
+public:
+    real replacement_threshold;
+    std::vector<int> history; ///< observation history
+    DiscreteHiddenMarkovModelPF_ISReplaceLowestExact(real threshold, real stationarity, int n_states_, int n_observations_, int n_particles_) : 
+        DiscreteHiddenMarkovModelPF(threshold, stationarity, n_states_, n_observations_,  n_particles_)
+    {
+        replacement_threshold = - 2 * log((real) n_particles);
+    }  
+    virtual ~DiscreteHiddenMarkovModelPF_ISReplaceLowestExact()
     {
     }
     virtual real Observe(int x);

@@ -57,7 +57,7 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
     DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_rep_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-    DiscreteHiddenMarkovModelPF_ReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
+    DiscreteHiddenMarkovModelPF_ISReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     //DiscreteHiddenMarkovModelOnlineEM hmm_rep_ex_pf(hmm->getNStates(), hmm->getNObservations(), rng);    
     RandomDevice rng(false);
 
