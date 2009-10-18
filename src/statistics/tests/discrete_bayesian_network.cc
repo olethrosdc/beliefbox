@@ -97,9 +97,9 @@ int main (void)
 {
     int n_iter = 1;
     for (int i=0; i<n_iter; ++i) {
-        int n_vars = 3;//(int) ceil(urandom(1,8));
+        int n_vars = 4;//(int) ceil(urandom(1,8));
         int max_values = 2;
-        test_dbn(n_vars, max_values, 163840);
+        test_dbn(n_vars, max_values, 1638400);
     }
     return 0;
 }
