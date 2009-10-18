@@ -23,7 +23,9 @@
  */
 /*@{*/
 
-
+/** 
+    A node in a Polya tree
+ */
 class PolyaNode
 {
 public:
