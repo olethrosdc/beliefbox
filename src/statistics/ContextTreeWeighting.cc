@@ -21,6 +21,10 @@ ContextTreeWeighting::ContextTreeWeighting(int n_states, int n_models, float pri
     : BayesianMarkovChain(n_states, n_models, prior, dense)
 {
     n_observations = 0;
+    for (int i=0; i<n_models; ++i) {
+        Pr[i] = 1.0 / (real) n_states;
+        log_prior[i] = log(Pr[i]);
+    }
 }
 
 ContextTreeWeighting::~ContextTreeWeighting()
