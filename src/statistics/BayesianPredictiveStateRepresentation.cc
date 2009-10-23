@@ -26,7 +26,11 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
 {
     beliefs.resize(n_models);
     for (int i=0; i<n_models; ++i) {
-        Pr[i] = 1.0 / (real) n_states;
+        if (polya) {
+            Pr[i] = 1.0 / (real) n_states;
+        } else {
+            Pr[i] = 0.5;//1.0 / (real) n_states;
+        }
         log_prior[i] = log(Pr[i]);
     }
 }
