@@ -25,6 +25,10 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
       weight(n_models)
 {
     beliefs.resize(n_models);
+    for (int i=0; i<n_models; ++i) {
+        Pr[i] = 1.0 / (real) n_states;
+        log_prior[i] = log(Pr[i]);
+    }
 }
 
 BayesianPredictiveStateRepresentation::~BayesianPredictiveStateRepresentation()
