@@ -38,8 +38,8 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
 
     float sum = 0.0;
     for (int i=0; i<n_models; ++i) {
-        Pr[i] = 0.5; // (1.0 + float(i)); 
-            //Pr[i] = pow((real) n_states, (real) (-i));
+            //Pr[i] = 0.5; // (1.0 + float(i)); 
+        Pr[i] = pow((real) n_states, (real) (-i));
             //Pr[i] = pow(2,(real) -i);
         sum += Pr[i];
         if (dense) {
