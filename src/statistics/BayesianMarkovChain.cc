@@ -39,15 +39,15 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
     float sum = 0.0;
     for (int i=0; i<n_models; ++i) {
             //Pr[i] = 0.5; // (1.0 + float(i)); 
-        Pr[i] = pow((real) n_states, (real) (-i));
-            //Pr[i] = pow(2,(real) -i);
+            //Pr[i] = pow((real) n_states, (real) (-i));
+        Pr[i] = pow(prior,(real) i);
         sum += Pr[i];
         if (dense) {
             mc[i] = new DenseMarkovChain(n_states, i);
         } else {
             mc[i] = new SparseMarkovChain(n_states, i);
         }
-        mc[i]->setThreshold(prior);
+        mc[i]->setThreshold(0.5);
     }
     for (int i=0; i<n_models; ++i) {
         Pr[i] /= sum;

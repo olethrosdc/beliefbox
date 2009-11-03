@@ -26,11 +26,7 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
 {
     beliefs.resize(n_models);
     for (int i=0; i<n_models; ++i) {
-        if (polya) {
-            Pr[i] = 1.0 / (real) n_states;
-        } else {
-            Pr[i] = 0.5;//1.0 / (real) n_states;
-        }
+        Pr[i] = prior;
         log_prior[i] = log(Pr[i]);
     }
 }
@@ -111,7 +107,7 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
     for (int model=0; model<=top_model; ++model) {
         if (polya) {
             real par = exp(get_belief_param(model));// + log_prior[model]);
-            set_belief_param(model, log(1.0 + par));//- log_prior[model]);
+            set_belief_param(model, log(1.0 + par));// - log_prior[model]);
         } else {
             posterior[model] = weight[model] * P_obs(model, state) / Lkoi(model, state);
             set_belief_param(model, log(posterior[model]) - log_prior[model]);

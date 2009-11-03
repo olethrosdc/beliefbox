@@ -58,10 +58,10 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
     DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_rep_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     DiscreteHiddenMarkovModelPF_ISReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-    //DiscreteHiddenMarkovModelOnlineEM hmm_rep_ex_pf(hmm->getNStates(), hmm->getNObservations(), rng);    
+        //DiscreteHiddenMarkovModelOnlineEM hmm_rep_ex_pf(hmm->getNStates(), hmm->getNObservations(), rng);    
     RandomDevice rng(false);
 
-    DiscreteHiddenMarkovModelEM hmm_pf_mixture(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng, 1);
+   DiscreteHiddenMarkovModelEM hmm_pf_mixture(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng, 1);
 
     DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichlet hmm_pf_rep_mixture(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichletExact hmm_pf_rep_ex_mixture(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
