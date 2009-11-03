@@ -1,7 +1,7 @@
 #! /bin/bash
 
 BINDIR=~/projects/beliefbox/src/statistics/tests/bin
-RESDIR=~/experiments/discrete_hmm
+RESDIR=~/experiments/discrete_hmm/
 
 mkdir -p $RESDIR
 
@@ -12,11 +12,11 @@ n_par=16
 T=10000
 n_iter=10
 
-for n_obs in 2 4 8 16
+for n_obs in 2 4 8
 do
-    for n_states in  2 4 8 16
+    for n_states in  2 4 8
     do
-        for n_par in 16
+        for n_par in 128 1024
         do
             for stat in 0.5 0.9
             do
