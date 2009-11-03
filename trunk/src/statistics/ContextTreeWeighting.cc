@@ -25,7 +25,7 @@ ContextTreeWeighting::ContextTreeWeighting(int n_states, int n_models, float pri
 {
     n_observations = 0;
     for (int i=0; i<n_models; ++i) {
-        Pr[i] = 0.5 ;// (real) n_states;
+        Pr[i] = prior;
         log_prior[i] = log(Pr[i]);
     }
 }

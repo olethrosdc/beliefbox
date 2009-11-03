@@ -159,25 +159,25 @@ int main (int argc, char** argv)
         int observation = data[t];
         
         int bmc_prediction = bmc.predict();
-        bmc_error.accuracy[t] = bmc.NextStateProbability(observation);
+        bmc_error.accuracy[t] += bmc.NextStateProbability(observation);
         if (bmc_prediction != observation) {
             bmc_error.loss[t] += 1.0;
         }
         
         int bpsr_prediction = bpsr.predict();
-        bpsr_error.accuracy[t] = bpsr.NextStateProbability(observation);
+        bpsr_error.accuracy[t] += bpsr.NextStateProbability(observation);
         if (bpsr_prediction != observation) {
             bpsr_error.loss[t] += 1.0;
         }
 
         int polya_prediction = polya.predict();
-        polya_error.accuracy[t] = polya.NextStateProbability(observation);
+        polya_error.accuracy[t] += polya.NextStateProbability(observation);
         if (polya_prediction != observation) {
             polya_error.loss[t] += 1.0;
         }
 
         int ctw_prediction = ctw.predict();
-        ctw_error.accuracy[t] = ctw.NextStateProbability(observation);
+        ctw_error.accuracy[t] += ctw.NextStateProbability(observation);
         if (ctw_prediction != observation) {
             ctw_error.loss[t] += 1.0;
         }
