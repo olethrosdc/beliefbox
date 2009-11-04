@@ -10,23 +10,28 @@ prior=0.02702703
 
 #data_name=splice
 #horizon=194590 # splice data size
-#0.1111111
+##prior=0.1111111
+
+#prior=0.5
 
 outdir=~/experiments/bpsr/${data_name}/KpowN
 mkdir -p $outdir
+cd $outdir
 summary=$outdir/summary.err
+execdir=~/projects/beliefbox/src/statistics/tests/bin
+datadir=~/projects/beliefbox/src/statistics/tests/data
 rm -f $summary
 for (( i=0; i<=16; i++ ))
 do
-    ./bin/bayesian_markov_chain_text ./data/${data_name}.txt $i $horizon $prior | grep Err >>$summary
+    ${execdir}/bayesian_markov_chain_text ${datadir}/${data_name}.txt $i $horizon $prior | grep Err >>$summary
     tail $summary
-    mv bmc_text.error $outdir/bmc${i}.err
-    mv bpsr_text.error $outdir/bpsr${i}.err
-    mv ctw_text.error $outdir/ctw${i}.err
-    mv polya_text.error $outdir/polya${i}.err
-    mv bmc_text.accuracy $outdir/bmc${i}.acc
-    mv bpsr_text.accuracy $outdir/bpsr${i}.acc
-    mv ctw_text.accuracy $outdir/ctw${i}.acc
-    mv polya_text.accuracy $outdir/polya${i}.acc
+    mv bmc_text.error bmc${i}.err
+    mv bpsr_text.error bpsr${i}.err
+    mv ctw_text.error ctw${i}.err
+    mv polya_text.error polya${i}.err
+    mv bmc_text.accuracy bmc${i}.acc
+    mv bpsr_text.accuracy bpsr${i}.acc
+    mv ctw_text.accuracy ctw${i}.acc
+    mv polya_text.accuracy polya${i}.acc
 done
 
