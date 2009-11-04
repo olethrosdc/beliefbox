@@ -1,12 +1,12 @@
 #! /bin/bash
 
-data_name=dorian
-horizon=433520 # picture of dorian gray data size
-prior=0.02173913
+#data_name=dorian
+#horizon=433520 # picture of dorian gray data size
+#prior=0.02173913
 
-#data_name=alice
-#horizon=166862 # alice data size
-#prior=0.02702703
+data_name=alice
+horizon=166862 # alice data size
+prior=0.02702703
 
 #data_name=splice
 #horizon=194590 # splice data size

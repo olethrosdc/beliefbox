@@ -114,13 +114,15 @@ int main (int argc, char** argv)
         DiscreteHiddenMarkovModelStateBelief oracle(hmm);
 
         real hmm_threshold = 0.5;
-        real hmm_stationarity = 0.9;
+        real hmm_stationarity = 0.5;
         int hmm_particles = 128;
-        DiscreteHiddenMarkovModelPF_ReplaceLowest hmm_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
+        DiscreteHiddenMarkovModelPF hmm_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
         DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_is_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
         DiscreteHiddenMarkovModelEM hmm_em(n_mc_states, n_observations, hmm_stationarity, &random_device, 1);
         //DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF> hmm_pf(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
-        DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_mix(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
+        //DiscreteHiddenMarkovModelEM hmm_pf_mix(n_mc_states, n_observations, hmm_stationarity, &random_device, 1);
+        
+            ////DHMM_PF_Mixture<DiscreteHiddenMarkovModelPF_ReplaceLowest> hmm_pf_mix(hmm_threshold, hmm_stationarity, n_observations, hmm_particles, 2 * n_mc_states);
 
         //logmsg ("Observing chain outputs\n");
         oracle.Reset();
@@ -130,11 +132,34 @@ int main (int argc, char** argv)
         hmm_pf.Reset();
         hmm_is_pf.Reset();
         hmm_em.Reset();
-        hmm_pf_mix.Reset();
+            //hmm_pf_mix.Reset();
 
-
+        DiscreteHiddenMarkovModel* estimated_hmm_ptr = MakeRandomDiscreteHMM(hmm->getNStates(), hmm->getNObservations(), 0.5, &random_device);
+        DiscreteHiddenMarkovModel& estimated_hmm = *estimated_hmm_ptr;
+        ExpectationMaximisation<DiscreteHiddenMarkovModel, int> EM_algo(estimated_hmm);
+        DiscreteHiddenMarkovModelStateBelief oracle_em(estimated_hmm_ptr);
+        
+        std::vector<int> data(T);
         for (int t=0; t<T; ++t) {
-            int observation = hmm->generate();
+            data[t] = hmm->generate();
+            EM_algo.Observe(data[t]);
+        }
+        
+        estimated_hmm_ptr->Show();
+        int max_iter = 256;
+        real log_likelihood = LOG_ZERO;
+        for (int iter=0; iter<max_iter; ++iter) {
+            real log_likelihood2 = EM_algo.Iterate(1);
+            printf("%f # log likelihood \n", log_likelihood2);
+            if (log_likelihood2 - log_likelihood < 0.0001) {
+                break;
+            }
+            log_likelihood = log_likelihood2;
+        }
+        estimated_hmm_ptr->Show();
+            hmm->Show();
+        for (int t=0; t<T; ++t) {
+            int observation = data[t];
 
             int oracle_prediction = oracle.predict();
             if (oracle_prediction != observation) {
@@ -166,7 +191,7 @@ int main (int argc, char** argv)
                 hmm_em_error.loss[t] += 1.0;
             }
 
-            int hmm_pf_mix_prediction = hmm_pf_mix.predict();
+            int hmm_pf_mix_prediction = oracle_em.predict();
             if (hmm_pf_mix_prediction != observation) {
                 hmm_pf_mix_error.loss[t] += 1.0;
             }
@@ -204,7 +229,7 @@ int main (int argc, char** argv)
             hmm_em_time += end_time - start_time;
 
             start_time = end_time;;
-            hmm_pf_mix.Observe(observation);                               
+            oracle_em.Observe(observation);                               
             end_time = GetCPU();
             hmm_pf_mix_time += end_time - start_time;
         }
@@ -214,6 +239,7 @@ int main (int argc, char** argv)
         initial_time = end_time;
 
         delete hmm;
+        delete estimated_hmm_ptr;
     }
 
     printf ("# Time -- Oracle: %f, HMM PF: %f, HMM IS PF: %f, HMM PF EX: %f, HMM PF MIX: %f, BHMC: %f, BPSR: %f\n", 

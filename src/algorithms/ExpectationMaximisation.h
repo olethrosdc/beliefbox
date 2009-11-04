@@ -33,8 +33,8 @@ public:
     {
         observations.push_back(x);
     }
-    void Iterate(int n_iterations) {
-        model.ExpectationMaximisation(observations, n_iterations);
+    real Iterate(int n_iterations) {
+        return model.ExpectationMaximisation(observations, n_iterations);
     }
     void Reset()
     {

@@ -51,16 +51,18 @@ public:
     }
     
     
-    void Observe(int x)
+    real Observe(int x)
     {
+        real ret = LOG_ZERO;
         EM_algo->Observe(x);
         T++;
         if (T > 1) {
-            EM_algo->Iterate(n_iter);
+            ret = EM_algo->Iterate(n_iter);
             Matrix& Ps = hmm->getBelief();
             int t = Ps.Rows();
             B = Ps.getRow(t - 1);
         }
+        return ret;
     }
     Vector getPrediction()
     {    
@@ -70,7 +72,6 @@ public:
                 Ps[s2] += B.Pr(s) * hmm->PrS(s,s2);
             }
         }
-        
         int n_observations = hmm->getNObservations();
         Vector Px(n_observations);
         for (int x=0; x<n_observations; ++x) {

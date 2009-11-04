@@ -70,7 +70,7 @@ public:
     void Show();
     real Expectation(std::vector<int>& observations, Matrix& forward_belief, Matrix& backward_belief);
     void Maximisation(Matrix& forward_belief, Matrix& backward_belief);
-    void ExpectationMaximisation(std::vector<int>& observations, int n_iterations);
+    real ExpectationMaximisation(std::vector<int>& observations, int n_iterations);
     Matrix& getBelief()
     {
         return _belief;
