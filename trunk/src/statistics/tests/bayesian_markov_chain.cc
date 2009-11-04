@@ -48,7 +48,7 @@ int main (int argc, char** argv)
     int n_observations = 4;
     int max_states = 4;
     int n_mc_states = 4;
-    float prior = 1.0f;
+    float prior = 0.5f;
     int T = 100;
     int n_iter = 100;
     //real stationarity = 0.99;
