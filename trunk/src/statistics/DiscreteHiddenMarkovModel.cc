@@ -255,20 +255,22 @@ void DiscreteHiddenMarkovModel::Maximisation(Matrix& forward_belief, Matrix& bac
     \f]
     
  */
-void DiscreteHiddenMarkovModel::ExpectationMaximisation(std::vector<int>& observations, int n_iterations)
+real DiscreteHiddenMarkovModel::ExpectationMaximisation(std::vector<int>& observations, int n_iterations)
 {
 
     int T = observations.size();
     _belief.Resize(T, n_states);
     Matrix forward_belief(T, n_states);
-
+    
+    real log_likelihood = LOG_ZERO;
     for (int iter=0; iter<n_iterations; ++iter) {
         // Expectation step.
-        Expectation(observations, forward_belief, _belief);
+        log_likelihood = Expectation(observations, forward_belief, _belief);
 
         // maximisation step
         Maximisation(forward_belief, _belief);
     }
+    return log_likelihood;
 }
 
 
