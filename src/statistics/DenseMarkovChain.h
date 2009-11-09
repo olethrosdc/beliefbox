@@ -32,19 +32,19 @@ public:
     virtual ~DenseMarkovChain ();
 
     /* probabilities */
-    virtual float getTransition (MCState src, int dst);
-    virtual float getProbability (MCState src, int dst);
+    virtual real getTransition (MCState src, int dst);
+    virtual real getProbability (MCState src, int dst);
     virtual void getProbabilities(MCState src, std::vector<real>& p);
     virtual void getNextStateProbabilities(std::vector<real>& p);
-    virtual float pdf(MCState src, Vector q);
-    virtual void setTransition (MCState src, int dst, float value) ;
-    virtual void setThreshold (float threshold);
+    virtual real pdf(MCState src, Vector q);
+    virtual void setTransition (MCState src, int dst, real value) ;
+    virtual void setThreshold (real threshold);
 
 
     /* Training and generation */
     virtual int PushState (int state);
-    virtual float ObserveNextState (int state);
-    virtual float NextStateProbability (int state);
+    virtual real ObserveNextState (int state);
+    virtual real NextStateProbability (int state);
     virtual void Reset ();
     virtual int GenerateStatic ();
     virtual int generate ();

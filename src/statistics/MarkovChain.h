@@ -38,18 +38,18 @@ public:
     virtual ~MarkovChain ();
 
     /* probabilities */
-    virtual float getTransition (MCState src, int dst) = 0;
-    virtual float getProbability (MCState src, int dst) = 0;
+    virtual real getTransition (MCState src, int dst) = 0;
+    virtual real getProbability (MCState src, int dst) = 0;
     virtual void getProbabilities(MCState src, std::vector<real>& p) = 0;
     virtual void getNextStateProbabilities(std::vector<real>& p) = 0;
-    virtual float pdf(MCState src, Vector q) = 0;
-    virtual void setTransition (MCState src, int dst, float value) = 0;
-    virtual void setThreshold (float threshold) = 0;
+    virtual real pdf(MCState src, Vector q) = 0;
+    virtual void setTransition (MCState src, int dst, real value) = 0;
+    virtual void setThreshold (real threshold) = 0;
 
     /* Training and generation */
     virtual int PushState (int state) = 0;
-    virtual float ObserveNextState (int state) = 0;
-    virtual float NextStateProbability (int state) = 0;
+    virtual real ObserveNextState (int state) = 0;
+    virtual real NextStateProbability (int state) = 0;
     virtual void Reset () = 0;
     virtual int GenerateStatic () = 0;
     virtual int generate () = 0;

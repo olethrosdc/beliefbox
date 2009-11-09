@@ -90,7 +90,7 @@ void BayesianMarkovChain::ObserveNextState(int state)
 }
 
 /// Get the probability of the next state
-float BayesianMarkovChain::NextStateProbability(int state)
+real BayesianMarkovChain::NextStateProbability(int state)
 {
 #if 0
     real log_sum = LOG_ZERO;
