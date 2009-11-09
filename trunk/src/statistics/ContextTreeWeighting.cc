@@ -17,7 +17,7 @@
 #include "Matrix.h"
 #include "Distribution.h"
 
-ContextTreeWeighting::ContextTreeWeighting(int n_states, int n_models, float prior, bool dense)
+ContextTreeWeighting::ContextTreeWeighting(int n_states, int n_models, real prior, bool dense)
     : BayesianMarkovChain(n_states, n_models, prior, dense),
        P_obs(n_models, n_states), 
       Lkoi(n_models, n_states),
@@ -96,7 +96,7 @@ void ContextTreeWeighting::ObserveNextState(int state)
 }
 
 /// Get the probability of the next state
-float ContextTreeWeighting::NextStateProbability(int state)
+real ContextTreeWeighting::NextStateProbability(int state)
 {
     Pr_next /= Pr_next.Sum();
     return Pr_next[state];

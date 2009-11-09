@@ -12,6 +12,7 @@
 
 #ifdef MAKE_MAIN
 #include "BayesianPredictiveStateRepresentation.h"
+#include "BayesianHierarchicalMarkovChain.h"
 #include "BayesianMarkovChain.h"
 #include "ContextTreeWeighting.h"
 #include "Random.h"
@@ -125,6 +126,7 @@ int main (int argc, char** argv)
     fclose(file);
 
     double bmc_time = 0;
+    double bhmc_time = 0;
     double bpsr_time = 0;
     double polya_time = 0;
     double ctw_time = 0;
@@ -133,6 +135,7 @@ int main (int argc, char** argv)
     double elapsed_time = 0;
 
     ErrorStatistics bmc_error(T);
+    ErrorStatistics bhmc_error(T);
     ErrorStatistics bpsr_error(T);
     ErrorStatistics polya_error(T);
     ErrorStatistics ctw_error(T);
@@ -142,6 +145,7 @@ int main (int argc, char** argv)
     // our model for the chains
     bool dense = false;
     BayesianMarkovChain bmc(n_observations, 1+max_states, prior, dense);
+    BayesianHierarchicalMarkovChain bhmc(n_observations, 1+max_states, prior, dense);
     BayesianPredictiveStateRepresentation bpsr(n_observations, 1+max_states, prior, false, dense);
     BayesianPredictiveStateRepresentation polya(n_observations, 1+max_states, prior, true, dense);
     ContextTreeWeighting ctw(n_observations, 1+max_states, prior, dense);
@@ -162,6 +166,12 @@ int main (int argc, char** argv)
         bmc_error.accuracy[t] += bmc.NextStateProbability(observation);
         if (bmc_prediction != observation) {
             bmc_error.loss[t] += 1.0;
+        }
+
+        int bhmc_prediction = bhmc.predict();
+        bhmc_error.accuracy[t] += bhmc.NextStateProbability(observation);
+        if (bhmc_prediction != observation) {
+            bhmc_error.loss[t] += 1.0;
         }
         
         int bpsr_prediction = bpsr.predict();
@@ -190,6 +200,12 @@ int main (int argc, char** argv)
         double end_time = GetCPU();
         bmc_time += end_time - start_time;
 
+        // bhmc
+        start_time = end_time;
+        bhmc.ObserveNextState(observation);
+        end_time = GetCPU();
+        bhmc_time += end_time - start_time;
+
         // bpsr
         start_time = end_time;
         bpsr.ObserveNextState(observation);
@@ -214,25 +230,29 @@ int main (int argc, char** argv)
     initial_time = end_time;
         
     
-    printf ("# Time -- BHMC: %f, BPSR: %f, POLYA: %f, CTW: %f\n", 
-            bmc_time, bpsr_time, polya_time, ctw_time);
-    printf ("%.1f %.1f %.1f %.1f # Err\n",
+    printf ("# Time -- BMC: %f, BHMC: %f, BPSR: %f, POLYA: %f, CTW: %f\n", 
+            bmc_time, bhmc_time, bpsr_time, polya_time, ctw_time);
+    printf ("%.1f %.1f %.1f %.1f %.1f # Err\n",
             bmc_error.total_loss(),
+            bhmc_error.total_loss(),
             bpsr_error.total_loss(),
             polya_error.total_loss(),
             ctw_error.total_loss());
-    printf ("%.1f %.1f %.1f %.1f # Acc\n",
+    printf ("%.1f %.1f %.1f %.1f %.1f # Acc\n",
             bmc_error.total_accuracy(),
+            bhmc_error.total_accuracy(),
             bpsr_error.total_accuracy(),
             polya_error.total_accuracy(),
             ctw_error.total_accuracy());
 
     bmc_error.print_result("bmc_text.error");
+    bhmc_error.print_result("bhmc_text.error");
     bpsr_error.print_result("bpsr_text.error");
     polya_error.print_result("polya_text.error");
     ctw_error.print_result("ctw_text.error");
 
     bmc_error.print_accuracy("bmc_text.accuracy");
+    bhmc_error.print_accuracy("bhmc_text.accuracy");
     bpsr_error.print_accuracy("bpsr_text.accuracy");
     polya_error.print_accuracy("polya_text.accuracy");
     ctw_error.print_accuracy("ctw_text.accuracy");

@@ -9,47 +9,37 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#ifndef BAYESIAN_MARKOVCHAIN_H
-#define BAYESIAN_MARKOVCHAIN_H
+#ifndef BAYESIAN_HIERARCHICAL_MARKOVCHAIN_H
+#define BAYESIAN_HIERARCHICAL_MARKOVCHAIN_H
 
-#include "MarkovChain.h"
-#include <vector>
-#include "Vector.h"
+#include "BayesianMarkovChain.h"
+#include "Matrix.h"
 
 /**
    \ingroup StatisticsGroup
 */
 /*@{*/
 
-/// A Markov Chain
-class BayesianMarkovChain
+/// A hierarchical Markov Chain
+class BayesianHierarchicalMarkovChain : public BayesianMarkovChain
 {
 public:
-    int n_states; ///< number of distinct states
-    int n_models; ///< number of models
-    std::vector<MarkovChain*> mc; ///< Markov chain
-    std::vector<real> log_prior;
-    Vector Pr; ///< model probabilities
-    Vector Pr_next; ///< state probabilities
-    int n_observations;
+    Vector weight; ///< weights
+    Vector log_weight; ///< log weights
+    Matrix Lkoi; ///< P(x|B_k) = P(x|B_{k-1}) (1 - w_k) + w_k P(x|M_k)
+    Matrix P_obs; ///< P(x|M_k) 
+    Vector P_next;
+    int prediction;
+    BayesianHierarchicalMarkovChain (int n_states, int n_models, float prior, bool dense = false);
+    virtual ~BayesianHierarchicalMarkovChain();
 
-    BayesianMarkovChain (int n_states, int n_models, float prior, bool dense = false);
-    virtual ~BayesianMarkovChain();
-
-
-    /* Training and generation */
+    /* Training */
     virtual void ObserveNextState (int state);
-    virtual real NextStateProbability (int state);
-    virtual void Reset();
-    virtual int generate();
     virtual int predict();
-    
-    /* Helper functions */  
-    int CalculateStateID ();
-    int  PushState (int state);
-    
-    /* Debug functions */
-    void ShowTransitions ();
+    virtual real NextStateProbability(int state)
+    {
+        return Pr_next[state];
+    }
 };
 /*@}*/
 #endif

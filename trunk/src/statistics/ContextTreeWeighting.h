@@ -31,11 +31,11 @@ protected:
 public:
     int n_observations;
 
-    ContextTreeWeighting (int n_states, int n_models, float prior, bool dense = false);
+    ContextTreeWeighting (int n_states, int n_models, real prior, bool dense = false);
     virtual ~ContextTreeWeighting();
     /* Training and generation */
     virtual void ObserveNextState (int state);
-    virtual float NextStateProbability (int state);
+    virtual real NextStateProbability (int state);
     virtual void Reset();
     virtual int generate();
     virtual int predict();

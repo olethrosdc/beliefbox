@@ -46,7 +46,7 @@ DenseMarkovChain::~DenseMarkovChain()
 
    \return Probability of having observed the next state.
 */
-float DenseMarkovChain::ObserveNextState (int state)
+real DenseMarkovChain::ObserveNextState (int state)
 {
 	assert((state>=0)&&(state<n_states));
 
@@ -71,7 +71,7 @@ float DenseMarkovChain::ObserveNextState (int state)
 
    \return The probability of the transition to that state.
 */
-float DenseMarkovChain::NextStateProbability (int state)
+real DenseMarkovChain::NextStateProbability (int state)
 {
 	assert((state>=0)&&(state<n_states));
 
@@ -83,7 +83,7 @@ float DenseMarkovChain::NextStateProbability (int state)
 
 
 /// Get the number of transitions from \c src to \c dst
-float DenseMarkovChain::getTransition (MCState src, int dst)
+real DenseMarkovChain::getTransition (MCState src, int dst)
 {
 	assert((src>=0)&&(src<n_states));
 	assert((dst>=0)&&(dst<n_states));
@@ -94,7 +94,7 @@ float DenseMarkovChain::getTransition (MCState src, int dst)
 
 
 /// Get the transition probability from \c src to \c dst
-float DenseMarkovChain::getProbability(MCState src, int dst)
+real DenseMarkovChain::getProbability(MCState src, int dst)
 {
     assert((src>=0)&&(src<tot_states));
 	assert((dst>=0)&&(dst<n_states));
@@ -122,7 +122,7 @@ void DenseMarkovChain::getNextStateProbabilities(std::vector<real>& p)
 
 
 /// Get the density of the transition probabilities \c p from \c src
-float DenseMarkovChain::pdf(MCState src, Vector p)
+real DenseMarkovChain::pdf(MCState src, Vector p)
 {
     assert((src>=0)&&(src<tot_states));
     Swarning("Not implemented\n");
@@ -132,7 +132,7 @@ float DenseMarkovChain::pdf(MCState src, Vector p)
 
 
 /// Set the transition probability from \c src to \c dst
-void DenseMarkovChain::setTransition (MCState src, int dst, float value)
+void DenseMarkovChain::setTransition (MCState src, int dst, real value)
 {
 	assert((src>=0)&&(src<tot_states));
 	assert((dst>=0)&&(dst<n_states));
@@ -149,7 +149,7 @@ void DenseMarkovChain::setTransition (MCState src, int dst, float value)
 
    See also MarkovChainSoftmaxNormalize()
 */
-void DenseMarkovChain::setThreshold (float threshold)
+void DenseMarkovChain::setThreshold (real threshold)
 {
 	for (int i=0; i<tot_states; i++) {
 		for (int j=0; j<n_states; j++) {
@@ -186,7 +186,7 @@ void DenseMarkovChain::Reset () {
 */
 void DenseMarkovChain::EstimateProbabilities(MCState src)
 {
-    float sum = 0.0;
+    real sum = 0.0;
     for (int j=0; j<n_states; j++) {
         sum += transitions[src + j*tot_states];
     }
@@ -216,12 +216,12 @@ void DenseMarkovChain::EstimateProbabilities(MCState src)
 
 */
 int DenseMarkovChain::GenerateStatic () {
-	float tot = 0.0f;
+	real tot = 0.0f;
 	int curr = CalculateStateID ();
-	float sel = urandom();
+	real sel = urandom();
     EstimateProbabilities(curr);
 	for (int j=0; j<n_states; j++) {
-        float P = Pr[curr + j*tot_states];
+        real P = Pr[curr + j*tot_states];
 		tot += P;
 		if (sel<=tot && P>0.0f) {
 			return j;
@@ -239,12 +239,12 @@ int DenseMarkovChain::GenerateStatic () {
   
  */
 int DenseMarkovChain::generate () {
-	float tot = 0.0f;
+	real tot = 0.0f;
 	int curr = CalculateStateID ();
-	float sel = urandom();
+	real sel = urandom();
     EstimateProbabilities(curr);
 	for (int j=0; j<n_states; j++) {
-        float P = Pr[curr + j*tot_states];
+        real P = Pr[curr + j*tot_states];
 		tot += P;
 		if (sel<=tot && P>0.0f) {
             PushState(j);
@@ -306,7 +306,7 @@ int  DenseMarkovChain::PushState (int state) {
 int DenseMarkovChain::ShowTransitions () {
 	MCState n_states = tot_states;
 	int j;
-	float tot = 0.0f;
+	real tot = 0.0f;
 
 	printf ("\nState transition dump\n\n");
   

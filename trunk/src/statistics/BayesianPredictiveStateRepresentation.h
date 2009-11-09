@@ -67,7 +67,7 @@ public:
     
     /* Training and generation */
     virtual void ObserveNextState (int state);
-    virtual float NextStateProbability (int state);
+    virtual real NextStateProbability (int state);
     virtual void Reset();
     virtual int generate();
     virtual int predict();

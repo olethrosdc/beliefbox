@@ -53,9 +53,10 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
 
     int top_model = std::min(n_models - 1, n_observations);
 
+#if 1
         // calculate predictions for each model
     for (int model=0; model<=top_model; ++model) {
-        std::vector<real> p(n_states);
+            //std::vector<real> p(n_states);
 
         for (int j=0; j<n_states; j++) {
             P_obs(model, j) =  mc[model]->NextStateProbability(j);
@@ -73,6 +74,20 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
             }
         }
     }
+#else
+    int j = state;
+    for (int model=0; model<=top_model; ++model) {
+        P_obs(model, j) =  mc[model]->NextStateProbability(j);
+            //printf("p(%d): ", i);
+        if (model == 0) {
+            weight[model] = 1;
+            Lkoi(model,j) = P_obs(model,j);
+        } else {
+            weight[model] = exp(log_prior[model] + get_belief_param(model));
+            Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model-1, j); 
+        }
+    }
+#endif
     
     real p_w = 1.0;
     for (int model=top_model; model>=0; model--) {
@@ -90,15 +105,7 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
         Pr_next[s] = Pr_s;
         sum_pr_s += Pr_s;
     }
-#if 0
-    if (fabs(sum_pr_s - 1.0) > 0.001) {
-        if (polya) {
-            fprintf (stderr, "polya ");
-        }
-        fprintf(stderr, "sum: %f\n", sum_pr_s);
-        //exit(-1);
-    }
-#endif
+
       
   // insert new observations
     n_observations++;
@@ -118,7 +125,7 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int state)
 }
 
 /// Get the probability of the next state
-float BayesianPredictiveStateRepresentation::NextStateProbability(int state)
+real BayesianPredictiveStateRepresentation::NextStateProbability(int state)
 {
     Pr_next /= Pr_next.Sum();
     return Pr_next[state];
