@@ -41,6 +41,16 @@ BayesianHierarchicalMarkovChain::BayesianHierarchicalMarkovChain(int n_states, i
 
 BayesianHierarchicalMarkovChain::~BayesianHierarchicalMarkovChain()
 {
+ 
+#if 0
+    printf("# Killing BHMC\n");
+    real w = 1;
+    for (int i=0; i<n_models; ++i) {
+        w *= weight[i];
+            printf ("%f ", w);
+    }
+    printf("\n");
+#endif
 }
 
 
@@ -50,7 +60,7 @@ void BayesianHierarchicalMarkovChain::ObserveNextState(int state)
     int top_model = std::min(n_models - 1, n_observations);
     n_observations++;
     weight[0] = 1;
-
+    log_weight[0] = 0;
         // just calculate the posterior for the current state
     Vector posterior(n_models);
     for (int model=0; model<=top_model; ++model) {
@@ -86,7 +96,7 @@ void BayesianHierarchicalMarkovChain::ObserveNextState(int state)
     for (int s2=0; s2<n_states; s2++) {
         P_next[s2] = Lkoi(top_model, s2);
     }
-
+    prediction = ArgMax(P_next);
 }
 
 int BayesianHierarchicalMarkovChain::predict()

@@ -57,11 +57,12 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
 
 BayesianMarkovChain::~BayesianMarkovChain()
 {
-    //printf("Killing BMC\n");
+        //printf("# Killing BMC\n");
     for (int i=0; i<n_models; ++i) {
-        //mc[i]->ShowTransitions();
+            //printf("%f ", Pr[i]);
         delete mc[i];
     }
+        //printf("\n");
 }
 
 void BayesianMarkovChain::Reset()
