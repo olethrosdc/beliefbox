@@ -80,6 +80,11 @@ public:
     {
         return n_actions;
     }
+    virtual const char* Name()
+    {
+        return "Undefined environment name";
+    }
+
 };
 
 /// Default type for discrete environments

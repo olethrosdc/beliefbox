@@ -18,6 +18,7 @@ ContextBandit::ContextBandit(uint n_actions_,
                              uint values_per_feature,
                              RandomNumberGenerator* rng): n_actions(n_actions_)
 { 
+    printf ("Making bandit!\n");
     this->rng = rng;
     // this bandit is binary
     n_states = (int) round(pow(values_per_feature, n_features));
@@ -110,7 +111,7 @@ bool ContextBandit::Act(int action)
     normal.setMean(getMean(action));
 
     reward = normal.generate();
-    //printf("%f\n", reward);
+    //printf("reward: %f\n", reward);
     state = (int) rng->discrete_uniform(n_states);
 
 
