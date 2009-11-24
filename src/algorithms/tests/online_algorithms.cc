@@ -145,7 +145,8 @@ int main (int argc, char** argv)
                                                goal_value,
                                                rng,
                                                false);
-        Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
+        //Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
+        Gridworld* gridworld= new Gridworld("/home/dimitrak/projects/beliefbox/dat/maze2",  8, 8);
         ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
         if (!strcmp(environment_name, "RandomMDP")) { 
             environment = random_mdp;
