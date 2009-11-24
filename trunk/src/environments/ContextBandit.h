@@ -52,6 +52,10 @@ public:
         return mdp;
     }
     real getMean(int action);
+    virtual const char* Name()
+    {
+        return "Context Bandit";
+    }
 protected:
     NormalDistribution normal;
     DiscreteMDP* mdp;

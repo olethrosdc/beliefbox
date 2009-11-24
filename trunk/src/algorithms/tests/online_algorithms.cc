@@ -156,13 +156,15 @@ int main (int argc, char** argv)
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
-        environment = gridworld;
 
-    
+
         // making sure the number of states & actions is correct
         n_states = environment->getMDP()->GetNStates();
         n_actions = environment->getMDP()->GetNActions();
-
+        
+        std::cout <<  "Creating environment: " << environment_name
+                  << " with " << n_states << "states, "
+                  << n_actions << " actions.\n";
 
         //std::cout << "Creating exploration policy" << std::endl;
         VFExplorationPolicy* exploration_policy = NULL;
@@ -218,16 +220,15 @@ int main (int argc, char** argv)
             model= (MDPModel*)
                 new ContextBanditAggregate(false, 3, 2,
                                            n_states, 4,
-                                          n_actions,
-                                          0.5, 0.0, 1.0);
+                                           n_actions,
+                                           0.5, 0.0, 1.0);
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
                                          gamma,
                                          epsilon,
                                          model,
-                                         true);
+                                         false);
         } else if (!strcmp(algorithm_name, "Collection")) {
-            
             DiscreteMDPCollection* collection = 
                 new DiscreteMDPCollection(*gridworld, 
                                           4,
@@ -241,6 +242,20 @@ int main (int argc, char** argv)
                                               epsilon,
                                               collection,
                                               true);
+        } else if (!strcmp(algorithm_name, "ContextBanditCollection")) {
+            ContextBanditCollection* collection = 
+                new ContextBanditCollection(4,
+                                            n_states,
+                                            n_actions,
+                                            0.5, 0.0, 1.0);
+            model= (MDPModel*) collection;
+
+            algorithm = new ModelBasedRL(n_states,
+                                         n_actions,
+                                         gamma,
+                                         epsilon,
+                                         collection,
+                                         false);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
         }
@@ -352,8 +367,8 @@ Statistics EvaluateAlgorithm (uint n_steps,
                              DiscreteEnvironment* environment,
                              real gamma)
 {
-    std:: cout << "evaluating..." << std::endl;
- 
+    std:: cout << "evaluating..." << environment->Name() << std::endl;
+    
     const DiscreteMDP* mdp = environment->getMDP(); 
     ValueIteration value_iteration(mdp, gamma);
     if (!mdp) {
@@ -388,6 +403,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
             statistics.ep_stats[episode].total_reward += reward;
             statistics.ep_stats[episode].discounted_reward += discount * reward;
             discount *= gamma;
+            //std::cout << "Acting!\n";
             int action = algorithm->Act(reward, state);
             //std::cout << "s:" << state << " r:" << reward << " a:" << action << std::endl;
             bool action_ok = environment->Act(action);
