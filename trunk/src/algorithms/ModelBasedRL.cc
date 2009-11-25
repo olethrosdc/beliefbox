@@ -33,11 +33,6 @@ ModelBasedRL::ModelBasedRL(int n_states_,
 ModelBasedRL::~ModelBasedRL()
 {
     delete value_iteration;
-    if (mdp) {
-        //printf("Discrete MDP from model\n");
-        //mdp->ShowModel();
-        delete mdp;
-    }
 }
 void ModelBasedRL::Reset()
 {
@@ -75,12 +70,7 @@ int ModelBasedRL::Act(real reward, int next_state)
     state = next_state;
 
     if (use_value_iteration) {
-        // re-create the MDP
-        if (mdp) {
-            delete mdp;
-            mdp = NULL;
-        }
-        mdp = model->CreateMDP();
+        mdp = model->getMeanMDP();
         
         // update values
         value_iteration->mdp = mdp;

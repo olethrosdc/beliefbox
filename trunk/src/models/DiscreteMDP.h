@@ -107,6 +107,18 @@ public:
         SingularDistribution* distribution = new SingularDistribution(reward);
         addRewardDistribution(s, a, distribution);
     }
+    // you can use this function more than once per state-action pair
+    inline void setFixedReward(int s, int a, real reward)
+    {   
+        int ID = getID (s, a);
+        if (R[ID]) {
+            R[ID]->setMean(reward);
+            ER[ID] = reward;
+        } else {
+            SingularDistribution* distribution = new SingularDistribution(reward);
+            addRewardDistribution(s, a, distribution);
+        }
+    }
     inline DiscreteStateSet getNextStates(int s, int a) const
     {
         int ID = getID (s,a);

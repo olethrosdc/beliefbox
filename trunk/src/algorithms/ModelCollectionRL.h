@@ -28,7 +28,7 @@
 class ModelCollectionRL : public ModelBasedRL
 {
 protected:
-    std::vector<DiscreteMDP*> mdp_vector;
+    std::vector<const DiscreteMDP*> mdp_vector;
     std::vector<ValueIteration*> vi_vector;
     DiscreteMDPCollection* collection;
     int n_models;

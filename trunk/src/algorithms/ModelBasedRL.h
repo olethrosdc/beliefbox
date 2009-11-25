@@ -33,7 +33,7 @@ protected:
     int state; ///< current state
     int action; ///< current action
     MDPModel* model;
-    DiscreteMDP* mdp;
+    const DiscreteMDP* mdp;
     ValueIteration* value_iteration;
     std::vector<real> tmpQ;
     bool use_value_iteration;

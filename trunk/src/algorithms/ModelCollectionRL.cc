@@ -64,15 +64,10 @@ int ModelCollectionRL::Act(real reward, int next_state)
     }
     
     for (int i = 0; i < n_models; ++i) {
-        // re-create the MDP
-        if (mdp_vector[i]) {
-            delete mdp_vector[i];
-            mdp_vector[i] = NULL;
-        }
-        mdp_vector[i] = M[i]->CreateMDP();
         
-        // update values
-        vi_vector[i]->mdp = mdp;
+        mdp_vector[i] = M[i]->getMeanMDP();
+
+        vi_vector[i]->mdp = mdp_vector[i];
         vi_vector[i]->ComputeStateActionValues(0.00, 1);
         for (int a=0; a<n_actions; a++) {
             tmpQ[a] += P[i] * value_iteration->getValue(next_state, a);

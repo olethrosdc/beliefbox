@@ -59,6 +59,10 @@ public:
     virtual real pdf(real x) const = 0; ///< return the density at point x
     virtual Distribution* clone() { return NULL; /* does nothing */}
     virtual real getMean() const {return 0.0f;}
+    virtual void setMean (real mean) ///< set the mean
+    {
+        Serror ("Cannot set mean\n");
+    }
 };
 
 /// \brief Parametric distribution.
@@ -71,10 +75,6 @@ public:
     virtual void setVariance (real var) ///< set the variance
     {
         Serror ("Cannot set variance\n");
-    }
-    virtual void setMean (real mean) ///< set the mean
-    {
-        Serror ("Cannot set mean\n");
     }
 };
 

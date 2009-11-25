@@ -30,6 +30,8 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
     
     next_states.resize(N);
     
+    real p = 1.0 / (real) n_states;
+
     for (int i=0; i<N; i++) {
         P[i] = &P_data[i*n_states];
         if (initial_transitions) {
@@ -38,7 +40,7 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
             }
         } else {
             for (int j=0; j<n_states; j++) {
-                P[i][j] = 0.0;//1.0 / (real) n_actions;
+                P[i][j] = p;
             }
         }
     }
@@ -220,7 +222,7 @@ bool DiscreteMDP::Check() const
                 real p = getTransitionProbability(s, a, s2);
                 sum += p;
             }
-            SMART_ASSERT(fabs(sum - 1.0f) <= threshold)(s)(a)(sum);
+            assert(fabs(sum - 1.0f) <= threshold);//(s)(a)(sum);
             if (fabs(sum - 1.0f) > threshold) {
                 flag = true;
             }

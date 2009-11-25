@@ -129,7 +129,7 @@ Gridworld::Gridworld(const char* fname,
         mdp->setTransitionProbability (terminal_state, a, terminal_state, 1.0);
         for (uint s=0; s<terminal_state; s++) {
             mdp->setTransitionProbability (terminal_state, a, s, 0.0);
-            mdp->setTransitionProbability (s, a, terminal_state, 0.0);
+            //mdp->setTransitionProbability (s, a, terminal_state, 0.0);
         }
     }
 
@@ -228,6 +228,25 @@ Gridworld::Gridworld(const char* fname,
             }
         }
     }
+
+    for (uint s=0; s<n_states; ++s) {
+        for (uint a=0; a<n_actions; ++a) {
+            real sum = 0;
+            for (uint s2=0; s2<n_states; ++s2) {
+                sum += mdp->getTransitionProbability (s, a, s2);
+            }
+            //printf ("sum: %f -> ", sum);
+            real isum = 1.0 / sum;
+            sum = 0;
+            for (uint s2=0; s2<n_states; ++s2) {
+                real p = mdp->getTransitionProbability (s, a, s2);
+                mdp->setTransitionProbability (s, a, s2, p * isum);
+                sum += mdp->getTransitionProbability (s, a, s2);
+            }
+            //printf (" %f\n", sum);
+        }
+    }
+
     mdp->Check();
     //mdp->ShowModel();
 }
