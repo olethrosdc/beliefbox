@@ -240,8 +240,10 @@ Gridworld::Gridworld(const char* fname,
             sum = 0;
             for (uint s2=0; s2<n_states; ++s2) {
                 real p = mdp->getTransitionProbability (s, a, s2);
-                mdp->setTransitionProbability (s, a, s2, p * isum);
-                sum += mdp->getTransitionProbability (s, a, s2);
+                if (p > 0) {
+                    mdp->setTransitionProbability (s, a, s2, p * isum);
+                    sum += mdp->getTransitionProbability (s, a, s2);
+                }
             }
             //printf (" %f\n", sum);
         }
