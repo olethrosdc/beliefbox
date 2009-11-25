@@ -26,8 +26,8 @@ ModelCollectionRL::ModelCollectionRL(int n_states_,
     mdp_vector.resize(n_models);
     vi_vector.resize(n_models);
     for (int i = 0; i < n_models; ++i) {
-        mdp_vector[i] = models[i]->CreateMDP();
-        vi_vector[i] = new ValueIteration(mdp, gamma);
+        mdp_vector[i] = models[i]->getMeanMDP();
+        vi_vector[i] = new ValueIteration(mdp_vector[i], gamma);
     }
 }
 
@@ -35,7 +35,7 @@ ModelCollectionRL::~ModelCollectionRL()
 {
     for (int i = 0; i < n_models; ++i) {
         delete vi_vector[i];
-        delete mdp_vector[i];
+        //delete mdp_vector[i]; // no deletion! this is a constant!
     }
 }
 

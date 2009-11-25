@@ -275,7 +275,7 @@ bool Gridworld::Act(int action)
     reward = mdp->generateReward(state, action);
     state = mdp->generateState(state, action);
     if (prev_state==(int) terminal_state) {
-        //std::cout << "TERMINATE\n";
+        std::cout << "TERMINATE\n";
         return false;
     }
     return true;
