@@ -12,16 +12,18 @@
 
 #include "DiscreteMDPCounts.h"
 #include "Random.h"
+#include <stdexcept>
 
-DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, int init_transition_count, int init_reward_count, real init_reward) :
-    MDPModel(n_states, n_actions)
+DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count, int init_reward_count, real init_reward) :
+    MDPModel(n_states, n_actions),
+    mean_mdp(n_states, n_actions, NULL, NULL)
 {
     mdp_dbg("Creating DiscreteMDPCounts with %d states and %d actions\n",  n_states, n_actions);
     N = n_states * n_actions;
     P.resize(N);
     ER.resize(N);
     for (int i=0; i<N; ++i) {
-        P[i].resize(n_states, (real) init_transition_count);
+        P[i].resize(n_states, init_transition_count);
         ER[i].reset(init_reward, init_reward_count);
     }
 }
@@ -32,11 +34,12 @@ DiscreteMDPCounts::~DiscreteMDPCounts()
     //ShowModel();
 }
 
-#if 1
+
 DiscreteMDP* DiscreteMDPCounts::CreateMDP()
 {
     mdp_dbg("Making a DiscreteMDP with %d states, %d actions from model\n", n_states, n_actions);
-    DiscreteMDP* mdp = getMeanMDP();
+    DiscreteMDP* mdp = new DiscreteMDP(*getMeanMDP());
+#if 0
     for (int i=0; i<n_states; ++i) {
         for (int a=0; a<n_actions; ++a) {
             real sum_p = 0.0;
@@ -52,9 +55,10 @@ DiscreteMDP* DiscreteMDPCounts::CreateMDP()
         }
     }
     mdp->Check();
+#endif
     return mdp;
 }
-#endif
+
 
 void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
 {
@@ -62,6 +66,14 @@ void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
     //printf ("(%d, %d) [%.2f] -> %d\n", s, a, r, s2);
     P[ID].Observation(s2);
     ER[ID].Observation(r);
+
+    Vector C =  P[ID].GetMean();
+    real expected_reward = getExpectedReward(s,a);
+    mean_mdp.setFixedReward(s, a, expected_reward);
+    for (int s_next=0; s_next<n_states; s_next++) {
+        mean_mdp.setTransitionProbability(s, a, s_next, C[s_next]);
+    }
+    
 }
 
 //void DiscreteMDPCounts::SetNextReward(int s, int a, real r)
@@ -153,9 +165,23 @@ DiscreteMDP* DiscreteMDPCounts::generate()
 }
 
 
-DiscreteMDP* DiscreteMDPCounts::getMeanMDP() const
+const DiscreteMDP* DiscreteMDPCounts::getMeanMDP() const
 {
-    DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL, NULL);
+    //DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL, NULL);
+    //CopyMeanMDP(mdp);
+    return &mean_mdp;
+}
+
+void DiscreteMDPCounts::CopyMeanMDP(DiscreteMDP* mdp) const
+{
+    if (mdp->GetNStates() != n_states) {
+        throw std::runtime_error("incorrect number of states");
+    }
+
+    if (mdp->GetNActions() != n_actions) {
+        throw std::runtime_error("incorrect number of actions");
+    }
+
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             Vector C =  P[getID (s,a)].GetMean();
@@ -167,5 +193,6 @@ DiscreteMDP* DiscreteMDPCounts::getMeanMDP() const
         }
     }
     
-    return mdp;
 }
+
+

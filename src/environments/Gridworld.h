@@ -74,6 +74,11 @@ public:
     {
         return height;
     }
+    virtual const char* Name()
+    {
+        return "Gridworld";
+    }
+
 protected:
     uint height;
     uint width;

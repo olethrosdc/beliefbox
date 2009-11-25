@@ -24,6 +24,7 @@ class DiscreteMDPCounts : public MDPModel
 protected:
     std::vector<DirichletDistribution> P;
     std::vector<MeanEstimator> ER;
+    DiscreteMDP mean_mdp;
     int N;
     int getID (int s, int a) const
     {
@@ -33,7 +34,7 @@ protected:
     }
     Vector getDirichletParameters (int s, int a) const;
 public:
-    DiscreteMDPCounts (int n_states, int n_actions, int init_transition_count=0, int init_reward_count = 0, real init_reward = 0.0);
+    DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count=0.5, int init_reward_count = 0, real init_reward = 0.0);
     virtual ~DiscreteMDPCounts();
     virtual void AddTransition(int s, int a, real r, int s2);
     virtual real GenerateReward (int s, int a) const;
@@ -45,9 +46,10 @@ public:
     virtual void ShowModel() const;
 
     virtual DiscreteMDP* generate();
-    virtual DiscreteMDP* getMeanMDP() const;
+    virtual const DiscreteMDP* getMeanMDP() const;
 
     virtual DiscreteMDP* CreateMDP();
+    virtual void CopyMeanMDP(DiscreteMDP* mdp) const;
 
     //void SetNextReward(int s, int a, real r);
 };
