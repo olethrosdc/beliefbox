@@ -24,7 +24,8 @@ Gridworld::Gridworld(const char* fname,
                      real pit_,
                      real goal_,
                      real step_)
-    :  height(height_), width(width_), 
+    :  total_time(0),
+       height(height_), width(width_), 
        random(random_), pit_value(pit_), goal_value(goal_), step_value(step_)
 {
     n_states = width * height + 1; // plus a terminal state
@@ -155,7 +156,7 @@ Gridworld::Gridworld(const char* fname,
                 }
                 continue;
             } else if (element == GOAL || element == PIT) {
-                //std::cout << "TERMINATE: " << s << std::endl;
+                std::cout << "TERMINATE: " << s << " " << element << std::endl;
                 for (uint a=0; a<n_actions; ++a) {
                     mdp->setTransitionProbability (s, a, terminal_state, 1.0);
                 }
@@ -176,22 +177,22 @@ Gridworld::Gridworld(const char* fname,
             int Ns = getState(x, y - 1);
             int Ss = getState(x, y + 1);
 
-            if (x==0 || whatIs(x-1, y) == WALL)  {
+            if (x<=0 || whatIs(x-1, y) == WALL)  {
                 Ws = s;
                 Wd = false;
                 num--;
             } 
-            if (x==width-1 || whatIs(x+1, y) == WALL)  {
+            if (x>=width-1 || whatIs(x+1, y) == WALL)  {
                 Es = s;
                 Ed = false;
                 num--;
             } 
-            if (y==0 || whatIs(x, y-1) == WALL)  {
+            if (y<=0 || whatIs(x, y-1) == WALL)  {
                 Ns = s;
                 Nd = false;
                 num--;
             } 
-            if (y==height-1 || whatIs(x, y+1) == WALL)  {
+            if (y>=height-1 || whatIs(x, y+1) == WALL)  {
                 Ss = s;
                 Sd = false;
                 num--;
@@ -250,6 +251,7 @@ Gridworld::Gridworld(const char* fname,
     }
 
     mdp->Check();
+    Reset();
     //mdp->ShowModel();
 }
 
@@ -262,22 +264,37 @@ Gridworld::~Gridworld() {
 
 void Gridworld::Reset()
 {
+    total_time = 0;
     int x, y;
     int n_gridpoints = height*width;
     do {
         state = rand()%(n_gridpoints);
         x = state % height;
-        y = state - x;
+        y = (state - x) / width;
     } while(whatIs(x, y) != GRID);
+    ox = x;
+    oy = y;
 }
 
 bool Gridworld::Act(int action)
 {
-    int prev_state = state;
+    int x = state % width;
+    int y = (state - x) / width;
+    std::cout << "(" << x << ", "<< y << ")" << " " << whatIs(x,y) << " a: " << action;
+    total_time++;
+    real prev_reward = reward;
     reward = mdp->generateReward(state, action);
     state = mdp->generateState(state, action);
-    if (prev_state==(int) terminal_state) {
-        std::cout << "TERMINATE\n";
+    x = state % width;
+    y = (state - x) / width;
+    std::cout << " -> (" << x << ", "<< y << ")" << " " << whatIs(x,y)
+              << " s: " << state << "r: " << reward << std::endl;
+
+    Show();
+
+    if (state==(int) terminal_state) {
+        std::cout << "t: " << total_time << " TERMINATE "
+                  << prev_reward << " " << reward << std::endl;
         return false;
     }
     return true;
@@ -287,6 +304,10 @@ void Gridworld::Show()
 {
     for (uint x=0; x<width; ++x) {
         for (uint y=0; y<height; ++y) {
+            if (x == ox && y == oy) {
+                std::cout << "*";
+                continue;
+            }
             MapElement e = whatIs(x, y);
             switch (e) {
             case INVALID: std::cout << "!"; break;

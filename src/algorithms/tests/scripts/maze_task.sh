@@ -1,8 +1,8 @@
-n_runs=100
-n_episodes=10
-n_steps=1000
+n_runs=10
+n_episodes=100
+n_steps=100
 
-gamma=0.9
+gamma=0.99
 lambda=0.9
 random=0.01
 
@@ -10,7 +10,7 @@ n_actions=4
 n_states=16
 
 environment=Gridworld
-resdir=~/experiments/aggregate/results/maze4_g${gamma}
+resdir=~/experiments/aggregate/results/maze2_g${gamma}
 mkdir -p $resdir
 cd $resdir
 
