@@ -37,7 +37,7 @@ ModelBasedRL::~ModelBasedRL()
 void ModelBasedRL::Reset()
 {
     state = -1;
-    model->Reset();
+    //model->Reset();
 }
 /// Full observation
 real ModelBasedRL::Observe (int state, int action, real reward, int next_state, int next_action)

@@ -22,6 +22,8 @@
 
 class Gridworld : public Environment<int, int> {
 public:
+    uint ox, oy;
+    int total_time;
     enum MapDirection {
         NORTH=0, SOUTH, EAST, WEST
     };

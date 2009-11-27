@@ -68,11 +68,11 @@ int main (int argc, char** argv)
     real gamma = 0.9;
     real lambda = 0.9;
     real alpha = 0.1;
-    real randomness = 0.1;
+    real randomness = 0.01;
     real pit_value = -1.0;
     real goal_value = 1.0;
     real step_value = -0.01;
-    real epsilon = 0.2;
+    real epsilon = 0.01;
     uint n_runs = 1000;
     uint n_episodes = 1000;
     uint n_steps = 100;
@@ -145,8 +145,8 @@ int main (int argc, char** argv)
                                                goal_value,
                                                rng,
                                                false);
-        //Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
-        Gridworld* gridworld= new Gridworld("/home/dimitrak/projects/beliefbox/dat/maze4",  16, 16);
+        Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
+        //Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze4",  16, 16, 4, randomness, pit_value, goal_value, step_value);
         ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
         if (!strcmp(environment_name, "RandomMDP")) { 
             environment = random_mdp;
@@ -232,7 +232,7 @@ int main (int argc, char** argv)
         } else if (!strcmp(algorithm_name, "Collection")) {
             DiscreteMDPCollection* collection = 
                 new DiscreteMDPCollection(*gridworld, 
-                                          4,
+                                          8,
                                           n_states,
                                           n_actions);
             model= (MDPModel*) collection;
@@ -245,7 +245,7 @@ int main (int argc, char** argv)
                                               true);
         } else if (!strcmp(algorithm_name, "ContextBanditCollection")) {
             ContextBanditCollection* collection = 
-                new ContextBanditCollection(4,
+                new ContextBanditCollection(8,
                                             n_states,
                                             n_actions,
                                             0.5, 0.0, 1.0);
@@ -377,7 +377,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
         exit(-1);
     }
     std:: cout << "(value iteration)" << std::endl;
-    value_iteration.ComputeStateActionValues(10e-6,100);
+    value_iteration.ComputeStateActionValues(10e-6,1000);
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
 
