@@ -145,7 +145,7 @@ int main (int argc, char** argv)
                                                goal_value,
                                                rng,
                                                false);
-        Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
+        Gridworld* gridworld= new Gridworld("/home/dimitrak/projects/beliefbox/dat/maze2",  8, 8);
         //Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze4",  16, 16, 4, randomness, pit_value, goal_value, step_value);
         ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
         if (!strcmp(environment_name, "RandomMDP")) { 
@@ -230,13 +230,19 @@ int main (int argc, char** argv)
                                          model,
                                          false);
         } else if (!strcmp(algorithm_name, "Collection")) {
-            DiscreteMDPCollection* collection = 
-                new DiscreteMDPCollection(*gridworld, 
-                                          8,
-                                          n_states,
-                                          n_actions);
+            DiscreteMDPCollection* collection = NULL;
+            if (environment == gridworld) {
+                collection = new DiscreteMDPCollection(*gridworld, 
+                                                       4,
+                                                       n_states,
+                                                       n_actions);
+            } else {
+                collection =  new DiscreteMDPCollection(4,
+                                                        n_states,
+                                                        n_actions);
+            }
             model= (MDPModel*) collection;
-
+            
             algorithm = new ModelCollectionRL(n_states,
                                               n_actions,
                                               gamma,
