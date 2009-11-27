@@ -43,11 +43,15 @@ inline void mdp_dbg(...)
   \class MDPModel
   \brief A model of a Markov Decision Process
 
-  Implements algorithms for learning the parameters of an observed MDP.
-  This is not an abstract class, it used for discrete spaces.
+  Implements algorithms for learning the parameters of an observed
+  MDP.  This is an abstract class, but it can only be used for
+  discrete spaces.
   
   Since this the _model_ of an MDP, it can actually be used to create
   an MDP.  However, it is _not_ an MDP.
+
+  An implementation of this class is DiscreteMDPCounts
+
 */
 class MDPModel 
 {
