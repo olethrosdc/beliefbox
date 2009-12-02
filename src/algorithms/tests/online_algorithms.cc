@@ -237,7 +237,7 @@ int main (int argc, char** argv)
                                                        n_states,
                                                        n_actions);
             } else {
-                collection =  new DiscreteMDPCollection(4,
+                collection =  new DiscreteMDPCollection(2,
                                                         n_states,
                                                         n_actions);
             }
