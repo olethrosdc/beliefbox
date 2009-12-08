@@ -1,4 +1,4 @@
-/ -*- Mode: c++ -*-
+// -*- Mode: c++ -*-
 // copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
@@ -12,8 +12,10 @@
 
 #include "OneDMaze.h"
 #include "debug.h"
+#include <cstdlib>
+#include <cstdio>
 
-OneDMaze::OneDMaze(int n_hidden_states_, RandomNumberGenerator* rng_) : Environment(2, 2), n_hidden_states(n_hidden_states_), rng(rng_)
+OneDMaze::OneDMaze(int n_hidden_states_, RandomNumberGenerator* rng_) : Environment<int, int>(2, 2), n_hidden_states(n_hidden_states_), rng(rng_)
 {
     Reset();
 }
@@ -44,7 +46,7 @@ bool OneDMaze::Act(int action)
     }
 
     if (hidden_state>=n_hidden_states) {
-        hidden_state = n_hidden_states;
+        hidden_state = n_hidden_states - 1;
     }
     if (hidden_state==0) {
         hidden_state = 1 + rng->discrete_uniform(n_hidden_states - 1);
@@ -52,8 +54,7 @@ bool OneDMaze::Act(int action)
         reward = 1;
     }
     
-
-    
+    return true;
     
 }
 

@@ -65,10 +65,10 @@ Statistics EvaluateAlgorithm(uint n_steps,
 int main (int argc, char** argv)
 {
     int n_actions = 4;
-    int n_states = 4;
+    int n_original_states = 4;
     real gamma = 0.9;
     real lambda = 0.9;
-    real alpha = 0.1;
+    real alpha = 0.01;
     real randomness = 0.01;
     real pit_value = -1.0;
     real goal_value = 1.0;
@@ -82,8 +82,8 @@ int main (int argc, char** argv)
         std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment\n";
         return -1;
     }
-    n_states = atoi(argv[1]);
-    assert (n_states > 0);
+    n_original_states = atoi(argv[1]);
+    assert (n_original_states > 0);
 
     n_actions = atoi(argv[2]);
     assert (n_actions > 0);
@@ -138,25 +138,28 @@ int main (int argc, char** argv)
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
-        RandomMDP* random_mdp = new RandomMDP (n_actions,
-                                               n_states,
-                                               randomness,
-                                               step_value,
-                                               pit_value,
-                                               goal_value,
-                                               rng,
-                                               false);
-        OneDMaze* one_d_maze = new OneDMaze(n_states, rng);
-        Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
-        //Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze4",  16, 16, 4, randomness, pit_value, goal_value, step_value);
-        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
+        RandomMDP* random_mdp = NULL;
+        OneDMaze* one_d_maze = NULL; 
+        Gridworld* gridworld = NULL;
+        ContextBandit* context_bandit = NULL;
         if (!strcmp(environment_name, "RandomMDP")) { 
+            random_mdp = new RandomMDP (n_actions,
+                                        n_original_states,
+                                        randomness,
+                                        step_value,
+                                        pit_value,
+                                        goal_value,
+                                        rng,
+                                        false);
             environment = random_mdp;
         } else if (!strcmp(environment_name, "Gridworld")) { 
+            gridworld = new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
             environment = gridworld;
         } else if (!strcmp(environment_name, "ContextBandit")) { 
+            context_bandit = new ContextBandit(n_actions, 3, 4, rng);
             environment = context_bandit;
         } else if (!strcmp(environment_name, "OneDMaze")) { 
+            one_d_maze = new OneDMaze(n_original_states, rng);
             environment = one_d_maze;
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
@@ -164,8 +167,8 @@ int main (int argc, char** argv)
 
 
         // making sure the number of states & actions is correct
-        n_states = environment->GetNStates();
-        n_actions = environment->GetNActions();
+        int n_states = environment->getNStates();
+        n_actions = environment->getNActions();
         
         std::cout <<  "Creating environment: " << environment_name
                   << " with " << n_states << "states, "
@@ -234,19 +237,13 @@ int main (int argc, char** argv)
                                          model,
                                          false);
         } else if (!strcmp(algorithm_name, "Collection")) {
-            DiscreteMDPCollection* collection = NULL;
-            if (environment == gridworld) {
-                collection = new DiscreteMDPCollection(*gridworld, 
-                                                       4,
-                                                       n_states,
-                                                       n_actions);
-            } else {
-                collection =  new DiscreteMDPCollection(2,
-                                                        n_states,
-                                                        n_actions);
-            }
+            DiscreteMDPCollection* collection = 
+                new DiscreteMDPCollection(*gridworld, 
+                                          8,
+                                          n_states,
+                                          n_actions);
             model= (MDPModel*) collection;
-            
+
             algorithm = new ModelCollectionRL(n_states,
                                               n_actions,
                                               gamma,
@@ -337,6 +334,7 @@ int main (int argc, char** argv)
         }
         //delete environment;
         delete gridworld;
+        delete one_d_maze;
         delete random_mdp;
         delete context_bandit;
         delete algorithm;
@@ -380,16 +378,10 @@ Statistics EvaluateAlgorithm (uint n_steps,
 {
     std:: cout << "evaluating..." << environment->Name() << std::endl;
     
-    const DiscreteMDP* mdp = environment->getMDP(); 
-    ValueIteration value_iteration(mdp, gamma);
-    if (!mdp) {
-        Serror("The environment must support the creation of an MDP\n");
-        exit(-1);
-    }
     std:: cout << "(value iteration)" << std::endl;
-    value_iteration.ComputeStateActionValues(10e-6,1000);
-    int n_states = mdp->GetNStates();
-    int n_actions = mdp->GetNActions();
+
+    //int n_states = environment->getNStates();
+    //int n_actions = environment->getNActions();
 
     Statistics statistics;
     statistics.ep_stats.resize(n_episodes);
@@ -424,17 +416,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
             current_time++;
         }
         statistics.ep_stats[episode].steps += t;
-        real sse = 0.0;
-        for (int i=0; i<n_states; i++) {
-            for (int a=0; a<n_actions; a++) {
-                real V =  value_iteration.getValue(i, a);
-                real hV = algorithm->getValue(i, a);
-                //printf ("Q(%d, %d) = %f ~ %f\n", i, a, V, hV);
-                real err = V - hV;
-                sse += err*err;
-            }
-        }
-        statistics.ep_stats[episode].mse += sse /((real) (n_states*n_actions));
+        statistics.ep_stats[episode].mse  = 0;
     }
 
     //std::cout << "REAL MODEL\n";
