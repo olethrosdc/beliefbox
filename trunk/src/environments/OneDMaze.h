@@ -1,6 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2008-2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-// copyright (c) 2003-2008 Michail G. Lagoudakis
+// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -11,31 +10,34 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTINUOUS_CHAIN_H
-#define CONTINUOUS_CHAIN_H
+#ifndef OneD_MAZE_H
+#define OneD_MAZE_H
 
-#include "Environment.h"
-#include "Vector.h"
-#include "real.h"
+#include "DiscreteEnvironment.h"
+#include "RandomNumberGenerator.h"
 
-class ContinuousChain : public Environment<Vector, int>
+/// OneD Maze
+///
+/// Should be used with a discount of 0.75
+class OneDMaze : public DiscreteEnvironment
 {
 protected:
-    void Simulate();
-    bool endsim;
-public:
-    ContinuousChain();
-    virtual ~ContinuousChain();
+    int hidden_state;
+    int n_hidden_states;
+    RandomNumberGenerator* rng;
+
+    OneDMaze();
+
+    virtual ~OneDMaze();
+    
     virtual void Reset();
-    virtual bool Act(int action);
-    virtual void Simulate(int action);
+    virtual bool Act(A action);
+
+    virtual const char* Name()
+    {
+        return "OneD Maze";
+    }
+
 };
-
-
-
-
-
-
-
 
 #endif
