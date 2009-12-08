@@ -13,7 +13,7 @@
 #ifndef OneD_MAZE_H
 #define OneD_MAZE_H
 
-#include "DiscreteEnvironment.h"
+#include "Environment.h"
 #include "RandomNumberGenerator.h"
 
 /// OneD Maze
@@ -25,13 +25,13 @@ protected:
     int hidden_state;
     int n_hidden_states;
     RandomNumberGenerator* rng;
-
-    OneDMaze();
+public:
+    OneDMaze(int n_hidden_states_, RandomNumberGenerator* rng_);
 
     virtual ~OneDMaze();
     
     virtual void Reset();
-    virtual bool Act(A action);
+    virtual bool Act(int action);
 
     virtual const char* Name()
     {
