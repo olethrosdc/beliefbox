@@ -11,21 +11,29 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTINUOUS_CHAIN_H
-#define CONTINUOUS_CHAIN_H
+#ifndef DISCRETISED_CONTINUOUS_CHAIN_H
+#define DISCRETISED_CONTINUOUS_CHAIN_H
 
 #include "Environment.h"
 #include "Vector.h"
 #include "real.h"
 
-class ContinuousChain : public Environment<Vector, int>
+class DiscretisedContinuousChain : public Environment<int, int>
 {
 protected:
     void Simulate();
     bool endsim;
+    real position;
+    void DiscretiseState()
+    {
+        real diff = (position + 1.0) / 2.0;
+        state = 1 + (int) round(diff*(n_states - 2));
+        if (state <= 0) state = 1;
+        else if (state >=n_states) state = n_states - 1;
+    }
 public:
-    ContinuousChain();
-    virtual ~ContinuousChain();
+    DiscretisedContinuousChain(int n_states);
+    virtual ~DiscretisedContinuousChain();
     virtual void Reset();
     virtual bool Act(int action);
     virtual void Simulate(int action);
