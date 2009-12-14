@@ -290,7 +290,7 @@ bool Gridworld::Act(int action)
     std::cout << " -> (" << x << ", "<< y << ")" << " " << whatIs(x,y)
               << " s: " << state << "r: " << reward << std::endl;
 
-    Show();
+        //Show();
 
     if (state==(int) terminal_state) {
         std::cout << "t: " << total_time << " TERMINATE "

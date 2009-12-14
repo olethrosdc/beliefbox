@@ -18,6 +18,7 @@
 #include "Random.h"
 #include "DenseMarkovChain.h"
 #include "SparseMarkovChain.h"
+#include "DiscreteHiddenMarkovModelOnlineEM.h"
 #include "EasyClock.h"
 #include "Dirichlet.h"
 #include <ctime>
@@ -147,7 +148,8 @@ int main (int argc, char** argv)
     BayesianMarkovChain bmc(n_observations, 1+max_states, prior, dense);
     BayesianHierarchicalMarkovChain bhmc(n_observations, 1+max_states, prior, dense);
     BayesianPredictiveStateRepresentation bpsr(n_observations, 1+max_states, prior, false, dense);
-    BayesianPredictiveStateRepresentation polya(n_observations, 1+max_states, prior, true, dense);
+        //BayesianPredictiveStateRepresentation polya(n_observations, 1+max_states, prior, true, dense);
+    DiscreteHiddenMarkovModelOnlineEM polya(1, n_observations);
     ContextTreeWeighting ctw(n_observations, 1+max_states, prior, dense);
 
     //logmsg ("Making Markov chain\n");
@@ -181,7 +183,8 @@ int main (int argc, char** argv)
         }
 
         int polya_prediction = polya.predict();
-        polya_error.accuracy[t] += polya.NextStateProbability(observation);
+        polya_error.accuracy[t] += (polya.getPrediction())(observation);
+//        polya_error.accuracy[t] += polya.NextStateProbability(observation);
         if (polya_prediction != observation) {
             polya_error.loss[t] += 1.0;
         }
@@ -214,7 +217,8 @@ int main (int argc, char** argv)
 
         // polya
         start_time = end_time;
-        polya.ObserveNextState(observation);
+            //polya.ObserveNextState(observation);
+        polya.Observe(observation);
         end_time = GetCPU();
         polya_time += end_time - start_time;
 

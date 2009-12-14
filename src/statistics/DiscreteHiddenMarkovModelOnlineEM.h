@@ -39,7 +39,12 @@ public:
         return current_state;
     }
     real Observe(int x);
+    void updateSufficientStatistics();
     Vector getPrediction();
+    int predict()
+    {
+        return ArgMax(getPrediction());
+    }
 };
 
 

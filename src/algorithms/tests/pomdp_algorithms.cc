@@ -11,13 +11,21 @@
  ***************************************************************************/
 
 #ifdef MAKE_MAIN
+// ------------ Environments -------------
+// MDPs
+#include "RandomMDP.h"
+#include "Gridworld.h"
+#include "InventoryManagement.h"
+#include "ContextBandit.h"
+// POMDPs
+#include "OneDMaze.h"
+#include "DiscretisedContinuousChain.h"
+//-----------------------------------------
+
+//------------- Algorithms ----------------
 #include "PolicyEvaluation.h"
 #include "PolicyIteration.h"
 #include "ValueIteration.h"
-#include "RandomMDP.h"
-#include "Gridworld.h"
-#include "OneDMaze.h"
-#include "InventoryManagement.h"
 #include "DiscretePolicy.h"
 #include "Environment.h"
 #include "ExplorationPolicy.h"
@@ -27,9 +35,10 @@
 #include "ModelBasedRL.h"
 #include "ModelCollectionRL.h"
 #include "ContextBanditGaussian.h"
-#include "ContextBandit.h"
 #include "DiscreteMDPCollection.h"
 #include "ContextBanditCollection.h"
+//-------------------------------------------
+
 #include "RandomNumberFile.h"
 #include "MersenneTwister.h"
 #include <cstring>
@@ -79,6 +88,9 @@ int main (int argc, char** argv)
     uint n_steps = 100;
 
     if (argc != 11) {
+        for (int i=0; i<argc; ++i) {
+            printf("arg %d: %s\n", i, argv[i]);
+        }
         std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment\n";
         return -1;
     }
@@ -138,8 +150,10 @@ int main (int argc, char** argv)
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
+
         RandomMDP* random_mdp = NULL;
         OneDMaze* one_d_maze = NULL; 
+        DiscretisedContinuousChain* discretised_chain = NULL; 
         Gridworld* gridworld = NULL;
         ContextBandit* context_bandit = NULL;
         if (!strcmp(environment_name, "RandomMDP")) { 
@@ -161,6 +175,9 @@ int main (int argc, char** argv)
         } else if (!strcmp(environment_name, "OneDMaze")) { 
             one_d_maze = new OneDMaze(n_original_states, rng);
             environment = one_d_maze;
+        } else if (!strcmp(environment_name, "DiscretisedContinuousChain")) { 
+            discretised_chain = new DiscretisedContinuousChain(n_original_states);
+            environment = discretised_chain;
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
@@ -335,6 +352,7 @@ int main (int argc, char** argv)
         //delete environment;
         delete gridworld;
         delete one_d_maze;
+        delete discretised_chain;
         delete random_mdp;
         delete context_bandit;
         delete algorithm;

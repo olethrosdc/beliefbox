@@ -63,6 +63,7 @@ void DiscretisedContinuousChain::Simulate(int action)
     if (position >= 1.0) {
         reward = 1.0;
         position = 1.0;
+        endsim = true;
     }
 
     if (position <= -1.0) {

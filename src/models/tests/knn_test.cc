@@ -82,8 +82,10 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
     for (int t=0; t<T; ++t) {
         n_steps++;
         // select an action
-        real epsilon = 1000.0 / (1000.0 + (real) t);
-
+        real epsilon = 1.0 / (1.0 + (real) t);
+        if (t > 100) {
+            epsilon = 0;
+        }
         state = environment.getState();
         if (t < n_actions) {
             action = t;
@@ -92,7 +94,17 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
                 action = rand()%n_actions;
             } else {
                 action = model.GetBestAction(state, n_neighbours, rbf_beta);
+#if 0
+                if (state[0] < -0.1) {
+                    action = 0;
+                } else if (state[1] > 0.1) {
+                    action = 2;
+                } else {
+                    action = 1;
+                }
+#endif
             }
+
         }
 
 
@@ -114,9 +126,9 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
         // update value function
         real V = model.GetExpectedValue(state, n_neighbours, rbf_beta);
         if (n_dim == 2) {
-            printf ("%f %f %d %f %f %f %f\n", state[0], state[1], action, epsilon, V, err, reward);
+            printf ("%f %f %d %f %f %f %f #err\n", state[0], state[1], action, epsilon, V, err, reward);
         } else {
-            printf ("%f %d %f %f %f %f\n", state[0], action, epsilon, V, err, reward);
+            printf ("%f %d %f %f %f %f #err\n", state[0], action, epsilon, V, err, reward);
         }
 
         // see if we are successful

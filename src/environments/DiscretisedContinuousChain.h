@@ -26,10 +26,14 @@ protected:
     real position;
     void DiscretiseState()
     {
+        if (endsim) {
+            state = 0;
+            return;
+        } 
         real diff = (position + 1.0) / 2.0;
         state = 1 + (int) round(diff*(n_states - 2));
         if (state <= 0) state = 1;
-        else if (state >=n_states) state = n_states - 1;
+        else if (state >= (int) n_states) state = n_states - 1;
     }
 public:
     DiscretisedContinuousChain(int n_states);

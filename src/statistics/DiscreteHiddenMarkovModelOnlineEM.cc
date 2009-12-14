@@ -11,6 +11,7 @@
 
 #include "DiscreteHiddenMarkovModelOnlineEM.h"
 #include "RandomNumberGenerator.h"
+#include "Random.h"
 #include <cassert>
 #include <cmath>
 
@@ -57,48 +58,46 @@ void DiscreteHiddenMarkovModelOnlineEM::Reset()
     for (int i=0; i<n_states; ++i) {
         q[i] = p;
     }
-     for (int i=0; i<n_states; ++i) {
-         for (int j=0; j<n_states; ++j) {
-             PrS(i,j) = 1.0 / (real) n_states;
-         }
-         PrS(i,i)+=1;
-         for (int j=0; j<n_observations; ++j) {
-             PrX(i,j) = 1.0 / n_observations;
-         }
-         PrX(i,i)+=1;
+    for (int i=0; i<n_states; ++i) {
+        for (int j=0; j<n_states; ++j) {
+            PrS(i,j) = urandom();
+        }
+            //PrS(i,i)+=1;
+        for (int j=0; j<n_observations; ++j) {
+            PrX(i,j) = urandom();//1.0 / n_observations;
+        }
+            //PrX(i,i)+=1;
          
-         real sum = 0;
-         for (int j=0; j<n_states; ++j) {
-             sum += PrS(i,j);
-         }
-         real invsum = 1.0 / sum;
-         for (int j=0; j<n_states; ++j) {
-             PrS(i,j) *= invsum;
-         }
+        real sum = 0;
+        for (int j=0; j<n_states; ++j) {
+            sum += PrS(i,j);
+        }
+        real invsum = 1.0 / sum;
+        for (int j=0; j<n_states; ++j) {
+            PrS(i,j) *= invsum;
+        }
 
-         sum = 0;
-         for (int j=0; j<n_observations; ++j) {
-             sum += PrX(i,j);
-         }         
-         invsum = 1.0 / sum;
-         for (int j=0; j<n_observations; ++j) {
-             PrX(i,j) *= invsum;
-         }
+        sum = 0;
+        for (int j=0; j<n_observations; ++j) {
+            sum += PrX(i,j);
+        }         
+        invsum = 1.0 / sum;
+        for (int j=0; j<n_observations; ++j) {
+            PrX(i,j) *= invsum;
+        }
     }
-
-    T = 0;
 }
 
 DiscreteHiddenMarkovModelOnlineEM::~DiscreteHiddenMarkovModelOnlineEM()
 {
-    // nothing to do
+        // nothing to do
     delete Phi;
 }
 
 /** Update EM estimate
    
-Based on: G. Mongillo and S. Deneve, "Online learning with hidden
-Markov models", Neural computation 20, 1706-1716 (2008).
+    Based on: G. Mongillo and S. Deneve, "Online learning with hidden
+    Markov models", Neural computation 20, 1706-1716 (2008).
 */
 real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
 {
@@ -106,13 +105,15 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
     T++;
     real eta = 1.0 / (T);
     real fudge = 0.00000001;
-    // Calculate gamma
+        // Calculate gamma
     Matrix gamma(n_states, n_states);
     Matrix AB(n_states, n_states);
+
+    
     for (int l=0; l<n_states; ++l) {
         for (int h=0; h<n_states; ++h) {
             AB(l,h) = PrS(l, h) * PrX(h, x);
-            //dbg_printf ("P_S(%d %d) = %f, P_X(%d %d)= %f\n", l, h, PrS(l,h), h, x, PrX(h, x));
+                //dbg_printf ("P_S(%d %d) = %f, P_X(%d %d)= %f\n", l, h, PrS(l,h), h, x, PrX(h, x));
 		}
     }
 
@@ -126,11 +127,11 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
     for (int l=0; l<n_states; ++l) {
         for (int h=0; h<n_states; ++h) {
             gamma(l, h) = AB(l,h) / Z_gamma;
-            dbg_printf("gamma(%d %d) = %f\n", l, h, gamma(l, h));
+                //dbg_printf("gamma(%d %d) = %f\n", l, h, gamma(l, h));
         }
     }
 
-    // update phi
+// update phi
     {
         std::vector<int> index(4);
         int& h = index[0];
@@ -140,15 +141,18 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
         for (i=0; i<n_states; ++i) {
             for (j=0; j<n_states; ++j) {
                 for (k=0; k<n_observations; ++k) {
-                    // for each ijk combination, no other is used.
-                    // copy previous values
+                        // for each ijk combination, no other is used.
+                        // copy previous values
+                        // \phi_{ijk}^h(T) = \sum_l \gamma_{lh}(y_T;T-1)
+                        // \times [\phi_{ijk}^l(T-1)
+                        // + \eta(T)[I(y_T = k, i=l, j=h)*q_l(T-1) - \phi_{ijk}^l(T-1)]
                     Vector phi_prev(n_states);
                     for (h=0; h<n_states; ++h) {
                         phi_prev(h) = Phi->Y(index);
-                        dbg_printf ("phi_{%d %d %d}^%d(T-1) = %f\n",i, j, k, h, phi_prev(h));
+                            //dbg_printf ("phi_{%d %d %d}^%d(T-1) = %f\n",i, j, k, h, phi_prev(h));
                     }
                     
-                    // caclulate new set of values for phi_{ijk}^h
+                        // caclulate new set of values for phi_{ijk}^h
                     for (h=0; h<n_states; ++h) {
                         real sum = 0;
                         for (int l=0; l<n_states; ++l)  {
@@ -159,14 +163,16 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
                             sum += gamma(l, h) * (phi_prev(l) + eta  * (hq - phi_prev(l)));
                         } // l
                         Phi->Y(index) = sum;
-                        dbg_printf ("phi_{%d %d %d}^%d(T) = %f\n", i, j, k, h, Phi->Y(index));
+                            //dbg_printf ("phi_{%d %d %d}^%d(T) = %f\n", i, j, k, h, Phi->Y(index));
                     } // k
                 } // h
             } // j
         } // i
     }
 
-    // update q
+ 
+ 
+        // update q
     Vector q_old = q;
     real log_p_x = 0;
     for (int l=0; l<n_states; ++l) {
@@ -176,10 +182,15 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
         }
         q(l) = sum;
         log_p_x += log(q(l)) + log(PrX(l, x));
-        dbg_printf ("q(%d) = %f\n", l, q(l));
+        dbg_printf ("%f ", q(l));
     }
-    
-    // update A
+    dbg_printf ("# q\n");
+        ///// --- update parameters ----////
+
+    if (T < 10) {
+        return log_p_x;
+    }
+        // update A
     {
         std::vector<int> index(4);
         int& h = index[0];
@@ -207,7 +218,7 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
             dbg_printf("# P_S\n");
         }
     }
-    // update B
+        // update B
     {
         std::vector<int> index(4);
         int& h = index[0];
@@ -236,6 +247,7 @@ real DiscreteHiddenMarkovModelOnlineEM::Observe(int x)
     }
     return log_p_x;
 }
+
 
 Vector DiscreteHiddenMarkovModelOnlineEM::getPrediction()
 {
