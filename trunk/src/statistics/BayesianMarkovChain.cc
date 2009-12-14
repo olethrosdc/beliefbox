@@ -137,27 +137,6 @@ int BayesianMarkovChain::predict()
         Pr_next[i] = NextStateProbability(i);
     }
     return ArgMax(&Pr_next);
-
-    int top_model = std::min(n_models - 1, n_observations);
-  
-    for (int i=0; i<n_states; ++i) {
-        Pr_next[i] = 0.0;
-        for (int j=0; j<=top_model; ++j) {
-            Pr_next[i] += Pr[j] * mc[j]->NextStateProbability(i);
-        }
-        Pr_next[i] = mc[n_models - 1]->NextStateProbability(i);
-        //printf ("%f ", Pr_next[i]);
-    }
-
-#if 0
-    for (int i=0; i<=top_model; i++) {
-        printf ("%f ", Pr[i]);
-    }
-    printf("# BMC\n");
-#endif
-    return ArgMax(&Pr_next);
-    //return DiscreteDistribution::generate(Pr_next);
-
 }
 
 void BayesianMarkovChain::ShowTransitions()

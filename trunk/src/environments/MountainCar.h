@@ -1,6 +1,6 @@
 // -*- Mode: c++ -*-
 // copyright (c) 2008-2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-// copyright (c) 2003-2008 Michail G. Lagoudakis
+// Adapted from code by Michail G. Lagoudakis, copyright (c) 2003-2008 
 // $Revision$
 /***************************************************************************
  *                                                                         *

@@ -287,10 +287,10 @@ DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observation
     for (int i=0; i<n_states; ++i) {
         real sum = 0.0;
         for (int j=0; j<n_observations; ++j) {
-            Pr_X(i,j) = 0.1*rng->uniform();
-            if (i==j) {
-                Pr_X(i,j) += 1.0;
-            }
+            Pr_X(i,j) = rng->uniform();
+                //if (i==j) {
+                //Pr_X(i,j) += 1.0;
+                //}
             sum += Pr_X(i,j);
         }
         for (int j=0; j<n_observations; ++j) {
@@ -302,11 +302,12 @@ DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observation
     for (int src=0; src<n_states; ++src) {
         Vector P(n_states);
         for (int i=0; i<n_states; ++i) {
-            if (i<=src) {
-                P[i] = exp(rng->uniform());
-            } else {
-                P[i] = exp(10.0*rng->uniform());
-            }
+            P[i] = rng->uniform();
+                //if (i<=src) {
+                //P[i] = rng->uniform();/exp(rng->uniform());
+                //} else {
+                //P[ai] = exp(10.0*rng->uniform());
+                //}
         }
         P /= P.Sum();
         P *= (1 - stationarity);
