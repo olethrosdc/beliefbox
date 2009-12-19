@@ -15,22 +15,31 @@
 #include <vector>
 #include "real.h"
 
+/** A discrete variable
+    
+    This variable can take \f$n\f$ different values.
+ */
 class DiscreteVariable
 {
  public:
-    int n_values; // number of values the discrete variable can take
+    int n_values; ///< number of values the discrete variable can take
     DiscreteVariable(int n) {n_values = n;}
     DiscreteVariable() {n_values = 2;}
 };
 
 
-// maybe this should be a class rather than a typedef
+/** A discrete vector
+    
+    A discrete vector is made up of \f$K\f$ discrete variables.
+    The i-th variable takes \f$n_i\f$ values.
+ */
 class DiscreteVector
 {
 protected:
     std::vector<DiscreteVariable> V;
-    int n_combinations;
+    int n_combinations; ///< Number of combinations
 public:
+        /// Construct a discrete vector from a vector of sizes
     DiscreteVector(std::vector<int>& x) : V(x.size())
     {
         n_combinations = 1;
@@ -39,18 +48,23 @@ public:
             n_combinations *= x[i];
         }
     }
-    int getNCombinations()
+        /// Get number of combinations
+    int getNCombinations() const
     {
         return n_combinations;
     }
-    int size(int i)
+        /// Get the number of values of the i-th variable
+    int size(int i) const
     {
         return V[i].n_values;
     }
-    int size()
+        /// Get the number of variables
+    int size() const
     {
         return V.size();
     }
+        /// Increase the value of one variable, carrying over to the next.
+        /// Return true when the process loops.
     bool permute(std::vector<int>&x)
     {
         bool carry = false;
@@ -65,6 +79,17 @@ public:
         } while (carry && index < size());
 
         return carry;
+    }
+    
+    int getIndex(std::vector<int>& x)
+    {
+        int index = 0;
+        int F = 1;
+        for (int k=0; k<size(); ++k) {
+            index += F * x[k];
+            F *= size(k);
+        }
+        return index;
     }
 
 };

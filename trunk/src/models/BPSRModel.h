@@ -1,6 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2005 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-// $Id: BPSRModel.h,v 1.2 2006/10/31 16:59:39 cdimitrakakis Exp cdimitrakakis $
+// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -37,7 +36,7 @@ inline void mdp_dbg(...)
 
 
 /**
-   \ingroup MachineLearning
+   \ingroup ReinforcementLearning
 */
 
 /*! 
@@ -52,37 +51,57 @@ class BPSRModel
 protected:
     int n_obs;
     int n_actions;
+    std::vector<real> rewards;
+    int n_rewards;
     BayesianPredictiveStateRepresentation bpsr;
-public:
-    BPSRModel  (int n_obs, int n_actions)
+    DiscreteVector* Z;
+    int getIndex (int a, int x, int r) 
     {
-        this->n_states = n_states;
-        this->n_actions = n_actions;
-        mdp_dbg("Creating BPSRModel with %d states and %d actions\n",  n_states, n_actions);
+            // find closest reward index
+        int r_i = 0;
+        real r_d = fabs(rewards[0] - r);
+        for (uint i=1; i<rewards.size(); ++i) {
+            real d = fabs(rewards[i] - r);
+            if (d < r_d) {
+                r_i = i;
+                r_d = d;
+            }
+        }
+
+            // set up vector
+        std::vector<int> v(3);
+        v[0] = a;
+        v[1] = x;
+        v[2] = r_d;
     }
+public:
+    BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_)
+        : n_obs(n_obs_),
+          n_actions(n_actions_),
+          rewards(rewards_)
+    {
+        mdp_dbg("Creating BPSRModel with %d states, %d actions and %d rewards\n",  n_states, n_actions, rewards.size());
+        n_rewards = size(rewards);
+        std::vector<int> sizes(3);
+        sizes(0) = n_obs;
+        sizes(1) = n_actions;
+        sizes(2) = n_rewards;
+        Z = new DiscreteVector(x);
+        Z->size();
+    }
+
     virtual ~BPSRModel()
     {
     }
-    virtual void AddTransition(int a, int r, int s) = 0;
-    virtual real GenerateReward (int s, int a) const
-    {
-        return 0.0;
-    }
-    virtual int GenerateTransition (int s, int a) const = 0;
-    virtual real getTransitionProbability (int s, int a, int s2) const
-    {
-        return 0.0;
-    }
-    virtual real getTransitionProbability(std::vector<int> history, int a, int x);
-    virtual real getExpectedReward (int s, int a) const
-    {
-        return 0.0;
-    }
-    virtual void Reset() = 0;
-    virtual DiscreteMDP* CreateMDP();
-    virtual const DiscreteMDP* getMeanMDP() const = 0;
-    virtual void ShowModel();
 
+    virtual void AddTransition(int a, int r, int x) 
+    {
+        
+    }
+        /// P(x_{t+1} | a_{t+1} , z^t)
+    virtual real getTransitionProbability(std::vector<int> history, int a, int x) const;
+    virtual real getExpectedReward (std::vector<int> history) const;
+    virtual void Reset();
 };
 
 
