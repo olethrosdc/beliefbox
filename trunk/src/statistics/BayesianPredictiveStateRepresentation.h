@@ -67,6 +67,9 @@ public:
     
     /* Training and generation */
     virtual void ObserveNextState (int state);
+    inline void Observe(int x) {
+        ObserveNextState(x);
+    }
     virtual real NextStateProbability (int state);
     virtual void Reset();
     virtual int generate();

@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef MDP_MODEL_H_
-#define MDP_MODEL_H_
+#ifndef BPSR_MODEL_H
+#define BPSR_MODEL_H
 
 #include <cmath>
 #include <cassert>
@@ -20,6 +20,7 @@
 #include "Distribution.h"
 #include "DiscreteMDP.h"
 #include "BayesianPredictiveStateRepresentation.h"
+#include "DiscreteVariable.h"
 
 #undef DEBUG_MDP_MODELS
 
@@ -53,9 +54,9 @@ protected:
     int n_actions;
     std::vector<real> rewards;
     int n_rewards;
-    BayesianPredictiveStateRepresentation bpsr;
+    BayesianPredictiveStateRepresentation* bpsr;
     DiscreteVector* Z;
-    int getIndex (int a, int x, int r) 
+    std::vector<int> getIndex (int a, int x, real r) 
     {
             // find closest reward index
         int r_i = 0;
@@ -72,33 +73,14 @@ protected:
         std::vector<int> v(3);
         v[0] = a;
         v[1] = x;
-        v[2] = r_d;
+        v[2] = r_i;
+        return v;
     }
 public:
-    BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_)
-        : n_obs(n_obs_),
-          n_actions(n_actions_),
-          rewards(rewards_)
-    {
-        mdp_dbg("Creating BPSRModel with %d states, %d actions and %d rewards\n",  n_states, n_actions, rewards.size());
-        n_rewards = size(rewards);
-        std::vector<int> sizes(3);
-        sizes(0) = n_obs;
-        sizes(1) = n_actions;
-        sizes(2) = n_rewards;
-        Z = new DiscreteVector(x);
-        Z->size();
-    }
+    BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth);
 
-    virtual ~BPSRModel()
-    {
-    }
-
-    virtual void AddTransition(int a, int r, int x) 
-    {
-        
-    }
-        /// P(x_{t+1} | a_{t+1} , z^t)
+    virtual ~BPSRModel();
+    virtual void AddTransition(int a, int x, real r);
     virtual real getTransitionProbability(std::vector<int> history, int a, int x) const;
     virtual real getExpectedReward (std::vector<int> history) const;
     virtual void Reset();
