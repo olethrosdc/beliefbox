@@ -77,7 +77,7 @@ public:
     /// Generates a uniform random number in [0,1[.
     virtual real uniform();
 
-    /// Generates a uniform random number in [0,n)
+    /// Generates a uniform random number in {0,1, .., n-1)
     virtual int discrete_uniform(int n)
     {
         return (int) floor(uniform()*((real) n));

@@ -31,7 +31,9 @@ POMDPGridworld::POMDPGridworld(const char* fname,
     n_states = width * height + 1; // plus a terminal state
     n_actions = n_actions_;
     terminal_state = n_states - 1;
-    
+
+    n_obs = 16;
+
     std::ifstream ifs(fname, std::ifstream::in);
     if (!ifs.is_open()) {
         Serror ("Could not open file %s", fname);
@@ -79,7 +81,7 @@ POMDPGridworld::~POMDPGridworld() {
     for (uint i=0; i<rewards.size(); ++i) {
         delete rewards[i];
     }
-    delete mdp;
+    //delete mdp;
 }
 
 void POMDPGridworld::Reset()
@@ -119,7 +121,7 @@ bool POMDPGridworld::Act(int action)
     }
     if (state==terminal_state) {
         std::cout << "t: " << total_time << " TERMINATE "
-                  << prev_reward << " " << reward << std::endl;
+                  << reward << std::endl;
         return false;
     }
     return true;
@@ -127,8 +129,8 @@ bool POMDPGridworld::Act(int action)
 
 void POMDPGridworld::Show()
 {
-    for (uint x=0; x<width; ++x) {
-        for (uint y=0; y<height; ++y) {
+    for (int x=0; x<(int) width; ++x) {
+        for (int y=0; y<(int) height; ++y) {
             if (x == ox && y == oy) {
                 std::cout << "*";
                 continue;
@@ -145,4 +147,46 @@ void POMDPGridworld::Show()
         }
         std::cout << std::endl;
     }
+}
+
+int POMDPGridworld::getObservation()
+{
+    int obs = 0;
+#if 0
+    for (int y=oy-1; oy<=oy+1; y++) {
+        for (int x = ox-1; x<=ox+1; x++) {
+            if (y == oy && x == ox) 
+                continue;
+            MapElement e = whatIs(x, y);
+            switch(e) {
+            case GRID:
+            case GOAL:
+            case PIT:
+                break;
+            default:
+                obs |= 1;
+            }
+            obs <<= 1;
+        }
+    }
+#else
+    if (whatIs(ox-1, oy)==WALL || whatIs(ox-1, oy)==INVALID) {
+        obs |= 1;
+    }
+
+    if (whatIs(ox+1, oy)==WALL || whatIs(ox+1, oy)==INVALID) {
+        obs |= 2;
+    }
+
+    if (whatIs(ox, oy-1)==WALL || whatIs(ox, oy-1)==INVALID) {
+        obs |= 4;
+    }
+
+    if (whatIs(ox, oy+1)==WALL || whatIs(ox, oy+1)==INVALID) {
+        obs |= 8;
+    }
+    
+#endif
+    assert(obs>=0 && obs<n_obs);
+    return obs;
 }

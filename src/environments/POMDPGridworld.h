@@ -13,6 +13,7 @@
 #define POMDP_GRIDWORLD_H
 
 #include "Environment.h"
+#include "DiscreteMDP.h"
 #include <string>
 #include <vector>
 
@@ -20,16 +21,16 @@
 
 class POMDPGridworld : public Environment<int, int> {
 public:
-    uint ox, oy;
+    int ox, oy;
     int total_time;
+    int n_obs;
     enum MapDirection {
         NORTH=0, SOUTH, EAST, WEST
     };
     enum MapElement {
         INVALID=-1, GRID, WALL, GOAL, PIT
     };
-    DiscreteMDP* mdp;
-    uint terminal_state;
+    int terminal_state;
     POMDPGridworld(const char* fname,
               uint height_,
               uint width_,
@@ -43,7 +44,7 @@ public:
 
     virtual DiscreteMDP* getMDP() const
     {
-        return mdp;
+        return NULL;
     }
 
     MapElement whatIs(int x, int y)
@@ -57,14 +58,18 @@ public:
     virtual void Reset();
     virtual bool Act(int action);
     void Show();
+    int getObservation();
     int getState(int x, int y)
     {
         if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
             return x + y*width;
         }
         return -1;
-    };
-
+    }
+    int getNObs() const
+    {
+        return n_obs;
+    }
     uint getWidth() const
     {
         return width;
