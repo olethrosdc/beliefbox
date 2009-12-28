@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
+#include <string>
 #include "BPSRModel.h"
 #include "POMDPGridworld.h"
 #include "MersenneTwister.h"
@@ -28,20 +29,33 @@ int main(void)
     int n_actions = 4;
     real random = 0.01;
     int tree_depth = 4;
-    POMDPGridworld environment("/home/dimitrak/projects/beliefbox/dat/maze1", 8, 8, n_actions, random);
+    std::string homedir(getenv("HOME"));
+    std::string maze = homedir + "/projects/beliefbox/dat/maze1";
+    POMDPGridworld environment(maze.c_str(), 8, 8, n_actions, random);
     
     int n_obs = environment.getNObs();
-    BPSRModel bpsr_model(n_obs, n_actions, rewards, tree_depth);
+    BPSRModel model(n_obs, n_actions, rewards, tree_depth);
     MersenneTwisterRNG mersenne_twister;
     RandomNumberGenerator& rng = mersenne_twister;
 
+
     rng.seed();
-    int T = 100;
+    int T = 10000;
     for (int t=0; t<T; ++t) {
+        environment.Show();
+        int state = environment.getState();
         int obs = environment.getObservation();
         int action = rng.discrete_uniform(n_actions);
         environment.Act(action);
+        real reward = environment.getReward();
+        int next_obs = environment.getObservation();
+        
+        printf ("%d %d %d %f %d\n", state, obs, action, reward, %d);
+        
+        model.Observe(x);
+        
     }
+
 }
 
 

@@ -302,8 +302,8 @@ bool Gridworld::Act(int action)
 
 void Gridworld::Show()
 {
-    for (uint x=0; x<width; ++x) {
-        for (uint y=0; y<height; ++y) {
+    for (uint y=0; y<height; ++y) {
+        for (uint x=0; x<width; ++x) {
             if (x == ox && y == oy) {
                 std::cout << "*";
                 continue;

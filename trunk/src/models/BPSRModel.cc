@@ -12,19 +12,19 @@
 #include "BPSRModel.h"
 
 BPSRModel::BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth)
-        : n_obs(n_obs_),
-          n_actions(n_actions_),
-          rewards(rewards_)
- {
-        mdp_dbg("Creating BPSRModel with %d observations, %d actions and %d rewards. Tree depth %d\n",  n_obs, n_actions, rewards.size(), tree_depth);
-        n_rewards = rewards.size();
-        std::vector<int> sizes(3);
-        sizes[0] = n_obs;
-        sizes[1] = n_actions;
-        sizes[2] = n_rewards;
-        Z = new DiscreteVector(sizes);
-        bpsr = new BayesianPredictiveStateRepresentation(Z->size(), tree_depth, 0.5, false);
-    }
+    : n_obs(n_obs_),
+      n_actions(n_actions_),
+      rewards(rewards_)
+{
+    mdp_dbg("Creating BPSRModel with %d observations, %d actions and %d rewards. Tree depth %d\n",  n_obs, n_actions, rewards.size(), tree_depth);
+    n_rewards = rewards.size();
+    std::vector<int> sizes(3);
+    sizes[0] = n_obs;
+    sizes[1] = n_actions;
+    sizes[2] = n_rewards;
+    Z = new DiscreteVector(sizes);
+    bpsr = new BayesianPredictiveStateRepresentation(Z->size(), tree_depth, 0.5, false);
+}
 
 BPSRModel::~BPSRModel()
 {
@@ -48,5 +48,13 @@ real BPSRModel::getExpectedReward (std::vector<int> history) const
     return 0;
 }
 void BPSRModel::Reset()
+{
+    history.clear();
+}
+void BPSRModel::Observe(int x, real r)
+{
+    
+}
+void BPSRModel::Observe(int a, int x, real r)
 {
 }

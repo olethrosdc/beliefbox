@@ -59,7 +59,7 @@ public:
     virtual bool Act(int action);
     void Show();
     int getObservation();
-    int getState(int x, int y)
+    int getStateFromCoords(int x, int y)
     {
         if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
             return x + y*width;
@@ -87,7 +87,7 @@ public:
 protected:
     uint height;
     uint width;
-    //uint n_aactions;
+
     real random;
     real pit_value;
     real goal_value;

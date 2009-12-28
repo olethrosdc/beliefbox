@@ -11,75 +11,19 @@
 #ifndef SPARSE_MARKOVCHAIN_H
 #define SPARSE_MARKOVCHAIN_H
 
-#include "MarkovChain.h"
-#include <map>
 #include <vector>
-#include <real.h>
+#include "real.h"
+#include "MarkovChain.h"
+#include "Vector.h"
+#include "SparseTransitions.h"
 
 /**
    \ingroup StatisticsGroup
  */
 /*@{*/
 
-
-typedef std::map<int, std::vector<real>, std::greater<int> > SourceMap;
-typedef SourceMap::iterator SourceMapIterator;
-
-class SparseTransitions 
-{
-protected:
-	int n_sources;
-	int n_destinations;
-	SourceMap sources;
-public:
-	SparseTransitions(int n_sources, int n_destinations)
-	{
-		this->n_sources = n_sources;
-		this->n_destinations = n_destinations;
-	}
-	real get_weight(int src, int dst)
-	{
-		SourceMapIterator i = sources.find(src);
-		if (i==sources.end()) {
-			return 0.0;
-		} else {
-			return i->second[dst];
-		}
-	}
-    std::vector<real> get_weights(int src)
-    {
-		SourceMapIterator i = sources.find(src);
-		if (i==sources.end()) {
-            std::vector<real> zero_vector(n_destinations);
-			return zero_vector;
-		} else {
-			return i->second;
-		}
-	}
-	int nof_destinations()
-	{
-		return n_destinations;
-	}
-
-	real observe(int src, int dst)
-	{
-		SourceMapIterator i = sources.find(src);
-		if (i==sources.end()) {
-            std::vector<real> v(n_destinations);
-            for (int j=0; j<n_destinations; ++j) {
-                v[j] = 0.0;
-            } 
-            v[dst] = 1.0;
-            std::pair<SourceMapIterator, bool> ret = sources.insert(std::make_pair(src, v));
-            return 1.0;
-        } else {
-            i->second[dst]++;
-            return i->second[dst];
-        }
-	}
-};
-
-/// A sparse implementation of a Markov chain
+/** A sparse implementation of a Markov chain
+ */
 class SparseMarkovChain : public MarkovChain
 {
 protected:

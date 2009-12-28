@@ -100,6 +100,10 @@ void POMDPGridworld::Reset()
 
 bool POMDPGridworld::Act(int action)
 {
+    if (state == terminal_state) {
+        reward = 0;
+        return false;
+    }
     int x = ox;
     int y = oy;
     switch(action) {
@@ -116,21 +120,37 @@ bool POMDPGridworld::Act(int action)
         x--;
         break;
     }
-    if (whatIs(x,y) != INVALID) {
-        state = x;
+
+    reward = step_value;
+    if (whatIs(x,y) != INVALID   &&whatIs(x,y) != WALL) {
+        ox = x;
+        oy = y;
+        state = getStateFromCoords(x, y);
+    } 
+    if (whatIs(x,y) == GOAL || whatIs(x,y)== PIT) {
+        state = terminal_state;
     }
-    if (state==terminal_state) {
-        std::cout << "t: " << total_time << " TERMINATE "
-                  << reward << std::endl;
-        return false;
+
+    if (whatIs(x,y) == GOAL) {
+        reward = goal_value;
     }
+
+    if (whatIs(x,y) == PIT) {
+        reward = pit_value;
+    }
+    //std::cout << "coords: " << x << ", " << y << std::endl;
+    //if (state==terminal_state) {
+        //std::cout << "t: " << total_time << " TERMINATE "
+        //<< reward << std::endl;
+    //return false;
+        //}
     return true;
 }
 
 void POMDPGridworld::Show()
 {
-    for (int x=0; x<(int) width; ++x) {
-        for (int y=0; y<(int) height; ++y) {
+    for (int y=0; y<(int) height; ++y) {
+        for (int x=0; x<(int) width; ++x) {
             if (x == ox && y == oy) {
                 std::cout << "*";
                 continue;

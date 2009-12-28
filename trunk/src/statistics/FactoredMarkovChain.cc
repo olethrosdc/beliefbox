@@ -1,5 +1,5 @@
 /* -*- Mode: c++;  -*- */
-// copyright (c) 2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -9,34 +9,24 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "SparseMarkovChain.h"
+#include "FactoredMarkovChain.h"
 #include "Random.h"
 
-SparseMarkovChain::SparseMarkovChain(int n_states, int mem_size)
-	: MarkovChain(n_states, mem_size), transitions((int) pow((double) n_states, (double) mem_size), n_states)
+FactoredMarkovChain::FactoredMarkovChain(int n_states, int mem_size)
+	: MarkovChain(n_states, mem_size), transitions((int) pow((double) n_states, (double) mem_size), n_states), threshold(0.5)
 {
 
 }
 
-SparseMarkovChain::~SparseMarkovChain()
+FactoredMarkovChain::~FactoredMarkovChain()
 {
 }
 
-/**
-   \brief Train a markov chain.
+/** Train the chain with a new observation
 
-   - Incrementally trains the markov chain with a new
-   observations. When wishing to add the statistics of a particular
-   sequence to the transition probabilities, first call
-   MarkovChainReset() and then call MarkovChainTrain() iteratively,
-   presenting elements of the sequence in order.
-
-   \arg \c chain: A pointer to the chain that you wish to train.
-   \arg \c state: The state ID.
-
-   \return Probability of having observed the next state.
+   @return Probability of having observed the next state.
 */
-real SparseMarkovChain::ObserveNextState (int state)
+real FactoredMarkovChain::ObserveNextState (int state)
 {
 	assert((state>=0)&&(state<n_states));
 	curr_state = CalculateStateID();
@@ -57,7 +47,7 @@ real SparseMarkovChain::ObserveNextState (int state)
 
    \return The probability of the transition to that state.
 */
-real SparseMarkovChain::NextStateProbability (int state)
+real FactoredMarkovChain::NextStateProbability (int state)
 {
 	assert((state>=0)&&(state<n_states));
 
@@ -67,7 +57,7 @@ real SparseMarkovChain::NextStateProbability (int state)
 }
 
 
-void SparseMarkovChain::getNextStateProbabilities(std::vector<real>& p)
+void FactoredMarkovChain::getNextStateProbabilities(std::vector<real>& p)
 {
     curr_state = CalculateStateID();
     return getProbabilities(curr_state, p);
@@ -75,45 +65,45 @@ void SparseMarkovChain::getNextStateProbabilities(std::vector<real>& p)
 
 
 
-/// Get the number of transitions from \c src to \c dst
-real SparseMarkovChain::getTransition (MCState src, int dst)
+/// Get the number of transitions from \c ctx to \c prd
+real FactoredMarkovChain::getTransition (FactoredContext ctx, int prd)
 {
-	assert((src>=0)&&(src<n_states));
-	assert((dst>=0)&&(dst<n_states));
-	return transitions.get_weight(src, dst);
+	assert((ctx>=0)&&(ctx<n_states));
+	assert((prd>=0)&&(prd<n_states));
+	return transitions.get_weight(ctx, prd);
 }
 
 
 
-/// Get the transition probability from \c src to \c dst
+/// Get the transition probability from \c ctx to \c prd
 ///
 /// Takes into account the threshold.
-real SparseMarkovChain::getProbability(MCState src, int dst)
+real FactoredMarkovChain::getProbability(FactoredContext ctx, int prd)
 {
-	assert((src>=0)&&(src<tot_states));
-	assert((dst>=0)&&(dst<n_states));
+	assert((ctx>=0)&&(ctx<tot_states));
+	assert((prd>=0)&&(prd<n_states));
 	real sum = 0.0;
 	int N = transitions.nof_destinations();
 	
 	for (int i=0; i<N; ++i) {
-		sum += transitions.get_weight(src, i);
+		sum += transitions.get_weight(ctx, i);
 	}
 	
-	return (transitions.get_weight(src, dst) + threshold) / (sum + threshold * ((real) N));
+	return (transitions.get_weight(ctx, prd) + threshold) / (sum + threshold * ((real) N));
 }
 
 /// Get the transition probabilities
 ///
 /// Takes into account the threshold.
-void SparseMarkovChain::getProbabilities(MCState src, std::vector<real>& p)
+void FactoredMarkovChain::getProbabilities(FactoredContext ctx, std::vector<real>& p)
 {
-	assert((src>=0)&&(src<tot_states));
+	assert((ctx>=0)&&(ctx<tot_states));
 	assert((int) p.size()== n_states);
 	real sum = 0.0;
 	int N = transitions.nof_destinations();
 	
 	for (int i=0; i<N; ++i) {
-        p[i] = threshold + transitions.get_weight(src, i);
+        p[i] = threshold + transitions.get_weight(ctx, i);
 		sum += p[i];
 	}
 
@@ -124,23 +114,16 @@ void SparseMarkovChain::getProbabilities(MCState src, std::vector<real>& p)
 }
 
 
-/// Get the density of the transition probabilities \c p from \c src
-real SparseMarkovChain::pdf(MCState src, Vector p)
+/// Get the density of the transition probabilities \c p from \c ctx
+real FactoredMarkovChain::pdf(FactoredContext ctx, Vector p)
 {
-	assert((src>=0)&&(src<tot_states));
+	assert((ctx>=0)&&(ctx<tot_states));
 	Swarning("Not implemented\n");
 	return 0.0;
 }
 
 
 
-/// Set the transition probability from \c src to \c dst
-void SparseMarkovChain::setTransition (MCState src, int dst, real value)
-{
-	assert((src>=0)&&(src<tot_states));
-	assert((dst>=0)&&(dst<n_states));
-        //transitions[dst * tot_states + src] = value;
-}
 
 /**
    \brief Set the threshold specifying the Dirichlet prior.
@@ -152,7 +135,7 @@ void SparseMarkovChain::setTransition (MCState src, int dst, real value)
 
    See also MarkovChainSoftmaxNormalize()
 */
-void SparseMarkovChain::setThreshold (real threshold)
+void FactoredMarkovChain::setThreshold (real threshold)
 {
 	this->threshold = threshold;
 }
@@ -168,7 +151,7 @@ void SparseMarkovChain::setThreshold (real threshold)
    sequences).
 
 */
-void SparseMarkovChain::Reset ()
+void FactoredMarkovChain::Reset ()
 {
 	int i;
 	for (i=0; i<mem_size; i++) {
@@ -196,7 +179,7 @@ void SparseMarkovChain::Reset ()
    nothing could be generated.
 
 */
-int SparseMarkovChain::GenerateStatic ()
+int FactoredMarkovChain::GenerateStatic ()
 {
 	real tot = 0.0f;
         //int curr = CalculateStateID ();
@@ -219,7 +202,7 @@ int SparseMarkovChain::GenerateStatic ()
 
   
 */
-int SparseMarkovChain::generate ()
+int FactoredMarkovChain::generate ()
 {
 	real tot = 0.0f;
     //int curr = CalculateStateID ();
@@ -227,7 +210,7 @@ int SparseMarkovChain::generate ()
 	for (int j=0; j<n_states; j++) {
 		real P = 0.0;//Pr[curr + j*tot_states];
 		tot += P;
-		if (sel<=tot && P>0.0f) {
+		if (sel <= tot && P > 0.0f) {
 			PushState(j);
 			return j;
 		}
@@ -240,22 +223,16 @@ int SparseMarkovChain::generate ()
 
 
 
-//==========================================================
-// MarkovChainPushState()
-//----------------------------------------------------------
 /**
    Adds a new state to the history FIFO, pushing out the oldest
    member of the history. Note that the implementation could be
-   faster, but the history is pretty small. If you change the
-   implementation you also need to change
-   MarkovChainCalculateStateID() at least.
+   faster, but the history is pretty small. 
 
-   \arg \c chain: A pointer to the chain.
-   \arg \c state: A new state
+   @param state A new state
 
-   \return It returns the ID of the popped state.
+   @return It returns the ID of the popped state.
 */
-int  SparseMarkovChain::PushState (int state) {
+int  FactoredMarkovChain::PushState (int state) {
 	int i;
 	int popped_state;
 
@@ -272,8 +249,7 @@ int  SparseMarkovChain::PushState (int state) {
 	return popped_state;
 }
 
-/**
-   Can be useful for debugging.
+/** Can be useful for debugging.
    
    A way to test the Markov Chain's operation is to create a Markov
    Chain populated with randomly initialised transitions, use it to
@@ -283,7 +259,7 @@ int  SparseMarkovChain::PushState (int state) {
    the data.
 */
 
-int SparseMarkovChain::ShowTransitions () {
+int FactoredMarkovChain::ShowTransitions () {
 	printf ("\nState transition dump %ld\n", tot_states);
 	for (int i=0; i<tot_states; i++) {
 		printf ("Transition %d : ", i);
