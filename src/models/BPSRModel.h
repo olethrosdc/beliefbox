@@ -44,8 +44,6 @@ inline void mdp_dbg(...)
   \class BPSRModel
   \brief A model of a Partially observable Markov decision process
 
-
-
 */
 class BPSRModel
 {
@@ -53,6 +51,9 @@ protected:
     int n_obs;
     int n_actions;
     std::vector<real> rewards;
+    std::vector<int> observation_history;
+    std::vector<int> reward_history;
+    std::vector<int> action_history;
     int n_rewards;
     BayesianPredictiveStateRepresentation* bpsr;
     DiscreteVector* Z;
@@ -80,7 +81,8 @@ public:
     BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth);
 
     virtual ~BPSRModel();
-    virtual void AddTransition(int a, int x, real r);
+    virtual void Observe(int x);
+    virtual void Observe(int a, int x, real r);
     virtual real getTransitionProbability(std::vector<int> history, int a, int x) const;
     virtual real getExpectedReward (std::vector<int> history) const;
     virtual void Reset();

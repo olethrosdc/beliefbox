@@ -1,5 +1,6 @@
 /* -*- Mode: c++;  -*- */
-// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+/*VER: $Id: MarkovChain.h,v 1.7 2006/08/17 05:35:00 olethros Exp $*/
+// copyright (c) 2004 by Christos Dimitrakakis <dimitrak@idiap.ch>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -8,9 +9,10 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#ifndef BAYESIAN_PSR_H
-#define BAYESIAN_PSR_H
+#ifndef BVMM_H
+#define BVMM_H
 
+#include "BayesianMarkovChain.h"
 #include <vector>
 #include <map>
 #include "Vector.h"
@@ -25,18 +27,18 @@
 typedef std::map<int, real, std::greater<int> > BeliefMap;
 typedef BeliefMap::iterator BeliefMapIterator;
 
-/*** A factored Markov Chain, basically.
- */
-class BayesianPredictiveStateRepresentation
+/// A Markov Chain
+class BVMM : public BayesianMarkovChain
 {
 protected:
+    bool polya;
     Matrix P_obs; ///< Probability of observations for model k
     Matrix Lkoi; ///< Probability of observations for all models up to k
     std::vector<real> weight; ///< temporary weight of model
 public:
     std::vector<BeliefMap> beliefs;
 
-    BayesianPredictiveStateRepresentation (int n_obs, int n_models, float prior, bool dense = false);
+    BVMM (int n_states, int n_models, float prior, bool polya_, bool dense = false);
 
     inline real get_belief_param(int model)
     {
@@ -60,7 +62,7 @@ public:
         }
     }
 
-    virtual ~BayesianPredictiveStateRepresentation();
+    virtual ~BVMM();
 
     
     /* Training and generation */
@@ -70,6 +72,7 @@ public:
     }
     virtual real NextStateProbability (int state);
     virtual void Reset();
+    virtual int generate();
     virtual int predict();
     
 };
