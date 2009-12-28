@@ -56,7 +56,7 @@ public:
     void getNextStateProbabilities(std::vector<real>& p);
 
     /* Training and generation */
-    int PushState (int state);
+    int PushState (int prd);
     real ObserveNextState (int state);
     real NextStateProbability (int state);
     void Reset();
