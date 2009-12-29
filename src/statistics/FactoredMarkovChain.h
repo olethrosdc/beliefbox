@@ -22,46 +22,56 @@
 
 typedef long FactoredContext;
 
-/** A factored Markov chain
+/** A factored Markov chain.
 
-    The observable \f$x = (y, z)\f$ is a pair with the controllable
-    action \f$y\f$ element being a controllable variable arising from
-    process \f$\pi\f$ and the random \f$z\f$ element being a predicted
-    variable arising from process \f$\mu\f$.
+    This is not really a statistical distribution as it is composed of
+    two variables, one of which is externally controllable.
+
+    The variable \f$x = (y, z)\f$ is a pair with the controllable
+    action \f$y\f$ arising from process \f$\pi\f$ and the random
+    observation \f$z\f$ being a predicted variable arising from
+    process \f$\mu\f$.
     
     Thus, the probability distribution over next observations
     $x_{t+1}$ given the history $x^t$ is can be written as:
 
     \f[
     \Pr(x_{t+1} | x^t, \mu, \pi) = 
-    \Pr(y_{t+1} | x^t, \pi)
-    \Pr(z_{t+1} | y_{t+1}, x^t, \mu)
+    \Pr(y_{t+1} | z_{t+1}, x^t, \pi)
+    \Pr(z_{t+1} | x^t, \mu)
     \f]
+
+    Thus, the next observation depends on the complete history of
+    observations and actions.
  */
 class FactoredMarkovChain 
 {
 protected:
-    int n_transitions; ///< total number of transitions
+    int n_actions; ///< number of actions
+    int n_obs; ///< number of observations
+    int mem_size; ///< order of the chain
 	SparseTransitions transitions; ///< history-wide transition table
-
+    std::vector<int> act_history;
+    std::vector<int> obs_history;
+    std::vector<int> history;
     real threshold;
 public:
-    FactoredMarkovChain (int n_states, int mem_size);
-    virtual ~FactoredMarkovChain ();
+    FactoredMarkovChain(int n_actions_, int n_obs_, int mem_size);
+    virtual ~FactoredMarkovChain();
 
     /* probabilities */
-    real getTransition (FactoredContext ctx, int prd);
-    real getProbability (FactoredContext ctx, int prd);
+    real getTransition(FactoredContext ctx, int prd);
+    real getProbability(FactoredContext ctx, int prd);
     void getProbabilities(FactoredContext ctx, std::vector<real>& p);
-    void getNextStateProbabilities(std::vector<real>& p);
+    void getNextStateProbabilities(int act, std::vector<real>& p);
 
     /* Training and generation */
-    int PushState (int prd);
-    real ObserveNextState (int state);
-    real NextStateProbability (int state);
+    int PushObservation (int act, int prd);
+    real Observe (int act, int prd);
+    real NextStateProbability (int act, intstate);
     void Reset();
     int GenerateStatic();
-    int generate();
+    int GenerateStatic(int act);
     
     /* Debug functions */
     virtual int ShowTransitions ();

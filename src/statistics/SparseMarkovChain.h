@@ -15,6 +15,7 @@
 #include "real.h"
 #include "MarkovChain.h"
 #include "Vector.h"
+
 #include "SparseTransitions.h"
 
 /**

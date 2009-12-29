@@ -12,8 +12,10 @@
 #include "SparseMarkovChain.h"
 #include "Random.h"
 
-SparseMarkovChain::SparseMarkovChain(int n_states, int mem_size)
-	: MarkovChain(n_states, mem_size), transitions((int) pow((double) n_states, (double) mem_size), n_states)
+SparseMarkovChain::SparseMarkovChain(int n_states,
+                                     int mem_size)
+	: MarkovChain(n_states, mem_size),
+      transitions((int) pow((double) n_states, (double) mem_size), n_states)
 {
 
 }
