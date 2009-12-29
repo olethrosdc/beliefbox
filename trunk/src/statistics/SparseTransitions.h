@@ -21,15 +21,15 @@
 /*@{*/
 
 
-typedef std::map<int, std::vector<real>, std::greater<int> > SourceMap;
-typedef SourceMap::iterator SourceMapIterator;
-
 /** A sparse transition model for discrete observations.
     
  */
 class SparseTransitions 
 {
 protected:
+    typedef std::map<int, std::vector<real>, std::greater<int> > SourceMap;
+    typedef SourceMap::iterator SourceMapIterator;
+    typedef SourceMap::const_iterator SourceMapCIterator;
 	int n_sources; ///< number of source contexts
 	int n_destinations; ///< number of next observations
 	SourceMap sources; ///< a map of sources
@@ -48,7 +48,7 @@ public:
     /// Get the raw weight of a particular src/dst pair.
 	real get_weight(int src, int dst) const
 	{
-		SourceMapIterator i = sources.find(src);
+		const SourceMapCIterator i = sources.find(src);
 		if (i==sources.end()) {
 			return 0.0;
 		} else {
@@ -58,7 +58,7 @@ public:
     /// Get the weights of all predictions from a src context.
     std::vector<real> get_weights(int src) const
     {
-		SourceMapIterator i = sources.find(src);
+		const SourceMapCIterator i = sources.find(src);
 		if (i==sources.end()) {
             std::vector<real> zero_vector(n_destinations);
 			return zero_vector;
@@ -75,7 +75,7 @@ public:
     /// Observe a particular transition
 	real observe(int src, int dst)
 	{
-		SourceMapIterator i = sources.find(src);
+		const SourceMapIterator i = sources.find(src);
 		if (i==sources.end()) {
             std::vector<real> v(n_destinations);
             for (int j=0; j<n_destinations; ++j) {

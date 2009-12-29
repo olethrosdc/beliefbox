@@ -12,52 +12,69 @@
 #include "FactoredMarkovChain.h"
 #include "Random.h"
 
-FactoredMarkovChain::FactoredMarkovChain(int n_states, int mem_size)
-	: MarkovChain(n_states, mem_size), transitions((int) pow((double) n_states, (double) mem_size), n_states), threshold(0.5)
+FactoredMarkovChain::FactoredMarkovChain(int n_actions_,
+                                         int n_obs_,
+                                         int mem_size_) 
+    : n_actions(n_actions_),
+      n_obs(n_obs_),
+      mem_size(mem_size_),
+      transitions((int) pow((double) (n_actions*n_obs), (double) mem_size), n_states),
+      act_history(mem_size),
+      obs_history(mem_size),
+      history(mem_size),
+      threshold(0.5)
 {
-
+    for (int i=0; i<mem_size; ++i) {
+        act_history[i] = 0;
+        obs_history[i] = 0;
+        history[i] = 0;
+    }
 }
 
 FactoredMarkovChain::~FactoredMarkovChain()
 {
 }
 
+FactoredContext FactoredMarkovChain::CalculateStateID()
+{
+    MCState id = 0;
+	MCState n = 1;
+	for (MCState i=1; i<=mem_size; i++, n*=n_states) {
+		id += history[i-1]*n; 
+	}
+	return id;
+}
+}
+
 /** Train the chain with a new observation
 
    @return Probability of having observed the next state.
 */
-real FactoredMarkovChain::ObserveNextState (int state)
+real FactoredMarkovChain::Observe(int act, int prd)
 {
-	assert((state>=0)&&(state<n_states));
+    PushAction(act);
 	curr_state = CalculateStateID();
-	real Pr = getProbability(curr_state, state);
 	transitions.observe(curr_state, state);
     PushState (state);
     return Pr;
 }
 
 
-/**
-   \brief Likelihood of an observation for the markov chain.
+/** Probability of an observation given a particular action.
 
-   See what the probability of an observation is according to the
-   current model.
-
-   \arg \c state: The state ID.
-
-   \return The probability of the transition to that state.
+   \return The probability of observing prd given act.
 */
-real FactoredMarkovChain::NextStateProbability (int state)
+real FactoredMarkovChain::NextStateProbability (int act, int prd)
 {
 	assert((state>=0)&&(state<n_states));
 
 	curr_state = CalculateStateID ();
 	assert (curr_state>=0 && curr_state<tot_states);
-	return getProbability(curr_state, state);
+	return getProbability(curr_state, act, prd);
 }
 
 
-void FactoredMarkovChain::getNextStateProbabilities(std::vector<real>& p)
+void FactoredMarkovChain::getNextStateProbabilities(int act, std::vector<real>& p)
 {
     curr_state = CalculateStateID();
     return getProbabilities(curr_state, p);
@@ -195,35 +212,8 @@ int FactoredMarkovChain::GenerateStatic ()
 	return -1;
 }
 
-/**
-   \brief Generate the next state
-  
-   Generates a value for the next state.
+/** Add a new set of observations.
 
-  
-*/
-int FactoredMarkovChain::generate ()
-{
-	real tot = 0.0f;
-    //int curr = CalculateStateID ();
-	real sel = urandom();
-	for (int j=0; j<n_states; j++) {
-		real P = 0.0;//Pr[curr + j*tot_states];
-		tot += P;
-		if (sel <= tot && P > 0.0f) {
-			PushState(j);
-			return j;
-		}
-	}
-	int j = rand()%n_states;
-	PushState(j);
-	return j;
-}
-
-
-
-
-/**
    Adds a new state to the history FIFO, pushing out the oldest
    member of the history. Note that the implementation could be
    faster, but the history is pretty small. 
@@ -250,15 +240,7 @@ int  FactoredMarkovChain::PushState (int state) {
 }
 
 /** Can be useful for debugging.
-   
-   A way to test the Markov Chain's operation is to create a Markov
-   Chain populated with randomly initialised transitions, use it to
-   generate a sequence and then make a Markov Chain of the same order
-   and train it on the generated data. The estimated transition
-   probabilities should be close to those of the chain that generated
-   the data.
 */
-
 int FactoredMarkovChain::ShowTransitions () {
 	printf ("\nState transition dump %ld\n", tot_states);
 	for (int i=0; i<tot_states; i++) {
