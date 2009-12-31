@@ -16,8 +16,12 @@
 #include "Matrix.h"
 #include "Distribution.h"
 
-BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int n_obs, int n_models, float prior, bool polya_, bool dense)
-    : P_obs(n_models, n_obs), 
+BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int n_obs_, int n_actions_, int n_models_, float prior)
+    : total_observations(0),
+      n_obs(n_obs_),
+      n_actions(n_actions_),
+      n_models(n_models_),
+      P_obs(n_models, n_obs), 
       Lkoi(n_models, n_obs),
       weight(n_models)
 {
@@ -41,19 +45,23 @@ void BayesianPredictiveStateRepresentation::Reset()
 }
 
 
-/// Adapt the model given the next state
-void BayesianPredictiveStateRepresentation::ObserveNextState(int obs)
+/** Adapt the model given a specific action and next observation.
+ 
+    @param a the action
+    @param x the observation
+*/
+void BayesianPredictiveStateRepresentation::Observe(int a, int x)
 {
 
-//    Matrix P_obs(n_models, n_obs);
-//    Matrix Lkoi(n_models, n_obs);
+    //    Matrix P_obs(n_models, n_obs);
+    //    Matrix Lkoi(n_models, n_obs);
 
-    int top_model = std::min(n_models - 1, n_observations);
-
-    // calculate predictions for each model
+    int top_model = std::min(n_models - 1, total_observations);
+    
+    // calculate predictions for each model for the given action a
     for (int model=0; model<=top_model; ++model) {
         for (int j=0; j<n_obs; j++) {
-            P_obs(model, j) =  mc[model]->NextStateProbability(j);
+            P_obs(model, j) =  mc[model]->ObservationProbability(a, j);
         }
         if (model == 0) {
             weight[model] = 1;
@@ -61,7 +69,7 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int obs)
                 Lkoi(model,j) = P_obs(model,j);
             }
         } else {
-            weight[model] = exp(log_prior[model] + get_belief_param(model));
+            weight[model] = exp(log_prior[model] + get_belief_param(a, model));
             for (int j=0; j<n_obs; j++) {
                 Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model-1, j); 
             }
@@ -85,23 +93,27 @@ void BayesianPredictiveStateRepresentation::ObserveNextState(int obs)
     }
 
       
-  // insert new observations
-    n_observations++;
+    // insert new observations to all models
+    total_observations++;
     Vector posterior(n_models);
     
     for (int model=0; model<=top_model; ++model) {
-        posterior[model] = weight[model] * P_obs(model, obs) / Lkoi(model, obs);
-        set_belief_param(model, log(posterior[model]) - log_prior[model]);
-        mc[model]->ObserveNextObs(obs);
+        posterior[model] = weight[model] * P_obs(model, x) / Lkoi(model, x);
+        set_belief_param(a, model, log(posterior[model]) - log_prior[model]);
+        mc[model]->Observe(a, x);
     }
     
 }
 
-/// Get the probability of the next state
-real BayesianPredictiveStateRepresentation::NextStateProbability(int obs)
+/** Get the probability of the next state
+    
+    P_t(x_{t+1} = x | a_t = a)
+
+*/
+real BayesianPredictiveStateRepresentation::ObservationProbability(int a, int x)
 {
-    Pr_next /= Pr_next.Sum();
-    return Pr_next[obs];
+    //Pr_next /= Pr_next.Sum();
+    // return Pr_next[obs];
 }
 
 
@@ -110,27 +122,27 @@ real BayesianPredictiveStateRepresentation::NextStateProbability(int obs)
 /// We are flattening the hierarchical distribution to a simple
 /// multinomial.  
 ///
-int BayesianPredictiveStateRepresentation::predict()
+int BayesianPredictiveStateRepresentation::predict(int a)
 {
-//    Matrix P_obs(n_models, n_obs);
-//    Matrix Lkoi(n_models, n_obs);
-    int top_model = std::min(n_models - 1, n_observations);
+    //    Matrix P_obs(n_models, n_obs);
+    //    Matrix Lkoi(n_models, n_obs);
+    int top_model = std::min(n_models - 1, total_observations);
 
-        // calculate predictions for each model
+    // calculate predictions for each model
     for (int model=0; model<=top_model; ++model) {
         std::vector<real> p(n_obs);
 
         for (int obs=0; obs<n_obs; obs++) {
-            P_obs(model, obs) =  mc[model]->NextObsProbability(obs);
+            P_obs(model, obs) =  mc[model]->ObservationProbability(a, obs);
         }
-            //printf("p(%d): ", i);
+        //printf("p(%d): ", i);
         if (model == 0) {
             weight[model] = 1;
             for (int obs=0; obs<n_obs; obs++) {
                 Lkoi(model, obs) = P_obs(model, obs);
             }
         } else {
-            weight[model] = exp(log_prior[model] + get_belief_param(model));
+            weight[model] = exp(log_prior[model] + get_belief_param(a, model));
             for (int obs=0; obs<n_obs; obs++) {
                 Lkoi(model,obs) = weight[model] * P_obs(model, obs)
                     + (1.0 - weight[model]) * Lkoi(model - 1, obs);

@@ -22,9 +22,13 @@
 
 typedef long MCState;
 
+
+#define EFFICIENT_MC_STATE_PUSH
+
 /// A Markov Chain
 class MarkovChain {
 protected:
+    int mem_pos; ///< memory position
 	int n_states; ///< number of distinct states
 	int mem_size; ///< history size for new transitions
 	MCState curr_state; ///< current address in history
@@ -32,7 +36,6 @@ protected:
 	std::vector<int> memory; ///< hold history in here
 
     MCState CalculateStateID ();
-
 public:
     MarkovChain (int n_states, int mem_size);
     virtual ~MarkovChain ();
@@ -47,7 +50,7 @@ public:
     virtual void setThreshold (real threshold) = 0;
 
     /* Training and generation */
-    virtual int PushState (int state) = 0;
+    int PushState (int state);    
     virtual real ObserveNextState (int state) = 0;
     virtual real NextStateProbability (int state) = 0;
     virtual void Reset () = 0;

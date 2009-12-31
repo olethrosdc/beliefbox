@@ -15,6 +15,7 @@
 #include <map>
 #include "Vector.h"
 #include "Matrix.h"
+#include "FactoredMarkovChain.h"
 
 /**
    \ingroup StatisticsGroup
@@ -22,25 +23,34 @@
 /*@{*/
 
 
-typedef std::map<int, real, std::greater<int> > BeliefMap;
-typedef BeliefMap::iterator BeliefMapIterator;
 
-/*** A factored Markov Chain, basically.
+/** A factored Markov Chain, basically.
  */
 class BayesianPredictiveStateRepresentation
 {
+public:
+    typedef std::map<int, real, std::greater<int> > BeliefMap;
+    typedef BeliefMap::iterator BeliefMapIterator;
 protected:
+    int total_observations; ///< total number of observations
+    int n_obs; ///< number of non-controllable variable states
+    int n_actions; ///< number of control variable states
+    int n_models; ///< number of models
     Matrix P_obs; ///< Probability of observations for model k
     Matrix Lkoi; ///< Probability of observations for all models up to k
     std::vector<real> weight; ///< temporary weight of model
+    std::vector<FactoredMarkovChain*> mc;
+    std::vector<real> log_prior;
+    Vector Pr; ///< model probabilities
+    Vector Pr_next; ///< state probabilities
 public:
     std::vector<BeliefMap> beliefs;
 
-    BayesianPredictiveStateRepresentation (int n_obs, int n_models, float prior, bool dense = false);
+    BayesianPredictiveStateRepresentation (int n_obs, int n_actions, int n_models, float prior);
 
-    inline real get_belief_param(int model)
+    inline real get_belief_param(int act, int model)
     {
-        int src = mc[model]->getCurrentState();
+        int src = mc[model]->getContext(act);
         BeliefMapIterator i = beliefs[model].find(src);
 		if (i==beliefs[model].end()) {
 			return 0.0;
@@ -49,9 +59,9 @@ public:
 		}
     }
 
-    inline void set_belief_param(int model, real value)
+    inline void set_belief_param(int act, int model, real value)
     {
-        int src = mc[model]->getCurrentState();
+        int src = mc[model]->getContext(act);
         BeliefMapIterator i =  beliefs[model].find(src);
         if (i!=beliefs[model].end()) {
             i->second = value;
@@ -64,13 +74,10 @@ public:
 
     
     /* Training and generation */
-    virtual void ObserveNextState (int state);
-    inline void Observe(int x) {
-        ObserveNextState(x);
-    }
-    virtual real NextStateProbability (int state);
+    inline void Observe(int a, int x);
+    virtual real ObservationProbability (int a, int x);
     virtual void Reset();
-    virtual int predict();
+    virtual int predict(int a);
     
 };
 /*@}*/

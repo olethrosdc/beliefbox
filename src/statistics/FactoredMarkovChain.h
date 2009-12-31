@@ -13,6 +13,7 @@
 
 #include <map>
 #include <vector>
+#include <cassert>
 #include "real.h"
 #include "SparseTransitions.h"
 /**
@@ -20,7 +21,7 @@
  */
 /*@{*/
 
-typedef long FactoredContext;
+
 
 /** A factored Markov chain.
 
@@ -46,29 +47,67 @@ typedef long FactoredContext;
  */
 class FactoredMarkovChain 
 {
+public:
+    typedef long Context;
 protected:
+    int T; ///< total time passed
     int n_actions; ///< number of actions
     int n_obs; ///< number of observations
+    int n_states; ///< number of action*observations
     int mem_size; ///< order of the chain
 	SparseTransitions transitions; ///< history-wide transition table
+
+    /// The current context. It is updated whenever a new action
+    /// \f$a_t\f$ is observed and is a summary of the history of the
+    /// past \f$(x_{t-i}, a_{t-i})_{i=0}^{\tau-1}\f$ observation pairs.
+    Context current_context;
     std::vector<int> act_history;
     std::vector<int> obs_history;
     std::vector<int> history;
     real threshold;
+
+    /// Calculate the local state for a given action a, observation x
+    int CalculateState(int a, int x)
+    {
+        assert(a>=0 && a<n_actions);
+        assert(x>=0 && x<n_obs);
+        return a*n_obs + x;
+    }
+    Context CalculateContext();
+    Context CalculateContext(int act);
+
+    void PushState(int state)
+    {
+        assert(state>=0 && state<n_states);
+        history.push_back(state);
+        T++;
+        assert(T==history.size() && T==act_history.size() && T==obs_history.size());
+    }
+    void PushAction(int act)
+    {
+        act_history.push_back(act);
+        PushState(CalculateState(act, obs_history.back()));
+        assert(act_history.size()==obs_history.size());
+    }
+    void PushObservation(int obs)
+    {
+        assert(act_history.size()==obs_history.size());
+        obs_history.push_back(obs);
+    }
 public:
     FactoredMarkovChain(int n_actions_, int n_obs_, int mem_size);
     virtual ~FactoredMarkovChain();
 
     /* probabilities */
-    real getTransition(FactoredContext ctx, int prd);
-    real getProbability(FactoredContext ctx, int prd);
-    void getProbabilities(FactoredContext ctx, std::vector<real>& p);
+    real getTransition(Context context, int prd);
+    real getProbability(Context context, int prd);
+    void getProbabilities(Context context, std::vector<real>& p);
     void getNextStateProbabilities(int act, std::vector<real>& p);
-
+    
     /* Training and generation */
-    int PushObservation (int act, int prd);
     real Observe (int act, int prd);
-    real NextStateProbability (int act, intstate);
+    real ObservationProbability (int act, int x);
+    real ObservationProbability (int act, int x);
     void Reset();
     int GenerateStatic();
     int GenerateStatic(int act);
