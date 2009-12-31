@@ -42,7 +42,6 @@ public:
 
 
     /* Training and generation */
-    virtual int PushState (int state);
     virtual real ObserveNextState (int state);
     virtual real NextStateProbability (int state);
     virtual void Reset ();

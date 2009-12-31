@@ -15,10 +15,12 @@
 FactoredMarkovChain::FactoredMarkovChain(int n_actions_,
                                          int n_obs_,
                                          int mem_size_) 
-    : n_actions(n_actions_),
+    : T(0), 
+      n_actions(n_actions_),
       n_obs(n_obs_),
+      n_states(n_obs*n_actions),
       mem_size(mem_size_),
-      transitions((int) pow((double) (n_actions*n_obs), (double) mem_size), n_states),
+      transitions((int) pow((double) n_states, (double) mem_size), n_obs),
       act_history(mem_size),
       obs_history(mem_size),
       history(mem_size),
@@ -35,92 +37,118 @@ FactoredMarkovChain::~FactoredMarkovChain()
 {
 }
 
-FactoredContext FactoredMarkovChain::CalculateStateID()
+/** Calculate the current context.
+
+    Calculates the current contexts up to the time the
+    last action was taken.
+ */
+FactoredMarkovChain::Context FactoredMarkovChain::CalculateContext()
 {
-    MCState id = 0;
-	MCState n = 1;
-	for (MCState i=1; i<=mem_size; i++, n*=n_states) {
-		id += history[i-1]*n; 
+    Context context = 0;
+	Context n = 1;
+	for (Context i=1; i<=mem_size; i++, n*=n_states) {
+		context += history[i-1]*n;
 	}
-	return id;
+	return context;
 }
+
+FactoredMarkovChain::Context FactoredMarkovChain::CalculateContext(int act)
+{
+    Context context = 0;
+	Context n = 1;
+	for (Context i=1; i<=mem_size; i++, n*=n_states) {
+		context += history[i-1]*n;
+	}
+	return context;
 }
+
 
 /** Train the chain with a new observation
+    
+    A side-effect is that it updates the current_context.
 
-   @return Probability of having observed the next state.
+    @return Probability of having observed the next state.
 */
 real FactoredMarkovChain::Observe(int act, int prd)
 {
     PushAction(act);
-	curr_state = CalculateStateID();
-	transitions.observe(curr_state, state);
-    PushState (state);
+	current_context = CalculateContext();
+    real Pr = getProbability(current_context, prd);
+	transitions.observe(current_context, prd);
+    PushObservation(prd);
     return Pr;
 }
 
+
+
+/** Probability of a next observation
+
+   \return The probability of observing x
+*/
+real FactoredMarkovChain::ObservationProbability (int x)
+{
+	return getProbability(current_context, x);
+}
 
 /** Probability of an observation given a particular action.
 
    \return The probability of observing prd given act.
 */
-real FactoredMarkovChain::NextStateProbability (int act, int prd)
+real FactoredMarkovChain::ObservationProbability (int a, int x)
 {
-	assert((state>=0)&&(state<n_states));
-
-	curr_state = CalculateStateID ();
-	assert (curr_state>=0 && curr_state<tot_states);
-	return getProbability(curr_state, act, prd);
+	assert((a>=0)&&(a<n_acts));
+    
+	return getProbability(getContext(a), x);
 }
 
-
+#if 0
 void FactoredMarkovChain::getNextStateProbabilities(int act, std::vector<real>& p)
 {
     curr_state = CalculateStateID();
     return getProbabilities(curr_state, p);
 }
+#endif
 
 
-
-/// Get the number of transitions from \c ctx to \c prd
-real FactoredMarkovChain::getTransition (FactoredContext ctx, int prd)
+/// Get the number of transitions from \c context to \c prd
+real FactoredMarkovChain::getTransition (Context context, int prd)
 {
-	assert((ctx>=0)&&(ctx<n_states));
+	assert((context>=0)&&(context<n_states));
 	assert((prd>=0)&&(prd<n_states));
-	return transitions.get_weight(ctx, prd);
+	return transitions.get_weight(context, prd);
 }
 
 
 
-/// Get the transition probability from \c ctx to \c prd
+/// Get the transition probability from \c context to \c prd
 ///
 /// Takes into account the threshold.
-real FactoredMarkovChain::getProbability(FactoredContext ctx, int prd)
+real FactoredMarkovChain::getProbability(Context context, int prd)
 {
-	assert((ctx>=0)&&(ctx<tot_states));
+	assert((context>=0)&&(context<tot_states));
 	assert((prd>=0)&&(prd<n_states));
 	real sum = 0.0;
 	int N = transitions.nof_destinations();
 	
 	for (int i=0; i<N; ++i) {
-		sum += transitions.get_weight(ctx, i);
+		sum += transitions.get_weight(context, i);
 	}
 	
-	return (transitions.get_weight(ctx, prd) + threshold) / (sum + threshold * ((real) N));
+	return (transitions.get_weight(context, prd) + threshold) / (sum + threshold * ((real) N));
 }
 
 /// Get the transition probabilities
 ///
 /// Takes into account the threshold.
-void FactoredMarkovChain::getProbabilities(FactoredContext ctx, std::vector<real>& p)
+void FactoredMarkovChain::getProbabilities(Context context, std::vector<real>& p)
 {
-	assert((ctx>=0)&&(ctx<tot_states));
+	assert((context>=0)&&(context<tot_states));
 	assert((int) p.size()== n_states);
 	real sum = 0.0;
 	int N = transitions.nof_destinations();
 	
 	for (int i=0; i<N; ++i) {
-        p[i] = threshold + transitions.get_weight(ctx, i);
+        p[i] = threshold + transitions.get_weight(context, i);
 		sum += p[i];
 	}
 
@@ -131,10 +159,10 @@ void FactoredMarkovChain::getProbabilities(FactoredContext ctx, std::vector<real
 }
 
 
-/// Get the density of the transition probabilities \c p from \c ctx
-real FactoredMarkovChain::pdf(FactoredContext ctx, Vector p)
+/// Get the density of the transition probabilities \c p from \c context
+real FactoredMarkovChain::pdf(Context context, Vector p)
 {
-	assert((ctx>=0)&&(ctx<tot_states));
+	assert((context>=0)&&(context<tot_states));
 	Swarning("Not implemented\n");
 	return 0.0;
 }

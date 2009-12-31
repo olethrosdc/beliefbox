@@ -24,8 +24,6 @@
 /*@{*/
 
 
-typedef std::map<int, real, std::greater<int> > BeliefMap;
-typedef BeliefMap::iterator BeliefMapIterator;
 
 /// A Markov Chain
 class BVMM : public BayesianMarkovChain
@@ -35,6 +33,8 @@ protected:
     Matrix P_obs; ///< Probability of observations for model k
     Matrix Lkoi; ///< Probability of observations for all models up to k
     std::vector<real> weight; ///< temporary weight of model
+    typedef std::map<int, real, std::greater<int> > BeliefMap;
+    typedef BeliefMap::iterator BeliefMapIterator;
 public:
     std::vector<BeliefMap> beliefs;
 

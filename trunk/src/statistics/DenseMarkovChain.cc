@@ -260,38 +260,6 @@ int DenseMarkovChain::generate () {
 
 
 
-//==========================================================
-// MarkovChainPushState()
-//----------------------------------------------------------
-/**
-   Adds a new state to the history FIFO, pushing out the oldest
-   member of the history. Note that the implementation could be
-   faster, but the history is pretty small. If you change the
-   implementation you also need to change
-   MarkovChainCalculateStateID() at least.
-
-   \arg \c chain: A pointer to the chain.
-   \arg \c state: A new state
-
-   \return It returns the ID of the popped state.
-*/
-int  DenseMarkovChain::PushState (int state) {
-	int i;
-	int popped_state;
-
-    if (mem_size==0) { 
-        return 0;
-    }
-	popped_state = memory[mem_size - 1];
-	for (i = mem_size - 1; i>0; i--) {
-		memory[i] = memory[i-1];
-	}
-	memory[0] = state;
-    
-    //logmsg("Pushing %d, popping %d\n", state, popped_state);
-	return popped_state;
-}
-
 /**
    Can be useful for debugging.
    
