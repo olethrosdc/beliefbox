@@ -15,6 +15,7 @@
 #include <vector>
 #include <cassert>
 #include "real.h"
+#include "Ring.h"
 #include "SparseTransitions.h"
 /**
    \ingroup StatisticsGroup
@@ -61,9 +62,9 @@ protected:
     /// \f$a_t\f$ is observed and is a summary of the history of the
     /// past \f$(x_{t-i}, a_{t-i})_{i=0}^{\tau-1}\f$ observation pairs.
     Context current_context;
-    std::vector<int> act_history;
-    std::vector<int> obs_history;
-    std::vector<int> history;
+    Ring<int> act_history;
+    Ring<int> obs_history;
+    Ring<int> history;
     real threshold;
 
     /// Calculate the local state for a given action a, observation x
@@ -73,8 +74,6 @@ protected:
         assert(x>=0 && x<n_obs);
         return a*n_obs + x;
     }
-    Context CalculateContext();
-    Context CalculateContext(int act);
 
     void PushState(int state)
     {
@@ -98,6 +97,10 @@ public:
     FactoredMarkovChain(int n_actions_, int n_obs_, int mem_size);
     virtual ~FactoredMarkovChain();
 
+    /* house keeping */
+    Context CalculateContext();
+    Context getContext(int act);
+
     /* probabilities */
     real getTransition(Context context, int prd);
     real getProbability(Context context, int prd);
@@ -107,13 +110,11 @@ public:
     /* Training and generation */
     real Observe (int act, int prd);
     real ObservationProbability (int act, int x);
-    real ObservationProbability (int act, int x);
+    real ObservationProbability (int x);
     void Reset();
     int GenerateStatic();
     int GenerateStatic(int act);
     
-    /* Debug functions */
-    virtual int ShowTransitions ();
 }; 
 /*@}*/
 #endif

@@ -46,18 +46,28 @@ FactoredMarkovChain::Context FactoredMarkovChain::CalculateContext()
 {
     Context context = 0;
 	Context n = 1;
-	for (Context i=1; i<=mem_size; i++, n*=n_states) {
-		context += history[i-1]*n;
+	for (Context i=0; i<mem_size; i++, n*=n_states) {
+		context += history[i]*n;
 	}
-	return context;
+    return context;
 }
 
-FactoredMarkovChain::Context FactoredMarkovChain::CalculateContext(int act)
+/** Calculate the current context taking into account that there is an extra observation.
+
+    Calculates the current contexts up to the time the
+    last action was taken.
+ */
+FactoredMarkovChain::Context FactoredMarkovChain::getContext(int act)
 {
-    Context context = 0;
-	Context n = 1;
-	for (Context i=1; i<=mem_size; i++, n*=n_states) {
-		context += history[i-1]*n;
+    assert((obs_history.size() == 1 + act_history.size())
+           && (act_history.size() == history.size()));
+    // first set up the context component due to the most recent observation 
+    // and postulated next action
+    Context context = CalculateState(act, obs_history.back());
+	Context n = n_states;
+    // continue with the remaining context
+	for (Context i=0; i<mem_size - 1; i++, n*=n_states) {
+		context += history[i]*n;
 	}
 	return context;
 }
@@ -159,32 +169,6 @@ void FactoredMarkovChain::getProbabilities(Context context, std::vector<real>& p
 }
 
 
-/// Get the density of the transition probabilities \c p from \c context
-real FactoredMarkovChain::pdf(Context context, Vector p)
-{
-	assert((context>=0)&&(context<tot_states));
-	Swarning("Not implemented\n");
-	return 0.0;
-}
-
-
-
-
-/**
-   \brief Set the threshold specifying the Dirichlet prior.
-
-   \arg \c threshold A threshold, added to all statistics. This way
-   the probability of each transition will be \f$P(i|j)=\frac{N_{i,j}
-   + \theta}{\sum_k N_{k,j} + \theta}\f$, there \f$\theta\f$ is the
-   threshold.
-
-   See also MarkovChainSoftmaxNormalize()
-*/
-void FactoredMarkovChain::setThreshold (real threshold)
-{
-	this->threshold = threshold;
-}
-
 
 
 /**
@@ -200,9 +184,11 @@ void FactoredMarkovChain::Reset ()
 {
 	int i;
 	for (i=0; i<mem_size; i++) {
-		memory[i] = 0;
+		history[i] = 0;
+		act_history[i] = 0;
+        obs_history[i] = 0;
 	}
-	curr_state = 0;
+	current_context = 0;
 }
 
 
@@ -240,46 +226,5 @@ int FactoredMarkovChain::GenerateStatic ()
 	return -1;
 }
 
-/** Add a new set of observations.
 
-   Adds a new state to the history FIFO, pushing out the oldest
-   member of the history. Note that the implementation could be
-   faster, but the history is pretty small. 
-
-   @param state A new state
-
-   @return It returns the ID of the popped state.
-*/
-int  FactoredMarkovChain::PushState (int state) {
-	int i;
-	int popped_state;
-
-	if (mem_size==0) { 
-		return 0;
-	}
-	popped_state = memory[mem_size - 1];
-	for (i = mem_size - 1; i>0; i--) {
-		memory[i] = memory[i-1];
-	}
-	memory[0] = state;
-    
-	//logmsg("Pushing %d, popping %d\n", state, popped_state);
-	return popped_state;
-}
-
-/** Can be useful for debugging.
-*/
-int FactoredMarkovChain::ShowTransitions () {
-	printf ("\nState transition dump %ld\n", tot_states);
-	for (int i=0; i<tot_states; i++) {
-		printf ("Transition %d : ", i);
-        std::vector<real> p(n_states);
-        getProbabilities(i, p);
-		for (int j=0; j<n_states; j++) {
-            printf (" %f", p[j]);
-		}
-        printf("\n");
-	}
-	return 0;
-}
 
