@@ -33,28 +33,23 @@ BPSRModel::~BPSRModel()
 }
 
 
-void BPSRModel::AddTransition(int a, int x, real r)
+void BPSRModel::Observe(int a, int x, real r)
 {
-    std::vector<int> z = getIndex(a, x, r);
-    bpsr->Observe(Z->getIndex(z));
+    std::vector<int> z = getIndexVector(x, r);
+    bpsr->Observe(a, Z->getIndex(z));
 }
 
 real BPSRModel::getTransitionProbability(std::vector<int> history, int a, int x) const
 {
-    return 0;
+
 }
 real BPSRModel::getExpectedReward (std::vector<int> history) const
 {
-    return 0;
+
 }
 void BPSRModel::Reset()
 {
-    history.clear();
+    bpsr->Reset();
 }
-void BPSRModel::Observe(int x, real r)
-{
-    
-}
-void BPSRModel::Observe(int a, int x, real r)
-{
-}
+
+
