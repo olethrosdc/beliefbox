@@ -11,7 +11,7 @@
  ***************************************************************************/
 
 #ifdef MAKE_MAIN
-#include "BayesianPredictiveStateRepresentation.h"
+#include "BVMM.h"
 #include "BayesianHierarchicalMarkovChain.h"
 #include "BayesianMarkovChain.h"
 #include "ContextTreeWeighting.h"
@@ -147,8 +147,8 @@ int main (int argc, char** argv)
     bool dense = false;
     BayesianMarkovChain bmc(n_observations, 1+max_states, prior, dense);
     BayesianHierarchicalMarkovChain bhmc(n_observations, 1+max_states, prior, dense);
-    BayesianPredictiveStateRepresentation bpsr(n_observations, 1+max_states, prior, false, dense);
-        //BayesianPredictiveStateRepresentation polya(n_observations, 1+max_states, prior, true, dense);
+    BVMM bpsr(n_observations, 1+max_states, prior, false, dense);
+        //BVMM polya(n_observations, 1+max_states, prior, true, dense);
     DiscreteHiddenMarkovModelOnlineEM polya(1, n_observations);
     ContextTreeWeighting ctw(n_observations, 1+max_states, prior, dense);
 

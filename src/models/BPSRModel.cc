@@ -18,10 +18,9 @@ BPSRModel::BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, i
 {
     mdp_dbg("Creating BPSRModel with %d observations, %d actions and %d rewards. Tree depth %d\n",  n_obs, n_actions, rewards.size(), tree_depth);
     n_rewards = rewards.size();
-    std::vector<int> sizes(3);
+    std::vector<int> sizes(2);
     sizes[0] = n_obs;
-    sizes[1] = n_actions;
-    sizes[2] = n_rewards;
+    sizes[1] = n_rewards;
     Z = new DiscreteVector(sizes);
     bpsr = new BayesianPredictiveStateRepresentation(Z->size(), tree_depth, 0.5, false);
 }
@@ -40,6 +39,11 @@ void BPSRModel::Observe(int a, int x, real r)
 }
 
 real BPSRModel::getTransitionProbability(std::vector<int> history, int a, int x) const
+{
+
+}
+
+real BPSRModel::getTransitionProbability(int a, int x) const
 {
 
 }

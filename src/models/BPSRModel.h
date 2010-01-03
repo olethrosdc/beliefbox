@@ -79,6 +79,7 @@ public:
     virtual ~BPSRModel();
     virtual void Observe(int a, int x, real r);
     virtual real getTransitionProbability(std::vector<int> history, int a, int x) const;
+    virtual real getTransitionProbability(int a, int x) const;
     virtual real getExpectedReward (std::vector<int> history) const;
     virtual void Reset();
 };
