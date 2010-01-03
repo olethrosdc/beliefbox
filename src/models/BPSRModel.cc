@@ -32,25 +32,60 @@ BPSRModel::~BPSRModel()
 }
 
 
+/** Observe action taken at time t, and the resulting observation and
+    reward at the next time step.
+
+    That is, observe \f$a_t, x_{t+1}, r_{t+1}\f$.
+
+    The result is passed to the BPSR model by discretising the
+    $x_{t+1}, r_{t+1}$ vector.
+ */
 void BPSRModel::Observe(int a, int x, real r)
 {
     std::vector<int> z = getIndexVector(x, r);
     bpsr->Observe(a, Z->getIndex(z));
 }
 
-real BPSRModel::getTransitionProbability(std::vector<int> history, int a, int x) const
-{
 
+//real BPSRModel::getTransitionProbability(std::vector<int> history, int a, int x, real r) const
+//{
+//
+//}
+
+/** Obtain the probability of a particular observation and reward at
+    the next time step, given a specific current action.
+
+    That is, obtain \f$P(x_{t+1}=x, r_{t+1}=r | a_t = a)\f$.
+
+    This is performed by discretising the $x_{t+1}, r_{t+1}$ vector
+    and passing it to the BPSR model.
+ */
+real BPSRModel::getTransitionProbability(int a, int x, real r) const
+{
+    std::vector<int> z = getIndexVector(x, r);
+    return bpsr->ObservationProbability(a, Z->getIndex(z));
 }
 
-real BPSRModel::getTransitionProbability(int a, int x) const
-{
+/** Obtain the probability of a particular observation and reward at
+    the next time step, given a specific current action.
 
-}
-real BPSRModel::getExpectedReward (std::vector<int> history) const
-{
+    That is, obtain \f$P(x_{t+1}=x, r_{t+1}=r | a_t = a)\f$.
 
+    This is performed by discretising the $x_{t+1}, r_{t+1}$ vector
+    and passing it to the BPSR model.
+ */
+real BPSRModel::getExpectedReward (int a) const
+{
+    real Er = 0;
+    for (int x=0; x<n_obs; ++x) {
+        for (uint i=0; i<rewards.size(); ++i) {
+            real P = getTransitionProbability(a, x, rewards[i]);
+            Er += P * rewards[i];
+        }
+    }
+    return Er;
 }
+
 void BPSRModel::Reset()
 {
     bpsr->Reset();
