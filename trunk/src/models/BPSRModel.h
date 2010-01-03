@@ -54,7 +54,7 @@ protected:
     int n_rewards;
     BayesianPredictiveStateRepresentation* bpsr;
     DiscreteVector* Z;
-    std::vector<int> getIndexVector (int x, real r) 
+    std::vector<int> getIndexVector (int x, real r) const
     {
             // find closest reward index
         int r_i = 0;
@@ -78,9 +78,9 @@ public:
 
     virtual ~BPSRModel();
     virtual void Observe(int a, int x, real r);
-    virtual real getTransitionProbability(std::vector<int> history, int a, int x) const;
-    virtual real getTransitionProbability(int a, int x) const;
-    virtual real getExpectedReward (std::vector<int> history) const;
+    //virtual real getTransitionProbability(std::vector<int> history, int a, int x) const;
+    virtual real getTransitionProbability(int a, int x, real r) const;
+    virtual real getExpectedReward (int a) const;
     virtual void Reset();
 };
 
