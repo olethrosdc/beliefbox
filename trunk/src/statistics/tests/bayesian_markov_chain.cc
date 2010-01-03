@@ -14,7 +14,7 @@
 #include "DiscreteHiddenMarkovModel.h"
 #include "DiscreteHiddenMarkovModelEM.h"
 #include "DiscreteHiddenMarkovModelPF.h"
-#include "BayesianPredictiveStateRepresentation.h"
+#include "BVMM.h"
 #include "BayesianMarkovChain.h"
 #include "Random.h"
 #include "DenseMarkovChain.h"
@@ -106,7 +106,7 @@ int main (int argc, char** argv)
         // our model for the chains
         bool dense = false;
         BayesianMarkovChain bmc(n_observations, 1+max_states, prior, dense);
-        BayesianPredictiveStateRepresentation bpsr(n_observations, 1+max_states, prior, dense);
+        BVMM bpsr(n_observations, 1+max_states, prior, dense);
 
         //logmsg ("Making Markov chain\n");
         // the actual model that generates the data
