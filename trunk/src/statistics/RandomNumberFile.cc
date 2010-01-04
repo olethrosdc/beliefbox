@@ -13,6 +13,7 @@
 #include <string>
 #include <limits>
 #include <cstdlib>
+#include <cstdio>
 
 RandomNumberFile::RandomNumberFile(std::string filename)
 {

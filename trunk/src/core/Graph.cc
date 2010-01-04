@@ -24,7 +24,7 @@
 
 #include "Graph.h"
 #include "SmartAssert.h"
-
+#include <cstdio>
 
 /** 
     \brief Create a new graph.
