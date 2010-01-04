@@ -74,8 +74,8 @@ public:
 
     
     /* Training and generation */
-    inline void Observe(int a, int x);
-    virtual real ObservationProbability (int a, int x);
+    virtual void Observe(int action, int observation);
+    virtual real ObservationProbability (int action, int observation);
     virtual void Reset();
     virtual int predict(int a);
     
