@@ -7,6 +7,8 @@
 
 #include <exception>
 #include <stdexcept>
+#include <cstdlib>
+#include <cstring>
 
 Vector* NewVector (int n)
 {
