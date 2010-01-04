@@ -47,10 +47,10 @@ void BayesianPredictiveStateRepresentation::Reset()
 
 /** Adapt the model given a specific action and next observation.
  
-    @param a the action
-    @param x the observation
+    @param action the action
+    @param observation the observation
 */
-void BayesianPredictiveStateRepresentation::Observe(int a, int x)
+void BayesianPredictiveStateRepresentation::Observe(int action, int observation)
 {
 
     //    Matrix P_obs(n_models, n_obs);
@@ -58,10 +58,10 @@ void BayesianPredictiveStateRepresentation::Observe(int a, int x)
 
     int top_model = std::min(n_models - 1, total_observations);
     
-    // calculate predictions for each model for the given action a
+    // calculate predictions for each model for the given action 
     for (int model=0; model<=top_model; ++model) {
         for (int j=0; j<n_obs; j++) {
-            P_obs(model, j) =  mc[model]->ObservationProbability(a, j);
+            P_obs(model, j) =  mc[model]->ObservationProbability(action, j);
         }
         if (model == 0) {
             weight[model] = 1;
@@ -69,7 +69,7 @@ void BayesianPredictiveStateRepresentation::Observe(int a, int x)
                 Lkoi(model,j) = P_obs(model,j);
             }
         } else {
-            weight[model] = exp(log_prior[model] + get_belief_param(a, model));
+            weight[model] = exp(log_prior[model] + get_belief_param(action, model));
             for (int j=0; j<n_obs; j++) {
                 Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model-1, j); 
             }
@@ -98,9 +98,9 @@ void BayesianPredictiveStateRepresentation::Observe(int a, int x)
     Vector posterior(n_models);
     
     for (int model=0; model<=top_model; ++model) {
-        posterior[model] = weight[model] * P_obs(model, x) / Lkoi(model, x);
-        set_belief_param(a, model, log(posterior[model]) - log_prior[model]);
-        mc[model]->Observe(a, x);
+        posterior[model] = weight[model] * P_obs(model, observation) / Lkoi(model, observation);
+        set_belief_param(action, model, log(posterior[model]) - log_prior[model]);
+        mc[model]->Observe(action, observation);
     }
     
 }
@@ -110,10 +110,45 @@ void BayesianPredictiveStateRepresentation::Observe(int a, int x)
     P_t(x_{t+1} = x | a_t = a)
 
 */
-real BayesianPredictiveStateRepresentation::ObservationProbability(int a, int x)
+real BayesianPredictiveStateRepresentation::ObservationProbability(int action, int observation)
 {
-    //Pr_next /= Pr_next.Sum();
-    // return Pr_next[obs];
+    int top_model = std::min(n_models - 1, total_observations);
+    
+    // calculate predictions for each model for the given action 
+    for (int model=0; model<=top_model; ++model) {
+        for (int j=0; j<n_obs; j++) {
+            P_obs(model, j) =  mc[model]->ObservationProbability(action, j);
+        }
+        if (model == 0) {
+            weight[model] = 1;
+            for (int j=0; j<n_obs; j++) {
+                Lkoi(model,j) = P_obs(model,j);
+            }
+        } else {
+            weight[model] = exp(log_prior[model] + get_belief_param(action, model));
+            for (int j=0; j<n_obs; j++) {
+                Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model-1, j); 
+            }
+        }
+    }
+    real p_w = 1.0;
+    for (int model=top_model; model>=0; model--) {
+        Pr[model] = p_w * weight[model];
+        p_w *= (1.0 - weight[model]);
+
+    }
+
+    real sum_pr_s = 0.0;
+    for (int s=0; s<n_obs; ++s) {
+        real Pr_s = 0;
+        for (int model=0; model<=top_model; ++model) {
+            Pr_s += Pr[model]*P_obs(model, s);
+        }
+        Pr_next[s] = Pr_s;
+        sum_pr_s += Pr_s;
+    }
+#
+    return Pr_next[observation];
 }
 
 
