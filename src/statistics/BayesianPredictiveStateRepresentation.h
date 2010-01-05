@@ -24,7 +24,14 @@
 
 
 
-/** A factored Markov Chain, basically.
+/** A tree hierarchy of factored Markov Chains.
+
+    This class uses a context tree to define a probability distribution
+    over next observations conditioned on actions.
+
+    @see BVMM
+    @see BPSRModel
+
  */
 class BayesianPredictiveStateRepresentation
 {

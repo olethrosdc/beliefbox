@@ -13,6 +13,9 @@
 #define RING_H
 
 #include <vector>
+#include <iostream>
+#include <cassert>
+#include "SmartAssert.h"
 
 /** A ring buffer.
 
@@ -22,21 +25,59 @@ template <typename C>
 class Ring
 {
 public:
-    int max_size;
-    std::vector<C> data;
-    int pos;
+    int max_size; ///< the maximum size of the array
+    std::vector<C> data; ///< the data
+    int pos; ///< the current position of the last write in the ring buffer. 
     ulong T;
+
     /// Construct a buffer of a given size
     Ring(int max_size_) : max_size(max_size_), data(max_size), pos(0), T(0)
     {
-        assert(max_size > 0);
+        clear();
+    }
+    
+    void clear()
+    {
         for (int i=0; i<max_size; ++i) {
             data[i] = 0;
         }
     }
+    /// Construct a buffer of a given size
+    Ring() : max_size(0), pos(0), T(0)
+    {
+    }
     /// Destructor.
     ~Ring()
     {
+    }
+
+    void resize(size_t new_size)
+    {
+        max_size = new_size;
+        data.resize(max_size);
+        for (int i=0; i<max_size; ++i) {
+            data[i] = 0;
+        }
+        std::cout << "resizing Ring to " 
+                  << max_size << std::endl;
+    }
+
+    /** Get the unique ID of a state */
+    long get_id(int n_states)
+    {
+        if (max_size ==0) {
+            return 0;
+        }
+        int n = 1;
+        long id = 0;
+        for (int i = pos; i>=0; --i, n*=n_states) {
+            id += data[i] * n;
+        }
+        
+        for (int i = max_size - 1; i>pos; --i, n*=n_states) {
+            id += data[i] * n; 
+        }
+        return id;
     }
     /** Push back a datum.
         
@@ -64,16 +105,29 @@ public:
     C& operator[](int offset)
     {
         assert(offset >= 0 && offset < max_size);
-        return data[(offset - pos) % max_size];
+        int x = (pos - offset);
+        if (x < 0 || x >= max_size) {
+            x %= max_size;
+        }
+        //        std::cout << x << std::endl;
+        SMART_ASSERT(x >= 0 && x < max_size)(x)(max_size);
+
+        return data[x];
     }
     
+    /// Return the oldest element in the ring buffer
+    C& front()
+    {
+        return data[(pos + 1)%max_size];
+    }
+
     /// Return the last element.
     C& back()
     {
-        return data[0];
+        return data[pos];
     }
 
-    int size()
+    ulong size()
     {
         return T;
     }

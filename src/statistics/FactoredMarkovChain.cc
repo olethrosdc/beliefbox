@@ -106,7 +106,7 @@ real FactoredMarkovChain::ObservationProbability (int x)
 */
 real FactoredMarkovChain::ObservationProbability (int a, int x)
 {
-	assert((a>=0)&&(a<n_acts));
+	assert((a>=0)&&(a<n_actions));
     
 	return getProbability(getContext(a), x);
 }
@@ -135,8 +135,8 @@ real FactoredMarkovChain::getTransition (Context context, int prd)
 /// Takes into account the threshold.
 real FactoredMarkovChain::getProbability(Context context, int prd)
 {
-	assert((context>=0)&&(context<tot_states));
-	assert((prd>=0)&&(prd<n_states));
+	assert((context>=0)&&(context<n_states));
+	assert((prd>=0)&&(prd<n_obs));
 	real sum = 0.0;
 	int N = transitions.nof_destinations();
 	
@@ -152,7 +152,7 @@ real FactoredMarkovChain::getProbability(Context context, int prd)
 /// Takes into account the threshold.
 void FactoredMarkovChain::getProbabilities(Context context, std::vector<real>& p)
 {
-	assert((context>=0)&&(context<tot_states));
+	assert((context>=0)&&(context<n_states));
 	assert((int) p.size()== n_states);
 	real sum = 0.0;
 	int N = transitions.nof_destinations();

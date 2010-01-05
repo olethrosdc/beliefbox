@@ -173,9 +173,8 @@ void SparseMarkovChain::setThreshold (real threshold)
 void SparseMarkovChain::Reset ()
 {
 	int i;
-	for (i=0; i<mem_size; i++) {
-		memory[i] = 0;
-	}
+    memory.clear();
+    memory.resize(mem_size);
 	curr_state = 0;
 }
 

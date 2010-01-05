@@ -44,6 +44,11 @@ inline void mdp_dbg(...)
   \class BPSRModel
   \brief A model of a Partially observable Markov decision process
 
+  This class uses a BayesianPredictiveStateRepresentation as the basis
+  for predicting the next observations. It utilises a fixed
+  discretisation of rewards for this purpose.
+
+  @see BayesianPredictiveStateRepresentation
 */
 class BPSRModel
 {
