@@ -12,6 +12,7 @@
 #define MARKOVCHAIN_H
 
 #include "Vector.h"
+#include "Ring.h"
 #include <vector>
 
 
@@ -20,7 +21,7 @@
  */
 /*@{*/
 
-typedef long MCState;
+
 
 
 #define EFFICIENT_MC_STATE_PUSH
@@ -28,13 +29,17 @@ typedef long MCState;
 /// A Markov Chain
 class MarkovChain {
 protected:
+    typedef long MCState;
     int mem_pos; ///< memory position
 	int n_states; ///< number of distinct states
 	int mem_size; ///< history size for new transitions
 	MCState curr_state; ///< current address in history
 	MCState tot_states; ///< total number of representable states (mem_size*n_states)
+#ifdef EFFICIENT_MC_STATE_PUSH
+	Ring<int> memory; ///< hold history in here
+#else
 	std::vector<int> memory; ///< hold history in here
-
+#endif
     MCState CalculateStateID ();
 public:
     MarkovChain (int n_states, int mem_size);
