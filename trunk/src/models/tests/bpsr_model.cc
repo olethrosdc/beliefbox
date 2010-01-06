@@ -9,6 +9,10 @@
  *                                                                         *
  ***************************************************************************/
 
+/** Test that the BPSR model predicts the next observations well.
+    
+ */
+
 #ifdef MAKE_MAIN
 
 #include <cstdio>
@@ -40,21 +44,24 @@ int main(void)
 
 
     rng.seed();
-    int T = 10000;
+    int T = 1000000;
+    int observation = environment.getObservation();
     for (int t=0; t<T; ++t) {
         environment.Show();
         int state = environment.getState();
-        int obs = environment.getObservation();
         int action = rng.discrete_uniform(n_actions);
-        environment.Act(action);
+        bool terminate = environment.Act(action);
+        int new_observation = environment.getObservation();
         real reward = environment.getReward();
-        int next_obs = environment.getObservation();
+
+        real probability = model.getTransitionProbability(action, observation, reward);
+        printf ("%d %d %d %f %f # LOG\n", state, observation, action, reward, probability);
+        model.Observe(action, observation, reward);
         
-        printf ("%d %d %d %f %d\n", state, obs, action, reward, %d);
-        
-        model.Observe(x);
-        
-    }
+        if (terminate) {
+            environment.Reset();
+        }
+     }
 
 }
 

@@ -25,13 +25,18 @@ template <typename C>
 class Ring
 {
 public:
+    int null_element;
     int max_size; ///< the maximum size of the array
     std::vector<C> data; ///< the data
     int pos; ///< the current position of the last write in the ring buffer. 
     ulong T;
 
     /// Construct a buffer of a given size
-    Ring(int max_size_) : max_size(max_size_), data(max_size), pos(0), T(0)
+    Ring(int max_size_) : null_element(0),
+                          max_size(max_size_),
+                          data(max_size),
+                          pos(0),
+                          T(0)
     {
         clear();
     }
@@ -43,7 +48,7 @@ public:
         }
     }
     /// Construct a buffer of a given size
-    Ring() : max_size(0), pos(0), T(0)
+    Ring() : null_element(0), max_size(0), pos(0), T(0)
     {
     }
     /// Destructor.
@@ -58,8 +63,8 @@ public:
         for (int i=0; i<max_size; ++i) {
             data[i] = 0;
         }
-        std::cout << "resizing Ring to " 
-                  << max_size << std::endl;
+        //std::cout << "resizing Ring to " 
+        //<< max_size << std::endl;
     }
 
     /** Get the unique ID of a state */
@@ -88,8 +93,10 @@ public:
      */
     void push_back(C x)
     {
-        pos = (pos + 1) % max_size;
-        data[pos] = x;
+        if (max_size) {
+            pos = (pos + 1) % max_size;
+            data[pos] = x;
+        }
         T++;
     }
     
@@ -118,15 +125,22 @@ public:
     /// Return the oldest element in the ring buffer
     C& front()
     {
-        return data[(pos + 1)%max_size];
+        if (max_size) {
+            return data[(pos + 1)%max_size];
+        } else {
+            return null_element;
+        }
     }
 
     /// Return the last element.
     C& back()
     {
-        return data[pos];
-    }
-
+        if (max_size) {
+            return data[pos];
+        } else { 
+            return null_element;
+        }
+    }        
     ulong size()
     {
         return T;
