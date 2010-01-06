@@ -56,7 +56,7 @@ protected:
     int n_obs; ///< number of observations
     int n_states; ///< number of action*observations
     int mem_size; ///< order of the chain
-	SparseTransitions transitions; ///< history-wide transition table
+    SparseTransitions transitions; ///< history-wide transition table
 
     /// The current context. It is updated whenever a new action
     /// \f$a_t\f$ is observed and is a summary of the history of the
@@ -75,6 +75,7 @@ protected:
         return a*n_obs + x;
     }
 
+    /// a state is pushed only at the end
     void PushState(int state)
     {
         assert(state>=0 && state<n_states);
@@ -82,6 +83,8 @@ protected:
         T++;
         assert(T==history.size() && T==act_history.size() && T==obs_history.size());
     }
+
+    /// You push an action first, and then the observation
     void PushAction(int act)
     {
         act_history.push_back(act);
@@ -92,6 +95,7 @@ protected:
     {
         assert(act_history.size()==obs_history.size());
         obs_history.push_back(obs);
+        //PushState(CalculateState(act, obs_history.back()));
     }
 public:
     FactoredMarkovChain(int n_actions_, int n_obs_, int mem_size);

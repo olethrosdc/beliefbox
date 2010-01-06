@@ -22,7 +22,7 @@ BPSRModel::BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, i
     sizes[0] = n_obs;
     sizes[1] = n_rewards;
     Z = new DiscreteVector(sizes);
-    bpsr = new BayesianPredictiveStateRepresentation(Z->size(), tree_depth, 0.5, false);
+    bpsr = new BayesianPredictiveStateRepresentation(Z->size(), n_actions, tree_depth, 0.5);
 }
 
 BPSRModel::~BPSRModel()
@@ -63,7 +63,9 @@ void BPSRModel::Observe(int a, int x, real r)
 real BPSRModel::getTransitionProbability(int a, int x, real r) const
 {
     std::vector<int> z = getIndexVector(x, r);
-    return bpsr->ObservationProbability(a, Z->getIndex(z));
+    real p = bpsr->ObservationProbability(a, Z->getIndex(z));
+    printf ("%f\n", p);
+    return p;
 }
 
 /** Obtain the probability of a particular observation and reward at
