@@ -11,6 +11,21 @@
 
 /** Test that the BPSR model predicts the next observations well.
     
+    The BPSRModel gives probabilities of next observations.
+    It needs a full history of observations and actions to predict
+    the next observation.
+    
+    However, it always has observations up to x_t and actions
+    up to a_{t-1}.
+
+    The BayesianPredictiveStateRepresentation shares the same
+    problem. The main difficulty is that the context in the BPSR
+    is defined via Factored Markov Chains.
+
+    The context in a FMC is the observation-action history from time
+    t-D to time t. It is necessary to have the context in the FMC in
+    order to find the right node in the context tree.
+
  */
 
 #ifdef MAKE_MAIN

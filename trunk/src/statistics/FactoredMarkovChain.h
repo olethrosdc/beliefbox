@@ -56,6 +56,7 @@ protected:
     int n_obs; ///< number of observations
     int n_states; ///< number of action*observations
     int mem_size; ///< order of the chain
+    long n_contexts; ///< number of possible total contexts
     SparseTransitions transitions; ///< history-wide transition table
 
     /// The current context. It is updated whenever a new action
@@ -112,6 +113,7 @@ public:
     void getNextStateProbabilities(int act, std::vector<real>& p);
     
     /* Training and generation */
+    void Observe (int prd);
     real Observe (int act, int prd);
     real ObservationProbability (int act, int x);
     real ObservationProbability (int x);

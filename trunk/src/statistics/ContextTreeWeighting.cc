@@ -88,7 +88,8 @@ void ContextTreeWeighting::ObserveNextState(int state)
 
   // insert new observations
     n_observations++;
-    
+
+    /// NOTE: Why not have this up to all models???
     for (int model=0; model<=top_model; ++model) {
         mc[model]->ObserveNextState(state);
     }
