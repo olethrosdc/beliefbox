@@ -81,6 +81,7 @@ public:
 
     
     /* Training and generation */
+    virtual void Observe(int observation);
     virtual void Observe(int action, int observation);
     virtual real ObservationProbability (int action, int observation);
     virtual void Reset();

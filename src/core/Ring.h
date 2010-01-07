@@ -113,9 +113,16 @@ public:
     {
         assert(offset >= 0 && offset < max_size);
         int x = (pos - offset);
-        if (x < 0 || x >= max_size) {
-            x %= max_size;
-        }
+		/* Alternative implementations
+
+		  1:  x - y*(x/y)
+		  2: n = x % abs(y); if (n<0) n += abs(y);
+          3: ((x % y) + y) & y
+		 */
+		x %= max_size;
+		if (x < 0) 
+		  x += max_size;
+
         //        std::cout << x << std::endl;
         SMART_ASSERT(x >= 0 && x < max_size)(x)(max_size);
 

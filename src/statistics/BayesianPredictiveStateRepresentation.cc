@@ -50,6 +50,18 @@ void BayesianPredictiveStateRepresentation::Reset()
 }
 
 
+/** Seed the model with an initial observation.
+ 
+    @param observation the observation
+*/
+void BayesianPredictiveStateRepresentation::Observe(int observation)
+{
+    for (int model=0; model<n_models; ++model) {
+        mc[model]->Observe(observation);
+    }
+    
+}
+
 /** Adapt the model given a specific action and next observation.
  
     @param action the action
@@ -105,7 +117,7 @@ void BayesianPredictiveStateRepresentation::Observe(int action, int observation)
     for (int model=0; model<=top_model; ++model) {
         posterior[model] = weight[model] * P_obs(model, observation) / Lkoi(model, observation);
         set_belief_param(action, model, log(posterior[model]) - log_prior[model]);
-        mc[model]->Observe(action, observation);
+        mc[model]->Observe(action, observation); ///< NOTE: Maybe this should be in a different loop?
     }
     
 }
@@ -123,7 +135,7 @@ real BayesianPredictiveStateRepresentation::ObservationProbability(int action, i
     for (int model=0; model<=top_model; ++model) {
         for (int j=0; j<n_obs; j++) {
             P_obs(model, j) =  mc[model]->ObservationProbability(action, j);
-            printf ("%d %d %f\n", model, j, P_obs(model, j));
+            //printf ("%d %d %f\n", model, j, P_obs(model, j));
         }
         if (model == 0) {
             weight[model] = 1;
@@ -148,7 +160,7 @@ real BayesianPredictiveStateRepresentation::ObservationProbability(int action, i
     for (int s=0; s<n_obs; ++s) {
         real Pr_s = 0;
         for (int model=0; model<=top_model; ++model) {
-            printf ("%d %d %f\n", model, s, P_obs(model, s));
+		  //printf ("%d %d %f\n", model, s, P_obs(model, s));
             Pr_s += Pr[model]*P_obs(model, s);
         }
         Pr_next[s] = Pr_s;

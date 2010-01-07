@@ -119,7 +119,8 @@ void BVMM::ObserveNextState(int state)
             posterior[model] = weight[model] * P_obs(model, state) / Lkoi(model, state);
             set_belief_param(model, log(posterior[model]) - log_prior[model]);
         }
-        mc[model]->ObserveNextState(state);
+        mc[model]->ObserveNextState(state); ///< NOTE: Maybe this should be in a different loop?
+
     }
     
 }
