@@ -32,6 +32,19 @@ BPSRModel::~BPSRModel()
 }
 
 
+/** Observe the initial observation and reward.
+
+    That is, observe \f$x_{t+1}, r_{t+1}\f$.
+
+    The result is passed to the BPSR model by discretising the
+    $x_{t+1}, r_{t+1}$ vector.
+ */
+void BPSRModel::Observe(int x, real r)
+{
+    std::vector<int> z = getIndexVector(x, r);
+    bpsr->Observe(Z->getIndex(z));
+}
+
 /** Observe action taken at time t, and the resulting observation and
     reward at the next time step.
 

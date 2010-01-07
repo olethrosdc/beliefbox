@@ -82,7 +82,7 @@ public:
     BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth);
 
     virtual ~BPSRModel();
-    virtual void Observe(int x, real r); ///< to initialise? maybe?
+    virtual void Observe(int x, real r); 
     virtual void Observe(int a, int x, real r);
     //virtual real getTransitionProbability(std::vector<int> history, int a, int x) const;
     virtual real getTransitionProbability(int a, int x, real r) const;
