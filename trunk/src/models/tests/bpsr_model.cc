@@ -46,12 +46,13 @@ int main(void)
     rng.seed();
     int T = 1000000;
     int observation = environment.getObservation();
+    model.Observe(observation, 0.0);
     for (int t=0; t<T; ++t) {
         environment.Show();
         int state = environment.getState();
         int action = rng.discrete_uniform(n_actions);
         bool terminate = environment.Act(action);
-        int new_observation = environment.getObservation();
+        observation = environment.getObservation();
         real reward = environment.getReward();
 
         real probability = model.getTransitionProbability(action, observation, reward);
