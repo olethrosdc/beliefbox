@@ -70,9 +70,13 @@ void BayesianHierarchicalMarkovChain::ObserveNextState(int state)
             //printf ("%.1f ", log_posterior);
         log_weight[model] = log_posterior;
         weight[model] = posterior[model];
-        mc[model]->ObserveNextState(state);
-        
     }
+
+    for (int model=0; model<n_models; ++model) {
+        //for (int model=0; model<=top_model; ++model) {
+        mc[model]->ObserveNextState(state);
+    }
+
         //printf("\n");
 
         /// calculate P(x_{t+1} | B_k)
