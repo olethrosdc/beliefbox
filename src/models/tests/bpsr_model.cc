@@ -38,7 +38,7 @@
 #include "POMDPGridworld.h"
 #include "MersenneTwister.h"
 
-int main(void)
+int main(int argc, char** argv)
 {
     std::vector<real> rewards(4);
     rewards[0] = -1.0;
@@ -47,7 +47,7 @@ int main(void)
     rewards[3] = 1.0;
     int n_actions = 4;
     real random = 0.01;
-    int tree_depth = 4;
+    int tree_depth = atoi(argv[1]);
     std::string homedir(getenv("HOME"));
     std::string maze = homedir + "/projects/beliefbox/dat/maze1";
     POMDPGridworld environment(maze.c_str(), 8, 8, n_actions, random);
@@ -59,11 +59,11 @@ int main(void)
 
 
     rng.seed();
-    int T = 1000000;
+    int T = 100000;
     int observation = environment.getObservation();
     model.Observe(observation, 0.0);
     for (int t=0; t<T; ++t) {
-        environment.Show();
+        //        environment.Show();
         int state = environment.getState();
         int action = rng.discrete_uniform(n_actions);
         bool terminate = environment.Act(action);
