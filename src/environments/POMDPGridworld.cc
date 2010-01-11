@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -17,22 +17,27 @@
 #include <fstream>
 
 POMDPGridworld::POMDPGridworld(const char* fname,
-                     uint height_,
-                     uint width_,
-                     uint n_actions_,
-                     real random_,
-                     real pit_,
-                     real goal_,
-                     real step_)
-    :  total_time(0),
+                               uint n_obs_,
+                               uint height_,
+                               uint width_,                    
+                               real random_,
+                               real pit_,
+                               real goal_,
+                               real step_)
+    :  observation(0),
+       total_time(0),
+       n_obs(n_obs_),
        height(height_), width(width_), 
        random(random_), pit_value(pit_), goal_value(goal_), step_value(step_)
 {
     n_states = width * height + 1; // plus a terminal state
-    n_actions = n_actions_;
+    n_actions = 4;
     terminal_state = n_states - 1;
 
-    n_obs = 16;
+    if (n_obs != 16 && n_obs != 2) {
+        Serror ("Either 2 or 16 observations must be used\n");
+    }
+
 
     std::ifstream ifs(fname, std::ifstream::in);
     if (!ifs.is_open()) {
@@ -96,10 +101,22 @@ void POMDPGridworld::Reset()
     } while(whatIs(x, y) != GRID);
     ox = x;
     oy = y;
+    switch(n_obs) {
+    case 2:
+        observation = 0;
+        break;
+    case 16:
+        observation = CalculateObservation16obs();
+        break;
+    default:
+        Serror("Invalid number of observations %d\n", n_obs);
+    }
 }
 
 bool POMDPGridworld::Act(int action)
 {
+    observation = 0;
+
     if (state == terminal_state) {
         reward = 0;
         return false;
@@ -126,6 +143,9 @@ bool POMDPGridworld::Act(int action)
         ox = x;
         oy = y;
         state = getStateFromCoords(x, y);
+        if (n_obs == 2) {
+            observation = 1;
+        }
     } 
     if (whatIs(x,y) == GOAL || whatIs(x,y)== PIT) {
         state = terminal_state;
@@ -144,6 +164,9 @@ bool POMDPGridworld::Act(int action)
         //<< reward << std::endl;
     //return false;
         //}
+    if (n_obs == 16) {
+        observation = CalculateObservation16obs();
+    }
     return true;
 }
 
@@ -169,27 +192,10 @@ void POMDPGridworld::Show()
     }
 }
 
-int POMDPGridworld::getObservation()
+int POMDPGridworld::CalculateObservation16obs()
 {
     int obs = 0;
-#if 0
-    for (int y=oy-1; oy<=oy+1; y++) {
-        for (int x = ox-1; x<=ox+1; x++) {
-            if (y == oy && x == ox) 
-                continue;
-            MapElement e = whatIs(x, y);
-            switch(e) {
-            case GRID:
-            case GOAL:
-            case PIT:
-                break;
-            default:
-                obs |= 1;
-            }
-            obs <<= 1;
-        }
-    }
-#else
+
     if (whatIs(ox-1, oy)==WALL || whatIs(ox-1, oy)==INVALID) {
         obs |= 1;
     }
@@ -205,8 +211,6 @@ int POMDPGridworld::getObservation()
     if (whatIs(ox, oy+1)==WALL || whatIs(ox, oy+1)==INVALID) {
         obs |= 8;
     }
-    
-#endif
     assert(obs>=0 && obs<n_obs);
     return obs;
 }
