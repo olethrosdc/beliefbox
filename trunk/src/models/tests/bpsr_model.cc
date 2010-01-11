@@ -46,20 +46,26 @@ int main(int argc, char** argv)
     rewards[2] = 0.0;
     rewards[3] = 1.0;
     int n_actions = 4;
-    real random = 0.01;
-    int tree_depth = atoi(argv[1]);
+    real random = 0.0;
+    int n_obs = atoi(argv[1]);
+    int tree_depth = atoi(argv[2]);
+    int T = atoi(argv[3]);
     std::string homedir(getenv("HOME"));
-    std::string maze = homedir + "/projects/beliefbox/dat/maze1";
-    POMDPGridworld environment(maze.c_str(), 8, 8, n_actions, random);
+    std::string maze = homedir + "/projects/beliefbox/dat/maze1c";
+    POMDPGridworld environment(maze.c_str(), n_obs, 8, 8, random);
     
-    int n_obs = environment.getNObs();
-    BPSRModel model(n_obs, n_actions, rewards, tree_depth);
+    if (n_obs != environment.getNObs()) {
+        Serror("Environment has %d obs instead of %d\n",
+               environment.getNObs(),
+               n_obs);
+    }
+    BPSRModel model(n_obs, n_actions, rewards, tree_depth, true);
     MersenneTwisterRNG mersenne_twister;
     RandomNumberGenerator& rng = mersenne_twister;
 
 
     rng.seed();
-    int T = 100000;
+
     int observation = environment.getObservation();
     model.Observe(observation, 0.0);
     for (int t=0; t<T; ++t) {

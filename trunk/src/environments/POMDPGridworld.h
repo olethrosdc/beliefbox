@@ -18,10 +18,17 @@
 #include <vector>
 
 
-
+/** Partially observable grid world.
+    
+    Different choices for different numbers of observations.
+    
+      2 obs: If the agent hits a wall, observe 1, otherwise 0.
+     16 obs: 1 bit for walls detected around each cardinal direction.
+ */
 class POMDPGridworld : public Environment<int, int> {
 public:
     int ox, oy;
+    int observation;
     int total_time;
     int n_obs;
     enum MapDirection {
@@ -33,8 +40,8 @@ public:
     int terminal_state;
     POMDPGridworld(const char* fname,
               uint height_,
-              uint width_,
-              uint n_actions_ = 4,
+              uint width_,                   
+              uint n_obs_ = 16,
               real random_ = 0.0,
               real pit_ = -1.0,
               real goal_ = 0.0,
@@ -58,7 +65,11 @@ public:
     virtual void Reset();
     virtual bool Act(int action);
     void Show();
-    int getObservation();
+    int CalculateObservation16obs();
+    int getObservation()
+    {
+        return observation;
+    }
     int getStateFromCoords(int x, int y)
     {
         if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
@@ -70,6 +81,7 @@ public:
     {
         return n_obs;
     }
+
     uint getWidth() const
     {
         return width;

@@ -11,7 +11,7 @@
 
 #include "BPSRModel.h"
 
-BPSRModel::BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth)
+BPSRModel::BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth, bool ctw)
     : n_obs(n_obs_),
       n_actions(n_actions_),
       rewards(rewards_)
@@ -24,7 +24,11 @@ BPSRModel::BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, i
     Z = new DiscreteVector(sizes);
 	printf("Making new BPSR with %d observations, %d rewards, %d compound observations, %d actions\n",
 		   n_obs, n_rewards, Z->getNCombinations(), n_actions);
-    bpsr = new BayesianPredictiveStateRepresentation(Z->getNCombinations(), n_actions, tree_depth, 0.5);
+    if (ctw) {
+        bpsr = new BayesianPredictiveStateRepresentationCTW(Z->getNCombinations(), n_actions, tree_depth, 0.5);
+    } else {
+        bpsr = new BayesianPredictiveStateRepresentation(Z->getNCombinations(), n_actions, tree_depth, 0.5);
+    }
 }
 
 BPSRModel::~BPSRModel()

@@ -20,6 +20,7 @@
 #include "Distribution.h"
 #include "DiscreteMDP.h"
 #include "BayesianPredictiveStateRepresentation.h"
+#include "BayesianPredictiveStateRepresentationCTW.h"
 #include "DiscreteVariable.h"
 
 #undef DEBUG_MDP_MODELS
@@ -79,7 +80,7 @@ protected:
         return v;
     }
 public:
-    BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth);
+    BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth, bool ctw = false);
 
     virtual ~BPSRModel();
     virtual void Observe(int x, real r); 
