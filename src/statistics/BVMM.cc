@@ -109,15 +109,16 @@ void BVMM::ObserveNextState(int state)
       
   // insert new observations
     n_observations++;
-    Vector posterior(n_models);
     
     for (int model=0; model<=top_model; ++model) {
         if (polya) {
             real par = exp(get_belief_param(model));// + log_prior[model]);
             set_belief_param(model, log(1.0 + par));// - log_pri or[model]);
         } else {
-            posterior[model] = weight[model] * P_obs(model, state) / Lkoi(model, state);
-            set_belief_param(model, log(posterior[model]) - log_prior[model]);
+            real posterior = weight[model] * P_obs(model, state) / Lkoi(model, state);
+			real p = log(posterior) - log_prior[model];
+			//printf ("%d %d %f #Weight\n", n_observations, model, posterior);
+            set_belief_param(model, p);
         }
     }
 

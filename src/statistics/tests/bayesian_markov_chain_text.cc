@@ -105,7 +105,10 @@ int main (int argc, char** argv)
         exit(-1);
     }
 
-    fscanf(file, "%d", &T);
+    int success = fscanf(file, "%d", &T);
+	if (success <= 0) {
+	  Serror("Could not scan file\n");
+	}
 
     if (argc > max_horizon_arg) {
         int tmpT = atoi(argv[max_horizon_arg]);
@@ -117,8 +120,11 @@ int main (int argc, char** argv)
     std::vector<int> data(T);
     n_observations = 0;
     for (int t=0; t<T; ++t) {
-        fscanf(file, "%d", &data[t]);
-        if (data[t] > n_observations) {
+	  int success = fscanf(file, "%d", &data[t]);
+	  if (success <=0) {
+		Serror("Could not scan file\n");
+	  }
+	  if (data[t] > n_observations) {
             n_observations = data[t];
         }
         data[t] -= 1;
