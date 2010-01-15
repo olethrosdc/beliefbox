@@ -40,6 +40,10 @@
 
 int main(int argc, char** argv)
 {
+	if (argc != 7) {
+	  fprintf (stderr, "Usage: bpsr_model n_obs tree_depth horizon maze_filename maze_height maze_width\n");
+	  return -1;
+	}
     std::vector<real> rewards(4);
     rewards[0] = -1.0;
     rewards[1] = -0.1;
@@ -50,9 +54,14 @@ int main(int argc, char** argv)
     int n_obs = atoi(argv[1]);
     int tree_depth = atoi(argv[2]);
     int T = atoi(argv[3]);
-    std::string homedir(getenv("HOME"));
-    std::string maze = homedir + "/projects/beliefbox/dat/maze1c";
-    POMDPGridworld environment(maze.c_str(), n_obs, 8, 8, random);
+	//    std::string homedir(getenv("HOME"));
+	//    std::string maze = homedir + "/projects/beliefbox/dat/maze5c";
+	
+	std::string maze = argv[4];
+	int arg_maze_height = atoi(argv[5]);
+	int arg_maze_width = atoi(argv[6]);
+    POMDPGridworld environment(maze.c_str(),
+							   n_obs, arg_maze_height, arg_maze_width, random);
     
     if (n_obs != environment.getNObs()) {
         Serror("Environment has %d obs instead of %d\n",
@@ -71,7 +80,7 @@ int main(int argc, char** argv)
     for (int t=0; t<T; ++t) {
         //        environment.Show();
         int state = environment.getState();
-        int action = rng.discrete_uniform(n_actions);
+        int action = 0;//rng.discrete_uniform(n_actions);
         bool terminate = environment.Act(action);
         observation = environment.getObservation();
         real reward = environment.getReward();
