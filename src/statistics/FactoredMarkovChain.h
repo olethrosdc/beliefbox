@@ -94,6 +94,7 @@ protected:
         PushState(CalculateState(act, obs_history.back()));
         assert(act_history.size()==obs_history.size());
     }
+
     void PushObservation(int obs)
     {
         assert(act_history.size()==obs_history.size());

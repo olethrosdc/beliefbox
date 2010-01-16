@@ -27,6 +27,7 @@
 class SparseTransitions 
 {
 protected:
+	typedef long Context;
   typedef std::map<int, std::vector<real>, std::greater<int> > SourceMap;
   typedef SourceMap::iterator SourceMapIterator;
   typedef SourceMap::const_iterator SourceMapCIterator;

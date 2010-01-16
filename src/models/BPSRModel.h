@@ -85,8 +85,8 @@ public:
     BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth, ModelType model_type = BVMM);
 
     virtual ~BPSRModel();
-    virtual void Observe(int x, real r); 
-    virtual void Observe(int a, int x, real r);
+    virtual real Observe(int x, real r); 
+    virtual real Observe(int a, int x, real r);
     //virtual real getTransitionProbability(std::vector<int> history, int a, int x) const;
     virtual real getTransitionProbability(int a, int x, real r) const;
     virtual real getExpectedReward (int a) const;
