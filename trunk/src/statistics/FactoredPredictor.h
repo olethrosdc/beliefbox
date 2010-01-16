@@ -11,6 +11,8 @@
 #ifndef FACTORED_PREDICTOR_H
 #define FACTORED_PREDICTOR_H
 
+#include "real.h"
+
 /// Abstract class for prediction with actios
 class FactoredPredictor
 {

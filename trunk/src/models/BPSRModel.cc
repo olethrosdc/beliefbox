@@ -58,10 +58,10 @@ BPSRModel::~BPSRModel()
     The result is passed to the BPSR model by discretising the
     $x_{t+1}, r_{t+1}$ vector.
  */
-void BPSRModel::Observe(int x, real r)
+real BPSRModel::Observe(int x, real r)
 {
     std::vector<int> z = getIndexVector(x, r);
-    predictor->Observe(Z->getIndex(z));
+    return predictor->Observe(Z->getIndex(z));
 }
 
 /** Observe action taken at time t, and the resulting observation and
@@ -72,10 +72,10 @@ void BPSRModel::Observe(int x, real r)
     The result is passed to the BPSR model by discretising the
     $x_{t+1}, r_{t+1}$ vector.
  */
-void BPSRModel::Observe(int a, int x, real r)
+real BPSRModel::Observe(int a, int x, real r)
 {
     std::vector<int> z = getIndexVector(x, r);
-    predictor->Observe(a, Z->getIndex(z));
+    return predictor->Observe(a, Z->getIndex(z));
 }
 
 
@@ -96,7 +96,7 @@ real BPSRModel::getTransitionProbability(int a, int x, real r) const
 {
     std::vector<int> z = getIndexVector(x, r);
     real p = predictor->ObservationProbability(a, Z->getIndex(z));
-    printf ("%f\n", p);
+    //printf ("%f\n", p);
     return p;
 }
 

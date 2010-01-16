@@ -28,7 +28,7 @@ FactoredMarkovChain::FactoredMarkovChain(int n_actions_,
       threshold(0.5)
 {
 	
-	printf("Making FMC with %d actions, %d obs, %d states, %d history, %d contexts\n",
+	printf("# Making FMC with %d actions, %d obs, %d states, %d history, %d contexts\n",
 		   n_actions, n_obs, n_states, mem_size, n_contexts);
     for (int i=0; i<mem_size; ++i) {
         act_history[i] = 0;
@@ -92,7 +92,8 @@ FactoredMarkovChain::Context FactoredMarkovChain::getContext(int act)
 */
 real FactoredMarkovChain::Observe(int prd)
 {
-    PushObservation(prd);
+	PushObservation(prd);
+	return 0;
 }
 
 /** Train the chain with a new observation
@@ -106,6 +107,7 @@ real FactoredMarkovChain::Observe(int act, int prd)
     PushAction(act);
     current_context = CalculateContext();
     real Pr = getProbability(current_context, prd);
+	//printf("%d %d %d %f # act obx ctx P\n", act, prd, current_context, Pr);
     transitions.observe(current_context, prd);
     PushObservation(prd);
     return Pr;

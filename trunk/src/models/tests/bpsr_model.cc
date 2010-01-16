@@ -44,11 +44,17 @@ int main(int argc, char** argv)
 	  fprintf (stderr, "Usage: bpsr_model n_obs tree_depth horizon maze_filename maze_height maze_width model_type\n  - model_type: BVMM CTW FMC\n");
 	  return -1;
 	}
+#if 0
     std::vector<real> rewards(4);
     rewards[0] = -1.0;
     rewards[1] = -0.1;
     rewards[2] = 0.0;
     rewards[3] = 1.0;
+#else
+    std::vector<real> rewards(1);
+	rewards[0] = 0.0;
+#endif
+
     int n_actions = 4;
     real random = 0.0;
     int n_obs = atoi(argv[1]);
@@ -95,7 +101,7 @@ int main(int argc, char** argv)
 	// start experiment
     int observation = environment.getObservation();
     model.Observe(observation, 0.0);
-
+	int prev_action = 0;
     for (int t=0; t<T; ++t) {
         //        environment.Show();
         int state = environment.getState();
@@ -105,9 +111,32 @@ int main(int argc, char** argv)
         real reward = environment.getReward();
 
         real probability = model.getTransitionProbability(action, observation, reward);
-        printf ("%d %d %d %f %f # LOG\n", state, observation, action, reward, probability);
-        model.Observe(action, observation, reward);
-        
+		real sumP = 0;
+		printf("P: ");
+		for (int i=0; i<n_obs; i++) {
+		  for (int j=0; j<(int) rewards.size(); j++) {
+			real P = model.getTransitionProbability(action, i, rewards[j]);
+			printf ("%f ", P);
+			sumP += P;
+		  }
+		}
+		printf (" | %f\n", sumP);
+
+		SMART_ASSERT(fabs(sumP-1.0) < 10e-6)(sumP);
+		
+#if 1
+        real prob2 = model.Observe(action, observation, reward);
+#else
+		real prob2;
+		if (action == prev_action) {
+		  prob2 = model.Observe(action, 0, rewards[0]);//observation, reward);
+		} else {
+		  prob2 = model.Observe(action, 1, rewards[0]);//observation, reward);
+        }
+#endif
+		prev_action = action;
+
+        printf ("%d %d %d %f %f %f # LOG\n", state, observation, action, reward, probability, prob2);
         if (terminate) {
             environment.Reset();
         }
