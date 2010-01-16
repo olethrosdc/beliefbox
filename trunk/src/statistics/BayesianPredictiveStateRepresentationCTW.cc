@@ -31,12 +31,12 @@ BayesianPredictiveStateRepresentationCTW::~BayesianPredictiveStateRepresentation
  
     @param observation the observation
 */
-void BayesianPredictiveStateRepresentationCTW::Observe(int observation)
+real BayesianPredictiveStateRepresentationCTW::Observe(int observation)
 {
     for (int model=0; model<n_models; ++model) {
         mc[model]->Observe(observation);
     }
-    
+    return 0;
 }
 
 /** Adapt the model given a specific action and next observation.
@@ -44,7 +44,7 @@ void BayesianPredictiveStateRepresentationCTW::Observe(int observation)
     @param action the action
     @param observation the observation
 */
-void BayesianPredictiveStateRepresentationCTW::Observe(int action, int observation)
+real BayesianPredictiveStateRepresentationCTW::Observe(int action, int observation)
 {
 
     //    Matrix P_obs(n_models, n_obs);
@@ -91,12 +91,13 @@ void BayesianPredictiveStateRepresentationCTW::Observe(int action, int observati
     total_observations++;
     //Vector posterior(n_models);
     
-    for (int model=0; model<=top_model; ++model) {
+    //for (int model=0; model<=top_model; ++model) {
+    for (int model=0; model<n_models; ++model) {
         //posterior[model] = weight[model] * P_obs(model, observation) / Lkoi(model, observation);
         //set_belief_param(action, model, log(posterior[model]) - log_prior[model]);
         mc[model]->Observe(action, observation); ///< NOTE: Maybe this should be in a different loop?
     }
-    
+	return Pr_next[observation];
 }
 
 /** Get the probability of the next state

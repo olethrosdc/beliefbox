@@ -19,8 +19,7 @@
 #include "SmartAssert.h"
 #include "Distribution.h"
 #include "DiscreteMDP.h"
-#include "BayesianPredictiveStateRepresentation.h"
-#include "BayesianPredictiveStateRepresentationCTW.h"
+#include "FactoredPredictor.h"
 #include "DiscreteVariable.h"
 
 #undef DEBUG_MDP_MODELS
@@ -45,9 +44,9 @@ inline void mdp_dbg(...)
   \class BPSRModel
   \brief A model of a Partially observable Markov decision process
 
-  This class uses a BayesianPredictiveStateRepresentation as the basis
-  for predicting the next observations. It utilises a fixed
-  discretisation of rewards for this purpose.
+  This class uses a FactoredPredictor as the basis for predicting the
+  next observations. It utilises a fixed discretisation of rewards for
+  this purpose.
 
   @see BayesianPredictiveStateRepresentation
 */
@@ -58,7 +57,7 @@ protected:
     int n_actions;
     std::vector<real> rewards;
     int n_rewards;
-    BayesianPredictiveStateRepresentation* bpsr;
+    FactoredPredictor* predictor;
     DiscreteVector* Z;
     std::vector<int> getIndexVector (int x, real r) const
     {
@@ -80,7 +79,10 @@ protected:
         return v;
     }
 public:
-    BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth, bool ctw = false);
+  enum ModelType
+	{FACTORED_CHAIN, CTW, BVMM};
+
+    BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth, ModelType model_type = BVMM);
 
     virtual ~BPSRModel();
     virtual void Observe(int x, real r); 
