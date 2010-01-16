@@ -17,6 +17,8 @@
 #include "real.h"
 #include "Ring.h"
 #include "SparseTransitions.h"
+#include "FactoredPredictor.h"
+
 /**
    \ingroup StatisticsGroup
  */
@@ -46,7 +48,7 @@
     Thus, the next observation depends on the complete history of
     observations and actions.
  */
-class FactoredMarkovChain 
+class FactoredMarkovChain  : public FactoredPredictor
 {
 public:
     typedef long Context;
@@ -113,11 +115,11 @@ public:
     void getNextStateProbabilities(int act, std::vector<real>& p);
     
     /* Training and generation */
-    void Observe (int prd);
-    real Observe (int act, int prd);
-    real ObservationProbability (int act, int x);
-    real ObservationProbability (int x);
-    void Reset();
+  virtual real Observe (int prd);
+  virtual real Observe (int act, int prd);
+  virtual real ObservationProbability (int act, int x);
+  virtual real ObservationProbability (int x);
+  virtual void Reset();
     int GenerateStatic();
     int GenerateStatic(int act);
     

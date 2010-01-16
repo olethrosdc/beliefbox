@@ -40,8 +40,8 @@
 
 int main(int argc, char** argv)
 {
-	if (argc != 7) {
-	  fprintf (stderr, "Usage: bpsr_model n_obs tree_depth horizon maze_filename maze_height maze_width\n");
+	if (argc != 8) {
+	  fprintf (stderr, "Usage: bpsr_model n_obs tree_depth horizon maze_filename maze_height maze_width model_type\n  - model_type: BVMM CTW FMC\n");
 	  return -1;
 	}
     std::vector<real> rewards(4);
@@ -68,19 +68,38 @@ int main(int argc, char** argv)
                environment.getNObs(),
                n_obs);
     }
-    BPSRModel model(n_obs, n_actions, rewards, tree_depth, true);
+	
+	// - select the model type -	
+	std::string model_type_string = argv[7];
+	BPSRModel::ModelType model_type;
+	if (!model_type_string.compare("BVMM")) {
+	  model_type= BPSRModel::BVMM;
+	  }else if (!model_type_string.compare("CTW")) {
+	  model_type= BPSRModel::CTW;
+	  }else if (!model_type_string.compare("FMC")) {
+	  model_type= BPSRModel::FACTORED_CHAIN;
+	} else{
+		Serror("Unknown model_type %s\n", model_type_string.c_str());
+		exit(-1);
+	}
+
+	// initialise model
+
+    BPSRModel model(n_obs, n_actions, rewards, tree_depth, model_type);
+
+	// initialise RNG
     MersenneTwisterRNG mersenne_twister;
     RandomNumberGenerator& rng = mersenne_twister;
-
-
     rng.seed();
 
+	// start experiment
     int observation = environment.getObservation();
     model.Observe(observation, 0.0);
+
     for (int t=0; t<T; ++t) {
         //        environment.Show();
         int state = environment.getState();
-        int action = 0;//rng.discrete_uniform(n_actions);
+        int action = rng.discrete_uniform(n_actions);
         bool terminate = environment.Act(action);
         observation = environment.getObservation();
         real reward = environment.getReward();

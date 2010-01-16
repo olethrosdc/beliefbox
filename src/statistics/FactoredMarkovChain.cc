@@ -90,7 +90,7 @@ FactoredMarkovChain::Context FactoredMarkovChain::getContext(int act)
 
     @return Probability of having observed the next state.
 */
-void FactoredMarkovChain::Observe(int prd)
+real FactoredMarkovChain::Observe(int prd)
 {
     PushObservation(prd);
 }

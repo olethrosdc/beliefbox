@@ -33,7 +33,7 @@
     @see BPSRModel
 
  */
-class BayesianPredictiveStateRepresentation
+class BayesianPredictiveStateRepresentation : public FactoredPredictor
 {
 public:
     typedef std::map<int, real, std::greater<int> > BeliefMap;
@@ -81,8 +81,8 @@ public:
 
     
     /* Training and generation */
-    virtual void Observe(int observation);
-    virtual void Observe(int action, int observation);
+    virtual real Observe(int observation);
+    virtual real Observe(int action, int observation);
     virtual real ObservationProbability (int action, int observation);
     virtual void Reset();
     virtual int predict(int a);

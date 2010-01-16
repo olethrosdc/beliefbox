@@ -38,8 +38,8 @@ public:
 
     
     /* Training and generation */
-    virtual void Observe(int observation);
-    virtual void Observe(int action, int observation);
+    virtual real Observe(int observation);
+    virtual real Observe(int action, int observation);
     virtual real ObservationProbability (int action, int observation);
     virtual int predict(int a);
 

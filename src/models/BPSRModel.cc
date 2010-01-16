@@ -10,8 +10,12 @@
  ***************************************************************************/
 
 #include "BPSRModel.h"
+#include "FactoredMarkovChain.h"
+#include "BayesianPredictiveStateRepresentation.h"
+#include "BayesianPredictiveStateRepresentationCTW.h"
 
-BPSRModel::BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth, bool ctw)
+
+BPSRModel::BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, int tree_depth, ModelType model_type)
     : n_obs(n_obs_),
       n_actions(n_actions_),
       rewards(rewards_)
@@ -24,16 +28,25 @@ BPSRModel::BPSRModel  (int n_obs_, int n_actions_, std::vector<real> rewards_, i
     Z = new DiscreteVector(sizes);
 	printf("Making new BPSR with %d observations, %d rewards, %d compound observations, %d actions\n",
 		   n_obs, n_rewards, Z->getNCombinations(), n_actions);
-    if (ctw) {
-        bpsr = new BayesianPredictiveStateRepresentationCTW(Z->getNCombinations(), n_actions, tree_depth, 0.5);
-    } else {
-        bpsr = new BayesianPredictiveStateRepresentation(Z->getNCombinations(), n_actions, tree_depth, 0.5);
+
+	  switch(model_type) {
+	  case FACTORED_CHAIN:
+        predictor = new FactoredMarkovChain(n_actions, Z->getNCombinations(), tree_depth);
+		break;
+	  case CTW:
+        predictor = new BayesianPredictiveStateRepresentationCTW(Z->getNCombinations(), n_actions, tree_depth, 0.5);
+		break;
+	  case BVMM:
+        predictor = new BayesianPredictiveStateRepresentation(Z->getNCombinations(), n_actions, tree_depth, 0.5);
+		break;
+	  default:
+		Serror("Undefined choice for model type %d\n", model_type);
     }
 }
 
 BPSRModel::~BPSRModel()
 {
-    delete bpsr;
+    delete predictor;
     delete Z;
 }
 
@@ -48,7 +61,7 @@ BPSRModel::~BPSRModel()
 void BPSRModel::Observe(int x, real r)
 {
     std::vector<int> z = getIndexVector(x, r);
-    bpsr->Observe(Z->getIndex(z));
+    predictor->Observe(Z->getIndex(z));
 }
 
 /** Observe action taken at time t, and the resulting observation and
@@ -62,7 +75,7 @@ void BPSRModel::Observe(int x, real r)
 void BPSRModel::Observe(int a, int x, real r)
 {
     std::vector<int> z = getIndexVector(x, r);
-    bpsr->Observe(a, Z->getIndex(z));
+    predictor->Observe(a, Z->getIndex(z));
 }
 
 
@@ -82,7 +95,7 @@ void BPSRModel::Observe(int a, int x, real r)
 real BPSRModel::getTransitionProbability(int a, int x, real r) const
 {
     std::vector<int> z = getIndexVector(x, r);
-    real p = bpsr->ObservationProbability(a, Z->getIndex(z));
+    real p = predictor->ObservationProbability(a, Z->getIndex(z));
     printf ("%f\n", p);
     return p;
 }
@@ -109,7 +122,7 @@ real BPSRModel::getExpectedReward (int a) const
 
 void BPSRModel::Reset()
 {
-    bpsr->Reset();
+    predictor->Reset();
 }
 
 
