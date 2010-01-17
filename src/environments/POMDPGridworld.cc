@@ -63,7 +63,9 @@ POMDPGridworld::POMDPGridworld(const char* fname,
             case '#': grid[x][y] = WALL; break;
             case 'X': grid[x][y] = GOAL; break;
             case 'O': grid[x][y] = PIT; break;
-            default: std::cerr << "Unknown maze element\n"; exit(-1);
+            default: std::cerr << "Unknown maze element: '"
+                               << line[x] << "'" << std::endl;
+                exit(-1);
             }
         }
         y++;

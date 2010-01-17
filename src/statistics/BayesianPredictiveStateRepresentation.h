@@ -57,7 +57,7 @@ public:
 
     inline real get_belief_param(int act, int model)
     {
-        int src = mc[model]->getContext(act);
+        FactoredMarkovChain::Context src = mc[model]->getContext(act);
         BeliefMapIterator i = beliefs[model].find(src);
 		if (i==beliefs[model].end()) {
 			return 0.0;
@@ -68,7 +68,7 @@ public:
 
     inline void set_belief_param(int act, int model, real value)
     {
-        int src = mc[model]->getContext(act);
+        FactoredMarkovChain::Context src = mc[model]->getContext(act);
         BeliefMapIterator i =  beliefs[model].find(src);
         if (i!=beliefs[model].end()) {
             i->second = value;
