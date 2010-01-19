@@ -17,18 +17,12 @@
 #include "SmartAssert.h"
 #include "MDP.h"
 
-class Distribution;
-
-class AbstractPOMDP {
-public:
-	AbstractMDP* mdp;
-	virtual ~AbstractPOMDP() {}
-};
 
 template<typename ObservationType, typename StateType, typename ActionType>
-class POMDP : public AbstractPOMDP {
+class POMDP : public MDP<StateType, ActionType> {
 public:
-	virtual real getTransitionProbaiblity (StateType s, ActionType a, StateType s2);
-	virtual real getObservationProbability (StateType s, ObservationType o);
+    virtual ~POMDP()
+    {
+    }
 };
 

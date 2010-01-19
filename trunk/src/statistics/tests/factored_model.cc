@@ -18,6 +18,7 @@
 #include "BayesianPredictiveStateRepresentationCTW.h"
 #include "POMDPGridworld.h"
 #include "Random.h"
+#include "MersenneTwister.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -97,14 +98,16 @@ int main(int argc, char** argv)
     //int n_actions = 2;
 #if 1
     std::string homedir(getenv("HOME"));
-    std::string maze = homedir + "/projects/beliefbox/dat/maze7";
-    int arg_maze_height = 10;
-    int arg_maze_width = 10;
-    real random = 0.0;//atof(argv[2]);
+    std::string maze = homedir + "/projects/beliefbox/dat/maze1c";
+    int arg_maze_height = 8;
+    int arg_maze_width = 8;
+    real random = 0.01;//atof(argv[2]);
 #else
 	std::string maze = argv[4];
 #endif
-    POMDPGridworld environment(maze.c_str(),
+    MersenneTwisterRNG mersenne_twister;
+    RandomNumberGenerator* environment_rng = &mersenne_twister;
+    POMDPGridworld environment(environment_rng, maze.c_str(),
 							   n_obs, arg_maze_height, arg_maze_width, random);
     
 	//printf ("short: %d int: %d long: %d long int: %d long long: %d\n", sizeof(short), sizeof(int), sizeof(long), sizeof (long int), sizeof (long long));

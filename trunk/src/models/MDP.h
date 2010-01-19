@@ -28,7 +28,7 @@ public:
 
 // This is just a template for MDPs
 template <typename StateType, typename ActionType>
-class MDP : AbstractMDP
+class MDP : public AbstractMDP
 {
 protected:
     StateType state;
