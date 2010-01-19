@@ -53,6 +53,7 @@ real BayesianPredictiveStateRepresentationCTW::Observe(int action, int observati
     int top_model = std::min(n_models - 1, total_observations);
     
     // calculate predictions for each model for the given action 
+    real prev_param = 1;
     for (int model=0; model<=top_model; ++model) {
         for (int j=0; j<n_obs; j++) {
             P_obs(model, j) =  mc[model]->ObservationProbability(action, j);
@@ -63,7 +64,7 @@ real BayesianPredictiveStateRepresentationCTW::Observe(int action, int observati
                 Lkoi(model,j) = P_obs(model,j);
             }
         } else {
-            weight[model] = exp(log_prior[model]);// + get_belief_param(action, model));
+            weight[model] = exp(log_prior[model]);
             for (int j=0; j<n_obs; j++) {
                 Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model-1, j); 
             }
@@ -94,7 +95,7 @@ real BayesianPredictiveStateRepresentationCTW::Observe(int action, int observati
     //for (int model=0; model<=top_model; ++model) {
     for (int model=0; model<n_models; ++model) {
         //posterior[model] = weight[model] * P_obs(model, observation) / Lkoi(model, observation);
-        //set_belief_param(action, model, log(posterior[model]) - log_prior[model]);
+        //set_belief_param(action, model, get_belief_param(action,model)+ 1);
         mc[model]->Observe(action, observation); ///< NOTE: Maybe this should be in a different loop?
     }
 	return Pr_next[observation];
@@ -109,7 +110,9 @@ real BayesianPredictiveStateRepresentationCTW::ObservationProbability(int action
 {
     int top_model = std::min(n_models - 1, total_observations);
     printf("models:%d - top: %d\n", n_models, top_model);
+
     // calculate predictions for each model for the given action 
+    real prev_param = 1;
     for (int model=0; model<=top_model; ++model) {
         for (int j=0; j<n_obs; j++) {
             P_obs(model, j) =  mc[model]->ObservationProbability(action, j);
@@ -121,7 +124,7 @@ real BayesianPredictiveStateRepresentationCTW::ObservationProbability(int action
                 Lkoi(model,j) = P_obs(model,j);
             }
         } else {
-            weight[model] = exp(log_prior[model]);// + get_belief_param(action, model));
+            weight[model] = exp(log_prior[model]);
             for (int j=0; j<n_obs; j++) {
                 Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model-1, j); 
             }
@@ -170,7 +173,7 @@ int BayesianPredictiveStateRepresentationCTW::predict(int a)
                 Lkoi(model, obs) = P_obs(model, obs);
             }
         } else {
-            weight[model] = exp(log_prior[model]);//+ get_belief_param(a, model));
+            weight[model] = exp(log_prior[model]);
             for (int obs=0; obs<n_obs; obs++) {
                 Lkoi(model,obs) = weight[model] * P_obs(model, obs)
                     + (1.0 - weight[model]) * Lkoi(model - 1, obs);

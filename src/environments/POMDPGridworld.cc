@@ -16,7 +16,8 @@
 #include <iostream>
 #include <fstream>
 
-POMDPGridworld::POMDPGridworld(const char* fname,
+POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
+                               const char* fname,
                                uint n_obs_,
                                uint height_,
                                uint width_,                    
@@ -24,7 +25,8 @@ POMDPGridworld::POMDPGridworld(const char* fname,
                                real pit_,
                                real goal_,
                                real step_)
-    :  observation(0),
+    :  rng(rng_),
+       observation(0),
        total_time(0),
        n_obs(n_obs_),
        height(height_), width(width_), 
@@ -125,21 +127,23 @@ bool POMDPGridworld::Act(int action)
     }
     int x = ox;
     int y = oy;
-    switch(action) {
-    case NORTH:
-        y--;
-        break;
-    case SOUTH:
-        y++;
-        break;
-    case EAST:
-        x++;
-        break;
-    case WEST:
-        x--;
-        break;
+    // Agent gets stuck with probability 'random'
+    if (rng->uniform() >= random) {
+        switch(action) {
+        case NORTH:
+            y--;
+            break;
+        case SOUTH:
+            y++;
+            break;
+        case EAST:
+            x++;
+            break;
+        case WEST:
+            x--;
+            break;
+        }
     }
-
     reward = step_value;
     if (whatIs(x,y) != INVALID   &&whatIs(x,y) != WALL) {
         ox = x;
@@ -147,6 +151,10 @@ bool POMDPGridworld::Act(int action)
         state = getStateFromCoords(x, y);
         if (n_obs == 2) {
             observation = 1;
+            // Do not detect hit in some cases
+            if (rng->uniform() < random) {
+                observation = 0;
+            }
         }
     } 
     if (whatIs(x,y) == GOAL || whatIs(x,y)== PIT) {

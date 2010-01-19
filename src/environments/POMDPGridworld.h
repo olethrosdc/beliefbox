@@ -14,6 +14,7 @@
 
 #include "Environment.h"
 #include "DiscreteMDP.h"
+#include "RandomNumberGenerator.h"
 #include <string>
 #include <vector>
 
@@ -27,6 +28,7 @@
  */
 class POMDPGridworld : public Environment<int, int> {
 public:
+    RandomNumberGenerator* rng;
     int ox, oy;
     int observation;
     int total_time;
@@ -38,7 +40,8 @@ public:
         INVALID=-1, GRID, WALL, GOAL, PIT
     };
     int terminal_state;
-    POMDPGridworld(const char* fname,
+    POMDPGridworld(RandomNumberGenerator* rng_,
+                   const char* fname,
               uint height_,
               uint width_,                   
               uint n_obs_ = 16,
