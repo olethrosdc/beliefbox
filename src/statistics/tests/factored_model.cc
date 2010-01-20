@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 #endif
     MersenneTwisterRNG mersenne_twister;
 	Statistics statistics(T);
-	int n_iter = 1;
+	int n_iter = 1000;
 	for (int iter=0; iter<n_iter; ++iter) {
 		FactoredPredictor* factored_predictor; 
 		if (!model_name.compare("FMC")) {
