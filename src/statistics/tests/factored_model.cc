@@ -68,11 +68,33 @@ public:
 	}
 };
 
+struct Statistics
+{
+
+	std::vector<real> probability;
+
+	Statistics(int T) : probability(T)
+	{
+		for (int t=0; t<T; ++t) {
+			probability[t] = 0;
+		}
+	}
+};
+
+bool EvaluateMaze(std::string maze, 
+				  int maze_height,
+				  int maze_width,
+				  int n_obs,
+				  real random,
+				  RandomNumberGenerator* environment_rng,
+				  FactoredPredictor* factored_predictor,
+				  Statistics& statistics);
+
 int main(int argc, char** argv)
 {
 
 	int n_actions = 4;
-	int n_obs = 2;
+	int n_obs = 16;
 	
 	if (argc != 5) {
 		fprintf (stderr, "Usage: factored_model T states depth model_name\n  - model_name FMC CTW BVMM\n");
@@ -83,17 +105,7 @@ int main(int argc, char** argv)
 	int n_states = atoi(argv[2]);
 	int max_depth = atoi(argv[3]);
     std::string model_name(argv[4]);
-	FactoredPredictor* factored_predictor; 
-    if (!model_name.compare("FMC")) {
-        factored_predictor = new FactoredMarkovChain(n_actions, n_obs, max_depth);
-    } else if (!model_name.compare("BVMM")) {
-        factored_predictor = new BayesianPredictiveStateRepresentation(n_obs, n_actions,  max_depth + 1, 0.5);
-    } else if (!model_name.compare("CTW")) {
-        factored_predictor = new BayesianPredictiveStateRepresentationCTW(n_obs, n_actions,  max_depth + 1, 0.5);
-	} else {
-        fprintf(stderr, "Unrecognised model name %s\n", model_name.c_str());
-        exit(-1);
-    }
+
 	//Corridor environment(n_states);
     //int n_actions = 2;
 #if 1
@@ -106,26 +118,63 @@ int main(int argc, char** argv)
 	std::string maze = argv[4];
 #endif
     MersenneTwisterRNG mersenne_twister;
-    RandomNumberGenerator* environment_rng = &mersenne_twister;
-    POMDPGridworld environment(environment_rng, maze.c_str(),
-							   n_obs, arg_maze_height, arg_maze_width, random);
-    
-	//printf ("short: %d int: %d long: %d long int: %d long long: %d\n", sizeof(short), sizeof(int), sizeof(long), sizeof (long int), sizeof (long long));
+	Statistics statistics(T);
+	int n_iter = 1000;
+	for (int iter=0; iter<n_iter; ++iter) {
+		FactoredPredictor* factored_predictor; 
+		if (!model_name.compare("FMC")) {
+			factored_predictor = new FactoredMarkovChain(n_actions, n_obs, max_depth);
+		} else if (!model_name.compare("BVMM")) {
+			factored_predictor = new BayesianPredictiveStateRepresentation(n_obs, n_actions,  max_depth + 1, 0.5);
+		} else if (!model_name.compare("CTW")) {
+			factored_predictor = new BayesianPredictiveStateRepresentationCTW(n_obs, n_actions,  max_depth + 1, 0.5);
+		} else {
+			fprintf(stderr, "Unrecognised model name %s\n", model_name.c_str());
+			exit(-1);
+		}
+		bool success = EvaluateMaze(maze, arg_maze_height, arg_maze_width,
+									n_obs,	random, &mersenne_twister,
+									factored_predictor, statistics);
+		if (!success) {
+			fprintf(stderr, "Failure in iteration %d\n", iter);
+		}
+		delete factored_predictor;
+	}
+	
+	real inv_iter = 1.0 / (real) n_iter;
+	for (int t=0; t<T; ++t) {
+		printf ("%f\n", statistics.probability[t] * inv_iter);
+	}
+	return 0;
+}
+
+bool EvaluateMaze(std::string maze, 
+				  int maze_height,
+				  int maze_width,
+				  int n_obs,
+				  real random,
+				  RandomNumberGenerator* environment_rng,
+				  FactoredPredictor* factored_predictor,
+				  Statistics& statistics)
+{
+	POMDPGridworld environment(environment_rng, maze.c_str(),
+							   n_obs, maze_height, maze_width, random);
+    int n_actions = environment.getNActions();
 	environment.Reset();
 	factored_predictor->Observe(environment.getObservation());
-    int last_action = 0;
+	int last_action = 0;
+	int T = statistics.probability.size();
 	for (int t=0; t<T; ++t) {
 		int action = last_action;
 		environment.Act(action);
 		int observation = environment.getObservation();
-        if (observation || urandom() < 0.5) {
-            last_action = rand()%n_actions;
-        }
+		if (observation || urandom() < 0.5) {
+			last_action = rand()%n_actions;
+		}
 		real p = factored_predictor->Observe(action, observation);
-		printf ("%f\n", p);
+		statistics.probability[t] += p;
 	}
 
-
-	return 0;
+	return true;
 }
 #endif

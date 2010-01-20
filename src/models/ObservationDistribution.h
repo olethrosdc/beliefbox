@@ -1,6 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-// $Revision$
+// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -10,17 +9,17 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef DISCRETE_POMDP_H
-#define DISCRETE_POMDP_H
+#ifndef OBSERVATION_DISTRIBUTION_H
+#define OBSERVATION_DISTRIBUTION_H
 
-#include "DiscreteMDP.h"
-
-class DiscretePOMDP
+template <typename StateType, typename ObservationType>
+class ObservationDistribution
 {
-public:
-    DiscreteMDP* mdp; ///< The underlying MDP
-	real getObservationProbability(int state, int observation);
-    int GenererateObservation();
+ public:
+    virtual ~ObservationDistribution() {}
+    virtual ObservationType generate(StateType state) = 0;
+    virtual ObservationType expected(StateType state) = 0;
+    virtual real pdf(StateType state, ObservationType observation) = 0;
 };
 
 #endif
