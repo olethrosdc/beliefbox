@@ -1,6 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-// $Id: MDP.h,v 1.3 2006/11/06 23:42:32 olethros Exp cdimitrakakis $
+// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -20,8 +19,16 @@
 
 template<typename ObservationType, typename StateType, typename ActionType>
 class POMDP : public MDP<StateType, ActionType> {
+protected:
+	ObservationDistribution<StateType, ObservationType>& observation_distribution;
 public:
-    virtual ~POMDP()
+    POMDP(TransitionDistribution<StateType, ActionType>& transition_distribution_,
+		  RewardDistribution<StateType, ActionType>& reward_distribution_,
+		  ObservationDistribution<StateType, ObservationType>& observation_distribution_)
+        : MDP<StateType, ActionType> (transition_distribution_, reward_distribution),
+		  observation_distribution(observation_distribution_)
+
+		  virtual ~POMDP()
     {
     }
 };
