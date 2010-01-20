@@ -18,7 +18,7 @@
 
 // BUG: It appeasr that the prior does not affect this chain.
 
-BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior, bool dense)
+BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, real prior, bool dense)
 {
     this->n_models = n_models;
     this->n_states = n_states;
@@ -33,12 +33,12 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, float prior
 
 
     for (int i=0; i<n_states; ++i) {
-        Pr_next[i] = 1.0 / (float) n_states;
+        Pr_next[i] = 1.0 / (real) n_states;
     }
 
-    float sum = 0.0;
+    real sum = 0.0;
     for (int i=0; i<n_models; ++i) {
-            //Pr[i] = 0.5; // (1.0 + float(i)); 
+            //Pr[i] = 0.5; // (1.0 + real(i)); 
             //Pr[i] = pow((real) n_states, (real) (-i));
         Pr[i] = pow(prior,(real) i);
         sum += Pr[i];

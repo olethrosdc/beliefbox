@@ -109,7 +109,7 @@ real BayesianPredictiveStateRepresentationCTW::Observe(int action, int observati
 real BayesianPredictiveStateRepresentationCTW::ObservationProbability(int action, int observation)
 {
     int top_model = std::min(n_models - 1, total_observations);
-    printf("models:%d - top: %d\n", n_models, top_model);
+    //printf("models:%d - top: %d\n", n_models, top_model);
 
     // calculate predictions for each model for the given action 
     real prev_param = 1;

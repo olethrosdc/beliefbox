@@ -30,10 +30,15 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
       Pr_next(n_obs)
 {
     beliefs.resize(n_models);
+	real sum = 0.0;
     for (int i=0; i<n_models; ++i) {
-        Pr[i] = pow(prior, (real) i);//prior;
-        log_prior[i] = log(Pr[i]);
+        Pr[i] = prior;//pow(prior, (real) i);//prior;
+		sum += Pr[i];
         mc[i] = new FactoredMarkovChain(n_actions, n_obs, i);
+    }
+	for (int i=0; i<n_models; ++i) {
+        Pr[i] /= sum;
+        log_prior[i] = log(Pr[i]);
     }
 }
 
@@ -133,7 +138,7 @@ real BayesianPredictiveStateRepresentation::Observe(int action, int observation)
 real BayesianPredictiveStateRepresentation::ObservationProbability(int action, int observation)
 {
     int top_model = std::min(n_models - 1, total_observations);
-    printf("models:%d - top: %d\n", n_models, top_model);
+    //printf("models:%d - top: %d\n", n_models, top_model);
     // calculate predictions for each model for the given action 
     for (int model=0; model<=top_model; ++model) {
         for (int j=0; j<n_obs; j++) {
