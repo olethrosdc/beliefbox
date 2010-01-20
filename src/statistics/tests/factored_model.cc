@@ -72,11 +72,13 @@ struct Statistics
 {
 
 	std::vector<real> probability;
+	std::vector<real> error;
 
-	Statistics(int T) : probability(T)
+	Statistics(int T) : probability(T), error(T)
 	{
 		for (int t=0; t<T; ++t) {
 			probability[t] = 0;
+			error[t] = 0;
 		}
 	}
 };
@@ -94,7 +96,7 @@ int main(int argc, char** argv)
 {
 
 	int n_actions = 4;
-	int n_obs = 16;
+	int n_obs = 2;
 	
 	if (argc != 5) {
 		fprintf (stderr, "Usage: factored_model T states depth model_name\n  - model_name FMC CTW BVMM\n");
@@ -119,7 +121,7 @@ int main(int argc, char** argv)
 #endif
     MersenneTwisterRNG mersenne_twister;
 	Statistics statistics(T);
-	int n_iter = 1000;
+	int n_iter = 1;
 	for (int iter=0; iter<n_iter; ++iter) {
 		FactoredPredictor* factored_predictor; 
 		if (!model_name.compare("FMC")) {
@@ -143,7 +145,8 @@ int main(int argc, char** argv)
 	
 	real inv_iter = 1.0 / (real) n_iter;
 	for (int t=0; t<T; ++t) {
-		printf ("%f\n", statistics.probability[t] * inv_iter);
+		printf ("%f %f\n", statistics.probability[t] * inv_iter,
+				statistics.error[t] * inv_iter);
 	}
 	return 0;
 }
@@ -164,15 +167,23 @@ bool EvaluateMaze(std::string maze,
 	factored_predictor->Observe(environment.getObservation());
 	int last_action = 0;
 	int T = statistics.probability.size();
+	std::vector<real> obs_probs(n_obs); ///< observation probabilities
 	for (int t=0; t<T; ++t) {
 		int action = last_action;
 		environment.Act(action);
+		for (int i=0; i<n_obs; ++i) {
+			obs_probs[i] = factored_predictor->ObservationProbability(action, i);
+		}
 		int observation = environment.getObservation();
-		if (observation || urandom() < 0.5) {
+		if (observation || urandom() < 0.1) {
 			last_action = rand()%n_actions;
 		}
 		real p = factored_predictor->Observe(action, observation);
+		assert(p==obs_probs[observation]);
 		statistics.probability[t] += p;
+		if (ArgMax(obs_probs) != observation) {
+			statistics.error[t]++;
+		}
 	}
 
 	return true;

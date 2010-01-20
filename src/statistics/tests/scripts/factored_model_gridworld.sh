@@ -2,7 +2,7 @@
 
 outdir=~/experiments/bvmdp/gridworld/maze1
 mkdir -p $outdir
-T=100000
+T=1000000
 states=0
 for depth in 0 1 2 4 6 8 10
 do
