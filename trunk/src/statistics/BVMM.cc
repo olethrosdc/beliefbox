@@ -67,7 +67,11 @@ void BVMM::ObserveNextState(int state)
                 Lkoi(model,j) = P_obs(model,j);
             }
         } else {
-            weight[model] = exp(log_prior[model] + get_belief_param(model));
+            if (polya) {
+                weight[model] = (0.5 + get_belief_param(model)) / (0.5 + get_belief_param(model - 1));
+            } else {
+                weight[model] = exp(log_prior[model] + get_belief_param(model));
+            }
             for (int j=0; j<n_states; j++) {
                 Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model-1, j); 
             }
@@ -99,12 +103,16 @@ void BVMM::ObserveNextState(int state)
       
   // insert new observations
     n_observations++;
+
     
     for (int model=0; model<=top_model; ++model) {
         if (polya) {
-            real par = exp(get_belief_param(model));// + log_prior[model]);
-            set_belief_param(model, log(1.0 + par));// - log_pri or[model]);
+            set_belief_param(model, 1.0 + get_belief_param(model));
+            real posterior = weight[model] * P_obs(model, state) / Lkoi(model, state);
+            set_belief_param(model, log(posterior) - log_prior[model]);
         } else {
+            real posterior = weight[model] * P_obs(model, state) / Lkoi(model, state);
+            set_belief_param(model, log(posterior) - log_prior[model]);
             real posterior = weight[model] * P_obs(model, state) / Lkoi(model, state);
 			real p = log(posterior) - log_prior[model];
 			//printf ("%d %d %f #Weight\n", n_observations, model, posterior);
@@ -156,7 +164,11 @@ int BVMM::predict()
                 Lkoi(model, state) = P_obs(model, state);
             }
         } else {
-            weight[model] = exp(log_prior[model] + get_belief_param(model));
+            if (polya) {
+                weight[model] = (exp(log_prior[model]) + get_belief_param(model)) / exp(log_prior[model-1] + get_belief_param(model));
+            } else {
+                weight[model] = exp(log_prior[model] + get_belief_param(model));
+            }
             for (int state=0; state<n_states; state++) {
                 Lkoi(model,state) = weight[model] * P_obs(model, state)
                     + (1.0 - weight[model]) * Lkoi(model - 1, state);
