@@ -52,8 +52,7 @@ void BVMM::ObserveNextState(int state)
 //    Matrix Lkoi(n_models, n_states);
 
     int top_model = std::min(n_models - 1, n_observations);
-
-#if 1
+	
         // calculate predictions for each model
     for (int model=0; model<=top_model; ++model) {
             //std::vector<real> p(n_states);
@@ -74,38 +73,29 @@ void BVMM::ObserveNextState(int state)
             }
         }
     }
-#else
-    int j = state;
-    for (int model=0; model<=top_model; ++model) {
-        P_obs(model, j) =  mc[model]->NextStateProbability(j);
-            //printf("p(%d): ", i);
-        if (model == 0) {
-            weight[model] = 1;
-            Lkoi(model,j) = P_obs(model,j);
-        } else {
-            weight[model] = exp(log_prior[model] + get_belief_param(model));
-            Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model-1, j); 
-        }
-    }
-#endif
-    
+
     real p_w = 1.0;
     for (int model=top_model; model>=0; model--) {
         Pr[model] = p_w * weight[model];
         p_w *= (1.0 - weight[model]);
-
+		//printf ("w[%d]=%f, P= %f\n", model, weight[model], Pr[model]);
     }
-
-    real sum_pr_s = 0.0;
+	
+	// real sum_pr_s = 0.0;
     for (int s=0; s<n_states; ++s) {
-        real Pr_s = 0;
-        for (int model=0; model<=top_model; ++model) {
-            Pr_s += Pr[model]*P_obs(model, s);
-        }
-        Pr_next[s] = Pr_s;
-        sum_pr_s += Pr_s;
+        //real Pr_s = 0;
+        //for (int model=0; model<=top_model; ++model) {
+		//Pr_s += Pr[model]*P_obs(model, s);
+		//}
+        //Pr_next[s] = Pr_s;
+		Pr_next[s] = Lkoi(top_model, s);
+        //sum_pr_s += Pr_s;
     }
 
+	//	real inv_sum_pr_s = 1.0 / sum_pr_s;
+    //for (int s=0; s<n_states; ++s) {
+	//Pr_next[s]  *= inv_sum_pr_s;
+	//	}
       
   // insert new observations
     n_observations++;
@@ -133,7 +123,7 @@ void BVMM::ObserveNextState(int state)
 /// Get the probability of the next state
 real BVMM::NextStateProbability(int state)
 {
-    Pr_next /= Pr_next.Sum();
+    //Pr_next /= Pr_next.Sum();
     return Pr_next[state];
 }
 
@@ -145,6 +135,9 @@ real BVMM::NextStateProbability(int state)
 ///
 int BVMM::predict()
 {
+
+
+
 //    Matrix P_obs(n_models, n_states);
 //    Matrix Lkoi(n_models, n_states);
     int top_model = std::min(n_models - 1, n_observations);

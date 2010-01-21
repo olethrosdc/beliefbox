@@ -166,7 +166,7 @@ int main (int argc, char** argv)
     bpsr.Reset();
     ctw.Reset();
     
-    
+	std::vector<real> P_obs(n_observations);    
     for (int t=0; t<T; ++t) {
         int observation = data[t];
         
@@ -183,6 +183,18 @@ int main (int argc, char** argv)
         }
         
         int bpsr_prediction = bpsr.predict();
+		
+		real sumP = 0;
+		for (int i=0; i<n_observations; ++i) {
+			P_obs[i] = bpsr.NextStateProbability(i);
+			sumP += P_obs[i];
+		}
+		if (0) {//ArgMax(P_obs) != bpsr_prediction || fabs(sumP - 1.0) > 0.00001) {
+			for (int i=0; i<n_observations; ++i) {
+				printf("%f ", P_obs[i]);
+			}
+			printf(" : %f \n", sumP);
+		}
         bpsr_error.accuracy[t] += bpsr.NextStateProbability(observation);
         if (bpsr_prediction != observation) {
             bpsr_error.loss[t] += 1.0;
