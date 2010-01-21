@@ -109,7 +109,7 @@ int main(int argc, char** argv)
         bool terminate = environment.Act(action);
         observation = environment.getObservation();
         real reward = environment.getReward();
-
+        
         real probability = model.getTransitionProbability(action, observation, reward);
 		real sumP = 0;
 		printf("P: ");
