@@ -38,7 +38,7 @@ public:
     virtual int predict();
     virtual real NextStateProbability(int state)
     {
-        return Pr_next[state];
+        return P_next[state];
     }
 };
 /*@}*/

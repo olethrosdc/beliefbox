@@ -29,7 +29,7 @@
 class BVMM : public BayesianMarkovChain
 {
 protected:
-    bool polya;
+    const bool polya;
     Matrix P_obs; ///< Probability of observations for model k
     Matrix Lkoi; ///< Probability of observations for all models up to k
     std::vector<real> weight; ///< temporary weight of model
