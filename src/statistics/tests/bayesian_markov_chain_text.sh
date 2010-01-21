@@ -23,7 +23,7 @@ execdir=~/projects/beliefbox/src/statistics/tests/bin
 datadir=~/projects/beliefbox/src/statistics/tests/data
 rm -f $summary
 rm -f $summary_acc
-for (( i=0; i<=16; i++ ))
+for (( i=0; i<=10; i++ ))
 do
     ${execdir}/bayesian_markov_chain_text ${datadir}/${data_name}.txt $i $horizon $prior >out;
     grep Err out >>$summary
