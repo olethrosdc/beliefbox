@@ -52,6 +52,15 @@ MarkovChain::MarkovChain (int n_states, int mem_size)
         memory.resize(mem_size);
     }
 
+	real max_bits = sizeof(MCState)*8;
+	real used_bits = log((real) n_states) * ((real) (mem_size)) / log(2.0);
+	
+	if (max_bits < used_bits) {
+		fprintf(stderr, "MC state is %f bits long, while %f bits are required for memory of length %d for %d states. Aborting\n", max_bits, used_bits, mem_size, n_states);
+		exit(-1);
+	} else {
+		fprintf(stderr, "MC state is %f bits long, and %f bits are required for memory of length %d for %d states. Proceeding\n", max_bits, used_bits, mem_size, n_states);
+	}
     mem_pos = 0;
 
 	this->n_states = n_states;

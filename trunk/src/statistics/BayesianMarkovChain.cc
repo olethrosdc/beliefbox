@@ -23,6 +23,8 @@ BayesianMarkovChain::BayesianMarkovChain(int n_states, int n_models, real prior,
     this->n_models = n_models;
     this->n_states = n_states;
 
+	fprintf(stderr, "Making Bayesian markov chain with %d states and %d models\n", n_states, n_models);
+
     n_observations = 0;
 
     mc.resize(n_models);

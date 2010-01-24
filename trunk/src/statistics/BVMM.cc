@@ -1,6 +1,6 @@
 /* -*- Mode: c++;  -*- */
 /*VER: $Id: MarkovChain.h,v 1.7 2006/08/17 05:35:00 olethros Exp $*/
-// copyright (c) 2004 by Christos Dimitrakakis <dimitrak@idiap.ch>
+// copyright (c) 2009-2010 by Christos Dimitrakakis <dimitrak@idiap.ch>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
