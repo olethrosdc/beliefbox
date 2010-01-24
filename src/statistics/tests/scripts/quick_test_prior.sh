@@ -1,4 +1,4 @@
-T=10000;
+T=2;
 
 fname=out1
 rm -f $fname

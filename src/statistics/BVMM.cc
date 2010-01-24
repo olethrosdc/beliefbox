@@ -1,6 +1,5 @@
 /* -*- Mode: c++;  -*- */
-/*VER: $Id: MarkovChain.h,v 1.7 2006/08/17 05:35:00 olethros Exp $*/
-// copyright (c) 2009-2010 by Christos Dimitrakakis <dimitrak@idiap.ch>
+// copyright (c) 2009-2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,6 +16,14 @@
 #include "Matrix.h"
 #include "Distribution.h"
 
+/** Initialise the models
+
+	This is done as follows:
+
+	The weights are a bit tricky to set.
+	Consider that we want to always have the same weight
+	for w_1 = P(K = 1) =
+ */
 BVMM::BVMM(int n_states, int n_models, float prior, bool polya_, bool dense)
     : BayesianMarkovChain(n_states, n_models, prior, dense),
       polya(polya_),
@@ -26,8 +33,14 @@ BVMM::BVMM(int n_states, int n_models, float prior, bool polya_, bool dense)
 {
     beliefs.resize(n_models);
     for (int i=0; i<n_models; ++i) {
+#if 1
+		// for alice, this works well when p = 0.1		
+        Pr[i] = pow(prior, (real) (i+1));
+        log_prior[i] = ((real) (i+1)) * log(prior);
+#else
         Pr[i] = prior;
         log_prior[i] = log(Pr[i]);
+#endif
     }
 }
 
@@ -52,7 +65,7 @@ void BVMM::ObserveNextState(int state)
 //    Matrix Lkoi(n_models, n_states);
 
     int top_model = std::min(n_models - 1, n_observations);
-	
+
         // calculate predictions for each model
     for (int model=0; model<=top_model; ++model) {
             //std::vector<real> p(n_states);
@@ -72,39 +85,32 @@ void BVMM::ObserveNextState(int state)
             } else {
                 weight[model] = exp(log_prior[model] + get_belief_param(model));
             }
+			// so the actual weight of model k is \prod_{i=k+1}^D (1-w_k)
             for (int j=0; j<n_states; j++) {
-                Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model-1, j); 
+                Lkoi(model,j) = weight[model] * P_obs(model, j) + (1.0 - weight[model])*Lkoi(model - 1, j); 
             }
         }
     }
 
     real p_w = 1.0;
+	real p_w_sum = 0;
     for (int model=top_model; model>=0; model--) {
         Pr[model] = p_w * weight[model];
         p_w *= (1.0 - weight[model]);
-		//printf ("w[%d]=%f, P= %f\n", model, weight[model], Pr[model]);
+		p_w_sum += Pr[model];
+		//		printf ("w[%d]=%f, P= %f, P(K >= %d) = %f\n",
+		//model, weight[model], Pr[model], model, p_w_sum);
     }
 	
 	// real sum_pr_s = 0.0;
     for (int s=0; s<n_states; ++s) {
-        //real Pr_s = 0;
-        //for (int model=0; model<=top_model; ++model) {
-		//Pr_s += Pr[model]*P_obs(model, s);
-		//}
-        //Pr_next[s] = Pr_s;
 		Pr_next[s] = Lkoi(top_model, s);
-        //sum_pr_s += Pr_s;
     }
 
-	//	real inv_sum_pr_s = 1.0 / sum_pr_s;
-    //for (int s=0; s<n_states; ++s) {
-	//Pr_next[s]  *= inv_sum_pr_s;
-	//	}
       
   // insert new observations
     n_observations++;
-
-    
+	
     for (int model=0; model<=top_model; ++model) {
         if (polya) {
             set_belief_param(model, 1.0 + get_belief_param(model));
@@ -118,7 +124,7 @@ void BVMM::ObserveNextState(int state)
         }
     }
 
-
+	// update expert parameters
     for (int model=0; model<n_models; ++ model) {
         //for (int model=0; model<=top_model; ++ model) {
         mc[model]->ObserveNextState(state);
