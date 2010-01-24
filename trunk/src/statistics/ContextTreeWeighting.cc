@@ -25,8 +25,14 @@ ContextTreeWeighting::ContextTreeWeighting(int n_states, int n_models, real prio
 {
     n_observations = 0;
     for (int i=0; i<n_models; ++i) {
+#if 1
+		// for alice, this works well when p = 0.1		
+        Pr[i] = pow(prior, (real) (i+1));
+        log_prior[i] = ((real) (i+1)) * log(prior);
+#else
         Pr[i] = prior;
         log_prior[i] = log(Pr[i]);
+#endif
     }
 }
 
