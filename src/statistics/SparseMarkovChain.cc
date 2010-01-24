@@ -17,7 +17,7 @@ SparseMarkovChain::SparseMarkovChain(int n_states,
 	: MarkovChain(n_states, mem_size),
       transitions((int) pow((double) n_states, (double) mem_size), n_states)
 {
-
+	fprintf(stderr, "Making sparse markov chain with %d states and %d memory\n", n_states, mem_size);
 }
 
 SparseMarkovChain::~SparseMarkovChain()
