@@ -2,8 +2,8 @@
 
 outdir=~/experiments/bvmdp/gridworld/maze1
 mkdir -p $outdir
-T=100000
-iter=1000
+T=10000
+iter=100
 states=0
 echo "factored_model $iter $T" >${outdir}/run.params
 
