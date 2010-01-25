@@ -1,13 +1,13 @@
 #! /bin/sh
 
-outdir=~/experiments/bvmdp/gridworld/maze1
+outdir=~/experiments/bvmdp/gridworld/maze1/prior_01
 mkdir -p $outdir
-T=10000
+T=100000
 iter=100
 states=0
 echo "factored_model $iter $T" >${outdir}/run.params
 
-for depth in 0 1 2 3 4 5 6 7 8 9 10
+for depth in 0 1 2 3 4 5 6 7 8 
 do
     for model in FMC BFMC BVMM CTW
     do
