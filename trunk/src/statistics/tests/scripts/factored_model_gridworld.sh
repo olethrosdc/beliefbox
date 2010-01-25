@@ -11,6 +11,7 @@ for depth in 0 1 2 3 4 5 6 7 8
 do
     for model in FMC BFMC BVMM CTW
     do
+        echo $model $depth
         time ./bin/factored_model $iter $T $states $depth $model >${outdir}/${states}s_${depth}d_${model}.out
     done
 done
