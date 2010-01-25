@@ -38,10 +38,9 @@ protected:
 	int n_models;
 	real prior;
     std::vector<FactoredMarkovChain*> mc;
-    Vector log_prior;
     Vector Pr; ///< model probabilities
+    Vector logPr; ///< model log probabilities
     Vector Pr_next; ///< observation probabilities
-	Matrix Pr_obs; ///< observation probabilities per model
 public:
     BayesianFMC (int n_obs_, int n_actions_, int n_models_, real prior_);
 

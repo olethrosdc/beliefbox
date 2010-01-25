@@ -14,6 +14,7 @@
 
 #include "FactoredPredictor.h"
 #include "FactoredMarkovChain.h"
+#include "BayesianFMC.h"
 #include "BayesianPredictiveStateRepresentation.h"
 #include "BayesianPredictiveStateRepresentationCTW.h"
 #include "POMDPGridworld.h"
@@ -98,15 +99,16 @@ int main(int argc, char** argv)
 	int n_actions = 4;
 	int n_obs = 2;
 	
-	if (argc != 5) {
-		fprintf (stderr, "Usage: factored_model T states depth model_name\n  - model_name FMC CTW BVMM\n");
+	if (argc != 6) {
+		fprintf (stderr, "Usage: factored_model n_iter T states depth model_name\n  - model_name in {FMC, BFMC, CTW, BVMM}\n");
 		return -argc;
 	}
 	
-	int T = atoi(argv[1]);
-	int n_states = atoi(argv[2]);
-	int max_depth = atoi(argv[3]);
-    std::string model_name(argv[4]);
+	int n_iter = atoi(argv[1]);
+	int T = atoi(argv[2]);
+	int n_states = atoi(argv[3]);
+	int max_depth = atoi(argv[4]);
+    std::string model_name(argv[5]);
 
 	//Corridor environment(n_states);
     //int n_actions = 2;
@@ -121,11 +123,13 @@ int main(int argc, char** argv)
 #endif
     MersenneTwisterRNG mersenne_twister;
 	Statistics statistics(T);
-	int n_iter = 1000;
+
 	for (int iter=0; iter<n_iter; ++iter) {
 		FactoredPredictor* factored_predictor; 
 		if (!model_name.compare("FMC")) {
 			factored_predictor = new FactoredMarkovChain(n_actions, n_obs, max_depth);
+        } else if (!model_name.compare("BFMC")) {
+			factored_predictor = new BayesianFMC(n_obs, n_actions, max_depth + 1, 0.5);
 		} else if (!model_name.compare("BVMM")) {
 			factored_predictor = new BayesianPredictiveStateRepresentation(n_obs, n_actions,  max_depth + 1, 0.5);
 		} else if (!model_name.compare("CTW")) {
@@ -173,7 +177,7 @@ bool EvaluateMaze(std::string maze,
 		environment.Act(action);
 		for (int i=0; i<n_obs; ++i) {
 			obs_probs[i] = factored_predictor->ObservationProbability(action, i);
-		}
+        }
 		int observation = environment.getObservation();
 		if (observation || urandom() < 0.1) {
 			last_action = rand()%n_actions;

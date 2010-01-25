@@ -14,6 +14,7 @@
 
 #include <vector>
 #include "real.h"
+#include "Vector.h"
 
 /** An alternative context tree implementation */
 class ContextTree
@@ -31,7 +32,6 @@ public:
 		/// Make a node for K symbols at nominal depth d
 		Node(int d, int K) : depth(d), next(K), P(K)
 		{
-			p = 0;
 			real w = 0;
 			for (int i=0; i<K; ++i) {
 				next[i] = NULL;
