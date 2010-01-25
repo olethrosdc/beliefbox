@@ -93,7 +93,7 @@ FactoredMarkovChain::Context FactoredMarkovChain::getContext(int act)
 real FactoredMarkovChain::Observe(int prd)
 {
 	PushObservation(prd);
-	return 0;
+	return 1.0 / (real) n_obs;
 }
 
 /** Train the chain with a new observation

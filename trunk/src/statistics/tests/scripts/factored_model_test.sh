@@ -2,6 +2,7 @@
 
 outdir=~/experiments/bvmdp/1dmaze
 mkdir -p $outdir
+iter=100
 T=100000
 for depth in 0 1 2 4 8 16
 do
@@ -9,7 +10,7 @@ do
     do
         for model in FMC BVMM CTW
         do
-            time ./bin/factored_model $T $states $depth $model >${outdir}/${states}s_${depth}d_${model}.out
+            time ./bin/factored_model $iter $T $states $depth $model >${outdir}/${states}s_${depth}d_${model}.out
         done
     done
 done
