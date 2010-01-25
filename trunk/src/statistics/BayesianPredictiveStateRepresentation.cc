@@ -30,13 +30,14 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
       Pr_next(n_obs)
 {
     beliefs.resize(n_models);
-	real sum = 0.0;
+    real sum = 0.0;
     for (int i=0; i<n_models; ++i) {
-        Pr[i] = prior;//pow(prior, (real) i);//prior;
-		sum += Pr[i];
+        Pr[i] = prior;
+        //Pr[i] = pow(prior, (real) i);
+        sum += Pr[i];
         mc[i] = new FactoredMarkovChain(n_actions, n_obs, i);
     }
-	for (int i=0; i<n_models; ++i) {
+    for (int i=0; i<n_models; ++i) {
         Pr[i] /= sum;
         log_prior[i] = log(Pr[i]);
     }
@@ -57,7 +58,7 @@ void BayesianPredictiveStateRepresentation::Reset()
 
 /** Seed the model with an initial observation.
  
-    @param observation the observation
+@param observation the observation
 */
 real BayesianPredictiveStateRepresentation::Observe(int observation)
 {
@@ -69,8 +70,8 @@ real BayesianPredictiveStateRepresentation::Observe(int observation)
 
 /** Adapt the model given a specific action and next observation.
  
-    @param action the action
-    @param observation the observation
+@param action the action
+@param observation the observation
 */
 real BayesianPredictiveStateRepresentation::Observe(int action, int observation)
 {
@@ -122,17 +123,17 @@ real BayesianPredictiveStateRepresentation::Observe(int action, int observation)
         real posterior = weight[model] * P_obs(model, observation) / Lkoi(model, observation);
         set_belief_param(action, model, log(posterior) - log_prior[model]);
         //mc[model]->Observe(action, observation); ///< NOTE: Maybe this should be in a different loop?
-	}
-	
-	for (int model=0; model<n_models; ++model) {
-        mc[model]->Observe(action, observation); ///< NOTE: Maybe this should be in a different loop?
     }
-	return Pr_next[observation];
+	
+    for (int model=0; model<n_models; ++model) {
+        mc[model]->Observe(action, observation); ///< NOTE: Maybe this should be in a different loop?
+            }
+    return Pr_next[observation];
 }
 
 /** Get the probability of the next state
     
-    P_t(x_{t+1} = x | a_t = a)
+P_t(x_{t+1} = x | a_t = a)
 
 */
 real BayesianPredictiveStateRepresentation::ObservationProbability(int action, int observation)
@@ -168,7 +169,7 @@ real BayesianPredictiveStateRepresentation::ObservationProbability(int action, i
     for (int s=0; s<n_obs; ++s) {
         real Pr_s = 0;
         for (int model=0; model<=top_model; ++model) {
-		  //printf ("%d %d %f\n", model, s, P_obs(model, s));
+            //printf ("%d %d %f\n", model, s, P_obs(model, s));
             Pr_s += Pr[model]*P_obs(model, s);
         }
         Pr_next[s] = Pr_s;
