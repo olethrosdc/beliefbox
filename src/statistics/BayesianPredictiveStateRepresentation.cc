@@ -32,8 +32,8 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
     beliefs.resize(n_models);
     real sum = 0.0;
     for (int i=0; i<n_models; ++i) {
-        Pr[i] = prior;
-        //Pr[i] = pow(prior, (real) i);
+        //Pr[i] = prior;
+        Pr[i] = pow(prior, (real) i);
         sum += Pr[i];
         mc[i] = new FactoredMarkovChain(n_actions, n_obs, i);
     }
