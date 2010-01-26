@@ -34,6 +34,7 @@ protected:
 public:
     Corridor(int n_states_) : n_states(n_states_)
     {
+        printf ("# Making Corridor of length %d\n", n_states);
         assert(n_states > 0);
     }
     void Reset()
@@ -44,6 +45,14 @@ public:
     int getObservation()
     {
         return observation;
+    }
+    int getNActions()
+    {
+        return 2;
+    }
+    int getNObservations()
+    {
+        return 2;
     }
     bool Act(int action)
     {
@@ -88,10 +97,23 @@ bool EvaluateMaze(std::string maze,
                   int maze_height,
                   int maze_width,
                   int n_obs,
-                  real random,
+                  real maze_random,
+                  real action_random,
                   RandomNumberGenerator* environment_rng,
                   FactoredPredictor* factored_predictor,
                   Statistics& statistics);
+
+bool Evaluate1DWorld(int n_states,
+                     real world_randomness,
+                     real action_randomness,
+                     RandomNumberGenerator* environment_rng,
+                     FactoredPredictor* factored_predictor,
+                     Statistics& statistics);
+
+enum EnvironmentType {
+    ONEDMAZE,
+    GRIDWORLD
+};
 
 int main(int argc, char** argv)
 {
@@ -99,34 +121,56 @@ int main(int argc, char** argv)
     int n_actions = 4;
     int n_obs = 2;
 	
-    if (argc != 6) {
-        fprintf (stderr, "Usage: factored_model n_iter T states depth model_name\n  - model_name in {FMC, BFMC, CTW, BVMM}\n");
+    if (argc <= 8) {
+        fprintf (stderr, "Usage: factored_model environment model_name n_iter T depth [environment parameters]\n\
+  - environment in {1DMaze, Gridworld}\n\
+  - model_name in {FMC, BFMC, CTW, BVMM}\n\
+  - environment parameters:\n\
+    - 1DMaze: number_of_states\n\
+    - Gridworld: maze height width\n");
         return -argc;
     }
 	
-    int n_iter = atoi(argv[1]);
-    int T = atoi(argv[2]);
-    int n_states = atoi(argv[3]);
-    int max_depth = atoi(argv[4]);
-    std::string model_name(argv[5]);
 
-    //Corridor environment(n_states);
-    //int n_actions = 2;
-#if 1
-    std::string homedir(getenv("HOME"));
-    std::string maze = homedir + "/projects/beliefbox/dat/maze1c";
-    int arg_maze_height = 8;
-    int arg_maze_width = 8;
-    real random = 0.01;//atof(argv[2]);
-#else
-    std::string maze = argv[4];
-#endif
+    std::string environment_name(argv[1]);
+    std::string model_name(argv[2]);
+
+    int n_iter = atoi(argv[3]);
+    int T = atoi(argv[4]);
+    int max_depth = atoi(argv[5]);
+    real maze_random = atof(argv[6]);
+    real action_random = atof(argv[7]);
+
+    EnvironmentType environment_type;
+
+    if (!environment_name.compare("1DMaze")) {
+        if (argc!=9) {
+            Serror("Model parameters: number of states\n");
+            exit(-1);
+        }
+        environment_type = ONEDMAZE;
+        n_actions = 2;
+        n_obs = 2;
+    } else if (!environment_name.compare("Gridworld")) {
+        if (argc!=12) {
+            Serror("Model parameters: maze_filename height width n_obs\n");
+            exit(-1);
+        }
+        environment_type = GRIDWORLD;
+        n_actions = 4;
+    } else {
+        Serror ("Unknown environment %s\n",environment_name.c_str());
+        exit(-1);
+    }
+
     MersenneTwisterRNG mersenne_twister;
     Statistics statistics(T);
     
-    real prior=0.1;
+    real prior=0.5;
 
     for (int iter=0; iter<n_iter; ++iter) {
+        mersenne_twister.manualSeed(true_random_bits());
+
         FactoredPredictor* factored_predictor; 
         if (!model_name.compare("FMC")) {
             factored_predictor = new FactoredMarkovChain(n_actions, n_obs, max_depth);
@@ -140,9 +184,38 @@ int main(int argc, char** argv)
             fprintf(stderr, "Unrecognised model name %s\n", model_name.c_str());
             exit(-1);
         }
-        bool success = EvaluateMaze(maze, arg_maze_height, arg_maze_width,
-                                    n_obs,	random, &mersenne_twister,
-                                    factored_predictor, statistics);
+        bool success;
+        switch(environment_type) {
+        case ONEDMAZE:
+            {
+                int n_states = atoi(argv[8]);
+                success = Evaluate1DWorld(n_states,
+                                          maze_random,
+                                          action_random,
+                                          &mersenne_twister,
+                                          factored_predictor,
+                                          statistics);
+            }
+            break;
+        case GRIDWORLD:
+            {
+                std::string maze(argv[8]);
+                int arg_maze_height = atoi(argv[9]);
+                int arg_maze_width = atoi(argv[10]);
+                int n_obs = atoi(argv[11]);
+                real maze_random = 0.1;
+                success = EvaluateMaze(maze,
+                                       arg_maze_height,
+                                       arg_maze_width,
+                                       n_obs,
+                                       maze_random,
+                                       action_random,
+                                       &mersenne_twister,
+                                       factored_predictor,
+                                       statistics);
+            }
+            break;
+        }
         if (!success) {
             fprintf(stderr, "Failure in iteration %d\n", iter);
         }
@@ -161,19 +234,22 @@ bool EvaluateMaze(std::string maze,
                   int maze_height,
                   int maze_width,
                   int n_obs,
-                  real random,
+                  real world_randomness,
+                  real action_randomness,
                   RandomNumberGenerator* environment_rng,
                   FactoredPredictor* factored_predictor,
                   Statistics& statistics)
 {
     POMDPGridworld environment(environment_rng, maze.c_str(),
-                               n_obs, maze_height, maze_width, random);
+                               n_obs, maze_height, maze_width,
+                               world_randomness);
     int n_actions = environment.getNActions();
     environment.Reset();
     factored_predictor->Observe(environment.getObservation());
     int last_action = 0;
     int T = statistics.probability.size();
     std::vector<real> obs_probs(n_obs); ///< observation probabilities
+
 	for (int t=0; t<T; ++t) {
             int action = last_action;
             environment.Act(action);
@@ -181,9 +257,50 @@ bool EvaluateMaze(std::string maze,
                 obs_probs[i] = factored_predictor->ObservationProbability(action, i);
             }
             int observation = environment.getObservation();
-            if (observation || urandom() < 0.1) {
+            if (observation || urandom() < action_randomness) {
                 last_action = rand()%n_actions;
             }
+
+            real p = factored_predictor->Observe(action, observation);
+            assert(p==obs_probs[observation]);
+            statistics.probability[t] += p;
+            if (ArgMax(obs_probs) != observation) {
+                statistics.error[t]++;
+            }
+	}
+
+	return true;
+}
+
+
+bool Evaluate1DWorld(int n_states,
+                     real world_randomness,
+                     real action_randomness,
+                     RandomNumberGenerator* environment_rng,
+                     FactoredPredictor* factored_predictor,
+                     Statistics& statistics)
+{
+
+    Corridor environment(n_states);
+    int n_actions = environment.getNActions();
+    int n_obs = environment.getNObservations();
+    environment.Reset();
+    factored_predictor->Observe(environment.getObservation());
+    int last_action = 0;
+    int T = statistics.probability.size();
+    std::vector<real> obs_probs(n_obs); ///< observation probabilities
+    real randomness = 0.01;
+	for (int t=0; t<T; ++t) {
+            int action = last_action;
+            environment.Act(action);
+            for (int i=0; i<n_obs; ++i) {
+                obs_probs[i] = factored_predictor->ObservationProbability(action, i);
+            }
+            int observation = environment.getObservation();
+            if (urandom() < action_randomness) {
+                last_action = rand()%n_actions;
+            }
+
             real p = factored_predictor->Observe(action, observation);
             assert(p==obs_probs[observation]);
             statistics.probability[t] += p;
