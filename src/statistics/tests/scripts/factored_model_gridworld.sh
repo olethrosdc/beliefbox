@@ -7,11 +7,17 @@ iter=100
 states=0
 echo "factored_model $iter $T" >${outdir}/run.params
 
-for depth in 9 10 # 0 1 2 3 4 5 6 7 8 
-do
-    for model in FMC BFMC BVMM CTW
+for action_rand in 0 0.01 0.1 0.5 1.0
+  do
+  for maze_rand in 0 0.01 0.1
     do
+    for depth in 0 1 2 4 8
+      do
+      for model in FMC BFMC BVMM CTW
+        do
         echo $model $depth
         time ./bin/factored_model $iter $T $states $depth $model >${outdir}/${states}s_${depth}d_${model}.out
+      done
     done
+  done
 done
