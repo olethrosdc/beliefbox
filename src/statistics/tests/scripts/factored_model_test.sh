@@ -2,13 +2,13 @@
 
 outdir=~/experiments/bvmdp/1dmaze/2obs/
 mkdir -p $outdir
-iter=1000
+iter=100
 T=100000
 echo "Params: $iter $T" >$outdir/params.txt
 
-for depth in 0 1 2 4 8 10 12 16
+for states in 1 2 3 4 6 8 10 12 16 32
 do
-    for states in 1 2 3 4 5 6 7 8 16 32
+    for depth in 0 1 2 4 8 10 12 16
     do
         for model in FMC BFMC BVMM CTW
         do
