@@ -15,7 +15,8 @@ bin_dir=$HOME/projects/beliefbox/src/statistics/tests/bin
 
 for model in FMC BFMC BVMM CTW
 do
-    time ./bin/factored_model $environment $model $iter $T $depth $p 1.0 $states  >${out_dir}/${states}s_${depth}d_${model}.out&
+    echo ${bin_dir}/factored_model $environment $model $iter $T $depth $p 1.0 $states  >${out_dir}/${states}s_${depth}d_${model}.params
+    time ${bin_dir}/factored_model $environment $model $iter $T $depth $p 1.0 $states  >${out_dir}/${states}s_${depth}d_${model}.out&
 done
 
 wait
