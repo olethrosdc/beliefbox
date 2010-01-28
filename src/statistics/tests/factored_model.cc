@@ -20,6 +20,8 @@
 #include "POMDPGridworld.h"
 #include "Random.h"
 #include "MersenneTwister.h"
+#include "DiscretePOMDP.h"
+#include "POMDPBeliefState.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -33,6 +35,7 @@ protected:
     int state; ///< current state
     real randomness;
     RandomNumberGenerator* rng;
+    DiscretePOMDP* pomdp;
 public:
     Corridor(int n_states_, real randomness_, RandomNumberGenerator* rng_)
         : n_states(n_states_),
@@ -41,6 +44,24 @@ public:
     {
         printf ("# Making Corridor of length %d\n", n_states);
         assert(n_states > 0);
+        pomdp = new DiscretePOMDP(n_states, 2, 2);
+        for (int s=0; s<n_states; ++s) {
+            for (int s2=0; s2<n_states; ++s2)  {
+                pomdp->setNextStateProbability(s, 0, s2, 0);
+                pomdp->setNextStateProbability(s, 1, s2, 0);
+            }
+        }
+        for (int s=0; s<n_states-1; ++s) {
+            pomdp->setNextStateProbability(s+1, 0, s, 1);
+            pomdp->setNextStateProbability(s, 1, s+1, 1);
+        }
+        pomdp->setNextStateProbability(0, 0, 0, 1);
+        pomdp->setNextStateProbability(n_states-1, 1, n_states-1, 1);
+        pomdp->check();
+    }
+    ~Corridor()
+    {
+        delete pomdp;
     }
     void Reset()
     {
