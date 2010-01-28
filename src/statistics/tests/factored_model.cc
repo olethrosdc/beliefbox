@@ -31,8 +31,13 @@ protected:
     int n_states;
     int observation;  ///< current observation
     int state; ///< current state
+    real randomness;
+    RandomNumberGenerator* rng;
 public:
-    Corridor(int n_states_) : n_states(n_states_)
+    Corridor(int n_states_, real randomness_, RandomNumberGenerator* rng_)
+        : n_states(n_states_),
+          randomness(randomness_),
+          rng(rng_)
     {
         printf ("# Making Corridor of length %d\n", n_states);
         assert(n_states > 0);
@@ -73,6 +78,9 @@ public:
         } else if (state >= n_states) {
             state = n_states - 1;
             observation = 1;
+        }
+        if (rng->uniform() < randomness) {
+            observation = 1 - observation;
         }
         return 0;
     }
@@ -167,7 +175,7 @@ int main(int argc, char** argv)
     real prior=0.5;
 
     for (int iter=0; iter<n_iter; ++iter) {
-        mersenne_twister.manualSeed(true_random_bits());
+        mersenne_twister.manualSeed(true_random_bits(false));
 
         FactoredPredictor* factored_predictor; 
         if (!model_name.compare("FMC")) {
@@ -276,13 +284,15 @@ bool Evaluate1DWorld(int n_states,
                      Statistics& statistics)
 {
 
-    Corridor environment(n_states);
+    Corridor environment(n_states, world_randomness, environment_rng);
     int n_actions = environment.getNActions();
     int n_obs = environment.getNObservations();
     environment.Reset();
     factored_predictor->Observe(environment.getObservation());
     int last_action = 0;
     int T = statistics.probability.size();
+    printf ("# states: %d, actions: %d, obs: %d, T: %d, w_rand: %f, a_rand: %f\n", n_states, n_actions, n_obs, T, world_randomness, action_randomness);
+
     std::vector<real> obs_probs(n_obs); // observation probabilities
     
     for (int t=0; t<T; ++t) {
