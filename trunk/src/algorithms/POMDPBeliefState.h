@@ -9,26 +9,24 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef POMDP_H
-#define POMDP_H
+#ifndef POMDP_BELIEF_STATE_H
+#define POMDP_BELIEF_STATE_H
 
-#include "real.h"
-#include "SmartAssert.h"
-#include "MDP.h"
+#include "DiscretePOMDP.h"
 
-
-template<typename ObservationType, typename StateType, typename ActionType>
-class POMDP : public MDP<StateType, ActionType> {
+class DiscreretePOMDPBeliefState
+{
 protected:
-	ObservationDistribution<StateType, ObservationType>& observation_distribution;
-public:
-    POMDP(TransitionDistribution<StateType, ActionType>& transition_distribution_,
-		  RewardDistribution<StateType, ActionType>& reward_distribution_,
-		  ObservationDistribution<StateType, ObservationType>& observation_distribution_)
-        : MDP<StateType, ActionType> (transition_distribution_, reward_distribution),
-		  observation_distribution(observation_distribution_)
-          
-		  virtual ~POMDP() {}
+    DiscretePOMDP* pomdp;
+    int n_states;
+    Vector belief;
+    Vector log_belief;
+public: 
+    DiscreretePOMDPBeliefState(DiscretePOMDP* pomdp_);
+    ~DiscreretePOMDPBeliefState();
+
+    real Observe(int a, int x, real r);
+
 };
 
 #endif
