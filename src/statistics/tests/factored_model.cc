@@ -22,6 +22,7 @@
 #include "MersenneTwister.h"
 #include "DiscretePOMDP.h"
 #include "POMDPBeliefState.h"
+#include "POMDPBeliefPredictor.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -45,18 +46,41 @@ public:
         printf ("# Making Corridor of length %d\n", n_states);
         assert(n_states > 0);
         pomdp = new DiscretePOMDP(n_states, 2, 2);
+        int n_obs = 2;
+        // clear all
         for (int s=0; s<n_states; ++s) {
             for (int s2=0; s2<n_states; ++s2)  {
                 pomdp->setNextStateProbability(s, 0, s2, 0);
                 pomdp->setNextStateProbability(s, 1, s2, 0);
             }
+            for (int x=0; x<n_obs; ++x)  {
+                pomdp->setObservationProbability(s, 0, x, 0);
+                pomdp->setObservationProbability(s, 0, x, 0);
+            }
         }
+        
+        // set states
         for (int s=0; s<n_states-1; ++s) {
             pomdp->setNextStateProbability(s+1, 0, s, 1);
             pomdp->setNextStateProbability(s, 1, s+1, 1);
         }
         pomdp->setNextStateProbability(0, 0, 0, 1);
         pomdp->setNextStateProbability(n_states-1, 1, n_states-1, 1);
+
+        // set obs
+        for (int s=0; s<n_states-1; ++s) {
+            // see nothing when no obstacle
+            pomdp->setObservationProbability(s+1, 0, 0, 1 - randomness);
+            pomdp->setObservationProbability(s,   1, 0, 1 - randomness);
+            pomdp->setObservationProbability(s+1, 0, 1, randomness);
+            pomdp->setObservationProbability(s,   1, 1, randomness);
+        }
+        // see something when obstacle
+        pomdp->setObservationProbability(0, 0, 1, 1 - randomness);
+        pomdp->setObservationProbability(0, 0, 0, randomness);
+        pomdp->setObservationProbability(n_states-1, 1, 1, 1 - randomness);
+        pomdp->setObservationProbability(n_states-1,  1, 0, randomness);
+
         pomdp->check();
     }
     ~Corridor()
@@ -68,9 +92,17 @@ public:
         state = 0;
         observation = 0;
     }
+    DiscretePOMDP* getPOMDP()
+    {
+        return pomdp;
+    }
     int getObservation()
     {
         return observation;
+    }
+    int getNStates()
+    {
+        return n_states;
     }
     int getNActions()
     {
@@ -103,6 +135,9 @@ public:
         if (rng->uniform() < randomness) {
             observation = 1 - observation;
         }
+        pomdp->setObservation(observation);
+        pomdp->setReward(0);
+        pomdp->setState(state);
         return 0;
     }
 };
@@ -130,10 +165,8 @@ bool EvaluateMaze(std::string maze,
                   FactoredPredictor* factored_predictor,
                   Statistics& statistics);
 
-bool Evaluate1DWorld(int n_states,
-                     real world_randomness,
+bool Evaluate1DWorld(Corridor& environment,
                      real action_randomness,
-                     RandomNumberGenerator* environment_rng,
                      FactoredPredictor* factored_predictor,
                      Statistics& statistics);
 
@@ -207,6 +240,9 @@ int main(int argc, char** argv)
             factored_predictor = new BayesianPredictiveStateRepresentation(n_obs, n_actions,  max_depth + 1, prior);
         } else if (!model_name.compare("CTW")) {
             factored_predictor = new BayesianPredictiveStateRepresentationCTW(n_obs, n_actions,  max_depth + 1, prior);
+        } else if (!model_name.compare("POMDP")) {
+            factored_predictor = NULL;
+            // to be made later
         } else {
             fprintf(stderr, "Unrecognised model name %s\n", model_name.c_str());
             exit(-1);
@@ -216,10 +252,12 @@ int main(int argc, char** argv)
         case ONEDMAZE:
             {
                 int n_states = atoi(argv[8]);
-                success = Evaluate1DWorld(n_states,
-                                          maze_random,
+                Corridor environment(n_states, maze_random, &mersenne_twister);
+                if (!factored_predictor) {
+                    factored_predictor = new POMDPBeliefPredictor(environment.getPOMDP());
+                }
+                success = Evaluate1DWorld(environment,
                                           action_random,
-                                          &mersenne_twister,
                                           factored_predictor,
                                           statistics);
             }
@@ -297,22 +335,20 @@ bool EvaluateMaze(std::string maze,
 }
 
 
-bool Evaluate1DWorld(int n_states,
-                     real world_randomness,
+bool Evaluate1DWorld(Corridor& environment,
                      real action_randomness,
-                     RandomNumberGenerator* environment_rng,
                      FactoredPredictor* factored_predictor,
                      Statistics& statistics)
 {
 
-    Corridor environment(n_states, world_randomness, environment_rng);
+    int n_states = environment.getNStates();
     int n_actions = environment.getNActions();
     int n_obs = environment.getNObservations();
     environment.Reset();
     factored_predictor->Observe(environment.getObservation());
-    int last_action = 0;
+    int last_action = rand()%n_actions;
     int T = statistics.probability.size();
-    printf ("# states: %d, actions: %d, obs: %d, T: %d, w_rand: %f, a_rand: %f\n", n_states, n_actions, n_obs, T, world_randomness, action_randomness);
+    printf ("# states: %d, actions: %d, obs: %d, T: %d, a_rand: %f\n", n_states, n_actions, n_obs, T, action_randomness);
 
     std::vector<real> obs_probs(n_obs); // observation probabilities
     
@@ -321,6 +357,7 @@ bool Evaluate1DWorld(int n_states,
         environment.Act(action);
         for (int i=0; i<n_obs; ++i) {
             obs_probs[i] = factored_predictor->ObservationProbability(action, i);
+            //            printf("# %d %f\n", i, obs_probs[i]);
         }
         int observation = environment.getObservation();
         if (urandom() < action_randomness) {

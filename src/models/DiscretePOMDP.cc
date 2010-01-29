@@ -1,6 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-// $Revision$
+// copyright (c) 2009-2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,7 +16,7 @@ DiscretePOMDP::DiscretePOMDP(int n_states_, int n_obs_, int n_actions_)
       n_obs(n_obs_),
       n_actions(n_actions_),
       Transitions(n_states * n_actions, n_states),
-      Observations(n_states, n_obs)
+      Observations(n_states * n_actions, n_obs)
 {
     
     real p_state = 1.0 / (real) n_states;
@@ -27,10 +26,8 @@ DiscretePOMDP::DiscretePOMDP(int n_states_, int n_obs_, int n_actions_)
             int k = i * n_actions + a;
             for (int j=0; j<n_states; ++j) {
                 Transitions(k, j) = p_state;
+                Observations(i, j) = p_obs;
             }
-        }
-        for (int j=0; j<n_obs; ++j) {
-            Observations(i, j) = p_obs;
         }
     }
 }
@@ -42,7 +39,7 @@ void DiscretePOMDP::check()
             real sum = 0;
             for (int s2=0; s2<n_states; ++s2)  {
                 real p = getNextStateProbability(s, a, s2);
-                p += sum;
+                sum += p;
                 if (p < 0) {
                     Serror("P(s'=%d | s=%d, a=%d) = %f !\n", s2, s, a, p);
                     exit(-1);
