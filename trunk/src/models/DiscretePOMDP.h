@@ -29,34 +29,58 @@ protected:
     real reward;
 public:
     DiscretePOMDP(int n_states_, int n_obs_, int n_actions_);
+
+    // use these to set the current state of the POMDP
+    void setObservation(int x)
+    {
+        observation = x;
+    }
+    void setReward(real r)
+    {
+        reward = r;
+    }
+    void setState(int s)
+    {
+        state = s;
+    }
+
+    // get information about the POMDP
     int getNStates()
     {
         return n_states;
+    }
+    int getNActions()
+    {
+        return n_actions;
+    }
+    int getNObservations()
+    {
+        return n_obs;
     }
     int getObservation()
     {
         return observation;
     }
-    void setObservation(int x)
-    {
-        observation = x;
-    }
     real getNextStateProbability(int state, int action, int next_state) const
     {
         return Transitions(state*n_actions + action, next_state);
     }
-	real getObservationProbability(int state, int observation) const
+	real getObservationProbability(int state, int action, int observation) const
     {
-        return Observations(state, observation);
+        return Observations(state*n_actions + action, observation);
     }
+
+    // change the transition/observation matrices
     void setNextStateProbability(int state, int action, int next_state, real p)
     {
         Transitions(state*n_actions + action, next_state) = p;
     }
-	void setObservationProbability(int state, int observation, real p)
+	void setObservationProbability(int state, int action, int observation, real p)
     {
-        Observations(state, observation) = p;
+        Observations(state*n_actions + action, observation) = p;
     }
+
+    /// Check that the POMDP parameters are sane
     void check();
 };
 
