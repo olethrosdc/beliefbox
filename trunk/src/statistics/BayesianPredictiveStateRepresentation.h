@@ -36,7 +36,7 @@
 class BayesianPredictiveStateRepresentation : public FactoredPredictor
 {
 public:
-    typedef std::map<int, real, std::greater<int> > BeliefMap;
+    typedef std::map<FactoredMarkovChain::Context, real, std::greater<FactoredMarkovChain::Context> > BeliefMap;
     typedef BeliefMap::iterator BeliefMapIterator;
 protected:
     int total_observations; ///< total number of observations
