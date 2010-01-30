@@ -4,7 +4,7 @@
 #PBS -lnodes=1:ppn=4:cores8
 # job requires at most 1 hours, 0 minutes
 #     and 0 seconds wallclock time
-#PBS -lwalltime=1:00:00
+#PBS -lwalltime=4:00:00
 # cd to the directory where the program is to be called:
 
 cd $HOME/experiments
@@ -15,8 +15,8 @@ bin_dir=$HOME/projects/beliefbox/src/statistics/tests/bin
 
 for model in FMC BFMC BVMM CTW
 do
-    echo ./bin/factored_model Gridworld $model $iter $T $depth $maze_rand $action_rand $maze_dir/$maze_name $n_obs >${outdir}/${states}s_${depth}d_${model}.out >${out_dir}/${states}s_${depth}d_${model}.params
-    time ./bin/factored_model Gridworld $model $iter $T $depth $maze_rand $action_rand $maze_dir/$maze_name $n_obs >${outdir}/${states}s_${depth}d_${model}.out
+    echo "${bin_dir}/factored_model Gridworld $model $iter $T $depth $maze_rand $action_rand $maze_dir/$maze_name $n_obs >${out_dir}/${states}s_${depth}d_${model}.out"  | tee ${out_dir}/${states}s_${depth}d_${model}.params
+    ${bin_dir}/factored_model Gridworld $model $iter $T $depth $maze_rand $action_rand $maze_dir/$maze_name $n_obs >${out_dir}/${states}s_${depth}d_${model}.out
 
 done
 
