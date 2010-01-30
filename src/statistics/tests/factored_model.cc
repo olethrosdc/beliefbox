@@ -179,7 +179,7 @@ int main(int argc, char** argv)
 {
 
     int n_actions = 4;
-    int n_obs = 2;
+    int n_obs;
 	
     if (argc <= 8) {
         fprintf (stderr, "Usage: factored_model environment model_name n_iter T depth env_rand act_rand [environment parameters]\n\
@@ -218,6 +218,7 @@ int main(int argc, char** argv)
         }
         environment_type = GRIDWORLD;
         n_actions = 4;
+        n_obs = atoi(argv[9]);
     } else {
         Serror ("Unknown environment %s\n",environment_name.c_str());
         exit(-1);
@@ -265,7 +266,7 @@ int main(int argc, char** argv)
         case GRIDWORLD:
             {
                 std::string maze(argv[8]);
-                int n_obs = atoi(argv[10]);
+                int n_obs = atoi(argv[9]);
                 real maze_random = 0.1;
                 success = EvaluateMaze(maze,
                                        n_obs,

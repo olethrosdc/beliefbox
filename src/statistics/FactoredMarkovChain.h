@@ -51,14 +51,14 @@
 class FactoredMarkovChain  : public FactoredPredictor
 {
 public:
-    typedef long Context;
+    typedef long long Context;
 protected:
     int T; ///< total time passed
     int n_actions; ///< number of actions
     int n_obs; ///< number of observations
     int n_states; ///< number of action*observations
     int mem_size; ///< order of the chain
-    long n_contexts; ///< number of possible total contexts
+    Context n_contexts; ///< number of possible total contexts
     SparseTransitions transitions; ///< history-wide transition table
 
     /// The current context. It is updated whenever a new action

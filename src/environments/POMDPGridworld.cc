@@ -19,8 +19,6 @@
 POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
                                const char* fname,
                                uint n_obs_,
-                               uint height_,
-                               uint width_,                    
                                real random_,
                                real pit_,
                                real goal_,
@@ -29,18 +27,20 @@ POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
        observation(0),
        total_time(0),
        n_obs(n_obs_),
-       height(height_), width(width_), 
        random(random_), pit_value(pit_), goal_value(goal_), step_value(step_)
 {
-    n_states = width * height + 1; // plus a terminal state
     n_actions = 4;
-    terminal_state = n_states - 1;
 
+    // one state for the terminal state
+    n_states = 1; 
+    terminal_state = 0;
+
+    // the number of obsrvations
     if (n_obs != 16 && n_obs != 2) {
         Serror ("Either 2 or 16 observations must be used\n");
     }
 
-
+    CalculateDimensions(fname);
     std::ifstream ifs(fname, std::ifstream::in);
     if (!ifs.is_open()) {
         Serror ("Could not open file %s", fname);
@@ -61,10 +61,21 @@ POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
         
         for (uint x=0; x<width; ++x) {
             switch (line[x]) {
-            case '.': grid[x][y] = GRID; break;
-            case '#': grid[x][y] = WALL; break;
-            case 'X': grid[x][y] = GOAL; break;
-            case 'O': grid[x][y] = PIT; break;
+            case '.':
+                grid[x][y] = GRID; 
+                n_states++;
+                break;
+            case '#':
+                grid[x][y] = WALL; 
+                break;
+            case 'X':
+                grid[x][y] = GOAL;
+                n_states++;
+                break;
+            case 'O':
+                grid[x][y] = PIT;
+                n_states++;
+                break;
             default: std::cerr << "Unknown maze element: '"
                                << line[x] << "'" << std::endl;
                 exit(-1);
@@ -83,6 +94,9 @@ POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
         exit(-1);
     }
     
+
+    pomdp = new DiscretePOMDP(n_states, n_obs, n_actions);
+    MakePOMDP();
     Reset();
 }
 
@@ -91,6 +105,37 @@ POMDPGridworld::~POMDPGridworld() {
         delete rewards[i];
     }
     //delete mdp;
+}
+
+void POMDPGridworld::CalculateDimensions(const char* fname)
+{
+    std::ifstream ifs(fname, std::ifstream::in);
+    if (!ifs.is_open()) {
+        Serror ("Could not open file %s", fname);
+        exit(-1);
+    }
+    std::string line;
+    height = 0;
+    width = 0;
+    while (getline(ifs, line)) {// && y<height) {
+        if (!width) {
+            width = line.length();
+            if (!width) {
+                Serror ("Empty first line\n");
+                exit(-1);
+            }
+        } else if (line.length() != width) {
+            Serror ("Line length (%ld) does not match width (%d)",
+                    line.length(), width);
+            exit(-1);
+        }
+        height++;
+    }				
+}
+
+void POMDPGridworld::MakePOMDP()
+{
+    //for (uint i=0; i
 }
 
 void POMDPGridworld::Reset()

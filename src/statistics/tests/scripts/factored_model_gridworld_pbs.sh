@@ -18,13 +18,11 @@ do
             
             for depth in 1 2 4 6 8
             do
-                for model in FMC BFMC BVMM CTW
-                do
-                    echo $model $depth
-                    echo "./bin/factored_model Gridworld $model $iter $T $depth $maze_rand $action_rand $maze_dir/$maze_name $n_obs >${outdir}/${states}s_${depth}d_${model}.out"
-                    time ./bin/factored_model Gridworld $model $iter $T $depth $maze_rand $action_rand $maze_dir/$maze_name $n_obs >${outdir}/${states}s_${depth}d_${model}.out
-                done
+                echo "./bin/factored_model Gridworld $model $iter $T $depth $maze_rand $action_rand $maze_dir/$maze_name $n_obs >${outdir}/${states}s_${depth}d_${model}.out"
+                qsub -v"iter=$iter","T=$T","depth=$depth","maze_rand=$maze_rand","action_rand=$action_rand","maze_dir=$maze_dir","maze_name=$maze_name","n_obs=$n_obs","out_dir=$out_dir" ${script_dir}/factored_model_sub.sh
+                ##time ./bin/factored_model Gridworld $model $iter $T $depth $maze_rand $action_rand $maze_dir/$maze_name $n_obs >${outdir}/${states}s_${depth}d_${model}.out
             done
         done
     done
+done
 done

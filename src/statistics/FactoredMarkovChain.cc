@@ -20,7 +20,7 @@ FactoredMarkovChain::FactoredMarkovChain(int n_actions_,
       n_obs(n_obs_),
       n_states(n_obs*n_actions),
       mem_size(mem_size_),
-	  n_contexts((int) pow((double) n_states, (double) mem_size)),
+	  n_contexts((Context) pow((double) n_states, (double) mem_size)),
       transitions(n_contexts, n_obs),
       act_history(mem_size),
       obs_history(mem_size),
@@ -28,7 +28,7 @@ FactoredMarkovChain::FactoredMarkovChain(int n_actions_,
       threshold(0.5)
 {
 	
-	printf("# Making FMC with %d actions, %d obs, %d states, %d history, %d contexts\n",
+	printf("# Making FMC with %d actions, %d obs, %d states, %d history, %lld contexts\n",
 		   n_actions, n_obs, n_states, mem_size, n_contexts);
     for (int i=0; i<mem_size; ++i) {
         act_history[i] = 0;

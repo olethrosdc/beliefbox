@@ -68,13 +68,13 @@ public:
     }
 
     /** Get the unique ID of a state */
-    long get_id(int n_states)
+    long long get_id(int n_states)
     {
         if (max_size ==0) {
             return 0;
         }
         int n = 1;
-        long id = 0;
+        long long id = 0;
         for (int i = pos; i>=0; --i, n*=n_states) {
             id += data[i] * n;
         }
