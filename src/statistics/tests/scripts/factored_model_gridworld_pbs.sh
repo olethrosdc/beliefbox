@@ -1,9 +1,13 @@
 #! /bin/sh
 
+mkdir -p $HOME/experiments
+cd $HOME/experiments
 
-T=10000
-iter=10
-states=0
+script_dir=$HOME/projects/beliefbox/src/statistics/tests/scripts
+environment=1DMaze
+
+T=100000
+iter=1000
 maze_dir=$HOME/projects/beliefbox/dat
 maze_name=maze1c
 for action_rand in 1.0 0.5 0.1
@@ -12,17 +16,15 @@ do
     do
         for n_obs in 2 16
         do
-            outdir=~/experiments/bvmdp/gridworld/${maze_name}/${n_obs}obs/p${maze_rand}_pa${action_rand}
-            mkdir -p $outdir
-            echo -e "- action randomness:$action_rand\n- maze randomness: $maze_rand\n- observations: $n_obs\n- maze: $maze_name\n- iterations: $iter\n- T: $T" >${outdir}/run.params
+            out_dir=~/experiments/bvmdp/gridworld/${maze_name}/${n_obs}obs/p${maze_rand}_pa${action_rand}
+            mkdir -p $out_dir
+            echo -e "- action randomness:$action_rand\n- maze randomness: $maze_rand\n- observations: $n_obs\n- maze: $maze_name\n- iterations: $iter\n- T: $T" >${out_dir}/run.params
             
             for depth in 1 2 4 6 8
             do
-                echo "./bin/factored_model Gridworld $model $iter $T $depth $maze_rand $action_rand $maze_dir/$maze_name $n_obs >${outdir}/${states}s_${depth}d_${model}.out"
-                qsub -v"iter=$iter","T=$T","depth=$depth","maze_rand=$maze_rand","action_rand=$action_rand","maze_dir=$maze_dir","maze_name=$maze_name","n_obs=$n_obs","out_dir=$out_dir" ${script_dir}/factored_model_sub.sh
-                ##time ./bin/factored_model Gridworld $model $iter $T $depth $maze_rand $action_rand $maze_dir/$maze_name $n_obs >${outdir}/${states}s_${depth}d_${model}.out
+                qsub -v"iter=$iter","T=$T","depth=$depth","maze_rand=$maze_rand","action_rand=$action_rand","maze_dir=$maze_dir","maze_name=$maze_name","n_obs=$n_obs","out_dir=$out_dir" ${script_dir}/factored_model_gridworld_sub.sh
             done
         done
     done
 done
-done
+
