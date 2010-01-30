@@ -21,10 +21,10 @@ DiscretePOMDP::DiscretePOMDP(int n_states_, int n_obs_, int n_actions_)
     
     real p_state = 1.0 / (real) n_states;
     real p_obs = 1.0 / (real) n_obs;
-    for (int i=0; i<n_states; ++i) {
+    for (int i=0; i<n_states; ++i) { // uninitialised???
         for (int a=0; a<n_actions; ++a) {
             int k = i * n_actions + a;
-            for (int j=0; j<n_states; ++j) {
+            for (int j=0; j<n_states; ++j) { // uninitialised?
                 Transitions(k, j) = p_state;
                 Observations(i, j) = p_obs;
             }

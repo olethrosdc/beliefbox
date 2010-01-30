@@ -31,9 +31,6 @@ POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
 {
     n_actions = 4;
 
-    // one state for the terminal state
-    n_states = 1; 
-    terminal_state = 0;
 
     // the number of obsrvations
     if (n_obs != 16 && n_obs != 2) {
@@ -41,6 +38,12 @@ POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
     }
 
     CalculateDimensions(fname);
+
+    // one state for the terminal state
+    n_states = width * height + 1;
+    terminal_state = n_states - 1;
+
+
     std::ifstream ifs(fname, std::ifstream::in);
     if (!ifs.is_open()) {
         Serror ("Could not open file %s", fname);
@@ -63,18 +66,18 @@ POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
             switch (line[x]) {
             case '.':
                 grid[x][y] = GRID; 
-                n_states++;
+                //n_states++;
                 break;
             case '#':
                 grid[x][y] = WALL; 
                 break;
             case 'X':
                 grid[x][y] = GOAL;
-                n_states++;
+                //n_states++;
                 break;
             case 'O':
                 grid[x][y] = PIT;
-                n_states++;
+                //n_states++;
                 break;
             default: std::cerr << "Unknown maze element: '"
                                << line[x] << "'" << std::endl;
@@ -94,8 +97,8 @@ POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
         exit(-1);
     }
     
-
-    pomdp = new DiscretePOMDP(n_states, n_obs, n_actions);
+    
+    pomdp = new DiscretePOMDP(n_states, n_obs, n_actions); // n_states?
     MakePOMDP();
     Reset();
 }
@@ -104,6 +107,7 @@ POMDPGridworld::~POMDPGridworld() {
     for (uint i=0; i<rewards.size(); ++i) {
         delete rewards[i];
     }
+    delete pomdp;
     //delete mdp;
 }
 
@@ -130,7 +134,8 @@ void POMDPGridworld::CalculateDimensions(const char* fname)
             exit(-1);
         }
         height++;
-    }				
+    }
+    ifs.close();
 }
 
 void POMDPGridworld::MakePOMDP()
@@ -196,10 +201,6 @@ bool POMDPGridworld::Act(int action)
         state = getStateFromCoords(x, y);
         if (n_obs == 2) {
             observation = 1;
-            // Do not detect hit in some cases
-            if (rng->uniform() < random) {
-                observation = 0;
-            }
         }
     } 
     if (whatIs(x,y) == GOAL || whatIs(x,y)== PIT) {
@@ -221,6 +222,11 @@ bool POMDPGridworld::Act(int action)
         //}
     if (n_obs == 16) {
         observation = CalculateObservation16obs();
+    }
+
+    // Do not detect hit in some cases
+    if (rng->uniform() < random) {
+        observation = rng->discrete_uniform(n_obs);
     }
     return true;
 }

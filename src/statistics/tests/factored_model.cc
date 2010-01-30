@@ -267,7 +267,6 @@ int main(int argc, char** argv)
             {
                 std::string maze(argv[8]);
                 int n_obs = atoi(argv[9]);
-                real maze_random = 0.1;
                 success = EvaluateMaze(maze,
                                        n_obs,
                                        maze_random,

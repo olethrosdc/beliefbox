@@ -8,7 +8,7 @@ BayesianFMC::BayesianFMC (int n_obs_, int n_actions_, int n_models_, real prior_
       mc(n_models),
       Pr(n_models),
       logPr(n_models),
-      Pr_next(n_models)
+      Pr_next(n_obs)
 {
 	real p = 1.0 / (real) n_obs;
 	for (int x=0; x<n_obs; ++x) {
