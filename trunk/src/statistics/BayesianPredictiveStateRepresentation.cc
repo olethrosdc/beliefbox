@@ -46,6 +46,9 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
 BayesianPredictiveStateRepresentation::~BayesianPredictiveStateRepresentation()
 {
     //printf("Killing BPSR\n");
+    for (int i=0; i<n_models; ++i) {
+        delete mc[i];
+    }
 }
 
 void BayesianPredictiveStateRepresentation::Reset()
