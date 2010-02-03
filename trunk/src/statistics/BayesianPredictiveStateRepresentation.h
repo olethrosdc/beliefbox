@@ -50,14 +50,19 @@ protected:
     std::vector<real> log_prior;
     Vector Pr; ///< model probabilities
     Vector Pr_next; ///< state probabilities
+    
 public:
-    std::vector<BeliefMap> beliefs;
+    FactoredMarkovChain::Context most_probable_index;
+    int most_probable_model;
 
+    std::vector<BeliefMap> beliefs;
+    std::vector<int> model_contexts;
     BayesianPredictiveStateRepresentation (int n_obs, int n_actions, int n_models, float prior);
 
     inline real get_belief_param(int act, int model)
     {
         FactoredMarkovChain::Context src = mc[model]->getContext(act);
+        model_contexts[model] = src;
         BeliefMapIterator i = beliefs[model].find(src);
 		if (i==beliefs[model].end()) {
 			return 0.0;
