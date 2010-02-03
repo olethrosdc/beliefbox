@@ -1,6 +1,5 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: StateActionPolicy.h,v 1.1 2006/10/23 08:33:32 olethros Exp cdimitrakakis $*/
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -15,8 +14,30 @@
 
 #include <list>
 
-template <class T>
-class Tree<T> : public Graph
+class VoidTree::Node;
+
+class VoidTree
+{
+public:
+	struct NodeList
+	{
+		std::list<Node*> next;
+		AddNode(Node* node)
+		{
+			next.push_back(node);
+		}
+	};
+	struct Node
+	{
+		
+	};
+	void* root;
+	VoidTree();
+	~VoidTree
+};
+
+template <typename T>
+class Tree<T>  
 {
 	
 };
