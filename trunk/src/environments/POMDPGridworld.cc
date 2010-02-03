@@ -103,6 +103,8 @@ POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
     Reset();
 }
 
+
+
 POMDPGridworld::~POMDPGridworld() {
     for (uint i=0; i<rewards.size(); ++i) {
         delete rewards[i];
@@ -195,7 +197,7 @@ bool POMDPGridworld::Act(int action)
         }
     }
     reward = step_value;
-    if (whatIs(x,y) != INVALID   &&whatIs(x,y) != WALL) {
+    if (whatIs(x,y) != INVALID && whatIs(x,y) != WALL) {
         ox = x;
         oy = y;
         state = getStateFromCoords(x, y);
