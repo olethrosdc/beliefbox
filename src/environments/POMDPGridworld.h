@@ -50,6 +50,8 @@ public:
                    real goal_ = 0.0,
                    real step_ = -0.1);
     virtual ~POMDPGridworld();
+    
+    void GetMazeDimensions(const char* fname);
 
     void MakePOMDP();
 
