@@ -16,17 +16,22 @@
 #include "real.h"
 #include "Vector.h"
 
+
+
 /** An alternative context tree implementation */
 class ContextTree
 {
 public:
-
+	
+	struct NodeList
+	{
+		std::vector<Node*> 
+	};
 	// public classes
-
 	struct Node
 	{
 		int depth; ///< depth
-		std::vector<Node*> next; ///< pointers to next nodes
+		NodeList next; ///< pointers to next nodes
 		Vector P; ///< probability of next symbols
 		real w;
 		/// Make a node for K symbols at nominal depth d
