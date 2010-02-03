@@ -30,6 +30,7 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
       Pr_next(n_obs)
 {
     beliefs.resize(n_models);
+    model_contexts.resize(n_models);
     real sum = 0.0;
     for (int i=0; i<n_models; ++i) {
         //Pr[i] = prior;
@@ -41,6 +42,8 @@ BayesianPredictiveStateRepresentation::BayesianPredictiveStateRepresentation(int
         Pr[i] /= sum;
         log_prior[i] = log(Pr[i]);
     }
+    most_probable_model = 0;
+    most_probable_index = 0;
 }
 
 BayesianPredictiveStateRepresentation::~BayesianPredictiveStateRepresentation()
@@ -107,6 +110,8 @@ real BayesianPredictiveStateRepresentation::Observe(int action, int observation)
         p_w *= (1.0 - weight[model]);
 
     }
+    most_probable_model = ArgMax(Pr);
+    most_probable_index = model_contexts[most_probable_model];
 
     real sum_pr_s = 0.0;
     for (int s=0; s<n_obs; ++s) {
