@@ -22,22 +22,21 @@
 class ContextTree
 {
 public:
-	
-	struct NodeList
-	{
-		std::vector<Node*> 
-	};
+
+    
 	// public classes
 	struct Node
 	{
 		int depth; ///< depth
-		NodeList next; ///< pointers to next nodes
+        std::vector<Node*> next; ///< pointers to next nodes
 		Vector P; ///< probability of next symbols
-		real w;
+        real w;
+        real log_w;
 		/// Make a node for K symbols at nominal depth d
 		Node(int d, int K) : depth(d), next(K), P(K)
 		{
-			real w = 0;
+			w = 0;
+            log_w = 0;            
 			for (int i=0; i<K; ++i) {
 				next[i] = NULL;
 			}
@@ -48,12 +47,13 @@ public:
 
 	ContextTree(int n_symbols_, int max_depth_= 0);
 	virtual ~ContextTree();
-	real Observe(int x);
+	real Observe(int x, int y);
 
 protected: 
 	int n_symbols;
 	int max_depth;
 	Node* root;
+    std::vector<int> history;
 };
 
 

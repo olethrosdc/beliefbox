@@ -18,3 +18,8 @@ ContextTree::ContextTree(int n_symbols_, int max_depth_)
 	root = new Node(0, n_symbols);
 }
 
+real ContextTree::Observe(int x, int y)
+{
+    history.push_back(x);
+    
+}
