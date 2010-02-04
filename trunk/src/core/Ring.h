@@ -17,6 +17,10 @@
 #include <cassert>
 #include "SmartAssert.h"
 
+// forward declaration
+//template <typename C>
+//class Ring;
+
 /** A ring buffer.
 
     A ring buffer is useful for many things.
@@ -25,12 +29,50 @@ template <typename C>
 class Ring
 {
 public:
-    int null_element;
+    class iterator
+    {
+    protected:
+        const Ring<C>* ring;
+        int index;
+        int max_size;
+    public:
+        iterator()
+        {
+        }
+        iterator(Ring<C>* ring_)
+            : ring(ring_),
+              index(ring->pos),
+              max_size(ring->max_size)
+        {
+        }
+        void operator--()
+        {
+            index++;
+            while (index >= max_size) {
+                index -= max_size;
+            }
+        }
+        void operator++()
+        {
+            index--;
+            while (index < 0) {
+                index += max_size;
+            }
+        }
+        int operator*()
+        {
+            assert(index >=0 && index < max_size);
+            return ring->data[index];
+        }
+           
+    };
+protected:
+    C null_element;
     int max_size; ///< the maximum size of the array
     std::vector<C> data; ///< the data
     int pos; ///< the current position of the last write in the ring buffer. 
     ulong T;
-
+public:
     /// Construct a buffer of a given size
     Ring(int max_size_) : null_element(0),
                           max_size(max_size_),
@@ -55,7 +97,10 @@ public:
     ~Ring()
     {
     }
-
+    iterator begin()
+    {
+        return (iterator (this));
+    }
     void resize(size_t new_size)
     {
         max_size = new_size;

@@ -14,32 +14,41 @@
 
 #include <list>
 
-class VoidTree::Node;
+
+struct VoidTreeNode;
+
+
+struct VoidTreeNodeList
+{
+    std::list<VoidTreeNode*> next;
+    void AddNode(VoidTreeNode* node)
+    {
+        next.push_back(node);
+    }
+    ~VoidTreeNodeList()
+    {
+        next.clear();
+    }
+};
+
+
+struct VoidTreeNode
+{
+    void* data;
+    VoidTreeNodeList next;
+    VoidTreeNode(void* data_) : data(data_)
+    {
+    }
+};
+
 
 class VoidTree
 {
 public:
-	struct NodeList
-	{
-		std::list<Node*> next;
-		AddNode(Node* node)
-		{
-			next.push_back(node);
-		}
-	};
-	struct Node
-	{
-		
-	};
-	void* root;
-	VoidTree();
-	~VoidTree
+	VoidTreeNode* root;
+	VoidTree(void* node);
+	~VoidTree();
 };
 
-template <typename T>
-class Tree<T>  
-{
-	
-};
 
 #endif
