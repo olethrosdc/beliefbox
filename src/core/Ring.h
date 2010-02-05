@@ -64,6 +64,14 @@ public:
             assert(index >=0 && index < max_size);
             return ring->data[index];
         }
+        bool operator==(const iterator& rhs) const
+        {
+            return (ring == rhs.ring && index == rhs.index);
+        }
+        bool operator!=(const iterator& rhs) const
+        {
+            return (ring != rhs.ring || index != rhs.index);
+        }
            
     };
 protected:
@@ -72,22 +80,26 @@ protected:
     std::vector<C> data; ///< the data
     int pos; ///< the current position of the last write in the ring buffer. 
     ulong T;
+    iterator end_iterator;
 public:
     /// Construct a buffer of a given size
     Ring(int max_size_) : null_element(0),
                           max_size(max_size_),
-                          data(max_size),
+                          data(max_size + 1),
                           pos(0),
-                          T(0)
+                          T(0),
+                          end_iterator(this)
     {
         clear();
     }
     
     void clear()
     {
-        for (int i=0; i<max_size; ++i) {
+        for (int i=0; i<data.size(); ++i) {
             data[i] = 0;
         }
+        pos = 0;
+        end_iterator.ring_pos = max_size;
     }
     /// Construct a buffer of a given size
     Ring() : null_element(0), max_size(0), pos(0), T(0)
@@ -101,15 +113,15 @@ public:
     {
         return (iterator (this));
     }
+    iterator end()
+    {
+        return end_iterator
+    }
     void resize(size_t new_size)
     {
         max_size = new_size;
-        data.resize(max_size);
-        for (int i=0; i<max_size; ++i) {
-            data[i] = 0;
-        }
-        //std::cout << "resizing Ring to " 
-        //<< max_size << std::endl;
+        data.resize(max_size + 1);
+        clear();
     }
 
     /** Get the unique ID of a state */
@@ -139,8 +151,15 @@ public:
     void push_back(C x)
     {
         if (max_size) {
-            pos = (pos + 1) % max_size;
+            pos++;
+            if (pos >= (int) data.size()) {
+                pos -= data.size();
+            }
             data[pos] = x;
+            int end_pos = pos + 1;
+            if (end_pos > (int) data.size()) {
+                end_pos = 
+            }
         }
         T++;
     }

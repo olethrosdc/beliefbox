@@ -16,7 +16,7 @@ do
             mkdir -p $outdir
             echo -e "- action randomness:$action_rand\n- maze randomness: $maze_rand\n- observations: $n_obs\n- maze: $maze_name\n- iterations: $iter\n- T: $T" >${outdir}/run.params
             
-            for depth in 2 3 4 5 6 7 8
+            for depth in 0 1 #2 3 4 5 6 7 8
             do
                 for model in BVMM BFMC FMC #BFMC # BVMM 
                 do
