@@ -34,7 +34,7 @@ public:
     protected:
         const Ring<C>* ring;
         int index;
-        int max_size;
+        int length;
     public:
         iterator()
         {
@@ -42,26 +42,35 @@ public:
         iterator(Ring<C>* ring_)
             : ring(ring_),
               index(ring->pos),
-              max_size(ring->max_size)
+              length(ring->data.size())
         {
         }
         void operator--()
         {
             index++;
-            while (index >= max_size) {
-                index -= max_size;
+            while (index >= length) {
+                index -= length;
             }
         }
         void operator++()
         {
             index--;
             while (index < 0) {
-                index += max_size;
+                index += length;
             }
         }
+		void SetIndex(int i)
+		{
+			assert(i >=0 && i < length);
+			index = i;
+		}
+		int GetIndex()
+		{
+			return index;
+		}
         int operator*()
         {
-            assert(index >=0 && index < max_size);
+            assert(index >=0 && index < length);
             return ring->data[index];
         }
         bool operator==(const iterator& rhs) const
@@ -92,31 +101,40 @@ public:
     {
         clear();
     }
-    
+
+	/// Clear data and reset position and end iterator.
     void clear()
     {
-        for (int i=0; i<data.size(); ++i) {
+        for (uint i=0; i<data.size(); ++i) {
             data[i] = 0;
         }
-        pos = 0;
-        end_iterator.ring_pos = max_size;
+        pos = max_size;
+        end_iterator.SetIndex(max_size);
     }
+
     /// Construct a buffer of a given size
     Ring() : null_element(0), max_size(0), pos(0), T(0)
     {
     }
+
     /// Destructor.
     ~Ring()
     {
     }
+
+	// Get an iterator to the current position
     iterator begin()
     {
         return (iterator (this));
     }
+
+	/// Get an iterator past the final position
     iterator end()
     {
-        return end_iterator
+        return end_iterator;
     }
+
+	/// Change the size of the ring. This clears everything.
     void resize(size_t new_size)
     {
         max_size = new_size;
@@ -132,15 +150,12 @@ public:
         }
         int n = 1;
         long long id = 0;
-        for (int i = pos; i>=0; --i, n*=n_states) {
-            id += data[i] * n;
-        }
-        
-        for (int i = max_size - 1; i>pos; --i, n*=n_states) {
-            id += data[i] * n; 
+        for (iterator it = begin(); it != end_iterator; ++it, n*=n_states) {
+            id += n * (*it);
         }
         return id;
     }
+
     /** Push back a datum.
         
         Whenever new data is available, it is inserted in the current
@@ -156,10 +171,17 @@ public:
                 pos -= data.size();
             }
             data[pos] = x;
-            int end_pos = pos + 1;
-            if (end_pos > (int) data.size()) {
-                end_pos = 
-            }
+
+			std::cout << "Moving front iterator to " << pos << std::endl;
+			// only change the end iterator if we've hit it
+			if (end_iterator.GetIndex() == pos) {
+				int end_pos = pos + 1;
+				if (end_pos >= (int) data.size()) {
+					end_pos -= data.size();
+				}
+				end_iterator.SetIndex(end_pos);
+				std::cout << "Moving end iterator to " << end_pos << std::endl;
+			}
         }
         T++;
     }
@@ -198,7 +220,7 @@ public:
     {
         if (max_size) {
             return data[(pos + 1)%max_size];
-        } else {
+        } else { 
             return null_element;
         }
     }
@@ -214,7 +236,10 @@ public:
     }        
     ulong size()
     {
-        return T;
+		if (T < (ulong) max_size) {
+			return T;
+		}
+		return max_size;
     }
 };
 

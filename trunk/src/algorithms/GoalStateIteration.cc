@@ -30,7 +30,7 @@ GoalStateIteration::GoalStateIteration(const DiscreteMDP* mdp)
 
 void GoalStateIteration::Reset()
 {
-    int N = n_states * n_actions;
+    //int N = n_states * n_actions;
     V.resize(n_states);
     dV.resize(n_states);
     pV.resize(n_states);

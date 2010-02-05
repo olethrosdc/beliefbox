@@ -42,72 +42,14 @@ public:
         real log_w;
         real log_w_prior;
 		Node(int n_branches_,
-             int n_outcomes_)
-            : n_branches(n_branches_),
-              n_outcomes(n_outcomes_),
-              depth(0),
-              prev(NULL),
-              next(n_branches),
-              P(n_outcomes), alpha(n_outcomes), prior_alpha(0.5),
-              w(0), log_w(LOG_ZERO), log_w_prior(0)
-        {
-            for (int i=0; i<n_outcomes; ++i) {
-                P(i) = 1.0 / (real) n_outcomes;
-                alpha(i) = 0;
-            }
-        }
-
-		/// Make a node for K symbols at nominal depth d
-		Node(Node* prev_)
-            : n_branches(prev_->n_branches),
-              n_outcomes(prev_->n_outcomes),
-              depth(prev_->depth + 1),
-              prev(prev_),
-              next(n_branches),
-              P(n_outcomes),
-              alpha(n_outcomes),
-              prior_alpha(0.5),
-              w(0),
-              log_w(LOG_ZERO),
-              log_w_prior(prev_->log_w_prior - 2)
-		{
-			for (int i=0; i<n_branches; ++i) {
-				next[i] = NULL;
-			}
-            for (int i=0; i<n_outcomes; ++i) {
-                P(i) = 1.0 / (real) n_outcomes;
-                alpha(i) = 0;
-            }
-
-		}
-
-        /// make sure to kill all
-        ~Node()
-        {
-            for (int i=0; i<n_branches; ++i) {
-                delete next[i];
-            }
-        }
-        real Observe(Ring<int>& history,
-                Ring<int>::iterator x,
-                int y,
-                real probability)
-        {
-            real total_probability = 0;
-            // calculate probabilities
-            real Z = 1.0 / alpha.Sum();
-            P = alpha * Z;
-
-            ++x;
-            if (x != history.end()) {
-                if (!next[*x]) {
-                    next[*x] = new Node(this);
-                }
-                total_probability = next[*x]->Observe(history, x, y, P[y]);
-            }
-
-            return total_probability;
-        }
+			 int n_outcomes_);
+		Node(Node* prev_);
+		~Node();
+		real Observe(Ring<int>& history,
+					 Ring<int>::iterator x,
+					 int y,
+					 real probability);
+	
 	};
 	
 	// public methods
