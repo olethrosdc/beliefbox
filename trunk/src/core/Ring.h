@@ -48,14 +48,14 @@ public:
         void operator--()
         {
             index++;
-            while (index >= length) {
+            while (length && index >= length) {
                 index -= length;
             }
         }
         void operator++()
         {
             index--;
-            while (index < 0) {
+           while (length && index < 0) {
                 index += length;
             }
         }
@@ -172,7 +172,7 @@ public:
             }
             data[pos] = x;
 
-			std::cout << "Moving front iterator to " << pos << std::endl;
+			//std::cout << "Moving front iterator to " << pos << std::endl;
 			// only change the end iterator if we've hit it
 			if (end_iterator.GetIndex() == pos) {
 				int end_pos = pos + 1;
@@ -180,7 +180,7 @@ public:
 					end_pos -= data.size();
 				}
 				end_iterator.SetIndex(end_pos);
-				std::cout << "Moving end iterator to " << end_pos << std::endl;
+				//std::cout << "Moving end iterator to " << end_pos << std::endl;
 			}
         }
         T++;

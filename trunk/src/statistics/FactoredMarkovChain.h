@@ -84,7 +84,7 @@ protected:
         assert(state>=0 && state<n_states);
         history.push_back(state);
         T++;
-        assert(T==history.size() && T==act_history.size() && T==obs_history.size());
+        assert(T==(int) history.size() && T==(int) act_history.size() && T== (int) obs_history.size());
     }
 
     /// You push an action first, and then the observation

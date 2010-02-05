@@ -67,23 +67,54 @@ real ContextTree::Node::Observe(Ring<int>& history,
 	// calculate probabilities
 	real Z = 1.0 / alpha.Sum();
 	P = alpha * Z;
+	alpha[y]++;
 
-	++x;
 	if (x != history.end()) {
-		if (!next[*x]) {
-			next[*x] = new Node(this);
+		int k = *x;
+		++x;
+		if (!next[k]) {
+			next[k] = new Node(this);
 		}
-		total_probability = next[*x]->Observe(history, x, y, P[y]);
+		total_probability = next[k]->Observe(history, x, y, P[y]);
 	}
 
 	return total_probability;
 }
 
-ContextTree::ContextTree(int n_symbols_, int max_depth_)
-	: n_symbols(n_symbols_),
-	  max_depth(max_depth_)
+void ContextTree::Node::Show()
 {
-	root = new Node(0, n_symbols);
+	
+	for (int i=0; i<n_outcomes; ++i) {
+		std::cout << alpha[i] << " ";
+	}
+	for (int k=0; k<n_branches; ++k) {
+		if (next[k]) {
+			std::cout << "b: " << k << std::endl;
+			next[k]->Show();
+		}
+	}
+	std::cout << "<<<<\n";
+}
+
+int ContextTree::Node::NChildren()
+{
+	int my_children = 0;
+	for (int k=0; k<n_branches; ++k) {
+		if (next[k]) {
+			my_children++;
+			my_children += next[k]->NChildren();
+		}
+	}
+	return my_children;
+}
+
+ContextTree::ContextTree(int n_branches_, int n_symbols_, int max_depth_)
+	: n_branches(n_branches_),
+	  n_symbols(n_symbols_),
+	  max_depth(max_depth_),
+	  history(max_depth)
+{
+	root = new Node(n_branches, n_symbols);
 }
 
 ContextTree::~ContextTree()
@@ -96,4 +127,15 @@ real ContextTree::Observe(int x, int y)
     history.push_back(x);
 	root->Observe(history, history.begin(), y, 0);
 	return 0;
+}
+
+void ContextTree::Show()
+{
+	//root->Show();
+	std::cout << "Total contexts: " << NChildren() << std::endl;
+}
+
+int ContextTree::NChildren()
+{
+	return root->NChildren();
 }

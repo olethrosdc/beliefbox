@@ -37,10 +37,10 @@ public:
         std::vector<Node*> next; ///< pointers to next nodes
 		Vector P; ///< probability of next symbols
 		Vector alpha; ///< parameters of next symbols
-        const real prior_alpha;
-        real w;
-        real log_w;
-        real log_w_prior;
+        const real prior_alpha; ///< implicit prior value of alpha
+        real w; ///< backoff weight
+        real log_w; ///< log of w
+        real log_w_prior; ///< initial value
 		Node(int n_branches_,
 			 int n_outcomes_);
 		Node(Node* prev_);
@@ -49,15 +49,18 @@ public:
 					 Ring<int>::iterator x,
 					 int y,
 					 real probability);
-	
+		void Show();
+		int NChildren();	
 	};
 	
 	// public methods
-	ContextTree(int n_symbols_, int max_depth_= 0);
+	ContextTree(int n_branches_, int n_symbols_, int max_depth_= 0);
 	virtual ~ContextTree();
 	real Observe(int x, int y);
-
+	void Show();
+	int NChildren();
 protected: 
+	int n_branches;
 	int n_symbols;
 	int max_depth;
 	Node* root;
