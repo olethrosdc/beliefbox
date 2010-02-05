@@ -21,14 +21,15 @@ bool TestRing (int number_of_entries, int ring_size);
 
 int main(void)
 {
-    int n_tests = 10;
+    int n_tests = 100;
     int errors = 0;
 
     cout << "\nRunning ordered fixed list test\n";
     cout << "n_tests: " << n_tests << endl;
 
     for (int test = 0; test<n_tests; ++test) {
-        bool res = TestRing(10+(int) ceil(urandom(0,20)), (int) ceil(urandom(0,10)));
+		bool res = TestRing(1+(int) ceil(urandom(0,20)), (int) ceil(urandom(0,10)));
+        //bool res = TestRing(3, 10);
         if (!res) {
             
             errors ++;
@@ -53,17 +54,48 @@ bool TestRing (int number_of_entries, int ring_size)
         X.push_back(i);//(int) floor(10*urandom()));
         ring.push_back(i);
     }
-    Ring<int>::iterator rit = ring.begin();
-    list<int>::reverse_iterator lit = X.rbegin();
 
     bool flag = true;
-    for (int i=0; i<ring_size; ++i, ++rit, ++lit) {
-        cout << i << " " << *rit << " " << *lit << endl;
-        if (*rit != *lit) {
-            flag = false;
-            //break;
-        }
-    }
+	{
+		cout << "Testing indices\n";
+		Ring<int>::iterator rit = ring.begin();
+		list<int>::reverse_iterator lit = X.rbegin();
+		
+		
+		for (int i=0; i<std::min<int>(ring_size,X.size()); ++i, ++rit, ++lit) {
+			cout << number_of_entries - 1 - i << " " << *rit << " " << *lit << endl;
+			if (*rit != *lit || *rit != number_of_entries - 1 - i) {
+				flag = false;
+				//break;
+			}
+		}
+	}
+
+
+	
+	{	   
+		cout << "Testing end iterator\n";
+		Ring<int>::iterator rit  =ring.begin();
+		list<int>::reverse_iterator lit = X.rbegin();
+		Ring<int>::iterator end = ring.end();
+		int i =0;
+		for (i=0; rit != ring.end(); ++i, ++rit, ++lit) {
+			cout << *rit << " " << *lit
+				 << " index: " << rit.GetIndex() 
+				 << " end: " << ring.end().GetIndex()
+				 << endl;
+			if (*rit != *lit) {
+				flag = false;
+				//break;
+			}
+		}
+		if (i != std::min<int>(ring.size(), X.size())) {
+			flag =false;
+			std::cerr << "Counted "<< i
+					  << " but ring has length " << ring.size()
+					  << " and data has length " << X.size() << std::endl;
+		}
+	}
         
     return flag;
 }
