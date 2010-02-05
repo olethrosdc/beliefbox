@@ -96,7 +96,7 @@ MarkovChain::MarkovChain (int n_states, int mem_size)
 */
 MarkovChain::MCState MarkovChain::CalculateStateID () {
 	MCState id = 0;
-	MCState n = 1;
+	//MCState n = 1;
 #ifdef EFFICIENT_MC_STATE_PUSH
     id = memory.get_id(n_states);
     //for (int i=0; i < mem_size; i++, n*=n_states) {
@@ -127,7 +127,7 @@ MarkovChain::MCState MarkovChain::CalculateStateID () {
    \return It returns the ID of the popped state.
 */
 int  MarkovChain::PushState (int state) {
-	int i;
+	//int i;
 	int popped_state;
 
     if (mem_size==0) { 

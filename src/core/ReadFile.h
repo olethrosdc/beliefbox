@@ -10,47 +10,11 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifdef MAKE_MAIN
-#include "ContextTree.h"
-#include "Random.h"
-#include "RandomNumberGenerator.h"
-#include "MersenneTwister.h"
-#include "ReadFile.h"
-#include <ctime>
+#ifndef READ_FILE_H
+#define READ_FILE_H
 
-int main(int argc, char** argv)
-{
-	int depth = 16;
-	int n_symbols = 2;
-	MersenneTwisterRNG mt;
-	RandomNumberGenerator* rng = &mt;
-	rng->manualSeed(123456791);
-	int T = 10000;
-	std::vector<int> data(T);
-	if (argc==1) {
-		for (int t=0; t<T; ++t) {
-			data[t] = rng->discrete_uniform(n_symbols);
-		} 
-	} else if (argc>=2) {
-		if (argc==3) {
-			T = atoi(argv[2]);
-		} else {
-			T = 0;
-		}
-		n_symbols = FileToIntVector(data, argv[1], T);
-		T = data.size();
-	} 
-	
-	ContextTree tree(n_symbols, n_symbols, depth);
-	std::cout << std::endl;
-	for (int t=0; t<T; ++t) {
-		int x = data[t];
-		tree.Observe(x, x);
-	}
-	tree.Show();
-	
+#include <vector>
 
-return 0;
-}
+int FileToIntVector(std::vector<int>& data, char* fname, int tmpT);
 
 #endif
