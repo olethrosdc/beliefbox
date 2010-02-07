@@ -16,41 +16,75 @@
 #include "RandomNumberGenerator.h"
 #include "MersenneTwister.h"
 #include "ReadFile.h"
+#include "ResourceUse.h"
+#include "EasyClock.h"
 #include <ctime>
+#include <string>
+#include <iostream>
+#include <fstream>
 
 int main(int argc, char** argv)
 {
-	int depth = 16;
+    if (argc < 3) {
+        std::cerr << "Usage: context_tree_test depth output [input_file [T]]\n";
+        exit(-1);
+    }
+	int depth = atoi(argv[1]);
+    if (depth <= 0) {
+        std::cerr << "Depth should be > 0\n";
+        exit(-1);
+    }
+
+    std::string out_fname(argv[2]);
+    std::ofstream out_file;
+    out_file.open(out_fname.c_str());
+    
 	int n_symbols = 2;
 	MersenneTwisterRNG mt;
 	RandomNumberGenerator* rng = &mt;
 	rng->manualSeed(123456791);
 	int T = 10000;
 	std::vector<int> data(T);
-	if (argc==1) {
+	if (argc==3) {
 		for (int t=0; t<T; ++t) {
 			data[t] = rng->discrete_uniform(n_symbols);
 		} 
-	} else if (argc>=2) {
-		if (argc==3) {
-			T = atoi(argv[2]);
+	} else if (argc>=4) {
+		if (argc==5) {
+			T = atoi(argv[4]);
 		} else {
 			T = 0;
 		}
-		n_symbols = FileToIntVector(data, argv[1], T);
+		n_symbols = FileToIntVector(data, argv[3], T);
 		T = data.size();
 	} 
 	
 	ContextTree tree(n_symbols, n_symbols, depth);
 	std::cout << std::endl;
+    double start_time = GetCPU();
+    std::vector<real> p(T);
+    int x = 0;
 	for (int t=0; t<T; ++t) {
-		int x = data[t];
-		tree.Observe(x, x);
+		int y = data[t];
+        p[t] = tree.Observe(x, y);
+        x = y;
 	}
+    double end_time = GetCPU();
 	tree.Show();
-	
+    std::cout << "Depth: " << depth;
+    std::cout << " time: " << end_time - start_time;
+    std::cout << " RSS: " << getMaxResidentSetSize()
+              << " SHR: " << getSharedMemorySize() 
+              << " DAT: " << getUnsharedDataSetSize ()
+              << " STACK: " << getUnsharedStackSize()
+              << std::endl;
+    for (int t=0; t<T; ++t) {
+        out_file << p[t] << std::endl;
+    }
+    out_file.close();
 
-return 0;
+
+    return 0;
 }
 
 #endif
