@@ -23,10 +23,54 @@
 #include "DiscretePOMDP.h"
 #include "POMDPBeliefState.h"
 #include "POMDPBeliefPredictor.h"
+#include "ContextTree.h"
 
 #include <cstdlib>
 #include <cstdio>
 #include <string>
+
+class ContextTreePredictor : public FactoredPredictor
+{
+protected:
+    int n_actions; ///< the number of actions
+    int n_obs; ///< the number of distinct observations
+    ContextTree tree; ///< the context tree
+    int current_obs; ///< the current observation
+public:
+    ContextTreePredictor(int n_actions_, int n_obs_, int depth)
+        : n_actions(n_actions_),
+          n_obs(n_obs_),
+          tree(n_obs * n_actions, n_obs, depth),
+          current_obs(0)
+    {        
+    }
+
+    virtual ~ContextTreePredictor()
+    {
+    }
+    /* Training and generation */
+    /// Observe the (first?) observation.
+    virtual real Observe (int prd) 
+    {
+        current_obs = prd;
+        return 1.0 / (real) n_obs;
+    }
+    /// Observe current action and next observation
+    virtual real Observe (int act, int prd) 
+    {
+        int x = act * n_obs + current_obs;
+        current_obs = prd;
+        return tree.Observe(x, prd);
+    }
+
+    virtual real ObservationProbability (int act, int x) 
+    {
+    }
+
+    virtual void Reset()
+    {
+    }
+};
 
 class Corridor
 {
@@ -239,6 +283,8 @@ int main(int argc, char** argv)
             factored_predictor = new BayesianFMC(n_obs, n_actions, max_depth + 1, prior);
         } else if (!model_name.compare("BVMM")) {
             factored_predictor = new BayesianPredictiveStateRepresentation(n_obs, n_actions,  max_depth + 1, prior);
+        } else if (!model_name.compare("BVMM2")) {
+            factored_predictor = new ContextTreePredictor(n_actions, n_obs, max_depth + 1);
         } else if (!model_name.compare("CTW")) {
             factored_predictor = new BayesianPredictiveStateRepresentationCTW(n_obs, n_actions,  max_depth + 1, prior);
         } else if (!model_name.compare("POMDP")) {
@@ -288,8 +334,9 @@ int main(int argc, char** argv)
 	
     real inv_iter = 1.0 / (real) n_iter;
     for (int t=0; t<T; ++t) {
-        printf ("%f %f\n", statistics.probability[t] * inv_iter,
-                statistics.error[t] * inv_iter);
+        //printf ("%f %f\n", statistics.probability[t] * inv_iter,
+        //statistics.error[t] * inv_iter);
+        printf ("%f\n", statistics.probability[t] * inv_iter);
     }
     return 0;
 }
@@ -315,20 +362,24 @@ bool EvaluateMaze(std::string maze,
 	for (int t=0; t<T; ++t) {
             int action = last_action;
             environment.Act(action);
+#if 0
             for (int i=0; i<n_obs; ++i) {
                 obs_probs[i] = factored_predictor->ObservationProbability(action, i);
             }
+#endif
             int observation = environment.getObservation();
             if (observation || urandom() < action_randomness) {
                 last_action = rand()%n_actions;
             }
-
+            
             real p = factored_predictor->Observe(action, observation);
             assert(p==obs_probs[observation]);
             statistics.probability[t] += p;
+#if 0
             if (ArgMax(obs_probs) != observation) {
                 statistics.error[t]++;
             }
+#endif
 	}
 
 	return true;

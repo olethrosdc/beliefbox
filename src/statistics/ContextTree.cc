@@ -93,7 +93,9 @@ real ContextTree::Node::Observe(Ring<int>& history,
     real posterior = w * P[y] / total_probability;
     //real log_posterior = log(w) + log(P[y]) - log(total_probability);
     log_w = log(posterior) - log_w_prior;
-	if (x != history.end() && S >  n_outcomes) {
+    real threshold = (real) n_outcomes;
+    //real threshold = 0;// (real) n_outcomes;
+	if (x != history.end() && S >  threshold) {
 		int k = *x;
 		++x;
 		if (!next[k]) {
