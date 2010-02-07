@@ -108,7 +108,6 @@ real BayesianPredictiveStateRepresentation::Observe(int action, int observation)
     for (int model=top_model; model>=0; model--) {
         Pr[model] = p_w * weight[model];
         p_w *= (1.0 - weight[model]);
-
     }
     most_probable_model = ArgMax(Pr);
     most_probable_index = model_contexts[most_probable_model];

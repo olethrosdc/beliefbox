@@ -19,7 +19,7 @@ ContextTree::Node::Node(int n_branches_,
 	  prev(NULL),
 	  next(n_branches),
 	  P(n_outcomes), alpha(n_outcomes), prior_alpha(0.5),
-	  w(0), log_w(LOG_ZERO), log_w_prior(0)
+      w(1), log_w(0), log_w_prior(0)
 {
 	for (int i=0; i<n_outcomes; ++i) {
 		P(i) = 1.0 / (real) n_outcomes;
@@ -37,10 +37,10 @@ ContextTree::Node::Node(ContextTree::Node* prev_)
 	  P(n_outcomes),
 	  alpha(n_outcomes),
 	  prior_alpha(0.5),
-	  w(0),
-	  log_w(LOG_ZERO),
+	  log_w(0),
 	  log_w_prior(prev_->log_w_prior - 2)
 {
+    w = exp(log_w_prior);
 	for (int i=0; i<n_branches; ++i) {
 		next[i] = NULL;
 	}
@@ -65,17 +65,41 @@ real ContextTree::Node::Observe(Ring<int>& history,
 {
 	real total_probability = 0;
 	// calculate probabilities
-	real Z = 1.0 / alpha.Sum();
-	P = alpha * Z;
+    real S = alpha.Sum();
+	real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
+	P = (alpha + prior_alpha) * Z;
 	alpha[y]++;
 
-	if (x != history.end()) {
+    // P(y | B_k) = P(y | B_k, h_k) P(h_k | B_k) + (1 - P(h_k | B_k)) P(y | B_{k-1})
+    
+#if 1
+    w = exp(log_w_prior + log_w);
+#else
+    if (depth) {
+        w = pow(2.0 , (real) (-depth));
+    } else {
+        w = 1;
+    }
+#endif
+
+    total_probability = P[y] * w + (1 - w) * probability;
+#if 0
+    std::cout << depth << ": P(y|h_k)=" << P[y] 
+              << ", P(h_k|B_k)=" << w 
+              << ", P(y|B_{k-1})="<< probability
+              << ", P(y|B_k)=" << total_probability
+              << std::endl;
+#endif
+    real posterior = w * P[y] / total_probability;
+    //real log_posterior = log(w) + log(P[y]) - log(total_probability);
+    log_w = log(posterior) - log_w_prior;
+	if (x != history.end() && S >  n_outcomes) {
 		int k = *x;
 		++x;
 		if (!next[k]) {
 			next[k] = new Node(this);
 		}
-		total_probability = next[k]->Observe(history, x, y, P[y]);
+		total_probability = next[k]->Observe(history, x, y, total_probability);
 	}
 
 	return total_probability;
@@ -125,8 +149,7 @@ ContextTree::~ContextTree()
 real ContextTree::Observe(int x, int y)
 {
     history.push_back(x);
-	root->Observe(history, history.begin(), y, 0);
-	return 0;
+	return root->Observe(history, history.begin(), y, 0);
 }
 
 void ContextTree::Show()
