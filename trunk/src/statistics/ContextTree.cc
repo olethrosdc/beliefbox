@@ -58,6 +58,8 @@ ContextTree::Node::~Node()
 		delete next[i];
 	}
 }
+
+#if 1
 real ContextTree::Node::Observe(Ring<int>& history,
 								Ring<int>::iterator x,
 								int y,
@@ -71,17 +73,7 @@ real ContextTree::Node::Observe(Ring<int>& history,
 	alpha[y]++;
 
     // P(y | B_k) = P(y | B_k, h_k) P(h_k | B_k) + (1 - P(h_k | B_k)) P(y | B_{k-1})
-    
-#if 1
     w = exp(log_w_prior + log_w);
-#else
-    if (depth) {
-        w = pow(2.0 , (real) (-depth));
-    } else {
-        w = 1;
-    }
-#endif
-
     total_probability = P[y] * w + (1 - w) * probability;
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P[y] 
@@ -90,11 +82,24 @@ real ContextTree::Node::Observe(Ring<int>& history,
               << ", P(y|B_k)=" << total_probability
               << std::endl;
 #endif
-    real posterior = w * P[y] / total_probability;
+    real posterior = w * P[y] / total_probability; // real posterior
+    //real posterior = w; // fake posterior
     //real log_posterior = log(w) + log(P[y]) - log(total_probability);
     log_w = log(posterior) - log_w_prior;
-    real threshold = (real) n_outcomes;
-    //real threshold = 0;// (real) n_outcomes;
+
+    // Make sure we have enough observations to justify adding a
+    // node. This means at least as many as total outcomes.
+    real threshold = (real) n_outcomes; 
+
+    // Go deeper when there has been at least one observations
+    // node. 
+    //real threshold = 2;
+
+    // Always go deepr, no matter what
+    //real threshold = 0; 
+
+    // Go deeper if the context is long enough and the number of
+    // observations justifies it.
 	if (x != history.end() && S >  threshold) {
 		int k = *x;
 		++x;
@@ -106,10 +111,40 @@ real ContextTree::Node::Observe(Ring<int>& history,
 
 	return total_probability;
 }
+#else
+real ContextTree::Node::Observe(Ring<int>& history,
+								Ring<int>::iterator x,
+								int y,
+								real probability)
+{
+	real total_probability = 0;
+	// calculate probabilities
+    real S = alpha.Sum();
+	real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
+	P = (alpha + prior_alpha) * Z;
+	alpha[y]++;
+    total_probability = P[y];
+
+    real threshold = (real) n_outcomes;
+    //real threshold = 0;// (real) n_outcomes;
+	if (x != history.end() && S >  threshold) {
+		int k = *x;
+		++x;
+		if (!next[k]) {
+			next[k] = new Node(this);
+		}
+		total_probability = next[k]->Observe(history, x, y, total_probability);
+	}
+
+    total_probability = 0.5 * (P[y] + total_probability);
+	return total_probability;
+}
+#endif
 
 void ContextTree::Node::Show()
 {
 	
+    std::cout << w << " " << depth << "# weight depth\n";
 	for (int i=0; i<n_outcomes; ++i) {
 		std::cout << alpha[i] << " ";
 	}
@@ -156,7 +191,7 @@ real ContextTree::Observe(int x, int y)
 
 void ContextTree::Show()
 {
-	//root->Show();
+    root->Show();
 	std::cout << "Total contexts: " << NChildren() << std::endl;
 }
 
