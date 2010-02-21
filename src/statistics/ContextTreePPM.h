@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTEXT_TREE_H
-#define CONTEXT_TREE_H
+#ifndef CONTEXT_TREE_PPM_H
+#define CONTEXT_TREE_PPM_H
 
 #include <vector>
 #include "real.h"
@@ -24,7 +24,7 @@
     
     
  */
-class ContextTree
+class ContextTreePPM
 {
 public:
 	// public classes
@@ -50,12 +50,16 @@ public:
 					 int y,
 					 real probability);
 		void Show();
-		int NChildren();	
+		int NChildren();
+        real TotalObservations()
+        {
+            return alpha.Sum();
+        }
 	};
 	
 	// public methods
-	ContextTree(int n_branches_, int n_symbols_, int max_depth_= 0);
-	~ContextTree();
+	ContextTreePPM(int n_branches_, int n_symbols_, int max_depth_= 0);
+	~ContextTreePPM();
 	real Observe(int x, int y);
 	void Show();
 	int NChildren();

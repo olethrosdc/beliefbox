@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTEXT_TREE_H
-#define CONTEXT_TREE_H
+#ifndef CONTEXT_TREE_CTW_H
+#define CONTEXT_TREE_CTW_H
 
 #include <vector>
 #include "real.h"
@@ -24,7 +24,7 @@
     
     
  */
-class ContextTree
+class ContextTreeCTW
 {
 public:
 	// public classes
@@ -54,8 +54,8 @@ public:
 	};
 	
 	// public methods
-	ContextTree(int n_branches_, int n_symbols_, int max_depth_= 0);
-	~ContextTree();
+	ContextTreeCTW(int n_branches_, int n_symbols_, int max_depth_= 0);
+	~ContextTreeCTW();
 	real Observe(int x, int y);
 	void Show();
 	int NChildren();
