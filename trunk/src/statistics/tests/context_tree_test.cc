@@ -12,6 +12,8 @@
 
 #ifdef MAKE_MAIN
 #include "ContextTree.h"
+#include "ContextTreeCTW.h"
+#include "ContextTreePPM.h"
 #include "Random.h"
 #include "RandomNumberGenerator.h"
 #include "MersenneTwister.h"
@@ -23,6 +25,7 @@
 #include <iostream>
 #include <fstream>
 
+/// TODO: Make method work with arguments
 int main(int argc, char** argv)
 {
     if (argc < 3) {
@@ -59,6 +62,7 @@ int main(int argc, char** argv)
 		T = data.size();
 	} 
 	
+
 	ContextTree tree(n_symbols, n_symbols, depth);
 	std::cout << std::endl;
     double start_time = GetCPU();
@@ -70,7 +74,7 @@ int main(int argc, char** argv)
         x = y;
 	}
     double end_time = GetCPU();
-	tree.Show();
+	//tree.Show();
     std::cout << "Depth: " << depth;
     std::cout << " time: " << end_time - start_time;
     std::cout << " RSS: " << getMaxResidentSetSize()

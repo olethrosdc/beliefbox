@@ -9,9 +9,9 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "ContextTree.h"
+#include "ContextTreePPM.h"
 
-ContextTree::Node::Node(int n_branches_,
+ContextTreePPM::Node::Node(int n_branches_,
 						int n_outcomes_)
 	: n_branches(n_branches_),
 	  n_outcomes(n_outcomes_),
@@ -28,7 +28,7 @@ ContextTree::Node::Node(int n_branches_,
 }
 
 /// Make a node for K symbols at nominal depth d
-ContextTree::Node::Node(ContextTree::Node* prev_)
+ContextTreePPM::Node::Node(ContextTreePPM::Node* prev_)
 	: n_branches(prev_->n_branches),
 	  n_outcomes(prev_->n_outcomes),
 	  depth(prev_->depth + 1),
@@ -52,14 +52,14 @@ ContextTree::Node::Node(ContextTree::Node* prev_)
 }
 
 /// make sure to kill all
-ContextTree::Node::~Node()
+ContextTreePPM::Node::~Node()
 {
 	for (int i=0; i<n_branches; ++i) {
 		delete next[i];
 	}
 }
 
-real ContextTree::Node::Observe(Ring<int>& history,
+real ContextTreePPM::Node::Observe(Ring<int>& history,
 								Ring<int>::iterator x,
 								int y,
 								real probability)
@@ -69,50 +69,29 @@ real ContextTree::Node::Observe(Ring<int>& history,
     real S = alpha.Sum();
 	real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
 	P = (alpha + prior_alpha) * Z;
+
 	alpha[y]++;
+    total_probability = P[y];
 
-    // P(y | B_k) = P(y | B_k, h_k) P(h_k | B_k) + (1 - P(h_k | B_k)) P(y | B_{k-1})
-    w = exp(log_w_prior + log_w);
-    total_probability = P[y] * w + (1 - w) * probability;
-#if 0
-    std::cout << depth << ": P(y|h_k)=" << P[y] 
-              << ", P(h_k|B_k)=" << w 
-              << ", P(y|B_{k-1})="<< probability
-              << ", P(y|B_k)=" << total_probability
-              << std::endl;
-#endif
-    real posterior = w * P[y] / total_probability; // real posterior
-    //real posterior = w; // fake posterior
-    //real log_posterior = log(w) + log(P[y]) - log(total_probability);
-    log_w = log(posterior) - log_w_prior;
-
-    // Make sure we have enough observations to justify adding a
-    // node. This means at least as many as total outcomes.
-    real threshold = (real) n_outcomes; 
-
-    // Go deeper when there has been at least one observations
-    // node. 
-    //real threshold = 2;
-
-    // Always go deepr, no matter what
-    //real threshold = 0; 
-
-    // Go deeper if the context is long enough and the number of
-    // observations justifies it.
+    real threshold = (real) n_outcomes;
+    real S_next = 0;
 	if (x != history.end() && S >  threshold) {
 		int k = *x;
 		++x;
 		if (!next[k]) {
 			next[k] = new Node(this);
-		}
+		} else {
+            S_next = next[k]->TotalObservations();
+        }
 		total_probability = next[k]->Observe(history, x, y, total_probability);
 	}
-
+    real ratio = (1 + S) / (1 + S + S_next);
+    total_probability = (1 - ratio) * P[y] + (ratio) * total_probability;
 	return total_probability;
 }
 
 
-void ContextTree::Node::Show()
+void ContextTreePPM::Node::Show()
 {
 	
     std::cout << w << " " << depth << "# weight depth\n";
@@ -128,7 +107,7 @@ void ContextTree::Node::Show()
 	std::cout << "<<<<\n";
 }
 
-int ContextTree::Node::NChildren()
+int ContextTreePPM::Node::NChildren()
 {
 	int my_children = 0;
 	for (int k=0; k<n_branches; ++k) {
@@ -140,7 +119,7 @@ int ContextTree::Node::NChildren()
 	return my_children;
 }
 
-ContextTree::ContextTree(int n_branches_, int n_symbols_, int max_depth_)
+ContextTreePPM::ContextTreePPM(int n_branches_, int n_symbols_, int max_depth_)
 	: n_branches(n_branches_),
 	  n_symbols(n_symbols_),
 	  max_depth(max_depth_),
@@ -149,24 +128,24 @@ ContextTree::ContextTree(int n_branches_, int n_symbols_, int max_depth_)
 	root = new Node(n_branches, n_symbols);
 }
 
-ContextTree::~ContextTree()
+ContextTreePPM::~ContextTreePPM()
 {
 	delete root;
 }
 
-real ContextTree::Observe(int x, int y)
+real ContextTreePPM::Observe(int x, int y)
 {
     history.push_back(x);
 	return root->Observe(history, history.begin(), y, 0);
 }
 
-void ContextTree::Show()
+void ContextTreePPM::Show()
 {
     root->Show();
 	std::cout << "Total contexts: " << NChildren() << std::endl;
 }
 
-int ContextTree::NChildren()
+int ContextTreePPM::NChildren()
 {
 	return root->NChildren();
 }

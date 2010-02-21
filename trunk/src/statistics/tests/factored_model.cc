@@ -1,5 +1,4 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
 // copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
@@ -24,53 +23,13 @@
 #include "POMDPBeliefState.h"
 #include "POMDPBeliefPredictor.h"
 #include "ContextTree.h"
+#include "ContextTreeCTW.h"
+#include "ContextTreePPM.h"
 
 #include <cstdlib>
 #include <cstdio>
 #include <string>
 
-class ContextTreePredictor : public FactoredPredictor
-{
-protected:
-    int n_actions; ///< the number of actions
-    int n_obs; ///< the number of distinct observations
-    ContextTree tree; ///< the context tree
-    int current_obs; ///< the current observation
-public:
-    ContextTreePredictor(int n_actions_, int n_obs_, int depth)
-        : n_actions(n_actions_),
-          n_obs(n_obs_),
-          tree(n_obs * n_actions, n_obs, depth),
-          current_obs(0)
-    {        
-    }
-
-    virtual ~ContextTreePredictor()
-    {
-    }
-    /* Training and generation */
-    /// Observe the (first?) observation.
-    virtual real Observe (int prd) 
-    {
-        current_obs = prd;
-        return 1.0 / (real) n_obs;
-    }
-    /// Observe current action and next observation
-    virtual real Observe (int act, int prd) 
-    {
-        int x = act * n_obs + current_obs;
-        current_obs = prd;
-        return tree.Observe(x, prd);
-    }
-
-    virtual real ObservationProbability (int act, int x) 
-    {
-    }
-
-    virtual void Reset()
-    {
-    }
-};
 
 class Corridor
 {
@@ -284,7 +243,11 @@ int main(int argc, char** argv)
         } else if (!model_name.compare("BVMM")) {
             factored_predictor = new BayesianPredictiveStateRepresentation(n_obs, n_actions,  max_depth + 1, prior);
         } else if (!model_name.compare("BVMM2")) {
-            factored_predictor = new ContextTreePredictor(n_actions, n_obs, max_depth + 1);
+            factored_predictor = new TFactoredPredictor<ContextTree>(n_actions, n_obs, max_depth + 1);
+        } else if (!model_name.compare("CTW2")) {
+            factored_predictor = new TFactoredPredictor<ContextTreeCTW>(n_actions, n_obs, max_depth + 1);
+        } else if (!model_name.compare("PPM")) {
+            factored_predictor = new TFactoredPredictor<ContextTreePPM>(n_actions, n_obs, max_depth + 1);
         } else if (!model_name.compare("CTW")) {
             factored_predictor = new BayesianPredictiveStateRepresentationCTW(n_obs, n_actions,  max_depth + 1, prior);
         } else if (!model_name.compare("POMDP")) {

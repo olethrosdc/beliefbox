@@ -29,6 +29,48 @@ public:
     
 }; 
 
+template <class T>
+class TFactoredPredictor : public FactoredPredictor
+{
+protected:
+    int n_actions; ///< the number of actions
+    int n_obs; ///< the number of distinct observations
+    T tree; ///< the context tree
+    int current_obs; ///< the current observation
+public:
+    TFactoredPredictor(int n_actions_, int n_obs_, int depth)
+        : n_actions(n_actions_),
+          n_obs(n_obs_),
+          tree(n_obs * n_actions, n_obs, depth),
+          current_obs(0)
+    {        
+    }
 
+    virtual ~TFactoredPredictor()
+    {
+    }
+    /* Training and generation */
+    /// Observe the (first?) observation.
+    virtual real Observe (int prd) 
+    {
+        current_obs = prd;
+        return 1.0 / (real) n_obs;
+    }
+    /// Observe current action and next observation
+    virtual real Observe (int act, int prd) 
+    {
+        int x = act * n_obs + current_obs;
+        current_obs = prd;
+        return tree.Observe(x, prd);
+    }
+
+    virtual real ObservationProbability (int act, int x) 
+    {
+    }
+
+    virtual void Reset()
+    {
+    }
+};
 
 #endif
