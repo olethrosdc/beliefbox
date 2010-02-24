@@ -19,7 +19,7 @@
 #include "RandomNumberGenerator.h"
 #include "MersenneTwister.h"
 #include "ReadFile.h"
-#include "ResourceUse.h"
+//#include "ResourceUse.h"
 #include "EasyClock.h"
 #include <ctime>
 #include <string>
@@ -128,12 +128,14 @@ int main(int argc, char** argv)
 
     std::cout << "Depth: " << depth;
     std::cout << ", log loss: " << logsum / (real) T;
-    std::cout << ", time: " << end_time - start_time;
+    std::cout << ", time: " << end_time - start_time << std::endl;
+#if 0
     std::cout << ", RSS: " << getMaxResidentSetSize()
               << ", SHR: " << getSharedMemorySize() 
               << ", DAT: " << getUnsharedDataSetSize ()
               << ", STACK: " << getUnsharedStackSize()
               << std::endl;
+#endif
     for (int t=0; t<T; ++t) {
         out_file << p[t] << std::endl;
     }

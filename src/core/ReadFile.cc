@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include "debug.h"
+#include <cerrno>
 
 int FileToIntVector(std::vector<int>& data, char* fname, int tmpT) {
     FILE* file = fopen(fname, "r");
@@ -13,7 +14,7 @@ int FileToIntVector(std::vector<int>& data, char* fname, int tmpT) {
 	int T = 0;
     int success = fscanf(file, "%d", &T);
 	if (success <= 0) {
-		Serror("Could not scan file\n");
+            Serror("Could not scan file %s - T =%d - retval: %d - errno %d\n", fname, T, success, errno);
 	}
 
 	if (tmpT > 0 && tmpT < T) {

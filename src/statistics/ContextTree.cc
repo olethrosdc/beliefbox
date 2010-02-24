@@ -67,12 +67,13 @@ real ContextTree::Node::Observe(Ring<int>& history,
 	real total_probability = 0;
 	// calculate probabilities
     real S = alpha.Sum();
-	real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
-	P = (alpha + prior_alpha) * Z;
+    real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
+    //P = (alpha + prior_alpha) * Z;
+        P[y] = (alpha[y] + prior_alpha) * Z;
 	alpha[y]++;
 
     // P(y | B_k) = P(y | B_k, h_k) P(h_k | B_k) + (1 - P(h_k | B_k)) P(y | B_{k-1})
-    w = exp(log_w_prior + log_w);
+        w = exp(log_w_prior + log_w);
     total_probability = P[y] * w + (1 - w) * probability;
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P[y] 
@@ -81,10 +82,11 @@ real ContextTree::Node::Observe(Ring<int>& history,
               << ", P(y|B_k)=" << total_probability
               << std::endl;
 #endif
-    real posterior = w * P[y] / total_probability; // real posterior
+    //real posterior = w * P[y] / total_probability; // real posterior
     //real posterior = w; // fake posterior
     //real log_posterior = log(w) + log(P[y]) - log(total_probability);
-    log_w = log(posterior) - log_w_prior;
+    //log_w = log(posterior) - log_w_prior;
+    log_w = log_w + log_w_prior + log(P[y]) - log(total_probability) - log_w_prior;
 
     // Make sure we have enough observations to justify adding a
     // node. This means at least as many as total outcomes.
