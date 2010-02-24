@@ -14,6 +14,7 @@
 #include "ContextTree.h"
 #include "ContextTreeCTW.h"
 #include "ContextTreePPM.h"
+#include "ContextTreeBMC.h"
 #include "Random.h"
 #include "RandomNumberGenerator.h"
 #include "MersenneTwister.h"
@@ -102,6 +103,8 @@ int main(int argc, char** argv)
         tree = new ContextTreeInterface<ContextTreeCTW> (n_symbols, n_symbols, depth);
     } else  if (!method_name.compare("PPM")) {
         tree = new ContextTreeInterface<ContextTreePPM> (n_symbols, n_symbols, depth);
+    } else  if (!method_name.compare("BMC")) {
+        tree = new ContextTreeInterface<ContextTreeBMC> (n_symbols, n_symbols, depth);
     } else {
         std::cerr << "Unknown method " << method_name << std::endl;
         exit(-1);
