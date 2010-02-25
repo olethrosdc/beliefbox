@@ -56,7 +56,6 @@ public:
     }
 };
 
-/// TODO: Make method work with arguments
 int main(int argc, char** argv)
 {
     if (argc < 4) {
@@ -115,11 +114,12 @@ int main(int argc, char** argv)
     std::vector<real> p(T);
     int x = 0;
     real logsum = 0;
+    real log2 = log(2);
 	for (int t=0; t<T; ++t) {
 		int y = data[t];
         p[t] = tree->Observe(x, y);
         x = y;
-        logsum += log(p[t]);
+        logsum += log(p[t]) / log2;
 	}
     double end_time = GetCPU();
 	//tree.Show();

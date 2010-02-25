@@ -67,7 +67,14 @@ real ContextTree::Node::Observe(Ring<int>& history,
 	real total_probability = 0;
 	// calculate probabilities
     real S = alpha.Sum();
-    real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
+    real N = prior_alpha;
+    for (int i=0; i<n_outcomes; ++i) {
+        if (alpha(i)) {
+            N += prior_alpha;
+        }
+    }
+    //real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
+    real Z = 1.0 / (N + S);
     //P = (alpha + prior_alpha) * Z;
         P[y] = (alpha[y] + prior_alpha) * Z;
 	alpha[y]++;
@@ -90,11 +97,11 @@ real ContextTree::Node::Observe(Ring<int>& history,
 
     // Make sure we have enough observations to justify adding a
     // node. This means at least as many as total outcomes.
-    real threshold = (real) n_outcomes; 
+    //real threshold = (real) n_outcomes; 
 
     // Go deeper when there has been at least one observations
     // node. 
-    //real threshold = 2;
+    real threshold = 2;
 
     // Always go deepr, no matter what
     //real threshold = 0; 
