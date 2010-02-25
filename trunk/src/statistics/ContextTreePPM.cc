@@ -59,6 +59,24 @@ ContextTreePPM::Node::~Node()
 	}
 }
 
+/** Update nodes using PPM-C.
+
+    In this variant, the probability of a symbol is
+    \f[
+    P(x|c) = \alpha(x;c) / [Z(c) + \sum_{y \in X} \alpha(y;c)],
+    \f]
+    where \f$\alpha(x;c)\f$ is the number of times symbol \f$x\f$
+    appeared in context \f$c\f$ and \f$Z\f$ is the number of non-zero
+    components of \f$\alpha\f$. The probability of escape is
+    \f[
+    P(s | c) = Z(c) / [Z(c) + \sum_{y \in X} \alpha(y;c)].
+    \f]
+    The total probability is recursively expressed as
+    \f[
+    P(x | x^t) = P(x | c_k) I(x | c_k) + [1 - I(x | c_k)] P(s | c_{k-1}),
+    \f]
+    where \f$I(x|c_k) = 1 \f$ if  \f$\alpha(x;c_k) > 0 \f$ and 0 otherwise.
+ */
 real ContextTreePPM::Node::Observe(Ring<int>& history,
 								Ring<int>::iterator x,
 								int y,
@@ -67,13 +85,28 @@ real ContextTreePPM::Node::Observe(Ring<int>& history,
 	real total_probability = 0;
 	// calculate probabilities
     real S = alpha.Sum();
-	real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
-	P = (alpha + prior_alpha) * Z;
-
+    real Z = 1;
+    for (int i=0; i<n_outcomes; ++i) {
+        if (alpha(i) > 0) {
+            Z++;
+        }
+    }
+    real iSZ = 1.0 / (S + Z);
+    P = alpha * iSZ;
+    real escape = Z * iSZ;
 	alpha[y]++;
-    total_probability = P[y];
+    if (P[y] > 0) {
+        total_probability = P[y];
+    } else {
+        if (depth) {
+            total_probability = escape * probability;
+        } else {
+            total_probability = 1.0 / (real) n_outcomes;
+        }
+    }
 
-    real threshold = (real) n_outcomes;
+
+    real threshold = 1;//(real) n_outcomes;
     real S_next = 0;
 	if (x != history.end() && S >  threshold) {
 		int k = *x;
@@ -85,15 +118,14 @@ real ContextTreePPM::Node::Observe(Ring<int>& history,
         }
 		total_probability = next[k]->Observe(history, x, y, total_probability);
 	}
-    real ratio = (1 + S) / (1 + S + S_next);
-    total_probability = (1 - ratio) * P[y] + (ratio) * total_probability;
+    //real ratio = (1 + S) / (1 + S + S_next);
+    //total_probability = (1 - ratio) * P[y] + (ratio) * total_probability;
 	return total_probability;
 }
 
 
 void ContextTreePPM::Node::Show()
 {
-	
     std::cout << w << " " << depth << "# weight depth\n";
 	for (int i=0; i<n_outcomes; ++i) {
 		std::cout << alpha[i] << " ";
