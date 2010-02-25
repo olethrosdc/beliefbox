@@ -81,11 +81,11 @@ real ContextTreeBMC::Node::Observe(Ring<int>& history,
 
     // Make sure we have enough observations to justify adding a
     // node. This means at least as many as total outcomes.
-    real threshold = (real) n_outcomes; 
+    //real threshold = (real) n_outcomes; 
 
     // Go deeper when there has been at least one observations
     // node. 
-    //real threshold = 2;
+    real threshold = 2;
 
     // Always go deepr, no matter what
     //real threshold = 0; 
