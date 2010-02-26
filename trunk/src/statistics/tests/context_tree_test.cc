@@ -115,10 +115,12 @@ int main(int argc, char** argv)
     int x = 0;
     real logsum = 0;
     real log2 = log(2);
+    real acc = 0;
 	for (int t=0; t<T; ++t) {
 		int y = data[t];
         p[t] = tree->Observe(x, y);
         x = y;
+        acc += p[t];
         logsum += log(p[t]) / log2;
 	}
     double end_time = GetCPU();
@@ -126,8 +128,9 @@ int main(int argc, char** argv)
 
     delete tree;
 
-    std::cout << "Depth: " << depth;
-    std::cout << ", log loss: " << logsum / (real) T;
+    std::cout << "Depth: " << depth
+              << ", log loss: " << logsum / (real) T
+              << ", acc: " << acc / (real) T;
     std::cout << ", time: " << end_time - start_time << std::endl;
 #if 0
     std::cout << ", RSS: " << getMaxResidentSetSize()
