@@ -48,7 +48,8 @@ public:
 		real Observe(Ring<int>& history,
 					 Ring<int>::iterator x,
 					 int y,
-					 real probability);
+					 real probability,
+                     Vector* P_prev);
 		void Show();
 		int NChildren();
         real TotalObservations()

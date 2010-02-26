@@ -76,35 +76,72 @@ ContextTreePPM::Node::~Node()
     P(x | x^t) = P(x | c_k) I(x | c_k) + [1 - I(x | c_k)] P(s | c_{k-1}),
     \f]
     where \f$I(x|c_k) = 1 \f$ if  \f$\alpha(x;c_k) > 0 \f$ and 0 otherwise.
+
+    To implement this, we must use a forward mechanism. The algorithm actually
+    needs a hack because sometimes the escape probability is 0.
  */
 real ContextTreePPM::Node::Observe(Ring<int>& history,
 								Ring<int>::iterator x,
 								int y,
-								real probability)
+                                   real probability,
+                                   Vector* P_prev)
 {
 	real total_probability = 0;
-	// calculate probabilities
+
+	// first calculate P_k(x)
     real S = alpha.Sum();
-    real Z = 1;
+    real Z = 0;
     for (int i=0; i<n_outcomes; ++i) {
         if (alpha(i) > 0) {
             Z++;
         }
     }
-    real iSZ = 1.0 / (S + Z);
-    P = alpha * iSZ;
-    real escape = Z * iSZ;
-	alpha[y]++;
-    if (P[y] > 0) {
-        total_probability = P[y];
+    real iSZ;
+    if (S > 0) {
+#if 0
+        // normal mechanism
+        iSZ = 1.0 / (S + Z);
+        P = alpha * iSZ;
+#else
+        // exclusion
+        iSZ = 1.0 / (S + Z - 1);
+        P = alpha * iSZ;
+        P /= P.Sum();
+#endif
     } else {
-        if (depth) {
-            total_probability = escape * probability;
-        } else {
-            total_probability = 1.0 / (real) n_outcomes;
-        }
+        iSZ = 1.0 / (real) n_outcomes;
+        P = (alpha + 1) * iSZ;
     }
 
+    // now calculate P(s | x)
+    real escape = Z * iSZ;
+
+    for (int i=0; i<n_outcomes; ++i) {
+        if (alpha[i] == 0) {
+            real p = 1.0 / n_outcomes;
+            if (P_prev) {
+                p = (*P_prev)(i);
+            }
+            if (depth) {
+                if (escape)  {
+                    P[i] = escape * p;
+                }  else {
+                    P[i] = p;
+                }
+            } else {
+                P[i] = 1.0 / (real) n_outcomes;
+            }
+        }
+    }
+    P /= P.Sum();
+    total_probability = P[y];
+
+    //printf("P = %f, sum P = %f\n", P[y], P.Sum());
+
+    //printf("%f -> %f (%f) -> %f\n", 
+    //       probability, P[y], escape, total_probability);
+    // update model
+	alpha[y]++;
 
     real threshold = 1;//(real) n_outcomes;
     real S_next = 0;
@@ -116,7 +153,7 @@ real ContextTreePPM::Node::Observe(Ring<int>& history,
 		} else {
             S_next = next[k]->TotalObservations();
         }
-		total_probability = next[k]->Observe(history, x, y, total_probability);
+		total_probability = next[k]->Observe(history, x, y, total_probability, &P);
 	}
     //real ratio = (1 + S) / (1 + S + S_next);
     //total_probability = (1 - ratio) * P[y] + (ratio) * total_probability;
@@ -168,7 +205,7 @@ ContextTreePPM::~ContextTreePPM()
 real ContextTreePPM::Observe(int x, int y)
 {
     history.push_back(x);
-	return root->Observe(history, history.begin(), y, 0);
+	return root->Observe(history, history.begin(), y, 0, NULL);
 }
 
 void ContextTreePPM::Show()

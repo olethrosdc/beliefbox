@@ -66,6 +66,18 @@ real ContextTree::Node::Observe(Ring<int>& history,
 {
 	real total_probability = 0;
 	// calculate probabilities
+
+    // Standard
+#if 0
+    real S = alpha.Sum();
+    real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
+    P = (alpha + prior_alpha) * Z;
+    P /= P.Sum();
+    //P[y] = (alpha[y] + prior_alpha) * Z;
+#endif
+
+#if 0
+    // use PPM version (bad)
     real S = alpha.Sum();
     real N = prior_alpha;
     for (int i=0; i<n_outcomes; ++i) {
@@ -76,11 +88,71 @@ real ContextTree::Node::Observe(Ring<int>& history,
     //real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
     real Z = 1.0 / (N + S);
     //P = (alpha + prior_alpha) * Z;
-        P[y] = (alpha[y] + prior_alpha) * Z;
-	alpha[y]++;
+    //P[y] = (alpha[y] + prior_alpha) * Z;
+#endif
 
+
+#if 1
+    // P-BVMM
+    // use a modified PPM
+    real S = alpha.Sum();
+    real Z = 0;
+    int zeros = 0;
+    for (int i=0; i<n_outcomes; ++i) {
+        if (alpha(i) > 0) {
+            Z += prior_alpha;
+        } else {
+            zeros++;
+        }
+    }
+    if (zeros == n_outcomes) {
+        for (int i=0; i<n_outcomes; ++i) {
+            if (alpha(i) == 0) {
+                P(i) = 1.0 / (real) n_outcomes;
+            }
+        }
+    } else {
+        real iSZ = 1.0 / (S + Z);
+        P = (alpha) * iSZ;
+        
+        real P_rest = 1.0 - P.Sum();
+        
+        if (zeros > 0) {
+            for (int i=0; i<n_outcomes; ++i) {
+                if (alpha(i) == 0) {
+                    P(i) = P_rest / (real) zeros;
+                }
+            }
+        }
+        P /= P.Sum();
+    }
+#endif
+
+
+#if 0
+    // aka: I-BVMM 
+    real S = alpha.Sum();
+    real N = 0;
+    for (int i=0; i<n_outcomes; ++i) {
+        if (alpha(i)) {
+            N += 1;
+        }
+    }
+    real Z = (1 + N) * prior_alpha + S;
+    P = (alpha + prior_alpha) / Z;
+    real n_zero_outcomes = n_outcomes - N;
+    if (n_zero_outcomes > 0) {
+        real SA = 1.0 / n_zero_outcomes;
+        for (int i=0; i<n_outcomes; ++i) {
+            if (alpha(i)==0) {
+                P(i) *= SA;
+            }
+        }
+    }
+#endif
+	alpha[y]++;
     // P(y | B_k) = P(y | B_k, h_k) P(h_k | B_k) + (1 - P(h_k | B_k)) P(y | B_{k-1})
-        w = exp(log_w_prior + log_w);
+    w = exp(log_w_prior + log_w);
     total_probability = P[y] * w + (1 - w) * probability;
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P[y] 
