@@ -1,7 +1,7 @@
 #! /bin/bash
 
 #for dataset in calgary/trans calgary/paper1 calgary/pic #calgary/bib calgary/book1 calgary/book2 calgary/geo
-for dataset in large/E.coli calgary/bib calgary/book1 calgary/book2 calgary/geo calgary/news calgary/obj1 calgary/obj2 calgary/paper1 calgary/paper2 calgary/pic calgary/progc calgary/progl calgary/progp calgary/trans
+for dataset in calgary/bib calgary/book1 calgary/book2 calgary/geo calgary/news calgary/obj1 calgary/obj2 calgary/paper1 calgary/paper2 calgary/pic calgary/progc calgary/progl calgary/progp calgary/trans
 do
     datafile=~/data/${dataset}.dat
     outdir=~/experiments/bvmm/${dataset}
