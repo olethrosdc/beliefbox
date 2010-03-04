@@ -1,13 +1,13 @@
-#summary What to use.
+The Bayesian variable order Markov model
 
 
 = Efficient implementation =
 
 == src/statististics/ ==
-ContextTree - The BVMM
-ContextTreeBMC - The Bayesian Markov chain
-ContextTreeCTW - A naive CTW implementation
-ContextTreePPM - The PPM-C.
+* ContextTree - The BVMM
+* ContextTreeBMC - The Bayesian Markov chain
+* ContextTreeCTW - A naive CTW implementation
+* ContextTreePPM - The PPM-C.
 
 == src/statistics/tests ==
 
