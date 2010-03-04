@@ -1,0 +1,30 @@
+#summary What to use.
+
+
+= Efficient implementation =
+
+== src/statististics/ ==
+ContextTree - The BVMM
+ContextTreeBMC - The Bayesian Markov chain
+ContextTreeCTW - A naive CTW implementation
+ContextTreePPM - The PPM-C.
+
+== src/statistics/tests ==
+
+context_tree_test.cc - test sequence prediction
+
+= Old implementation (deprecated) = 
+
+This one uses a stl/map for every depth (so D of trees of depth 1, ... , D) instead of an actual tree structure of depth D and so is very slow and memory hungry.
+
+
+
+
+
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
