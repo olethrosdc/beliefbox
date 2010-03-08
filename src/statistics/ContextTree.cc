@@ -39,6 +39,7 @@ ContextTree::Node::Node(ContextTree::Node* prev_)
 	  prior_alpha(0.5),
 	  log_w(0),
 	  log_w_prior(prev_->log_w_prior - log(2))
+	  //log_w_prior( - log(10))
 {
     w = exp(log_w_prior);
 	for (int i=0; i<n_branches; ++i) {
@@ -77,24 +78,8 @@ real ContextTree::Node::Observe(Ring<int>& history,
 #endif
 
 #if 0
-    // use PPM version (bad)
-    real S = alpha.Sum();
-    real N = prior_alpha;
-    for (int i=0; i<n_outcomes; ++i) {
-        if (alpha(i)) {
-            N += prior_alpha;
-        }
-    }
-    //real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
-    real Z = 1.0 / (N + S);
-    //P = (alpha + prior_alpha) * Z;
-    //P[y] = (alpha[y] + prior_alpha) * Z;
-#endif
-
-
-#if 1
     // P-BVMM
-    // use a modified PPM
+    // use a modified PPM -- best for many outcomes
     real S = alpha.Sum();
     real Z = 0;
     int zeros = 0;
@@ -129,8 +114,8 @@ real ContextTree::Node::Observe(Ring<int>& history,
 #endif
 
 
-#if 0
-    // aka: I-BVMM 
+#if 1
+    // aka: I-BVMM -- best for many outcomes
     real S = alpha.Sum();
     real N = 0;
     for (int i=0; i<n_outcomes; ++i) {
@@ -152,7 +137,9 @@ real ContextTree::Node::Observe(Ring<int>& history,
 #endif
 	alpha[y]++;
     // P(y | B_k) = P(y | B_k, h_k) P(h_k | B_k) + (1 - P(h_k | B_k)) P(y | B_{k-1})
-    w = exp(log_w_prior + log_w);
+    w = exp(log_w_prior + log_w); 
+
+
     total_probability = P[y] * w + (1 - w) * probability;
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P[y] 

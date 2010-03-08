@@ -74,6 +74,9 @@ real ContextTreeCTW::Node::Observe(Ring<int>& history,
 
     real threshold = (real) n_outcomes;
 
+    real mix = (1.0 - exp(-S));
+    total_probability = mix * P[y] + (1 - mix)*total_probability;
+    
 	if (x != history.end() && S >  threshold) {
 		int k = *x;
 		++x;
@@ -83,7 +86,7 @@ real ContextTreeCTW::Node::Observe(Ring<int>& history,
 		total_probability = next[k]->Observe(history, x, y, total_probability);
 	}
 
-    total_probability = 0.5 * (P[y] + total_probability);
+
 	return total_probability;
 }
 

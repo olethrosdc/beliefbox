@@ -25,6 +25,7 @@
 #include "ContextTree.h"
 #include "ContextTreeCTW.h"
 #include "ContextTreePPM.h"
+#include "ContextTreeBMC.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -238,17 +239,19 @@ int main(int argc, char** argv)
         FactoredPredictor* factored_predictor; 
         if (!model_name.compare("FMC")) {
             factored_predictor = new FactoredMarkovChain(n_actions, n_obs, max_depth);
-        } else if (!model_name.compare("BFMC")) {
+        } else if (!model_name.compare("BFMC_old")) {
             factored_predictor = new BayesianFMC(n_obs, n_actions, max_depth + 1, prior);
-        } else if (!model_name.compare("BVMM")) {
+        } else if (!model_name.compare("BVMM_old")) {
             factored_predictor = new BayesianPredictiveStateRepresentation(n_obs, n_actions,  max_depth + 1, prior);
-        } else if (!model_name.compare("BVMM2")) {
+        } else if (!model_name.compare("BFMC")) {
+            factored_predictor = new TFactoredPredictor<ContextTreeBMC>(n_actions, n_obs, max_depth + 1);
+        } else if (!model_name.compare("BVMM")) {
             factored_predictor = new TFactoredPredictor<ContextTree>(n_actions, n_obs, max_depth + 1);
-        } else if (!model_name.compare("CTW2")) {
+        } else if (!model_name.compare("CTW")) {
             factored_predictor = new TFactoredPredictor<ContextTreeCTW>(n_actions, n_obs, max_depth + 1);
         } else if (!model_name.compare("PPM")) {
             factored_predictor = new TFactoredPredictor<ContextTreePPM>(n_actions, n_obs, max_depth + 1);
-        } else if (!model_name.compare("CTW")) {
+        } else if (!model_name.compare("CTW_old")) {
             factored_predictor = new BayesianPredictiveStateRepresentationCTW(n_obs, n_actions,  max_depth + 1, prior);
         } else if (!model_name.compare("POMDP")) {
             factored_predictor = NULL;
@@ -331,7 +334,7 @@ bool EvaluateMaze(std::string maze,
             }
 #endif
             int observation = environment.getObservation();
-            if (observation || urandom() < action_randomness) {
+            if ((n_obs == 2 && observation) || urandom() < action_randomness) {
                 last_action = rand()%n_actions;
             }
             
