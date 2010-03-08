@@ -106,19 +106,22 @@ real ContextTreePPM::Node::Observe(Ring<int>& history,
         // exclusion
         iSZ = 1.0 / (S + Z - 1);
         P = alpha * iSZ;
-        P /= P.Sum();
+        //P /= P.Sum();
 #endif
     } else {
         iSZ = 1.0 / (real) n_outcomes;
         P = (alpha + 1) * iSZ;
+        //P /= P.Sum();
     }
 
     // now calculate P(s | x)
     real escape = Z * iSZ;
-
+    
+    real p_uniform = 1.0  / (real) n_outcomes;
     for (int i=0; i<n_outcomes; ++i) {
+
         if (alpha[i] == 0) {
-            real p = 1.0 / n_outcomes;
+            real p = p_uniform;
             if (P_prev) {
                 p = (*P_prev)(i);
             }
@@ -129,7 +132,7 @@ real ContextTreePPM::Node::Observe(Ring<int>& history,
                     P[i] = p;
                 }
             } else {
-                P[i] = 1.0 / (real) n_outcomes;
+                P[i] = p_uniform;
             }
         }
     }

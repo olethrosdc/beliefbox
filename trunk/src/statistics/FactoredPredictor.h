@@ -12,6 +12,8 @@
 #define FACTORED_PREDICTOR_H
 
 #include "real.h"
+#include "debug.h"
+#include <cstdio>
 
 /// Abstract class for prediction with actios
 class FactoredPredictor
@@ -66,6 +68,8 @@ public:
 
     virtual real ObservationProbability (int act, int x) 
     {
+        Serror("Not implemented\n");
+        return -1;
     }
 
     virtual void Reset()
