@@ -45,6 +45,7 @@ void BetaDistribution::calculatePosterior(real x)
     beta += (1.0-x);
 }
 
+
 void BetaDistribution::setMean(real mean)
 {
     fprintf(stderr,"Warning: cannot set mean for Beta distribution\n");
