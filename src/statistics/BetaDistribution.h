@@ -43,6 +43,12 @@ public:
     virtual real getMean() const;
     virtual real getVariance();
     virtual real generate();
+    real Observe(real x)
+    {
+        real p = (x * (alpha) + (1 - x) * beta) / (alpha + beta);
+        calculatePosterior(x);
+        return p;
+    }
 };
 
 
