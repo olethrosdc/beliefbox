@@ -1,4 +1,3 @@
-
 /* -*- Mode: c++;  -*- */
 // copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
@@ -62,12 +61,29 @@ ContextTreeRL::Node::~Node()
     }
 }
 
+
+/** Obtain a new observation.
+
+    This function serves multiple purposes
+
+    1. It predicts the next observation.
+    2. It adapts the parameters of the predictors.
+    3. It adds the node to the list of active context.
+    4. It finds/creates the next Node and calls Observe(), if needed.
+    5. It stores the current context probability.
+    6. It adapts the weight of the context.
+    7. It returns the prediction.
+   
+ */
 real ContextTreeRL::Node::Observe(Ring<int>& history,
                                   Ring<int>::iterator x,
                                   int y,
                                   real r,
-                                  real probability)
+                                  real probability,
+                                  std::list<Node*> active_contexts)
 {
+    active_contexts.push_back(this);
+
     real total_probability = 0;
     // calculate probabilities
 
@@ -138,6 +154,7 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
 
     // Go deeper if the context is long enough and the number of
     // observations justifies it.
+    w_prod = 1;
     if (x != history.end() && S >  threshold) {
         int k = *x;
         ++x;
@@ -145,7 +162,10 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
             next[k] = new Node(this);
         }
         total_probability = next[k]->Observe(history, x, y, r, total_probability);
+        w_prod = next[k]->w_prod;
     }
+    context_probability = w * w_prod;
+    w_prod *= (1 - w);
 
     return total_probability;
 }
