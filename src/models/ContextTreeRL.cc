@@ -20,7 +20,7 @@ ContextTreeRL::Node::Node(int n_branches_,
       prev(NULL),
       next(n_branches),
       P(n_outcomes), alpha(n_outcomes), prior_alpha(0.5),
-      w(1), log_w(0), log_w_prior(0)
+      w(1), log_w(0), log_w_prior(0), Q(0)
 {
     for (int i=0; i<n_outcomes; ++i) {
         P(i) = 1.0 / (real) n_outcomes;
@@ -39,7 +39,8 @@ ContextTreeRL::Node::Node(ContextTreeRL::Node* prev_)
       alpha(n_outcomes),
       prior_alpha(0.5),
       log_w(0),
-      log_w_prior(prev_->log_w_prior - log(2))
+      log_w_prior(prev_->log_w_prior - log(2)),
+      Q(0)
       //log_w_prior( - log(10))
 {
     w = exp(log_w_prior);
@@ -207,4 +208,8 @@ void ContextTreeRL::Show()
 int ContextTreeRL::NChildren()
 {
     return root->NChildren();
+}
+void ContextTreeRL::QLearning(real step_size, int action, int observation, real reward)
+{
+    
 }

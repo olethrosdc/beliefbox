@@ -45,6 +45,7 @@ public:
              int n_outcomes_);
         Node(Node* prev_);
         ~Node();
+        real Q;
         real Observe(Ring<int>& history,
                      Ring<int>::iterator x,
                      int y,
@@ -60,6 +61,7 @@ public:
     real Observe(int x, int y, real r);
     void Show();
     int NChildren();
+    void QLearning(real step_size, int action, int observation, real reward);
 protected: 
     int n_branches;
     int n_symbols;
