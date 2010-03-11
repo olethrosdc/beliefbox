@@ -24,6 +24,7 @@
 /** A ring buffer.
 
     A ring buffer is useful for many things.
+    
  */
 template <typename C>
 class Ring
@@ -122,7 +123,7 @@ public:
     {
     }
 
-	// Get an iterator to the current position
+	/// Get an iterator to the current position
     iterator begin()
     {
         return (iterator (this));
@@ -142,7 +143,12 @@ public:
         clear();
     }
 
-    /** Get the unique ID of a state */
+    /** Get the unique ID of a state.
+        
+        \note Only use with care. It can fail due to int overflow.
+
+        A better implementation may exist with hashes.
+    */
     long long get_id(int n_states)
     {
         if (max_size ==0) {
