@@ -189,8 +189,11 @@ bool EvaluateMaze(std::string maze,
 
 	for (int t=0; t<T; ++t) {
             int action = last_action;
-            environment.Act(action);
+            
+            // Add it here.
 
+            environment.Act(action);
+            
 #if 0
             for (int i=0; i<n_obs; ++i) {
                 obs_probs[i] = factored_predictor->ObservationProbability(action, i);
