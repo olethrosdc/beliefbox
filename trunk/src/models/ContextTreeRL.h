@@ -45,14 +45,17 @@ public:
              int n_outcomes_);
         Node(Node* prev_);
         ~Node();
-        real Q;
+        real Q; ///< last Q value of the context
+        real w_prod; ///< \f$\prod_k (1 - w_k)\f$
+        real last_probability; ///< last probability of the context
         real Observe(Ring<int>& history,
                      Ring<int>::iterator x,
                      int y,
                      real r,
-                     real probability);
+                     real probability,
+                     std::list<Node*> active_contexts);
         void Show();
-        int NChildren();    
+        int NChildren();
     };
     
     // public methods
