@@ -80,10 +80,10 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
                                   int y,
                                   real r,
                                   real probability,
-                                  std::list<Node*> active_contexts)
+                                  std::list<Node*>& active_contexts)
 {
     active_contexts.push_back(this);
-
+    //printf ("contexts: %d, d:%d\n", active_contexts.size(), depth);
     real total_probability = 0;
     // calculate probabilities
 
@@ -128,42 +128,26 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
     
     real p_observations = P[y] * p_reward;
     total_probability = p_observations * w + (1 - w) * probability;
-#if 0
-    std::cout << depth << ": P(y|h_k)=" << P[y] 
-              << ", P(h_k|B_k)=" << w 
-              << ", P(y|B_{k-1})="<< probability
-              << ", P(y|B_k)=" << total_probability
-              << std::endl;
-#endif
-    //real posterior = w * P[y] / total_probability; // real posterior
-    //real posterior = w; // fake posterior
-    //real log_posterior = log(w) + log(P[y]) - log(total_probability);
-    //log_w = log(posterior) - log_w_prior;
+
     log_w = log_w + log_w_prior + log(p_observations) - log(total_probability) - log_w_prior;
 
-    // Make sure we have enough observations to justify adding a
-    // node. This means at least as many as total outcomes.
-    //real threshold = (real) n_outcomes; 
 
-    // Go deeper when there has been at least one observations
-    // node. 
-    real threshold = 2;
-
-    // Always go deepr, no matter what
-    //real threshold = 0; 
+    w_prod = 1; ///< auxilliary calculation
 
     // Go deeper if the context is long enough and the number of
     // observations justifies it.
-    w_prod = 1;
+    real threshold = 2;
     if (x != history.end() && S >  threshold) {
         int k = *x;
         ++x;
         if (!next[k]) {
             next[k] = new Node(this);
         }
-        total_probability = next[k]->Observe(history, x, y, r, total_probability);
-        w_prod = next[k]->w_prod;
+        total_probability = next[k]->Observe(history, x, y, r, total_probability, active_contexts);
+        w_prod = next[k]->w_prod; ///< for post facto context probabilities
     }
+
+    // Auxilliary calculation for context
     context_probability = w * w_prod;
     w_prod *= (1 - w);
 
@@ -171,91 +155,24 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
 }
 
 
-real ContextTreeRL::Node::getQValue(Ring<int>& history,
-                                    Ring<int>::iterator x,
-                                    int y)
+
+/// Recursive calculation of the Q-value.
+real ContextTreeRL::Node::QValue(Ring<int>& history,
+                                 Ring<int>::iterator x,
+                                 real Q_prev)
 {
-    real total_probability = 0;
-    // calculate probabilities
-
-    // Standard
-#if 0
-    real S = alpha.Sum();
-    real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
-    P = (alpha + prior_alpha) * Z;
-    P /= P.Sum();
-    //P[y] = (alpha[y] + prior_alpha) * Z;
-#endif
-
-#if 1
-    // aka: I-BVMM -- best for many outcomes
-    real S = alpha.Sum();
-    real N = 0;
-    for (int i=0; i<n_outcomes; ++i) {
-        if (alpha(i)) {
-            N += 1;
-        }
-    }
-    real Z = (1 + N) * prior_alpha + S;
-    P = (alpha + prior_alpha) / Z;
-    real n_zero_outcomes = n_outcomes - N;
-    if (n_zero_outcomes > 0) {
-        real SA = 1.0 / n_zero_outcomes;
-        for (int i=0; i<n_outcomes; ++i) {
-            if (alpha(i)==0) {
-                P(i) *= SA;
-            }
-        }
-    }
-#endif
-    alpha[y]++;
-
-    // Do it for probability too
-    real p_reward = reward_prior.Observe(r);
-        
-    // P(y | B_k) = P(y | B_k, h_k) P(h_k | B_k) + (1 - P(h_k | B_k)) P(y | B_{k-1})
-    w = exp(log_w_prior + log_w); 
-    
-    
-    real p_observations = P[y] * p_reward;
-    total_probability = p_observations * w + (1 - w) * probability;
-#if 0
-    std::cout << depth << ": P(y|h_k)=" << P[y] 
-              << ", P(h_k|B_k)=" << w 
-              << ", P(y|B_{k-1})="<< probability
-              << ", P(y|B_k)=" << total_probability
-              << std::endl;
-#endif
-    //real posterior = w * P[y] / total_probability; // real posterior
-    //real posterior = w; // fake posterior
-    //real log_posterior = log(w) + log(P[y]) - log(total_probability);
-    //log_w = log(posterior) - log_w_prior;
-    log_w = log_w + log_w_prior + log(p_observations) - log(total_probability) - log_w_prior;
-
-    // Make sure we have enough observations to justify adding a
-    // node. This means at least as many as total outcomes.
-    //real threshold = (real) n_outcomes; 
-
-    // Go deeper when there has been at least one observations
-    // node. 
-    real threshold = 2;
-
-    // Always go deepr, no matter what
-    //real threshold = 0; 
-
-    // Go deeper if the context is long enough and the number of
-    // observations justifies it.
-    if (x != history.end() && S >  threshold) {
-        int k = *x;
+    //w = exp(log_w_prior + log_w); 
+    real Q_next = Q * w + (1 - w) * Q_prev;
+    int k = *x;
+    if (x != history.end() && next[k]) {
         ++x;
-        if (!next[k]) {
-            next[k] = new Node(this);
-        }
-        total_probability = next[k]->Observe(history, x, y, r, total_probability);
+        Q_next = next[k]->QValue(history, x, Q_next);
     }
 
-    return total_probability;
+    return Q_next;
 }
+
+
 
 
 
@@ -288,13 +205,20 @@ int ContextTreeRL::Node::NChildren()
     return my_children;
 }
 
-ContextTreeRL::ContextTreeRL(int n_branches_, int n_symbols_, int max_depth_)
+ContextTreeRL::ContextTreeRL(int n_branches_,
+                             int n_observations_,
+                             int n_actions_,
+                             int n_symbols_,
+                             int max_depth_)
     : n_branches(n_branches_),
+      n_observations(n_observations_),
+      n_actions(n_actions_),
       n_symbols(n_symbols_),
       max_depth(max_depth_),
       history(max_depth)
 {
     root = new Node(n_branches, n_symbols);
+    std::cout << "# Making new CTRL with depth " << max_depth << std::endl;
 }
 
 ContextTreeRL::~ContextTreeRL()
@@ -305,8 +229,9 @@ ContextTreeRL::~ContextTreeRL()
 /// Observe complete observation x, action y, reward r
 real ContextTreeRL::Observe(int x, int y, real r)
 {
+    active_contexts.clear();
     history.push_back(x);
-    return root->Observe(history, history.begin(), y, r, 0);
+    return root->Observe(history, history.begin(), y, r, 0, active_contexts);
 }
 
 void ContextTreeRL::Show()
@@ -319,12 +244,37 @@ int ContextTreeRL::NChildren()
 {
     return root->NChildren();
 }
-void ContextTreeRL::QLearning(real step_size, int action, int observation, real reward)
+real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real reward)
 {
-    
+    real max_Q = -INF;
+    for (int a = 0; a < n_actions; ++a) {
+        int x = a * n_observations + observation;
+        real Q_x = QValue(x);
+        if (Q_x > max_Q) {
+            max_Q = Q_x;
+        }
+    }
+    max_Q += reward;
+    real td_err = 0;
+    for (std::list<Node*>::iterator i = active_contexts.begin();
+         i != active_contexts.end();
+         ++i) {
+        real p_i = (*i)->context_probability;
+        real dQ_i = max_Q - (*i)->Q;
+        real delta = p_i * dQ_i; 
+        (*i)->Q += step_size * delta;
+        //printf ("%f * %f = %f ->  %f\n", p_i, dQ_i, delta, (*i)->Q);
+        td_err += fabs(delta);
+    }
+    return td_err;
 }
 
-void ContextTreeRL::GetQValue(int action)
+/// Get a Q value
+///
+/// x = (y, a)
+real ContextTreeRL::QValue(int x)
 {
-    
+    history.push_back(x);
+    return root->QValue(history, history.begin(), 0);
+    history.pop();
 }

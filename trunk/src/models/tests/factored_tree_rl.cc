@@ -30,12 +30,14 @@ struct Statistics
 
     std::vector<real> probability;
     std::vector<real> error;
+    std::vector<real> reward;
 
-    Statistics(int T) : probability(T), error(T)
+    Statistics(int T) : probability(T), error(T), reward(T)
     {
         for (int t=0; t<T; ++t) {
             probability[t] = 0;
             error[t] = 0;
+            reward[t] = 0;
         }
     }
 };
@@ -164,7 +166,10 @@ int main(int argc, char** argv)
     for (int t=0; t<T; ++t) {
         //printf ("%f %f\n", statistics.probability[t] * inv_iter,
         //statistics.error[t] * inv_iter);
-        printf ("%f\n", statistics.probability[t] * inv_iter);
+        printf ("%f %f %f\n",
+                statistics.probability[t] * inv_iter,
+                statistics.reward[t] * inv_iter, 
+                statistics.error[t] * inv_iter);
     }
     return 0;
 }
@@ -187,32 +192,30 @@ bool EvaluateMaze(std::string maze,
     int T = statistics.probability.size();
     std::vector<real> obs_probs(n_obs); ///< observation probabilities
 
+    std::vector<real> Q(n_actions);
 	for (int t=0; t<T; ++t) {
-            int action = last_action;
+        int action = last_action;
             
-            // Add it here.
+        // Add it here.
 
-            environment.Act(action);
+        for (int a = 0; a < n_actions; ++a) {
+            Q[a] = factored_predictor->QValue(a);
+            //printf("%f ", Q[a]);
+        }
+        //printf("# Q\n");
+        action = ArgMax(Q);
+        environment.Act(action);
+        int observation = environment.getObservation();
+        real reward = environment.getReward();
+        if ((n_obs == 2 && observation) || urandom() < action_randomness) {
+            last_action = rand()%n_actions;
+        }
             
-#if 0
-            for (int i=0; i<n_obs; ++i) {
-                obs_probs[i] = factored_predictor->ObservationProbability(action, i);
-            }
-#endif
-            int observation = environment.getObservation();
-            real reward = environment.getReward();
-            if ((n_obs == 2 && observation) || urandom() < action_randomness) {
-                last_action = rand()%n_actions;
-            }
-            
-            real p = factored_predictor->Observe(action, observation, reward);
-            assert(p==obs_probs[observation]);
-            statistics.probability[t] += p;
-#if 0
-            if (ArgMax(obs_probs) != observation) {
-                statistics.error[t]++;
-            }
-#endif
+        real p = factored_predictor->Observe(action, observation, reward);
+        assert(p==obs_probs[observation]);
+        statistics.probability[t] += p;
+        statistics.reward[t] += reward;
+        printf ("%d %d %f\n", action, observation, reward);
 	}
 
 	return true;
@@ -224,7 +227,6 @@ bool Evaluate1DWorld(Corridor& environment,
                      FactoredPredictorRL* factored_predictor,
                      Statistics& statistics)
 {
-
     int n_states = environment.getNStates();
     int n_actions = environment.getNActions();
     int n_obs = environment.getNObservations();
@@ -235,26 +237,32 @@ bool Evaluate1DWorld(Corridor& environment,
     printf ("# states: %d, actions: %d, obs: %d, T: %d, a_rand: %f\n", n_states, n_actions, n_obs, T, action_randomness);
 
     std::vector<real> obs_probs(n_obs); // observation probabilities
-    
+    std::vector<real> Q(n_actions);
     for (int t=0; t<T; ++t) {
         int action = last_action;
-        environment.Act(action);
-        //for (int i=0; i<n_obs; ++i) {
-        //obs_probs[i] = factored_predictor->ObservationProbability(action, i, 0);
-            //            printf("# %d %f\n", i, obs_probs[i]);
-        //}
-        int observation = environment.getObservation();
-        real reward = environment.getReward();
+        for (int a = 0; a < n_actions; ++a) {
+            Q[a] = factored_predictor->QValue(a);
+            //printf ("%f ", Q[a]);
+        }
+        //printf ("# Q\n");
         if (urandom() < action_randomness) {
-            last_action = rand()%n_actions;
+            action = rand()%n_actions;
+        } else {
+            action = ArgMax(Q);
         }
 
+        environment.Act(action);
+
+        int observation = environment.getObservation();
+        real reward = environment.getReward();
+
         real p = factored_predictor->Observe(action, observation, reward);
+        real td_error = factored_predictor->QLearning(0.01, 0.9);
         assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
-        if (ArgMax(obs_probs) != observation) {
-            statistics.error[t]++;
-        }
+        statistics.reward[t] += reward;
+        statistics.error[t] += td_error;
+        //printf ("%d %d %f\n", action, observation, reward);
     }
 
     return true;

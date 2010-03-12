@@ -129,11 +129,12 @@ public:
         }
 
         observation = 0;
-        reward = 0;
-        if (state < 0) {
+        reward = rng->uniform()<0.5;
+        if (state <= 0) {
             state = 0;
             observation = 1;
-        } else if (state >= n_states) {
+            reward = 0;
+        } else if (state >= n_states - 1) {
             state = n_states - 1;
             observation = 1;
         }
