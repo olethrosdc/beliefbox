@@ -184,7 +184,8 @@ bool EvaluateMaze(std::string maze,
 {
     POMDPGridworld environment(environment_rng, maze.c_str(),
                                n_obs, 
-                               world_randomness);
+                               world_randomness,
+                               0, 1, 0);
     int n_actions = environment.getNActions();
     environment.Reset();
     factored_predictor->Observe(environment.getObservation());
@@ -203,7 +204,13 @@ bool EvaluateMaze(std::string maze,
             //printf("%f ", Q[a]);
         }
         //printf("# Q\n");
-        action = ArgMax(Q);
+        real alpha = (real) t / (real) T;
+        if (urandom() < action_randomness * alpha + (1 - alpha)) {
+            action = rand()%n_actions;
+        } else {
+            action = ArgMax(Q);
+        }
+
         environment.Act(action);
         int observation = environment.getObservation();
         real reward = environment.getReward();
@@ -212,10 +219,14 @@ bool EvaluateMaze(std::string maze,
         }
             
         real p = factored_predictor->Observe(action, observation, reward);
+        real td_error = factored_predictor->QLearning(0.01, 0.9);
+
         assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
         statistics.reward[t] += reward;
-        printf ("%d %d %f\n", action, observation, reward);
+        statistics.error[t] += td_error;
+
+        //printf ("%d %d %f\n", action, observation, reward);
 	}
 
 	return true;
@@ -238,6 +249,7 @@ bool Evaluate1DWorld(Corridor& environment,
 
     std::vector<real> obs_probs(n_obs); // observation probabilities
     std::vector<real> Q(n_actions);
+
     for (int t=0; t<T; ++t) {
         int action = last_action;
         for (int a = 0; a < n_actions; ++a) {
@@ -245,11 +257,11 @@ bool Evaluate1DWorld(Corridor& environment,
             //printf ("%f ", Q[a]);
         }
         //printf ("# Q\n");
+        action = ArgMax(Q);
+
         if (urandom() < action_randomness) {
             action = rand()%n_actions;
-        } else {
-            action = ArgMax(Q);
-        }
+        } 
 
         environment.Act(action);
 
@@ -257,8 +269,8 @@ bool Evaluate1DWorld(Corridor& environment,
         real reward = environment.getReward();
 
         real p = factored_predictor->Observe(action, observation, reward);
-        real td_error = factored_predictor->QLearning(0.01, 0.9);
-        assert(p==obs_probs[observation]);
+        real td_error = factored_predictor->QLearning(0.1, 0.9);
+        //assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
         statistics.reward[t] += reward;
         statistics.error[t] += td_error;
