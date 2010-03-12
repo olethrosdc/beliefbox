@@ -103,6 +103,7 @@ public:
         clear();
     }
 
+
 	/// Clear data and reset position and end iterator.
     void clear()
     {

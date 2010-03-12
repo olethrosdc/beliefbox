@@ -88,7 +88,7 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
     // calculate probabilities
 
     // Standard
-#if 0
+#if 1
     real S = alpha.Sum();
     real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
     P = (alpha + prior_alpha) * Z;
@@ -96,7 +96,7 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
     //P[y] = (alpha[y] + prior_alpha) * Z;
 #endif
 
-#if 1
+#if 0
     // aka: I-BVMM -- best for many outcomes
     real S = alpha.Sum();
     real N = 0;
@@ -244,9 +244,14 @@ int ContextTreeRL::NChildren()
 {
     return root->NChildren();
 }
+/** Q Learning implementation.
+    
+ */
 real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real reward)
 {
-    real max_Q = -INF;
+    real Q_prev = root->QValue(history, history.begin(), 0);
+
+    real max_Q = -INF;    
     for (int a = 0; a < n_actions; ++a) {
         int x = a * n_observations + observation;
         real Q_x = QValue(x);
@@ -254,13 +259,15 @@ real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real 
             max_Q = Q_x;
         }
     }
+
     max_Q += reward;
     real td_err = 0;
     for (std::list<Node*>::iterator i = active_contexts.begin();
          i != active_contexts.end();
          ++i) {
         real p_i = (*i)->context_probability;
-        real dQ_i = max_Q - (*i)->Q;
+        real dQ_i = reward + gamma * max_Q - (*i)->Q; ///< This works even better!
+        //real dQ_i = reward + gamma * max_Q - Q_prev; ///< This works OK!
         real delta = p_i * dQ_i; 
         (*i)->Q += step_size * delta;
         //printf ("%f * %f = %f ->  %f\n", p_i, dQ_i, delta, (*i)->Q);
@@ -274,7 +281,7 @@ real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real 
 /// x = (y, a)
 real ContextTreeRL::QValue(int x)
 {
-    history.push_back(x);
-    return root->QValue(history, history.begin(), 0);
-    history.pop();
+    Ring<int> tmp_history(history);
+    tmp_history.push_back(x);
+    return root->QValue(tmp_history, tmp_history.begin(), 0);
 }

@@ -175,6 +175,7 @@ bool POMDPGridworld::Act(int action)
 
     if (state == terminal_state) {
         reward = 0;
+        Reset();
         return false;
     }
     int x = ox;
@@ -197,6 +198,9 @@ bool POMDPGridworld::Act(int action)
         }
     }
     reward = step_value;
+    if (rng->uniform() < random) {
+        reward = 1.0;
+    }
     if (whatIs(x,y) != INVALID && whatIs(x,y) != WALL) {
         ox = x;
         oy = y;
