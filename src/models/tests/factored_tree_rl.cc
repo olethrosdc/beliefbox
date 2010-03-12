@@ -204,8 +204,7 @@ bool EvaluateMaze(std::string maze,
             //printf("%f ", Q[a]);
         }
         //printf("# Q\n");
-        real alpha = (real) t / (real) T;
-        if (urandom() < action_randomness * alpha + (1 - alpha)) {
+        if (urandom() < action_randomness) {
             action = rand()%n_actions;
         } else {
             action = ArgMax(Q);
