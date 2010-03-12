@@ -13,6 +13,7 @@
 #define CONTEXT_TREE_RL_H
 
 #include <vector>
+#include <list>
 #include "real.h"
 #include "Vector.h"
 #include "Ring.h"
@@ -47,30 +48,40 @@ public:
         ~Node();
         real Q; ///< last Q value of the context
         real w_prod; ///< \f$\prod_k (1 - w_k)\f$
-        real last_probability; ///< last probability of the context
+        real context_probability; ///< last probability of the context
         real Observe(Ring<int>& history,
                      Ring<int>::iterator x,
                      int y,
                      real r,
                      real probability,
-                     std::list<Node*> active_contexts);
+                     std::list<Node*>& active_contexts);
+        real QValue(Ring<int>& history,
+                     Ring<int>::iterator x,
+                    real Q_prev);
         void Show();
         int NChildren();
-    };
-    
+    };  
     // public methods
-    ContextTreeRL(int n_branches_, int n_symbols_, int max_depth_= 0);
+    ContextTreeRL(int n_branches_,
+                  int n_observations,
+                  int n_actions,
+                  int n_symbols_,
+                  int max_depth_= 0);
     ~ContextTreeRL();
     real Observe(int x, int y, real r);
     void Show();
     int NChildren();
-    void QLearning(real step_size, int action, int observation, real reward);
+    real QValue(int x);
+    real QLearning(real step_size,  real gamma, int observation, real reward);
 protected: 
     int n_branches;
+    int n_observations;
+    int n_actions;
     int n_symbols;
     int max_depth;
     Node* root;
     Ring<int> history;
+    std::list<Node*> active_contexts;
 };
 
 

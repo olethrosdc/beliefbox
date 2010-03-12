@@ -190,7 +190,38 @@ public:
 			}
         }
         T++;
+        //printf ("push: %d %d %d/%d\n", pos, end_iterator.GetIndex(), T, data.size());
     }
+
+    /** Pop a datum.
+        
+        Remove a datum from the head.
+
+        @param x The data to be pushed back.
+     */
+    void pop()
+    {
+        if (end_iterator.GetIndex() == pos) {
+            return;
+        }
+        if (max_size) {
+            pos--;
+            if (pos < 0) {
+                pos += data.size();
+            }
+            if (end_iterator.GetIndex() == pos) {
+				int end_pos = pos - 1;
+				if (end_pos <0) {
+					end_pos += data.size();
+				}
+				end_iterator.SetIndex(end_pos);
+			}
+        }
+        T--;
+
+        //printf ("pop: %d %d %d\n", pos, end_iterator.GetIndex(), T);
+    }
+
     
     /** Access data at offset from the current position.
         
