@@ -110,7 +110,8 @@ real MultivariateNormal::pdf(Vector& x) const
 {
 	assert (x.Size()==mean.Size());
 	real n = (real) x.Size();
-	real d = (Transpose(x - mean) * accuracy * (x - mean))(0,0);
+    Matrix diff = x - mean;
+	real d = (Transpose(diff) * accuracy * diff)(0,0);
 	real determinant = 1.0f; // well, not really.
 	real log_pdf = - 0.5 * d - 0.5*(log(2.0*M_PI)*n + log(determinant));
 	return exp(log_pdf);

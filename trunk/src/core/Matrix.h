@@ -68,6 +68,7 @@ public:
     void print(FILE* f);
     friend Matrix operator* (const real& lhs, const Matrix& rhs);
     friend Matrix operator* (const Vector& lhs, const Matrix& rhs);
+    friend Vector operator* (const Matrix& lhs, const Vector& rhs);
 protected:
     int rows; ///< number of rows in the matrix
     int columns; ///< number of columns in the matrix
