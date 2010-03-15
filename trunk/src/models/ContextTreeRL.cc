@@ -10,6 +10,8 @@
  ***************************************************************************/
 
 #include "ContextTreeRL.h"
+#include <cmath>
+#include <cassert>
 
 ContextTreeRL::Node::Node(int n_branches_,
                           int n_outcomes_)
@@ -124,13 +126,21 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
         
     // P(y | B_k) = P(y | B_k, h_k) P(h_k | B_k) + (1 - P(h_k | B_k)) P(y | B_{k-1})
     w = exp(log_w_prior + log_w); 
-    
-    
+    assert(w >= 0 && w <= 1);
+
     real p_observations = P[y] * p_reward;
     total_probability = p_observations * w + (1 - w) * probability;
 
-    log_w = log_w + log_w_prior + log(p_observations) - log(total_probability) - log_w_prior;
+    //real log_w_prev = log_w;
+    //real log_w2 = log_w  + log(p_observations) - log(total_probability);    
+    log_w = log(w * p_observations / total_probability) - log_w_prior;
 
+    //log_w = log_w + log(p_observations) - log(total_probability) - log_w_prior;
+
+    assert(log_w + log_w_prior <= 0);
+    //assert(log_w2 + log_w_prior <= 0);
+
+    assert(!isnan(log_w));
 
     w_prod = 1; ///< auxilliary calculation
 
@@ -145,11 +155,16 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
         }
         total_probability = next[k]->Observe(history, x, y, r, total_probability, active_contexts);
         w_prod = next[k]->w_prod; ///< for post facto context probabilities
+        assert(!isnan(total_probability));
+        assert(!isnan(w_prod));
     }
 
     // Auxilliary calculation for context
     context_probability = w * w_prod;
     w_prod *= (1 - w);
+
+    assert(!isnan(w_prod));
+    assert(!isnan(context_probability));
 
     return total_probability;
 }
@@ -249,7 +264,8 @@ int ContextTreeRL::NChildren()
  */
 real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real reward)
 {
-    real Q_prev = root->QValue(history, history.begin(), 0);
+    //real Q_prev = root->QValue(history, history.begin(), 0);
+    //assert(!isnan(Q_prev));
 
     real max_Q = -INF;    
     for (int a = 0; a < n_actions; ++a) {
