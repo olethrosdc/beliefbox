@@ -220,7 +220,7 @@ bool EvaluateMaze(std::string maze,
         real p = factored_predictor->Observe(action, observation, reward);
         real td_error = factored_predictor->QLearning(0.01, 0.9);
 
-        assert(p==obs_probs[observation]);
+        //assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
         statistics.reward[t] += reward;
         statistics.error[t] += td_error;

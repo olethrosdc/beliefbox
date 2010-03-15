@@ -77,7 +77,7 @@ real ContextTree::Node::Observe(Ring<int>& history,
     //P[y] = (alpha[y] + prior_alpha) * Z;
 #endif
 
-#if 0
+#if 1
     // P-BVMM
     // use a modified PPM -- best for many outcomes
     real S = alpha.Sum();
@@ -109,12 +109,12 @@ real ContextTree::Node::Observe(Ring<int>& history,
                 }
             }
         }
-        P /= P.Sum();
+         P /= P.Sum();
     }
 #endif
 
 
-#if 1
+#if 0
     // aka: I-BVMM -- best for many outcomes
     real S = alpha.Sum();
     real N = 0;
@@ -152,7 +152,10 @@ real ContextTree::Node::Observe(Ring<int>& history,
     //real posterior = w; // fake posterior
     //real log_posterior = log(w) + log(P[y]) - log(total_probability);
     //log_w = log(posterior) - log_w_prior;
-    log_w = log_w + log_w_prior + log(P[y]) - log(total_probability) - log_w_prior;
+    log_w = log(w * P[y] /total_probability) - log_w_prior;
+
+    // This sometimes doesn't work
+    //log_w = log_w + log(P[y]) - log(total_probability);
 
     // Make sure we have enough observations to justify adding a
     // node. This means at least as many as total outcomes.
