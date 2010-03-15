@@ -344,24 +344,50 @@ Matrix operator* (const real& lhs, const Matrix& rhs)
 
 
 /// Multiply a vector with a matrix, creating a new matrix
+///
+/// The vector is Kx1, and the rhs is 1xN, by necessity,
+/// giving a KxN matrix
 Matrix operator* (const Vector& lhs, const Matrix& rhs)
 {
     if (rhs.Rows() != 1) {
         throw std::domain_error("Vector-matrix multiplication error\n");
     }
-    Matrix v(lhs.Size(), rhs.Columns());
-    if (rhs.transposed) {
-        v.Transpose();
-    }
-
+    int K = lhs.Size();
     int N = rhs.Columns();
-    for (int i=0; i<N; ++i) {
+    Matrix v(K, N);
+
+    for (int i=0; i<K; ++i) {
         for (int j=0; j<N; ++j) {
             v(i,j) = lhs[i] * rhs(0, j);
         }
     }
     return v;
 }
+
+
+/// Multiply a vector with a matrix, creating a new vector
+///
+/// The lhs is NxK, and the rhs is Kx1, giving a Nx1 Vector
+Vector operator* (const Matrix& lhs, const Vector& rhs)
+{
+    if (rhs.Size() != lhs.Columns()) {
+        throw std::domain_error("matrix-vector multiplication error\n");
+    }
+
+    Vector v(lhs.Rows());
+
+    int K = lhs.Columns();
+    int N = lhs.Rows();
+    for (int i=0; i<K; ++i) {
+        real vi = 0;
+        for (int j=0; j<N; ++j) {
+            vi += lhs(i,j) * rhs(i);
+        }
+        v(i) = vi;
+    }
+    return v;
+}
+
 
 real Matrix::det()
 {
