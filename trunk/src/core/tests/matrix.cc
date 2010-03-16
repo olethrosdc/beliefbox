@@ -229,6 +229,6 @@ void SpeedTest()
 
 /*
           AMD 64 3200 | Intel Atom N270
-REFERENCE 73 (67)     |
-MULTIPLIC 79 (72)     |
+REFERENCE 9.5 (10.5)  | 55 (56)
+MULTIPLIC 7.5 (8.3)   | 62 (62)
 */
