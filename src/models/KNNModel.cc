@@ -28,7 +28,7 @@
 KNNModel::KNNModel(int n_actions_, int n_dim_, real gamma_, bool optimistic, real optimism_, real r_max_)
     : n_actions(n_actions_), n_dim(n_dim_), kd_tree(n_actions_), gamma(gamma_),
       optimistic_values(optimistic), optimism(optimism_), r_max(r_max_),
-      max_samples(-1)
+      max_samples(-1), threshold(n_actions * 10)
 {
     for (int i=0; i<n_actions; ++i) {
         kd_tree[i] = new KDTree<TrajectorySample> (n_dim);
@@ -52,13 +52,27 @@ KNNModel::~KNNModel()
     It is also added to the tree and the value is initialised.
     
  */
-void KNNModel::AddSample(TrajectorySample sample)
+void KNNModel::AddSample(TrajectorySample sample, int K, real beta)
 {
     if (max_samples < 0 || samples.size() < (uint) max_samples) {
-        samples.push_back(sample);
-        kd_tree[sample.a]->AddVectorObject(sample.s, &samples.back());
-        sample.dV = 1.0;
-        sample.V = sample.r;
+        OrderedFixedList<KDNode> node_list = kd_tree[sample.a]->FindKNearestNeighbours(sample.s, K);
+        RBF rbf(sample.s, beta);
+        std::list<std::pair<real, KDNode*> >::iterator it;
+        
+        real w = 0;
+        for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
+            KDNode* node = it->second;
+            TrajectorySample* near_sample = kd_tree[sample.a]->getObject(node);
+            w += rbf.Evaluate(near_sample->s);
+        }
+        if (w < threshold) {
+            threshold = 0.01 * w + 0.99 * threshold;
+            printf ("%f -> %f #thr\n", w, threshold);
+            samples.push_back(sample);
+            kd_tree[sample.a]->AddVectorObject(sample.s, &samples.back());
+            sample.dV = 1.0;
+            sample.V = sample.r;
+        }
     }
 }
 
