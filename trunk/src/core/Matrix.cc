@@ -115,16 +115,16 @@ Matrix::Matrix (const Matrix& rhs, bool clone)
 
     if (clone) {
         x = (real*) malloc (sizeof(real)*K);
-		
+#ifdef REFERENCE_ACCESS
+        MakeReferences();
+#endif
+        
         for (int m=0; m<M; ++m) {
             for (int n=0; n<N; ++n) {
                 (*this)(m,n) = rhs(m,n);
             }
         }
         clear_data = true;
-#ifdef REFERENCE_ACCESS
-        MakeReferences();
-#endif
     } else {
         x = rhs.x;
 #ifdef REFERENCE_ACCESS
@@ -161,18 +161,18 @@ Matrix& Matrix::operator= (const Matrix& rhs)
     const int K = M*N;
     
     x = (real*) realloc (x, sizeof(real)*K);
-    
+#ifdef REFERENCE_ACCESS
+    x_list = (real**) realloc(x_list, rows * sizeof(real*));
+    for (int i=0; i<rows; ++i) {
+        x_list[i] = &x[i*columns];
+    }
+#endif    
     for (int m=0; m<M; ++m) {
         for (int n=0; n<N; ++n) {
             (*this)(m,n) = rhs(m,n);
         }
     }
-#ifdef REFERENCE_ACCESS
-    x_list = (real**) malloc(rows * sizeof(real*));
-    for (int i=0; i<rows; ++i) {
-        x_list[i] = &x[i];
-    }
-#endif
+
 
     return *this;
 }
@@ -199,7 +199,7 @@ void Matrix::Resize (int rows_, int columns_)
 #ifdef REFERENCE_ACCESS
     x_list = (real**) malloc(rows * sizeof(real*));
     for (int i=0; i<rows; ++i) {
-        x_list[i] = &x[i];
+        x_list[i] = &x[i*columns];
     }
 #endif
 

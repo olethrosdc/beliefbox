@@ -162,7 +162,7 @@ int main()
 
 
 
-    //printf("W:\n");
+    printf("Q = W, W = 2W\n");
     Matrix Q = W;
     W = W*2;
     //W.print(stdout);
@@ -180,8 +180,10 @@ int main()
     } else {
         printf ("All tests OK\n");
     }
-
+    double start_time = GetCPU();
     SpeedTest();
+    double end_time = GetCPU();
+    printf ("Total time: %f\n", end_time - start_time);
     
     return n_errors;
 }
@@ -213,7 +215,7 @@ void SpeedTest()
             }
         }
 
-        for (int k=0; k<100; ++k) {
+        for (int k=0; k<10; ++k) {
             D += A*B;
         }
         
@@ -226,6 +228,7 @@ void SpeedTest()
 #endif
 
 /*
-          AMD 64 3200 
-REFERENCE 8.224 (7.548)
+          AMD 64 3200 | Intel Atom N270
+REFERENCE 73 (67)     |
+MULTIPLIC 79 (72)     |
 */
