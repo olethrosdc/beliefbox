@@ -48,10 +48,11 @@ protected:
     real optimism;
     real r_max;
     int max_samples;
+    real threshold;
 public:	
     KNNModel(int n_actions, int n_dim, real gamma_ = 0.9, bool optimistic = true, real optimism_=0.1, real r_max_=0.0);
     ~KNNModel();
-    void AddSample(TrajectorySample sample);
+    void AddSample(TrajectorySample sample, int K, real beta);
     void GetExpectedTransition(real alpha, Vector& x, int action, real& reward, Vector& y, int K, real b);
     real GetExpectedActionValue(Vector& x, int a, int K, real b);
     real GetExpectedValue(Vector& x, int K, real b);

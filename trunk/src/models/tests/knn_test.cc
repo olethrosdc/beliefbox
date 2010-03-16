@@ -50,7 +50,7 @@ bool knn_test(int n_neighbours, real rbf_beta)
         s2[0] = x;
         s2[1] = u;
         TrajectorySample sample(s, 0, 0.0, s2, false);
-        model.AddSample(sample);
+        model.AddSample(sample, n_neighbours, rbf_beta);
         model.GetExpectedTransition(alpha, s, 0, predicted_reward, predicted_state, n_neighbours, rbf_beta);
         real err = EuclideanNorm(&s2, &predicted_state);
         printf ("%f %f %f\n", s[0], s[1], err);
@@ -83,14 +83,14 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
         n_steps++;
         // select an action
         real epsilon = 1.0 / (1.0 + (real) t);
-        if (t > 100) {
+        if (t > 1000) {
             epsilon = 0;
         }
         state = environment.getState();
         if (t < n_actions) {
             action = t;
         } else {
-            if (urandom() < epsilon) {
+            if (urandom() < 0.5) {//epsilon) {
                 action = rand()%n_actions;
             } else {
                 action = model.GetBestAction(state, n_neighbours, rbf_beta);
@@ -115,7 +115,7 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
 
         // update model
         TrajectorySample sample(state, action, reward, next_state, !action_ok);
-        model.AddSample(sample);
+        model.AddSample(sample, n_neighbours, rbf_beta);
         model.UpdateValue(sample, alpha, n_neighbours, rbf_beta);
         // predict next state
         model.GetExpectedTransition(alpha, state, action, predicted_reward, predicted_state, n_neighbours, rbf_beta);        
@@ -136,7 +136,7 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
             for (int a=0; a<=n_actions; ++a) {
                 TrajectorySample sample(environment.getState(), action, reward, environment.getState(), true);
             }
-            model.AddSample(sample);
+            model.AddSample(sample, n_neighbours, rbf_beta);
 
             //printf ("%d # steps: %f %f\n", n_steps, state[0], state[1]);
 

@@ -55,17 +55,20 @@ void ContinuousChain::Simulate(int action)
     }
 
     
-    state[0] += 0.1*input;
+    state[0] += urandom()*.5*input;
 
     reward = -0.1;
     if (state[0] >= 1.0) {
-        reward = 1.0;
-        state[0] = 1.0;
+        reward = 100.0;
+        state[0] = urandom();
     }
 
     if (state[0] <= -1.0) {
         reward = -1.0;
+        state[0] = 0;
     }
+
+
 
     return;
   
