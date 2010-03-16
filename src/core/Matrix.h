@@ -20,7 +20,7 @@
 #include <iostream>
 #include <vector>
 
-#define REFERENCE_ACCESS
+#undef REFERENCE_ACCESS
 
 /// \brief An n-by-m dimensional matrix.
 class Matrix
@@ -132,7 +132,11 @@ real& Matrix::operator() (int i, int j)
         throw std::out_of_range("matrix index out of range");
         }
     }
+#ifdef REFERENCE_ACCESS
+    return x_list[i][j];
+#else
     return x[i*columns + j];
+#endif
 }
 
 inline
