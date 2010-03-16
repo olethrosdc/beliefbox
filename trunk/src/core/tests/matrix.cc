@@ -16,10 +16,14 @@
 #include "Distribution.h"
 #include "NormalDistribution.h"
 #include "EasyClock.h"
+#include "Random.h"
 #include <cstdlib>
 #include <cstdio>
 #include <exception>
 #include <stdexcept>
+
+void SpeedTest();
+
 
 int main()
 {
@@ -54,10 +58,10 @@ int main()
 
     printf("I:\n");
     I.print(stdout);
-
-    fflush(stdout);
-    fflush(stderr);
+    
+    printf("-----------\n");
     printf("# W==W*I: ");
+
     if (W!=I*W) {
         n_errors++;
         printf ("FAILED\n");
@@ -66,7 +70,7 @@ int main()
         printf ("OK\n");
     }
 
-    printf("# (W*W)' == (W*W')': ");;
+    printf("# (W*W)' == (W*W')': ");
     if (W*Transpose(W) == Transpose(W*Transpose(W))) {
         printf("OK\n");
     } else {
@@ -101,13 +105,13 @@ int main()
     
     if (!caught) {
         n_errors++;
-        printf ("ERR - Domain error not caught\n");
+        printf ("FAILED - Domain error not caught\n");
     }
     
  
     if (W*2.0 != W+W) {
         n_errors++;
-        printf ("# matrix-scalar multiplication ERR\n");
+        printf ("# matrix-scalar multiplication FAILED\n");
     } else {
         printf ("# matrix-scalar multiplication OK\n");
     }
@@ -117,7 +121,7 @@ int main()
     printf ("# vector transposition and multiplication OK\n"); 
 
     printf("I*u: ");
-    (I*u).print(stdout);
+    ((const Matrix&) I*(const Vector&) u).print(stdout);
     printf ("# OK\n"); 
 
     try {
@@ -176,9 +180,52 @@ int main()
     } else {
         printf ("All tests OK\n");
     }
+
+    SpeedTest();
     
     return n_errors;
 }
 
+void SpeedTest()
+{
+    for (int iter=0; iter<1000; iter++) {
+
+        int K = ceil(urandom() * 100);
+        int M = ceil(urandom() * 100);
+        int N = ceil(urandom() * 100);
+        
+        Matrix A(K, M);
+        for (int i=0; i<K; ++i) {
+            for (int j=0; j<M; ++j) {
+                A(i,j) = urandom();
+            }
+        }
+        Matrix B(M, N);
+        for (int i=0; i<M; ++i) {
+            for (int j=0; j<N; ++j) {
+                B(i,j) = urandom();
+            }
+        }
+        Matrix D(K, N);
+        for (int i=0; i<K; ++i) {
+            for (int j=0; j<N; ++j) {
+                D(i,j) = urandom();
+            }
+        }
+
+        for (int k=0; k<100; ++k) {
+            D += A*B;
+        }
+        
+    }
+}
+
+
+
 
 #endif
+
+/*
+          AMD 64 3200 
+REFERENCE 8.224 (7.548)
+*/

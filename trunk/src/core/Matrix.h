@@ -20,6 +20,8 @@
 #include <iostream>
 #include <vector>
 
+#define REFERENCE_ACCESS
+
 /// \brief An n-by-m dimensional matrix.
 class Matrix
 {
@@ -73,6 +75,10 @@ protected:
     int rows; ///< number of rows in the matrix
     int columns; ///< number of columns in the matrix
     real* x; ///< data
+#ifdef REFERENCE_ACCESS
+    real** x_list; ///< data pointers
+    void MakeReferences();
+#endif
     const enum BoundsCheckingStatus checking_bounds;
     bool transposed;
     bool clear_data;
@@ -146,19 +152,31 @@ const real& Matrix::operator() (int i, int j) const
             throw std::out_of_range("matrix index out of range");
         }
     }
+#ifdef REFERENCE_ACCESS
+    return x_list[i][j];
+#else
     return x[i*columns + j];
+#endif
 }
 
 inline
 const real& Matrix::qGet(int i, int j)
 {
+#ifdef REFERENCE_ACCESS
+    return x_list[i][j];
+#else
     return x[i*columns + j];
+#endif
 }
 
 inline
 void Matrix::qSet(int i, int j, real v)
 {
+#ifdef REFERENCE_ACCESS
+    x_list[i][j] = v;
+#else
     x[i*columns + j] = v;
+#endif
 }
 
 #endif
