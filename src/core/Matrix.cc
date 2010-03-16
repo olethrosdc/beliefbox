@@ -45,6 +45,15 @@ Matrix Transpose(const Matrix& rhs)
     return tmp;
 }
 
+#ifdef REFERENCE_ACCESS
+void Matrix::MakeReferences() {
+    x_list = (real**) malloc(rows * sizeof(real*));
+    for (int i=0; i<rows; ++i) {
+        x_list[i] = &x[i*columns];
+    }
+}
+#endif
+
 Matrix::Matrix (int rows_, int columns_,  enum BoundsCheckingStatus check_)
     : rows(rows_),
       columns(columns_),
@@ -54,6 +63,9 @@ Matrix::Matrix (int rows_, int columns_,  enum BoundsCheckingStatus check_)
 {
     int N = rows*columns;
     x = (real*) calloc(N, sizeof(real));
+#ifdef REFERENCE_ACCESS
+    MakeReferences();
+#endif
 }
 
 Matrix::Matrix (int rows_, int columns_, real* y, enum BoundsCheckingStatus check_)
@@ -64,6 +76,10 @@ Matrix::Matrix (int rows_, int columns_, real* y, enum BoundsCheckingStatus chec
       transposed(false),
       clear_data(true)
 {
+#ifdef REFERENCE_ACCESS
+    MakeReferences();
+#endif
+
 }
 
 Matrix::Matrix (const Vector& v, enum BoundsCheckingStatus check_)
@@ -77,6 +93,10 @@ Matrix::Matrix (const Vector& v, enum BoundsCheckingStatus check_)
     for (int i=0; i<rows; ++i) {
         x[i] = v[i];
     }
+#ifdef REFERENCE_ACCESS
+    MakeReferences();
+#endif
+
 }
 
 
@@ -102,17 +122,26 @@ Matrix::Matrix (const Matrix& rhs, bool clone)
             }
         }
         clear_data = true;
+#ifdef REFERENCE_ACCESS
+        MakeReferences();
+#endif
     } else {
         x = rhs.x;
+#ifdef REFERENCE_ACCESS
+        x_list = rhs.x_list;
+#endif
         clear_data = false;
     }
-	
+
 }
 
 Matrix::~Matrix()
 {
     if (clear_data) {
         free(x);
+#ifdef REFERENCE_ACCESS
+        free(x_list);
+#endif
     }
 }
 
@@ -132,12 +161,19 @@ Matrix& Matrix::operator= (const Matrix& rhs)
     const int K = M*N;
     
     x = (real*) realloc (x, sizeof(real)*K);
-
+    
     for (int m=0; m<M; ++m) {
         for (int n=0; n<N; ++n) {
             (*this)(m,n) = rhs(m,n);
         }
     }
+#ifdef REFERENCE_ACCESS
+    x_list = (real**) malloc(rows * sizeof(real*));
+    for (int i=0; i<rows; ++i) {
+        x_list[i] = &x[i];
+    }
+#endif
+
     return *this;
 }
 
@@ -159,6 +195,14 @@ void Matrix::Resize (int rows_, int columns_)
             (*this)(m,n) = 0.0;
         }
     }
+
+#ifdef REFERENCE_ACCESS
+    x_list = (real**) malloc(rows * sizeof(real*));
+    for (int i=0; i<rows; ++i) {
+        x_list[i] = &x[i];
+    }
+#endif
+
 }
 
 
