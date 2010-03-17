@@ -15,11 +15,12 @@ public:
     Matrix params;
     Vector bias;
     LinearClassifier(int n_inputs_, int n_classes_);
-    int Classify(const Vector x)
+    int Classify(const Vector& x)
     {
         return ArgMax(Output(x));
     }
-    Vector Output(const Vector x);
+    Vector Output(const Vector& x);
+    void Show();
 };
 
 class StochasticGradientClassifier
@@ -41,8 +42,8 @@ public:
         assert(alpha_ >= 0);
         alpha = alpha_;
     }
-    void Observe(Vector x, int label);
-
+    void Observe(const Vector& x, int label);
+    
 };
 
 #endif

@@ -106,7 +106,7 @@ Matrix::Matrix (const Matrix& rhs, bool clone)
     : rows(rhs.Rows()),
       columns(rhs.Columns()),
       checking_bounds(rhs.checking_bounds),
-      transposed(false)
+      transposed(rhs.transposed)
 {
 
     const int M = rows;
@@ -118,7 +118,6 @@ Matrix::Matrix (const Matrix& rhs, bool clone)
 #ifdef REFERENCE_ACCESS
         MakeReferences();
 #endif
-        
         for (int m=0; m<M; ++m) {
             for (int n=0; n<N; ++n) {
                 (*this)(m,n) = rhs(m,n);
@@ -415,17 +414,19 @@ Matrix operator* (const Vector& lhs, const Matrix& rhs)
 Vector operator* (const Matrix& lhs, const Vector& rhs)
 {
     if (rhs.Size() != lhs.Columns()) {
+        fprintf (stderr, "Multiplication: (%d x %d) * (%d x 1)\n", lhs.Rows(), lhs.Columns(), rhs.Size());
         throw std::domain_error("matrix-vector multiplication error\n");
     }
 
-    Vector v(lhs.Rows());
+    int K = lhs.Rows();
+    int N = lhs.Columns();
 
-    int K = lhs.Columns();
-    int N = lhs.Rows();
+    Vector v(K);
+
     for (int i=0; i<K; ++i) {
         real vi = 0;
         for (int j=0; j<N; ++j) {
-            vi += lhs(i,j) * rhs(i);
+            vi += lhs(i,j) * rhs(j);
         }
         v(i) = vi;
     }
