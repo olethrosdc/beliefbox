@@ -124,6 +124,19 @@ int main()
     ((const Matrix&) I*(const Vector&) u).print(stdout);
     printf ("# OK\n"); 
 
+    printf("V*z: ");
+    Matrix V(2,4);
+    Vector z(4);
+    for (int i=0; i<V.Rows(); ++i) {
+        for (int j=0; j<V.Columns(); ++j) {
+            V(i,j) = true_random(false);
+        }
+    }
+    for (int j=0; j<z.Size(); ++j) {
+        z(j)= true_random(false);
+    }
+    ((const Matrix&) V*(const Vector&) z).print(stdout);
+
     try {
         caught = false;
         printf("u*I:\n");
