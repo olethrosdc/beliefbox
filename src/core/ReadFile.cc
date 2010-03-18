@@ -62,7 +62,7 @@ int ReadClassData(Matrix& data, std::vector<int>& labels, char* fname)
         for (int i=0; i<columns - 1; ++i) {
             int success = fscanf(file, "%lf", &data(t,i));
             if (success <=0) {
-                Serror("Could not scan file, line %d, column %d\n", t, i);
+                Serror("Could not scan file, line %d, column %d, suc: %d, errno: %d\n", t, i, success, errno);
             }
         }
         int success = fscanf(file, "%d", &labels[t]);

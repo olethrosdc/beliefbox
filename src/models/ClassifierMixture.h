@@ -9,34 +9,33 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CLASSIFIER_H
-#define CLASSIFIER_H
+#ifndef CLASSIFIER_MIXTURE_H
+#define CLASSIFIER_MIXTURE_H
 
-template <typename InputSet, typename ClassSet>
-class AbstractClassifier
-{
-protected:
-public:
-    virtual ~AbstractClassifier() {}
-    virtual ClassSet classify(InputSet x) = 0;
-};
+#include "LinearClassifier.h"
+#include <vector>
 
-template <typename InputSet, typename ClassSet, typename Method>
-class Classifier : public AbstractClassifier<InputSet, ClassSet>
+class LinearClassifierMixture
 {
-protected:
-    Method* method;
 public:
-    Classifier(Method* method_) : method(method_)
+    const int n_inputs;
+    const int n_classes;
+    std::vector<LinearClassifier*> classifiers;
+    Vector w; ///< classifier weights
+    Vector P; ///< classifier selection probabilities
+    Vector output;
+    real alpha;
+    LinearClassifierMixture(int n_inputs_, int n_classes_,
+                            int n_classifiers);
+    ~LinearClassifierMixture();
+    int Classify(const Vector& x)
     {
+        return ArgMax(Output(x));
     }
-    virtual ~Classifier()
-    {
-    }
-    virtual ClassSet classify(InputSet x)
-    {
-        return method->classify(x);
-    }
+    Vector& Output(const Vector& x);
+    void Observe(const Vector& x, int label);
+    void Show();
+    void setStepSize(real step_size);
 };
 
 #endif

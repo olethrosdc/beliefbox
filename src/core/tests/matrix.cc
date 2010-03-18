@@ -203,7 +203,7 @@ int main()
 
 void SpeedTest()
 {
-    for (int iter=0; iter<1000; iter++) {
+    for (int iter=0; iter<100; iter++) {
 
         int K = ceil(urandom() * 100);
         int M = ceil(urandom() * 100);
