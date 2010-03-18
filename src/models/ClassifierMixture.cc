@@ -102,7 +102,7 @@ void HashedClassifierMixture::Observe(const Vector& x, int label)
     }
 
     for (int i=0; i<(int) classifiers.size(); ++i) {
-        if (hash & i) {
+        if (hash & 11) {
             //printf ("1");
             classifiers[i]->Observe(x, label);
         } else {

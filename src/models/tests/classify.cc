@@ -89,13 +89,13 @@ int main(int argc, char** argv)
             }
         }
     }
-
+    
     //LinearClassifier classifier(n_inputs, n_classes);
     //LinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
     HashedClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
 
     int n_iter = 32;
-    real alpha = 0.001;
+    real alpha = 0.01;
 
     printf ("# K: %d, T: %d, d: %d inputs, n: %d classes, iter:%d, alpha: %f\n",
             n_classifiers,
