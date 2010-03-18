@@ -11,6 +11,7 @@
 
 #include "ClassifierMixture.h"
 #include "Distribution.h"
+#include "Random.h"
 
 LinearClassifierMixture::LinearClassifierMixture(int n_inputs_,
                                                  int n_classes_,
@@ -82,3 +83,31 @@ void LinearClassifierMixture::Show()
 }
 
 
+HashedClassifierMixture::HashedClassifierMixture(int n_inputs_, int n_classes_, int n_classifiers) : LinearClassifierMixture(n_inputs_, n_classes_, n_classifiers)
+{
+    secret = true_random_bits(false);
+}
+
+
+void HashedClassifierMixture::Observe(const Vector& x, int label)
+{
+    assert(x.Size() == n_inputs);
+    assert(label >= 0 && label < n_classes);
+
+    unsigned long hash = secret;
+    for (int i=0; i<x.Size(); ++i) {
+        void* ptr = (void*) &x[i];
+        unsigned long xi = *((unsigned long*) ptr);
+        hash ^= xi;
+    }
+
+    for (int i=0; i<(int) classifiers.size(); ++i) {
+        if (hash & i) {
+            //printf ("1");
+            classifiers[i]->Observe(x, label);
+        } else {
+            //printf("0");
+        }
+        hash = hash >> 1;
+    }
+}

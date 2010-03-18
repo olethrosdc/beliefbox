@@ -27,15 +27,31 @@ public:
     real alpha;
     LinearClassifierMixture(int n_inputs_, int n_classes_,
                             int n_classifiers);
-    ~LinearClassifierMixture();
+    virtual ~LinearClassifierMixture();
     int Classify(const Vector& x)
     {
         return ArgMax(Output(x));
     }
     Vector& Output(const Vector& x);
-    void Observe(const Vector& x, int label);
+    virtual void Observe(const Vector& x, int label);
     void Show();
     void setStepSize(real step_size);
 };
+
+class HashedClassifierMixture : public LinearClassifierMixture
+{
+protected:
+    unsigned long secret;
+public:
+    
+    HashedClassifierMixture(int n_inputs_, int n_classes_, int n_classifiers); 
+    virtual ~HashedClassifierMixture()
+    {
+    }
+    virtual void Observe(const Vector& x, int label);
+};
+
+
+
 
 #endif
