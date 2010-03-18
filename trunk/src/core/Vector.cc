@@ -101,7 +101,7 @@ Vector::~Vector()
     }
 }
 
-void Vector::print(FILE* f)
+void Vector::print(FILE* f) const
 {
     for (int i=0; i<n; ++i) {
         fprintf (f, "%f ", x[i]);

@@ -75,7 +75,7 @@ public:
     Vector& operator-= (const real& rhs);
     Vector& operator*= (const real& rhs);
     Vector& operator/= (const real& rhs);
-    void print(FILE* f);
+    void print(FILE* f) const;
 private:
     int maxN;
     enum BoundsCheckingStatus checking_bounds;
@@ -108,6 +108,24 @@ inline void PutVal (Vector* v, int i, real x) {
 
 
 class Matrix;
+
+inline void SoftMax (Vector& src, Vector& dst, real beta)
+{                                            
+    int n = src.Size();
+    if (dst.Size() != n) {
+        dst.Resize(n);
+    }                                           
+    SoftMax(n, &src[0], &dst[0], beta);
+}
+
+inline void SoftMin (Vector& src, Vector& dst, real beta)
+{                                            
+    int n = src.Size();
+    if (dst.Size() != n) {
+        dst.Resize(n);
+    }                                           
+    SoftMin(n, &src[0], &dst[0], beta);
+}
 
 void Add (const Vector* lhs, const Vector* rhs, Vector* res); 
 void Sub (const Vector* lhs, const Vector* rhs, Vector* res);

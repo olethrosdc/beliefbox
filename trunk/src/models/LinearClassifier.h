@@ -17,6 +17,7 @@
 #include "Vector.h"
 #include "Matrix.h"
 
+
 class LinearClassifier
 {
 public:
@@ -24,55 +25,24 @@ public:
     const int n_classes;
     Matrix params;
     Vector bias;
+    Vector hidden;
+    Vector output;
+    Vector dc_dg;
+    Vector dg_df;
+    real alpha;
     LinearClassifier(int n_inputs_, int n_classes_);
     int Classify(const Vector& x)
     {
         return ArgMax(Output(x));
     }
-    Vector Output(const Vector& x);
-    void Show();
-};
-
-class LinearClassifierMixture
-{
-public:
-    const int n_inputs;
-    const int n_classes;
-    std::vector<LinearClassifier*> classifiers;
-    Vector w;
-    LinearClassifierMixture(std::vector<LinearClassifier*> classifiers_,
-                            Vector w_)
-    {
-    }
-    int Classify(const Vector& x)
-    {
-        return ArgMax(Output(x));
-    }
-    Vector Output(const Vector& x);
-    void Show();
-};
-
-class StochasticGradientClassifier
-{
-protected:
-    LinearClassifier& classifier;
-    real alpha;
-    Matrix& params;
-    Vector& bias;
-public:
-    StochasticGradientClassifier(LinearClassifier& classifier_) : 
-        classifier(classifier_),
-        alpha(0.1),
-        params(classifier.params),
-        bias(classifier.bias)
-    {
-    }
-    void setStepSize(real alpha_) {
-        assert(alpha_ >= 0);
-        alpha = alpha_;
-    }
+    Vector& Output(const Vector& x);
     void Observe(const Vector& x, int label);
-    
+    void Show();
+    void setStepSize(real step_size) {
+        alpha = step_size;
+    }
 };
+
+
 
 #endif

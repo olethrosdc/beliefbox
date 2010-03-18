@@ -14,16 +14,20 @@
 
 LinearClassifier::LinearClassifier(int n_inputs_, int n_classes_)
     : n_inputs(n_inputs_), n_classes(n_classes_),
-      params(n_inputs, n_classes), bias(n_classes)
+      params(n_inputs, n_classes), bias(n_classes),
+      output(n_classes),
+      dc_dg(n_classes), dg_df(n_classes),
+      alpha(0.1)
 {
-    for (int i=0; i<n_inputs; ++i) {
-        for (int j=0; j<n_classes; ++j) {
+    for (int j=0; j<n_classes; ++j) {
+        for (int i=0; i<n_inputs; ++i) {
             params(i,j) = urandom() - 0.5;
         }
+        bias(j) = urandom() - 0.5;
     }
 }
 
-Vector LinearClassifier::Output(const Vector& x)
+Vector& LinearClassifier::Output(const Vector& x)
 {
     Matrix tmp(n_classes, n_inputs);
     for (int i=0; i<n_inputs; ++i) {
@@ -31,8 +35,9 @@ Vector LinearClassifier::Output(const Vector& x)
             tmp(j,i) = params(i,j);
         }
     }
-    Vector out = exp(((const Matrix&) tmp)* x + bias);
-    return out / out.Sum();
+    hidden = ((const Matrix&) tmp)* x + bias;
+    SoftMax(hidden, output, 1.0);
+    return output;
 }
 
 void LinearClassifier::Show()
@@ -41,18 +46,39 @@ void LinearClassifier::Show()
 }
 
 
-void StochasticGradientClassifier::Observe(const Vector& x, int label)
+void LinearClassifier::Observe(const Vector& x, int label)
 {
-    assert(x.Size() == classifier.n_inputs);
-    assert(label >= 0 && label < classifier.n_classes);
-    real y = classifier.Output(x)[label];
-    if (y < 0) {
-        y = 0;
+    assert(x.Size() == n_inputs);
+    assert(label >= 0 && label < n_classes);
+    Output(x);
+#if 0
+    printf("# x: "); x.print(stdout);
+    printf("# f: "); hidden.print(stdout);
+    printf("# g: "); output.print(stdout);
+#endif
+    dc_dg.Clear();
+    dc_dg(label) = 1;
+
+    real sum = 0.0;
+    for (int j=0; j<n_classes; ++j) {
+        //dc_dg(j) -= output(j);
+        sum += dc_dg(j);
     }
-    real eta = alpha * (exp(- y));
-    for (int i=0; i<classifier.n_inputs; ++i) {
-        params(i, label) += eta * x(i);
+
+    for (int j=0; j<n_classes; ++j) {
+        //        dg_df(j) = hidden(j) * output(j) * (1 + output(j));
+        dg_df(j) = dc_dg(j) - output(j) * sum;
     }
-    bias(label) += eta;
+
+    for (int j=0; j<n_classes; ++j) {
+        real delta = alpha * dc_dg(j) * dg_df(j);
+        for (int i=0; i<n_inputs; ++i) {
+            params(i, j) += delta * x(i);
+        }
+        bias(j) += delta;
+    }
+
 }
+
+
 
