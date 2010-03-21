@@ -13,6 +13,7 @@
 #define CLASSIFIER_MIXTURE_H
 
 #include "LinearClassifier.h"
+#include "Random.h"
 #include <vector>
 
 class LinearClassifierMixture
@@ -38,17 +39,80 @@ public:
     void setStepSize(real step_size);
 };
 
-class HashedClassifierMixture : public LinearClassifierMixture
+class HashedLinearClassifierMixture : public LinearClassifierMixture
 {
 protected:
     unsigned long secret;
 public:
     
-    HashedClassifierMixture(int n_inputs_, int n_classes_, int n_classifiers); 
-    virtual ~HashedClassifierMixture()
+    HashedLinearClassifierMixture(int n_inputs_, int n_classes_, int n_classifiers); 
+    virtual ~HashedLinearClassifierMixture()
     {
     }
     virtual void Observe(const Vector& x, int label);
+};
+
+
+template <class T>
+class HashedClassifierMixture 
+{
+protected:
+    const int n_inputs;
+    const int n_classes;
+    std::vector<T*> classifiers;
+    unsigned long secret;
+public:
+    Vector output;
+    HashedClassifierMixture(int n_inputs_,
+                            int n_classes_,
+                            std::vector<T*>& classifiers_)
+        : n_inputs(n_inputs_),
+          n_classes(n_classes_),
+          classifiers(classifiers_),
+          output(n_classes)
+    {
+        secret = true_random_bits(false);
+    }
+    ~HashedClassifierMixture()
+    {
+    }
+
+    void Observe(Vector& x, int label)
+    {
+        assert(x.Size() == n_inputs);
+        assert(label >= 0 && label < n_classes);
+        
+        unsigned long hash = secret;
+        for (int i=0; i<x.Size(); ++i) {
+            void* ptr = (void*) &x[i];
+            unsigned long xi = *((unsigned long*) ptr);
+            hash ^= xi;
+        }
+        
+        for (int i=0; i<(int) classifiers.size(); ++i) {
+            if (hash & 1) {
+                //printf ("1");
+                classifiers[i]->Observe(x, label);
+            } else {
+                //printf("0");
+            }
+            hash = hash >> 1;
+        }
+    }
+    int Classify(Vector& x)
+    {
+        return ArgMax(Output(x));
+    }
+    Vector& Output(Vector& x)
+    {
+        output.Clear();
+        real w = 1.0 / (real) classifiers.size();
+        for (int i=0; i<(int) classifiers.size(); ++i) {
+            output += classifiers[i]->Output(x);
+        }
+        output *= w;
+        return output;
+    }
 };
 
 

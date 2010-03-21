@@ -83,13 +83,13 @@ void LinearClassifierMixture::Show()
 }
 
 
-HashedClassifierMixture::HashedClassifierMixture(int n_inputs_, int n_classes_, int n_classifiers) : LinearClassifierMixture(n_inputs_, n_classes_, n_classifiers)
+HashedLinearClassifierMixture::HashedLinearClassifierMixture(int n_inputs_, int n_classes_, int n_classifiers) : LinearClassifierMixture(n_inputs_, n_classes_, n_classifiers)
 {
     secret = true_random_bits(false);
 }
 
 
-void HashedClassifierMixture::Observe(const Vector& x, int label)
+void HashedLinearClassifierMixture::Observe(const Vector& x, int label)
 {
     assert(x.Size() == n_inputs);
     assert(label >= 0 && label < n_classes);
@@ -102,7 +102,7 @@ void HashedClassifierMixture::Observe(const Vector& x, int label)
     }
 
     for (int i=0; i<(int) classifiers.size(); ++i) {
-        if (hash & 11) {
+        if (hash & 1) {
             //printf ("1");
             classifiers[i]->Observe(x, label);
         } else {
