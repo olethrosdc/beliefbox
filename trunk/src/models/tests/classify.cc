@@ -89,13 +89,13 @@ int main(int argc, char** argv)
             }
         }
     }
-    
+
     //LinearClassifier classifier(n_inputs, n_classes);
     //LinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
-    HashedClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
+    HashedLinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
 
     int n_iter = 32;
-    real alpha = 0.01;
+    real alpha = 0.001;
 
     printf ("# K: %d, T: %d, d: %d inputs, n: %d classes, iter:%d, alpha: %f\n",
             n_classifiers,
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
             accuracy += classifier.output(labels[t]);
             classifier.Observe(x, labels[t]);
         }
-        printf ("%f %f\n", n_errors / (real) T, accuracy / (real) T);
+        //printf ("%f %f\n", n_errors / (real) T, accuracy / (real) T);
     }
     
     if (1) {
