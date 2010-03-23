@@ -35,7 +35,7 @@ protected:
     int n_classes;
     int n_dim;
     int K;
-    KDTree<DataSample>* kd_tree;
+    KDTree<DataSample> kd_tree;
     std::list<DataSample> samples;
     void AddSample(DataSample sample);
 public:	
