@@ -24,15 +24,13 @@
  */
 KNNClassifier::KNNClassifier(int n_classes_, int n_dim_, int K_)
     : n_classes(n_classes_), n_dim(n_dim_), K(K_),
-      output(n_classes)
+      kd_tree(n_dim), output(n_classes)
 {
-    kd_tree = new KDTree<DataSample> (n_dim);
 }
 
 /// Delete model, as well as the kd_tree
 KNNClassifier::~KNNClassifier()
 {
-    delete kd_tree;
 }
 
 /** Add a sample to the model
@@ -47,7 +45,7 @@ KNNClassifier::~KNNClassifier()
 void KNNClassifier::AddSample(DataSample sample)
 {
     samples.push_back(sample);
-    kd_tree->AddVectorObject(sample.x, &samples.back());
+    kd_tree.AddVectorObject(sample.x, &samples.back());
 }
 
 
@@ -69,12 +67,12 @@ Vector& KNNClassifier::Output(Vector& x)
 
     real w = 1.0 / (real) K;
 
-    OrderedFixedList<KDNode> node_list = kd_tree->FindKNearestNeighbours(x, K);
+    OrderedFixedList<KDNode> node_list = kd_tree.FindKNearestNeighbours(x, K);
     std::list<std::pair<real, KDNode*> >::iterator it;
     int i=0;
     for (it = node_list.S.begin(); it != node_list.S.end(); ++it, ++i) {
         KDNode* node = it->second;
-        DataSample* sample = kd_tree->getObject(node);
+        DataSample* sample = kd_tree.getObject(node);
         output[sample->label] += w;
     }
     return output;
