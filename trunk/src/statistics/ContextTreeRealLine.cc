@@ -24,7 +24,7 @@ ContextTreeRealLine::Node::Node(real lower_bound_,
 	  prev(NULL),
 	  next(n_branches),
       alpha(n_branches),
-      w(1), log_w(0), log_w_prior(0),
+      w(1), log_w(0), log_w_prior(-log(2)),
       S(0)
 {
     SMART_ASSERT(lower_bound < upper_bound)(lower_bound)(upper_bound);
@@ -44,7 +44,7 @@ ContextTreeRealLine::Node::Node(ContextTreeRealLine::Node* prev_,
 	  next(n_branches),
       alpha(n_branches),
 	  log_w(0),
-	  log_w_prior(prev_->log_w_prior - log(2)),
+	  log_w_prior(-log(2)),//prev_->log_w_prior- log(2)),
       S(0)
 	  //log_w_prior( - log(10))
 {
@@ -65,17 +65,31 @@ ContextTreeRealLine::Node::~Node()
 }
 
 /** Observe new data, adapt parameters.
+    
+    Each node corresponds to an interval C.
+    The probability of \f$x\f$ is
+    \f[
+    P(X | C_k) = U(C_k) w_k + (1 - w_k) [a_{k,0} / n_k P(X | C_{k,0}) + a_{k,1} / n_k P(X | C_{k,1})]
+    \f]
+    of course, if $X \in C_k^i$ then
+    \f[
+    P(X | C_k) = U(C_k) w_k + (1 - w_k) [a_{k,i} / n_k P(X | C_{k,i}]
+    \f]
 
-    We basically ignore the probability given by the previous model,
-    since this is a much simpler case.
-
-    We only care about the fact that the previous model posits a
-    uniform distribution for the interval of the current model, while
-    the current model posits a mixture of two uniform distributions.
-
-    Thus, the only thing that matters (for estimating the weights) is
-    the ratio of uniform to non-uniform probabilities.
-
+    Or in long hand
+    \f[
+    P(X | C) = P(U | C) P(X | U, C) + [1 - P(U | C)] P(X | C') P(C' | C, \not U)
+    \f]
+    That means that
+    \f[
+    P(U | X, C) = P(X | U, C) P(U | C) / P(X | C).
+    \f]
+    
+    This algorithm uses the same structure of uniform / non-uniform mixture
+    as in Marcus Hutter's work Bayesian Infinite Trees.
+    
+    However, it is significantly simplified and does not use the same
+    posterior recursion.
 */
 real ContextTreeRealLine::Node::Observe(real x,
                                         real probability)
@@ -88,27 +102,14 @@ real ContextTreeRealLine::Node::Observe(real x,
         k = 1;
     }
 
-    real Z = 1.0 / (upper_bound - lower_bound);
-    real P_uniform =  Z * 0.5;
-    P = Z * (1.0 + alpha[k]) / (2.0 + S);
+    real P_uniform = 1.0 / (upper_bound - lower_bound);
+    P =  (1.0 + alpha[k]) / (2.0 + S);
 
     alpha[k] ++;
 
     w = exp(log_w_prior + log_w); 
+    //real total_probability = P_uniform * w + (1 - w) * P;
 
-    real total_probability = P * w + (1 - w) * P_uniform;
-
-#if 0
-    std::cout << depth << ": P(y|h_k)=" << P
-              << ", P(h_k|B_k)=" << w 
-              << ", P(y|B_{k-1})="<< probability
-              << ", P(y|B_k)=" << total_probability
-              << std::endl;
-#endif
-    log_w = log(w * P /total_probability) - log_w_prior;
-
-    // Go deeper when there has been at least one observations
-    // at the node. 
     real threshold = 1;
 	if ((max_depth==0 || depth < max_depth) && S >  threshold) {
 		if (!next[k]) {
@@ -118,8 +119,25 @@ real ContextTreeRealLine::Node::Observe(real x,
                 next[k] = new Node(this, new_bound, upper_bound);
             }
 		}
-		total_probability = next[k]->Observe(x, total_probability);
-	}
+		//total_probability = next[k]->Observe(x, total_probability);
+		P *= next[k]->Observe(x, P);
+    } else {
+        P *= 2 * P_uniform;
+    }
+    real total_probability = P_uniform * w + (1 - w) * P;
+
+
+#if 0
+    std::cout << depth << ": P(y|h_k)=" << P
+              << ", P(h_k|B_k)=" << w 
+              << ", P(y|B_{k-1})="<< probability
+              << ", P(y|B_k)=" << total_probability
+              << std::endl;
+#endif
+
+    log_w = log(w * P_uniform / total_probability) - log_w_prior;
+
+
 
     S++;
 	return total_probability;
@@ -144,21 +162,19 @@ real ContextTreeRealLine::Node::pdf(real x,
     } else {
         k = 1;
     }
-    
-    real Z = 1.0 / (upper_bound - lower_bound);
-    real P_uniform =  Z * 0.5;
-    P = Z * (1.0 + alpha[k]) / (2.0 + S);
+    real P_uniform = 1.0 / (upper_bound - lower_bound);
+    P =  (1.0 + alpha[k]) / (2.0 + S);
 
     w = exp(log_w_prior + log_w); 
-    real total_probability =  P * w + (1 - w) * P_uniform;
-    // Go deeper when there has been at least one observations
-    // at the node. 
+
     real threshold = 1;
-	if (S >  threshold) {
-		if (next[k]) {
-            total_probability = next[k]->pdf(x, total_probability);
-        }
-	}
+	if (S >  threshold && next[k]) {
+		P *= next[k]->pdf(x, P);
+    } else {
+        P *= 2 * P_uniform;
+    }
+    real total_probability = P_uniform * w + (1 - w) * P;
+
 	return total_probability;
 }
 
@@ -203,13 +219,13 @@ ContextTreeRealLine::~ContextTreeRealLine()
 
 real ContextTreeRealLine::Observe(real x)
 {
-	return root->Observe(x, 0);
+	return root->Observe(x, 1);
 }
 
 
 real ContextTreeRealLine::pdf(real x)
 {
-	return root->pdf(x, 0);
+	return root->pdf(x, 1);
 }
 
 void ContextTreeRealLine::Show()
