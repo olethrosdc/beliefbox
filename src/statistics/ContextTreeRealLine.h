@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTEXT_TREE_H
-#define CONTEXT_TREE_H
+#ifndef CONTEXT_TREE_REAL_LINE_H
+#define CONTEXT_TREE_REAL_LINE_H
 
 #include <vector>
 #include "real.h"
@@ -18,53 +18,56 @@
 #include "Ring.h"
 
 
-/** An alternative context tree implementation.
+/** Context tree on the real line.
 
-    Somewhat more generic.
-    
-    
+    Generalises the BVMM paper.
+
 */
-class ContextTree
+class ContextTreeRealLine
 {
 public:
 	// public classes
 	struct Node
 	{
-        int n_branches;
-        int n_outcomes;
-        int depth; ///< depth
+        real lower_bound; ///< looks at x > lower_bound
+        real upper_bound; ///< looks at x < upper_bound
+        real new_bound; ///< how to split
+        const int n_branches; ///< number of branches
+        const int depth; ///< depth of the node
+        const int max_depth; ///< maximum depth
         Node* prev; ///< previous node
         std::vector<Node*> next; ///< pointers to next nodes
-		Vector P; ///< probability of next symbols
-		Vector alpha; ///< parameters of next symbols
-        const real prior_alpha; ///< implicit prior value of alpha
+		real P; ///< probability of next symbols
+        Vector alpha; ///< number of times seen in each quadrant
         real w; ///< backoff weight
         real log_w; ///< log of w
         real log_w_prior; ///< initial value
-		Node(int n_branches_,
-			 int n_outcomes_);
-		Node(Node* prev_);
+		Node(real lower_bound_,
+             real upper_bound_,
+             int n_branches_,
+             int max_depth_);
+		Node(Node* prev_, real lower_bound_, real upper_bound_);
 		~Node();
-		real Observe(Ring<int>& history,
-					 Ring<int>::iterator x,
-					 int y,
+		real Observe(real x,
 					 real probability);
+		real pdf(real x,
+                 real probability);
 		void Show();
 		int NChildren();	
+        int S;
 	};
 	
 	// public methods
-	ContextTree(int n_branches_, int n_symbols_, int max_depth_= 0);
-	~ContextTree();
-	real Observe(int x, int y);
+	ContextTreeRealLine(int n_branches_ = 2, int max_depth_= 0);
+	~ContextTreeRealLine();
+	real Observe(real x);
+	real pdf(real x);
 	void Show();
 	int NChildren();
 protected: 
 	int n_branches;
-	int n_symbols;
 	int max_depth;
 	Node* root;
-    Ring<int> history;
 };
 
 
