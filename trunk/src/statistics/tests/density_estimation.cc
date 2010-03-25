@@ -48,21 +48,25 @@ int main (int argc, char** argv)
         exit(-1);
     }
 
-    BetaDistribution distribution(Alpha,Beta);
+    //BetaDistribution distribution(Alpha,Beta);
+    //BetaDistribution distribution2(2*Beta,Alpha);
+    NormalDistribution distribution(Alpha,Beta);
+    //NormalDistribution distribution2(Beta,Alpha);
     ContextTreeRealLine pdf(2, max_depth, -RAND_MAX, RAND_MAX);
+    //ContextTreeRealLine pdf(2, max_depth, 0, 1);
+
     int randomise = urandom()*10000;
     for (int i=0; i<randomise; i++) {
         distribution.generate();
     }
     for (int t=0; t<T; ++t) {
-        real x = distribution.generate();
+        real x= distribution.generate();
         real p = pdf.Observe(x);
         //printf ("%f %f #X\n", x, p);
-
-        //        std::cout << p << std::endl;
+        //std::cout << p << std::endl;
     }
 #if 1
-    for (real x=-1; x<2; x+=0.001) {
+    for (real x=-10; x<10; x+=0.001) {
         real p = pdf.pdf(x);
         printf ("%f %f #Y\n", x, p);
     }
