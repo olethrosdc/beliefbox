@@ -49,7 +49,7 @@ int main (int argc, char** argv)
     }
 
     BetaDistribution distribution(Alpha,Beta);
-    ContextTreeRealLine pdf(2, max_depth);
+    ContextTreeRealLine pdf(2, max_depth, -RAND_MAX, RAND_MAX);
     int randomise = urandom()*10000;
     for (int i=0; i<randomise; i++) {
         distribution.generate();
@@ -57,12 +57,12 @@ int main (int argc, char** argv)
     for (int t=0; t<T; ++t) {
         real x = distribution.generate();
         real p = pdf.Observe(x);
-        printf ("%f %f #X\n", x, p);
+        //printf ("%f %f #X\n", x, p);
 
         //        std::cout << p << std::endl;
     }
 #if 1
-    for (real x=0; x<1; x+=0.001) {
+    for (real x=-1; x<2; x+=0.001) {
         real p = pdf.pdf(x);
         printf ("%f %f #Y\n", x, p);
     }

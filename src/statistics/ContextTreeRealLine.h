@@ -61,7 +61,7 @@ public:
 	};
 	
 	// public methods
-	ContextTreeRealLine(int n_branches_ = 2, int max_depth_= 0);
+	ContextTreeRealLine(int n_branches_ = 2, int max_depth_= 0, real lower_bound = 0, real upper_bound = 1);
 	~ContextTreeRealLine();
 	real Observe(real x);
 	real pdf(real x);
