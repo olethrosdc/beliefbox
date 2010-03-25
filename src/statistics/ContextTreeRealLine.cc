@@ -10,64 +10,73 @@
  ***************************************************************************/
 
 #include "ContextTreeRealLine.h"
+#include "BetaDistribution.h"
 #include <cmath>
+
 
 ContextTreeRealLine::Node::Node(real lower_bound_,
                                 real upper_bound_,
                                 int n_branches_,
                                 int max_depth_)
-	: lower_bound(lower_bound_),
+    : lower_bound(lower_bound_),
       upper_bound(upper_bound_),
       new_bound((lower_bound + upper_bound)/2),
       n_branches(n_branches_),
-	  depth(0),
+      depth(0),
       max_depth(max_depth_),
-	  prev(NULL),
-	  next(n_branches),
+      prev(NULL),
+      next(n_branches),
       alpha(n_branches),
       w(1), log_w(0), log_w_prior(-log(2)),
+      w_local(4),
       S(0)
 {
-    SMART_ASSERT(lower_bound < upper_bound)(lower_bound)(upper_bound);
+    SMART_ASSERT(lower_bound < upper_bound)(lower_bound)(upper_bound);\
+    for (int i=0; i<4; ++i) {
+        w_local[i] = 0.25;
+    }
 }
 
 /// Make a node for K symbols at nominal depth d
 ContextTreeRealLine::Node::Node(ContextTreeRealLine::Node* prev_,
                                 real lower_bound_,
                                 real upper_bound_)
-	: lower_bound(lower_bound_),
+    : lower_bound(lower_bound_),
       upper_bound(upper_bound_),
       n_branches(prev_->n_branches),
-	  depth(prev_->depth + 1),
+      depth(prev_->depth + 1),
       max_depth(prev_->max_depth),
-	  prev(prev_),
-	  next(n_branches),
+      prev(prev_),
+      next(n_branches),
       alpha(n_branches),
-	  log_w(0),
-	  log_w_prior(-log(2)),//prev_->log_w_prior- log(2)),
+      log_w(0),
+      log_w_prior(-log(2)),
+      w_local(4),
       S(0)
-	  //log_w_prior( - log(10))
+      //log_w_prior( - log(10))
 {
-    SMART_ASSERT(lower_bound < upper_bound)(lower_bound)(upper_bound);
-
+    SMART_ASSERT(lower_bound < upper_bound)(lower_bound)(upper_bound)(depth);
     if (isnan(lower_bound) || isnan(upper_bound)) {
         new_bound = 0;
     } else {
         new_bound = (lower_bound + upper_bound) / 2;
     }
     w = exp(log_w_prior);
-	for (int i=0; i<n_branches; ++i) {
-		next[i] = NULL;
-	}
+    for (int i=0; i<4; ++i) {
+        w_local[i] = 0.25;
+    }
+    for (int i=0; i<n_branches; ++i) {
+        next[i] = NULL;
+    }
     
 }
 
 /// make sure to kill all
 ContextTreeRealLine::Node::~Node()
 {
-	for (int i=0; i<n_branches; ++i) {
-		delete next[i];
-	}
+    for (int i=0; i<n_branches; ++i) {
+        delete next[i];
+    }
 }
 
 /** Observe new data, adapt parameters.
@@ -107,31 +116,58 @@ real ContextTreeRealLine::Node::Observe(real x,
     } else {
         k = 1;
     }
-
+    
+    // the two local distributions
     real P_uniform = 1.0 / (upper_bound - lower_bound);
+    Vector P_sub(4);
+    P_sub[0] = P_uniform;
+    //P_sub[1] = 2 * P_uniform * (1.0 - 2 * fabs((x - new_bound) * P_uniform));
+    P_sub[1] = 0;
+    P_sub[2]=  2 * P_uniform * (1.0 - fabs((x - lower_bound) * P_uniform));
+    P_sub[3] = 2 * P_uniform * (1.0 - fabs((upper_bound - x) * P_uniform));
+    Vector w_local_post = P_sub * w_local;
+    real P_local = w_local_post.Sum();
+    w_local = w_local_post / P_local;
+
+
+    // probability of recursion
     P =  (1.0 + alpha[k]) / (2.0 + S);
 
+
+    // adapt parameters
     alpha[k] ++;
+    S++;
 
-    w = exp(log_w_prior + log_w); 
-    //real total_probability = P_uniform * w + (1 - w) * P;
-
-    real threshold = 1;
-	if ((max_depth==0 || depth < max_depth) && S >  threshold) {
-		if (!next[k]) {
+    real threshold = 2;
+    if ((max_depth==0 || depth < max_depth) && S >  threshold) {
+        if (!next[k]) {
             if (k == 0) {
                 next[k] = new Node(this, lower_bound, new_bound);
             } else {
                 next[k] = new Node(this, new_bound, upper_bound);
             }
-		}
-		//total_probability = next[k]->Observe(x, total_probability);
-		P *= next[k]->Observe(x, P);
+        }
+        P *= next[k]->Observe(x, P);
     } else {
         P *= 2 * P_uniform;
     }
-    real total_probability = P_uniform * w + (1 - w) * P;
 
+    w = exp(log_w_prior + log_w); 
+
+
+    //real P_local = w_uni * P_uniform + w_tri * P_tri;
+    //w_uni = P_uniform * w_uni / P_local;
+    //w_tri = 1 - w_uni;
+
+
+
+    //real total_probability = P_uniform * w + (1 - w) * P;
+    real total_probability = P_local * w + (1 - w) * P;
+
+
+    // posterior weight
+    //log_w = log(w * P_uniform / total_probability) - log_w_prior;
+    log_w = log(w * P_local / total_probability) - log_w_prior;
 
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P
@@ -141,12 +177,7 @@ real ContextTreeRealLine::Node::Observe(real x,
               << std::endl;
 #endif
 
-    log_w = log(w * P_uniform / total_probability) - log_w_prior;
-
-
-
-    S++;
-	return total_probability;
+    return total_probability;
 }
 
 /** Observe new data, adapt parameters.
@@ -169,19 +200,35 @@ real ContextTreeRealLine::Node::pdf(real x,
         k = 1;
     }
     real P_uniform = 1.0 / (upper_bound - lower_bound);
+
     P =  (1.0 + alpha[k]) / (2.0 + S);
 
-    w = exp(log_w_prior + log_w); 
-
     real threshold = 1;
-	if (S >  threshold && next[k]) {
-		P *= next[k]->pdf(x, P);
+    if (S >  threshold && next[k]) {
+        P *= next[k]->pdf(x, P);
     } else {
         P *= 2 * P_uniform;
     }
-    real total_probability = P_uniform * w + (1 - w) * P;
 
-	return total_probability;
+    w = exp(log_w_prior + log_w); 
+    //real total_probability = P_uniform * w + (1 - w) * P;
+    //real P_local = w_uni * P_uniform + w_tri * P_tri;
+    Vector P_sub(4);
+    P_sub[0] = P_uniform;
+    //P_sub[1] = 2 * P_uniform * (1.0 - 2 * fabs((x - new_bound) * P_uniform));
+    //P_sub[0]=  0;
+    P_sub[1] = 0;
+     P_sub[2]=  2 * P_uniform * (1.0 - fabs((x - lower_bound) * P_uniform));
+     P_sub[3] = 2 * P_uniform * (1.0 - fabs((upper_bound - x) * P_uniform));
+    Vector w_local_post = P_sub * w_local;
+    real P_local = w_local_post.Sum();
+    //w_local.print(stdout);    
+
+
+
+    real total_probability = P_local * w + (1 - w) * P;
+
+    return total_probability;
 }
 
 
@@ -190,60 +237,60 @@ void ContextTreeRealLine::Node::Show()
     std::cout << S << " " << w << " " << depth
               << "[ " << lower_bound << ", " << upper_bound 
               << " ] # obs weight depth\n";
-	for (int k=0; k<n_branches; ++k) {
-		if (next[k]) {
-			std::cout << "b: " << k << std::endl;
-			next[k]->Show();
-		}
-	}
-	std::cout << "<<<<\n";
+    for (int k=0; k<n_branches; ++k) {
+        if (next[k]) {
+            std::cout << "b: " << k << std::endl;
+            next[k]->Show();
+        }
+    }
+    std::cout << "<<<<\n";
 }
 
 int ContextTreeRealLine::Node::NChildren()
 {
-	int my_children = 0;
-	for (int k=0; k<n_branches; ++k) {
-		if (next[k]) {
-			my_children++;
-			my_children += next[k]->NChildren();
-		}
-	}
-	return my_children;
+    int my_children = 0;
+    for (int k=0; k<n_branches; ++k) {
+        if (next[k]) {
+            my_children++;
+            my_children += next[k]->NChildren();
+        }
+    }
+    return my_children;
 }
 
 ContextTreeRealLine::ContextTreeRealLine(int n_branches_,
                                          int max_depth_,
                                          real lower_bound,
                                          real upper_bound)
-	: n_branches(n_branches_),
-	  max_depth(max_depth_)
+    : n_branches(n_branches_),
+      max_depth(max_depth_)
 {
-	root = new Node(lower_bound, upper_bound, n_branches, max_depth);
+    root = new Node(lower_bound, upper_bound, n_branches, max_depth);
 }
 
 ContextTreeRealLine::~ContextTreeRealLine()
 {
-	delete root;
+    delete root;
 }
 
 real ContextTreeRealLine::Observe(real x)
 {
-	return root->Observe(x, 1);
+    return root->Observe(x, 1);
 }
 
 
 real ContextTreeRealLine::pdf(real x)
 {
-	return root->pdf(x, 1);
+    return root->pdf(x, 1);
 }
 
 void ContextTreeRealLine::Show()
 {
     root->Show();
-	std::cout << "Total contexts: " << NChildren() << std::endl;
+    std::cout << "Total contexts: " << NChildren() << std::endl;
 }
 
 int ContextTreeRealLine::NChildren()
 {
-	return root->NChildren();
+    return root->NChildren();
 }

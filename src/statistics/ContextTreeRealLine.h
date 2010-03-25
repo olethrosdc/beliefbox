@@ -29,9 +29,9 @@
 class ContextTreeRealLine
 {
 public:
-	// public classes
-	struct Node
-	{
+    // public classes
+    struct Node
+    {
         real lower_bound; ///< looks at x > lower_bound
         real upper_bound; ///< looks at x < upper_bound
         real new_bound; ///< how to split
@@ -40,37 +40,38 @@ public:
         const int max_depth; ///< maximum depth
         Node* prev; ///< previous node
         std::vector<Node*> next; ///< pointers to next nodes
-		real P; ///< probability of next symbols
+        real P; ///< probability of next symbols
         Vector alpha; ///< number of times seen in each quadrant
         real w; ///< backoff weight
         real log_w; ///< log of w
         real log_w_prior; ///< initial value
-		Node(real lower_bound_,
+        Vector w_local; ///< weight of local distributions
+        Node(real lower_bound_,
              real upper_bound_,
              int n_branches_,
              int max_depth_);
-		Node(Node* prev_, real lower_bound_, real upper_bound_);
-		~Node();
-		real Observe(real x,
-					 real probability);
-		real pdf(real x,
+        Node(Node* prev_, real lower_bound_, real upper_bound_);
+        ~Node();
+        real Observe(real x,
+                     real probability);
+        real pdf(real x,
                  real probability);
-		void Show();
-		int NChildren();	
+        void Show();
+        int NChildren();    
         int S;
-	};
-	
-	// public methods
-	ContextTreeRealLine(int n_branches_ = 2, int max_depth_= 0, real lower_bound = 0, real upper_bound = 1);
-	~ContextTreeRealLine();
-	real Observe(real x);
-	real pdf(real x);
-	void Show();
-	int NChildren();
+    };
+    
+    // public methods
+    ContextTreeRealLine(int n_branches_ = 2, int max_depth_= 0, real lower_bound = 0, real upper_bound = 1);
+    ~ContextTreeRealLine();
+    real Observe(real x);
+    real pdf(real x);
+    void Show();
+    int NChildren();
 protected: 
-	int n_branches;
-	int max_depth;
-	Node* root;
+    int n_branches;
+    int max_depth;
+    Node* root;
 };
 
 
