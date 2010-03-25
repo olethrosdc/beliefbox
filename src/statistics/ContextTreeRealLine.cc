@@ -78,7 +78,7 @@ ContextTreeRealLine::Node::~Node()
 
     Or in long hand
     \f[
-    P(X | C) = P(U | C) P(X | U, C) + [1 - P(U | C)] P(X | C') P(C' | C, \not U)
+    P(X | C) = P(U | C) P(X | U, C) + [1 - P(U | C)] \sum_{C'} P(X | C') P(C' | C, \not U)
     \f]
     That means that
     \f[
@@ -88,8 +88,8 @@ ContextTreeRealLine::Node::~Node()
     This algorithm uses the same structure of uniform / non-uniform mixture
     as in Marcus Hutter's work Bayesian Infinite Trees.
     
-    However, it is significantly simplified and does not use the same
-    posterior recursion.
+    However, it is significantly simplified by using an explicit
+    online posterior recursion.
 */
 real ContextTreeRealLine::Node::Observe(real x,
                                         real probability)
