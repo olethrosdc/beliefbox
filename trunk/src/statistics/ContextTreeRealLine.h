@@ -20,8 +20,11 @@
 
 /** Context tree on the real line.
 
-    Generalises the BVMM paper.
+    This is a recursive version of the structure described in Marcus
+    Hutter's Bayesian Infinite Tree paper.
 
+    The BVMM approach (implemented in ContextTree.[h|cc]) is not applicable
+    here.
 */
 class ContextTreeRealLine
 {
