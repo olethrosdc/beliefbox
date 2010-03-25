@@ -10,6 +10,7 @@
  ***************************************************************************/
 
 #include "ContextTreeRealLine.h"
+#include <cmath>
 
 ContextTreeRealLine::Node::Node(real lower_bound_,
                                 real upper_bound_,
@@ -36,7 +37,6 @@ ContextTreeRealLine::Node::Node(ContextTreeRealLine::Node* prev_,
                                 real upper_bound_)
 	: lower_bound(lower_bound_),
       upper_bound(upper_bound_),
-      new_bound((lower_bound + upper_bound)/2),
       n_branches(prev_->n_branches),
 	  depth(prev_->depth + 1),
       max_depth(prev_->max_depth),
@@ -49,6 +49,12 @@ ContextTreeRealLine::Node::Node(ContextTreeRealLine::Node* prev_,
 	  //log_w_prior( - log(10))
 {
     SMART_ASSERT(lower_bound < upper_bound)(lower_bound)(upper_bound);
+
+    if (isnan(lower_bound) || isnan(upper_bound)) {
+        new_bound = 0;
+    } else {
+        new_bound = (lower_bound + upper_bound) / 2;
+    }
     w = exp(log_w_prior);
 	for (int i=0; i<n_branches; ++i) {
 		next[i] = NULL;
@@ -205,11 +211,14 @@ int ContextTreeRealLine::Node::NChildren()
 	return my_children;
 }
 
-ContextTreeRealLine::ContextTreeRealLine(int n_branches_, int max_depth_)
+ContextTreeRealLine::ContextTreeRealLine(int n_branches_,
+                                         int max_depth_,
+                                         real lower_bound,
+                                         real upper_bound)
 	: n_branches(n_branches_),
 	  max_depth(max_depth_)
 {
-	root = new Node(0, 1, n_branches, max_depth);
+	root = new Node(lower_bound, upper_bound, n_branches, max_depth);
 }
 
 ContextTreeRealLine::~ContextTreeRealLine()
