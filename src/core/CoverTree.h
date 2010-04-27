@@ -24,13 +24,14 @@
 template <typename X>
 class CoverTree
 {
+    std::vector<X> data;
     struct Node
     {
         int level;
         real log_distance;
         real distance;
         X point;
-        std::list<Node*> children;
+        std::vector<Node*> children;
         Node (int level, X& point_, real log_c)
             : level(level_),
               point(point_)
@@ -38,7 +39,7 @@ class CoverTree
             log_distance = level * log_c;
             distance = exp(log_distance);
         }
-        bool Contains(X& query)
+        bool Contains(X& query) 
         {
             if (metric(query, point) <= distance) {
                 return true;
@@ -49,14 +50,35 @@ class CoverTree
 
     struct CoverSet
     {
-        std::set<X>
-        int level;
-        real distance;
+        std::vector<Node&> points;
+        int Size()
+        {
+            return points.size();
+        }
+        void Insert(Node& point)
+        {
+            points.push_back(point);
+        }
+        int NChildren(int i)
+        {
+            return points[i].size();
+        }
     };
 
     bool Insert(X p, CoverSet Q_i, int level)
     {
-        
+        Node* closest_node = NULL;
+        real distance = INF;
+        for (int i=0; i<Q_i.Size(); ++i) {
+            int n_children = Q_i.NChildren(i);
+            for (int j=0; j<n_children; ++j) {
+                Node* node = Q_i.points[i].children[j];
+                real dist_i = metric(p, node->point);
+                if (dist_i < distance ) {
+                    distance = dist_i;
+                }
+            }
+        }
     }
     
 };
