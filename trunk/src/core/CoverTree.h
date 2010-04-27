@@ -21,25 +21,28 @@
     Nearest Neighbors" of Thomas Kollar.
     
  */
-template <typename X>
 class CoverTree
 {
-    std::vector<X> data;
+	real metric(Vector& x, Vector& y)
+	{
+		return EuclideanNorm(&x, &y);
+	}
+    std::vector<Vector> data;
     struct Node
     {
         int level;
         real log_distance;
         real distance;
-        X point;
+        Vector point;
         std::vector<Node*> children;
-        Node (int level, X& point_, real log_c)
+        Node (int level, Vector& point_, real log_c)
             : level(level_),
               point(point_)
         {
             log_distance = level * log_c;
             distance = exp(log_distance);
         }
-        bool Contains(X& query) 
+        bool Contains(Vector& query) 
         {
             if (metric(query, point) <= distance) {
                 return true;
@@ -65,21 +68,32 @@ class CoverTree
         }
     };
 
-    bool Insert(X p, CoverSet Q_i, int level)
+    bool Insert(Vector p, CoverSet Q_i, int level)
     {
         Node* closest_node = NULL;
         real distance = INF;
+
+		// Check if d(p, Q) > 2^level
+		real log_separation = level * log(2);
+		real separation = exp(log_separation);
+		bool separated = false;
+		CoverSet Q_next;
         for (int i=0; i<Q_i.Size(); ++i) {
             int n_children = Q_i.NChildren(i);
             for (int j=0; j<n_children; ++j) {
-                Node* node = Q_i.points[i].children[j];
+                Node& node = Q_i.points[i].children[j];
                 real dist_i = metric(p, node->point);
                 if (dist_i < distance ) {
                     distance = dist_i;
-                }
+					closest_node = &node;
+				}
+				if (dist_i <= separation) {
+					separated = true; 
+					Q_next.Insert(node);
+				}
             }
-        }
-    }
+        } 
+   }
     
 };
 
