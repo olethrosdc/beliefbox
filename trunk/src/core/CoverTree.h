@@ -13,6 +13,7 @@
 #define COVER_TREE_H
 
 #include "real.h"
+#include "Vector.h"
 
 /** A cover tree.
 
@@ -23,34 +24,35 @@
  */
 class CoverTree
 {
+public:
 	real metric(Vector& x, Vector& y)
 	{
 		return EuclideanNorm(&x, &y);
 	}
-    std::vector<Vector> data;
+
+    /// This simply is a node
     struct Node
     {
-        int level;
-        real log_distance;
-        real distance;
         Vector point;
         std::vector<Node*> children;
-        Node (int level, Vector& point_, real log_c)
-            : level(level_),
-              point(point_)
+        Node (Vector& point_)
+            : point(point_)
         {
-            log_distance = level * log_c;
-            distance = exp(log_distance);
         }
-        bool Contains(Vector& query) 
+        ~Node()
         {
-            if (metric(query, point) <= distance) {
-                return true;
+            for (uint i=0; i<children.size(); ++i) {
+                delete children[i];
             }
-            return false;
+        }
+        void Insert(Vector& p)
+        {
+            Node* node = new Node(level - 1, p, log(2));
+            children.push_back(node);
         }
     };
 
+    /// Cover set
     struct CoverSet
     {
         std::vector<Node&> points;
@@ -68,33 +70,71 @@ class CoverTree
         }
     };
 
-    bool Insert(Vector p, CoverSet Q_i, int level)
+    /// Insert
+    bool Insert(Vector& p, CoverSet& Q_i, int level)
     {
         Node* closest_node = NULL;
         real distance = INF;
-
 		// Check if d(p, Q) > 2^level
 		real log_separation = level * log(2);
 		real separation = exp(log_separation);
-		bool separated = false;
+		bool separated = true;
 		CoverSet Q_next;
+
+        // go through all the children and only add them if they are close
         for (int i=0; i<Q_i.Size(); ++i) {
+            real dist = metric(p, Q_[i].points[i].point);
+            if (dist < distance_Q_i) {
+                distance = dist;
+                if (dist < distance ) {
+                    distance = dist;
+					closest_node = &node;
+				}
+            }
             int n_children = Q_i.NChildren(i);
             for (int j=0; j<n_children; ++j) {
                 Node& node = Q_i.points[i].children[j];
                 real dist_i = metric(p, node->point);
-                if (dist_i < distance ) {
-                    distance = dist_i;
-					closest_node = &node;
-				}
 				if (dist_i <= separation) {
-					separated = true; 
+					separated = false; 
 					Q_next.Insert(node);
 				}
             }
-        } 
+        }
+        // if all of the children are furhter away than 2^level, then
+        // parent is found
+        if (separated) {
+            return true;
+        }
+        // Try and insert a new point
+        bool found = Insert(p, Q_next, level - 1);
+        if (found && distance <= separation) {
+            closest_node->Insert(p);
+            return false;
+        }
+        return found;
    }
-    
+
+    void Insert(Vector& p)
+    {
+        if (!root) {
+            root = new Node(p);
+            return;
+        }
+        real distance = metric(p, root->point);
+        int level = (int) ceil(log(distance) / log(2));
+    }
+
+    CoverTree()
+    {
+        root = NULL;
+    }
+
+    ~CoverTree()
+    {
+        delete root;
+    }
+    Node* root;
 };
 
 

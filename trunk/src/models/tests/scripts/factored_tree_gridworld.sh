@@ -1,11 +1,11 @@
 model_name=BVMM
 n_iter=10
-T=10000000
+T=100000
 depth=1
 env_rand=0.01
 act_rand=0.1
 maze=~/projects/beliefbox/dat/maze1
-observations=16
+observations=2
 
 for depth in 1 2 4 8 16; 
 do
