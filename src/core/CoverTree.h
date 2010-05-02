@@ -15,6 +15,7 @@
 #include "real.h"
 #include "Vector.h"
 
+#define DEBUG_COVER_TREE
 /** A cover tree.
 
     Implements the algorithm "Cover trees for Nearest Neighbor",
@@ -47,26 +48,36 @@ public:
         }
         void Insert(Vector& p)
         {
-            Node* node = new Node(level - 1, p, log(2));
+#ifdef DEBUG_COVER_TREE
+            printf("New child for: ");
+            point.print(stdout);
+            printf("at: ");
+            p.print(stdout);
+#endif            
+            Node* node = new Node(p);
             children.push_back(node);
+        }
+        int Size()
+        {
+            return children.size();
         }
     };
 
     /// Cover set
     struct CoverSet
     {
-        std::vector<Node&> points;
+        std::vector<Node*> points;
         int Size()
         {
             return points.size();
         }
-        void Insert(Node& point)
+        void Insert(Node* point)
         {
             points.push_back(point);
         }
         int NChildren(int i)
         {
-            return points[i].size();
+            return points[i]->Size();
         }
     };
 
@@ -74,27 +85,24 @@ public:
     bool Insert(Vector& p, CoverSet& Q_i, int level)
     {
         Node* closest_node = NULL;
-        real distance = INF;
 		// Check if d(p, Q) > 2^level
 		real log_separation = level * log(2);
 		real separation = exp(log_separation);
 		bool separated = true;
-		CoverSet Q_next;
+		CoverSet Q_next = Q_i;
 
         // go through all the children and only add them if they are close
-        for (int i=0; i<Q_i.Size(); ++i) {
-            real dist = metric(p, Q_[i].points[i].point);
-            if (dist < distance_Q_i) {
-                distance = dist;
-                if (dist < distance ) {
-                    distance = dist;
-					closest_node = &node;
-				}
-            }
-            int n_children = Q_i.NChildren(i);
-            for (int j=0; j<n_children; ++j) {
-                Node& node = Q_i.points[i].children[j];
+        for (int k=0; k<Q_i.Size(); ++k) {
+            int n_children = Q_i.NChildren(k);
+            for (int j= -1; j<n_children; ++j) {
+                Node* node;
+                if (j >= 0) {
+                    node = Q_i.points[k]->children[j];
+                } else {
+                    node = Q_i.points[k];
+                }
                 real dist_i = metric(p, node->point);
+                
 				if (dist_i <= separation) {
 					separated = false; 
 					Q_next.Insert(node);
@@ -106,10 +114,27 @@ public:
         if (separated) {
             return true;
         }
+
         // Try and insert a new point
         bool found = Insert(p, Q_next, level - 1);
+        real distance = INF;
+        for (int k=0; k<Q_i.Size(); ++k) {
+            Node* node = Q_i.points[k];
+            real dist_k = metric(p, node->point);
+            if (dist_k < distance) {
+                distance = dist_k; 
+                closest_node = node;
+                if (distance <= separation) {
+                    break;
+                }
+            }
+        }
+
         if (found && distance <= separation) {
             closest_node->Insert(p);
+#ifdef DEBUG_COVER_TREE
+            printf("Inserted at level %d\n", level - 1);
+#endif
             return false;
         }
         return found;
@@ -118,11 +143,22 @@ public:
     void Insert(Vector& p)
     {
         if (!root) {
+#ifdef DEBUG_COVER_TREE
+            printf("Adding root at:");
+            p.print(stdout);
+            printf("\n");
+#endif
             root = new Node(p);
             return;
         }
-        real distance = metric(p, root->point);
-        int level = (int) ceil(log(distance) / log(2));
+#ifdef DEBUG_COVER_TREE
+            printf("Trying to add new point\n");
+#endif
+            //real distance = metric(p, root->point);
+        int level = 0;//(int) ceil(log(distance) / log(2));
+        CoverSet Q;
+        Q.Insert(root);
+        Insert(p, Q, level);
     }
 
     CoverTree()
