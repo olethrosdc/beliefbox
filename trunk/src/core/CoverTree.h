@@ -36,8 +36,9 @@ public:
     {
         Vector point;
         std::vector<Node*> children;
-        Node (Vector& point_)
-            : point(point_)
+        int level;
+        Node (Vector& point_, int level_)
+            : point(point_, int level_)
         {
         }
         ~Node()
@@ -46,15 +47,15 @@ public:
                 delete children[i];
             }
         }
-        void Insert(Vector& p)
+        void Insert(Vector& new_point, int level)
         {
 #ifdef DEBUG_COVER_TREE
             printf("New child for: ");
             point.print(stdout);
             printf("at: ");
-            p.print(stdout);
+            new_point.print(stdout);
 #endif            
-            Node* node = new Node(p);
+            Node* node = new Node(new_point, level);
             children.push_back(node);
         }
         int Size()
@@ -66,23 +67,23 @@ public:
     /// Cover set
     struct CoverSet
     {
-        std::vector<Node*> points;
+        std::vector<Node*> nodes;
         int Size()
         {
-            return points.size();
+            return nodes.size();
         }
-        void Insert(Node* point)
+        void Insert(Node* node)
         {
-            points.push_back(point);
+            nodes.push_back(node);
         }
         int NChildren(int i)
         {
-            return points[i]->Size();
+            return nodes[i]->Size();
         }
     };
 
     /// Insert
-    bool Insert(Vector& p, CoverSet& Q_i, int level)
+    bool Insert(Vector& new_point, CoverSet& Q_i, int level)
     {
         Node* closest_node = NULL;
 		// Check if d(p, Q) > 2^level
@@ -97,9 +98,12 @@ public:
             for (int j= -1; j<n_children; ++j) {
                 Node* node;
                 if (j >= 0) {
-                    node = Q_i.points[k]->children[j];
+                    node = Q_i.nodes[k]->children[j];
+                    if (node->level != level - 1) {
+                        continue;
+                    }
                 } else {
-                    node = Q_i.points[k];
+                    node = Q_i.nodes[k];
                 }
                 real dist_i = metric(p, node->point);
                 
@@ -119,7 +123,7 @@ public:
         bool found = Insert(p, Q_next, level - 1);
         real distance = INF;
         for (int k=0; k<Q_i.Size(); ++k) {
-            Node* node = Q_i.points[k];
+            Node* node = Q_i.nodes[k];
             real dist_k = metric(p, node->point);
             if (dist_k < distance) {
                 distance = dist_k; 
@@ -161,6 +165,10 @@ public:
         Insert(p, Q, level);
     }
 
+    void Show()
+    {
+        
+    }
     CoverTree()
     {
         root = NULL;
