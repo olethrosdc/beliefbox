@@ -37,6 +37,36 @@ int main()
         tree.Insert(X[i]);
     }    
 
+	for (int i=0; i<100; ++i) {
+		Vector Q(n_dimensions);
+		for (int j=0; j<n_dimensions; j++) {
+            Q[j] = urandom();
+		}
+		CoverTree::Node* node = tree.NearestNeighbour(Q);
+		if (node) {
+			Vector best_point = node->point;
+			real dist = INF;
+			int arg_min = -1;
+			for (int k=0; k<n_points; ++k) {
+				real dist_k = tree.metric(X[k], Q);
+				if (dist_k < dist) {
+					dist = dist_k;
+					arg_min = k;
+				}
+			}
+
+			real error =tree.metric(best_point, X[arg_min]);
+
+			if (error > 0.000001) {
+				printf("DIstance is too big: %f\n", error);
+				printf("Query: "); Q.print(stdout);
+				printf("Found: "); best_point.print(stdout);
+				printf("Best: "); X[arg_min].print(stdout);
+			}
+		} else {
+			printf ("NULL\n");
+		}
+	}
     return 0;
 }
 
