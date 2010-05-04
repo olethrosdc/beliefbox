@@ -15,7 +15,7 @@
 #include "real.h"
 #include "Vector.h"
 
-#undef DEBUG_COVER_TREE
+#define DEBUG_COVER_TREE
 
 /** A cover tree.
 
@@ -201,9 +201,9 @@ public:
 		// Get Q
         for (int k=0; k<Q_i.Size(); ++k) {
             int n_children = Q_i.NChildren(k);
-			//printf("Node: %d with %d children:", k, n_children);
-			//Q_i.nodes[k]->point.print(stdout);
-
+#ifdef DEBUG_COVER_TREE
+			printf("Node: %d with %d children:", k, n_children); Q_i.nodes[k]->point.print(stdout);
+#endif
             for (int j= -1; j<n_children; ++j) {
                 Node* node;
                 if (j >= 0) {
@@ -211,11 +211,13 @@ public:
                 } else {
                     node = Q_i.nodes[k];
                 }
-					if (node->level > next_level) {
+					if (node->level > next_level && node->level < level) {
 						next_level = node->level;
                     }
 				Q.Insert(node);
-				//printf("Q:"); node->point.print(stdout);
+#ifdef DEBUG_COVER_TREE
+				printf("Q: [l:%d] ", node->level); node->point.print(stdout);
+#endif
 			}
 		}
 
@@ -237,9 +239,14 @@ public:
 			}
 		}
 		if (level == next_level) {
+#ifdef DEBUG_COVER_TREE
+            printf("Found node at level %d\n", level);
+#endif
 			return found_node;
 		} else {
-			//printf("Distance: %f, jumping down to level %d\n", min_dist, next_level);
+#ifdef DEBUG_COVER_TREE
+			printf("Distance: %f, jumping down to level %d\n", min_dist, next_level);
+#endif
 			return NearestNeighbour(query_point, Q_next, next_level);
 		}
    }
@@ -250,6 +257,9 @@ public:
         if (!root) {
             return NULL;
         }
+#ifdef DEBUG_COVER_TREE
+        printf("Query: "); query_point.print(stdout);
+#endif
 		real distance = metric(query_point, root->point);
 		int level = (int) ceil(log(distance) / log(2));
         CoverSet Q;
