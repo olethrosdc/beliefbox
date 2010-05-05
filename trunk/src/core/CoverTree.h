@@ -196,7 +196,7 @@ public:
 		CoverSet Q_next;
 		CoverSet Q;
         // go through all the children and only add them if they are close
-		int next_level = -INF;
+		int next_level = level - 1;
 
 		// Get Q
         for (int k=0; k<Q_i.Size(); ++k) {
@@ -211,9 +211,6 @@ public:
                 } else {
                     node = Q_i.nodes[k];
                 }
-					if (node->level > next_level && node->level < level) {
-						next_level = node->level;
-                    }
 				Q.Insert(node);
 #ifdef DEBUG_COVER_TREE
 				printf("Q: [l:%d] ", node->level); node->point.print(stdout);
@@ -222,7 +219,7 @@ public:
 		}
 
 		real dist_Q_p = metric(Q, query_point);
-		real separation = dist_Q_p + pow(2, next_level - 1);
+		real separation = dist_Q_p + pow(2, next_level);
 		Node* found_node = NULL;
 		real min_dist = separation * 2;
 		bool close_children = false;
@@ -238,7 +235,7 @@ public:
 				found_node = node;
 			}
 		}
-		if (level == next_level) {
+		if (!close_children) {
 #ifdef DEBUG_COVER_TREE
             printf("Found node at level %d\n", level);
 #endif
