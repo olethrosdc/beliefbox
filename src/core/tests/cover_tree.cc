@@ -55,10 +55,10 @@ int main()
 				}
 			}
 
-			real error =tree.metric(best_point, X[arg_min]);
+			real error = tree.metric(best_point, X[arg_min]);
 
 			if (error > 0.000001) {
-				printf("## Distance is too big: %f\n", error);
+				printf("## Distance is too big: %f ##########\n", error);
 				printf("Query: "); Q.print(stdout);
 				printf("Found: "); best_point.print(stdout);
 				printf("Best: "); X[arg_min].print(stdout);
