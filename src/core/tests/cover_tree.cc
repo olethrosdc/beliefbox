@@ -20,7 +20,7 @@ int main()
 {
     CoverTree tree;
 
-    int n_points = 10;
+    int n_points = 100;
     int n_dimensions = 1;
     printf ("Testing with %d points and %d dimensions\n", n_points, n_dimensions);
     std::vector<Vector> X(n_points);
@@ -28,7 +28,7 @@ int main()
     for (int i=0; i<n_points; i++) {
         X[i].Resize(n_dimensions);
         for (int j=0; j<n_dimensions; j++) {
-            X[i][j] = (real) i / (real) n_points;//urandom();
+            X[i][j] = urandom();
         }
     }
     
@@ -37,7 +37,8 @@ int main()
         tree.Insert(X[i]);
     }    
 
-	for (int i=0; i<100; ++i) {
+	int n_errors = 0;
+	for (int i=0; i<1000; ++i) {
 		Vector Q(n_dimensions);
 		for (int j=0; j<n_dimensions; j++) {
             Q[j] = urandom();
@@ -60,14 +61,18 @@ int main()
 			if (error > 0.000001) {
 				printf("## Distance is too big: %f ##########\n", error);
 				printf("Query: "); Q.print(stdout);
-				printf("Found: "); best_point.print(stdout);
-				printf("Best: "); X[arg_min].print(stdout);
+				printf("Found: (%f) ", tree.metric(Q, node->point)); best_point.print(stdout);
+				printf("Best: (%f) ", dist); X[arg_min].print(stdout);
+				n_errors++;
 			}
 		} else {
 			printf ("NULL\n");
 		}
 	}
-    return 0;
+	if (!n_errors) {
+		printf("Test OK\n");
+	}
+    return n_errors;
 }
 
 #endif
