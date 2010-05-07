@@ -29,6 +29,7 @@ public:
     virtual real ObservationProbability (int act, int x) = 0;
     virtual real QValue (int act) = 0;
     virtual real QLearning (real step_size, real gamma ) = 0;
+    virtual real Sarsa (real step_size, real gamma ) = 0;
     //virtual real ObservationProbability (int x) = 0;
     virtual void Reset() = 0;
     
@@ -86,6 +87,13 @@ public:
     {
         //Serror("Not implemented\n");
         return tree.QLearning(step_size, gamma, current_obs, current_reward);
+    }
+
+    /// Do q-learning, starting with next observation
+    virtual real Sarsa(real step_size, real gamma)
+    {
+        //Serror("Not implemented\n");
+        return tree.Sarsa(step_size, gamma, current_obs, current_reward);
     }
 
     virtual real ObservationProbability (int act, int x) 
