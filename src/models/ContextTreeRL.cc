@@ -264,7 +264,7 @@ int ContextTreeRL::NChildren()
  */
 real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real reward)
 {
-    //real Q_prev = root->QValue(history, history.begin(), 0);
+    real Q_prev = root->QValue(history, history.begin(), 0);
     //assert(!isnan(Q_prev));
 
     real max_Q = -INF;    
@@ -276,21 +276,63 @@ real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real 
         }
     }
 
-    max_Q += reward;
+    //max_Q += reward; ???? WHY
+    real td_err = 0;
+    real dQ_i = reward + gamma * max_Q - Q_prev; ///< This works OK!
+    for (std::list<Node*>::iterator i = active_contexts.begin();
+         i != active_contexts.end();
+         ++i) {
+        real p_i = (*i)->context_probability;
+        //real dQ_i = reward + gamma * max_Q - (*i)->Q; ///< This works even better!
+
+        real delta = p_i * dQ_i; 
+        (*i)->Q += step_size * delta;
+        //printf ("%f * %f = %f ->  %f\n", p_i, dQ_i, delta, (*i)->Q);
+        //td_err += fabs(delta);
+    }
+    td_err = fabs(dQ_i);
+    return td_err;
+}
+
+
+/** Q Learning implementation.
+    
+ */
+real ContextTreeRL::Sarsa(real step_size, real gamma, int observation, real reward)
+{
+    real Q_prev = root->QValue(history, history.begin(), 0);
+    //assert(!isnan(Q_prev));
+
+    real max_Q = -INF;    
+    real Q_next = 0;
+    real epsilon = 0.1;
+    for (int a = 0; a < n_actions; ++a) {
+        int x = a * n_observations + observation;
+        real Q_x = QValue(x);
+        if (Q_x > max_Q) {
+            max_Q = Q_x;
+        }
+        Q_next += epsilon * Q_x;
+    }
+    Q_next += (1 - epsilon) * max_Q;
+
+    //max_Q += reward; ???? WHY
     real td_err = 0;
     for (std::list<Node*>::iterator i = active_contexts.begin();
          i != active_contexts.end();
          ++i) {
         real p_i = (*i)->context_probability;
-        real dQ_i = reward + gamma * max_Q - (*i)->Q; ///< This works even better!
-        //real dQ_i = reward + gamma * max_Q - Q_prev; ///< This works OK!
+        //real dQ_i = reward + gamma * max_Q - (*i)->Q; ///< This works even better!
+        real dQ_i = reward + gamma * Q_next - Q_prev; ///< This works OK!
         real delta = p_i * dQ_i; 
         (*i)->Q += step_size * delta;
         //printf ("%f * %f = %f ->  %f\n", p_i, dQ_i, delta, (*i)->Q);
         td_err += fabs(delta);
     }
     return td_err;
+
 }
+
 
 /// Get a Q value
 ///

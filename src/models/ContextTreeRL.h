@@ -73,6 +73,7 @@ public:
     int NChildren();
     real QValue(int x);
     real QLearning(real step_size,  real gamma, int observation, real reward);
+    real Sarsa(real step_size,  real gamma, int observation, real reward);
 protected: 
     int n_branches;
     int n_observations;
