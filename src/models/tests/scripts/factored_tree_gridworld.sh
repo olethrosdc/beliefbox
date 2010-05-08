@@ -1,17 +1,28 @@
 model_name=BVMM
-n_iter=10
+n_iter=1000
 T=1000000
 depth=1
-env_rand=0.01
-act_rand=0.01
-maze=~/projects/beliefbox/dat/maze1
-observations=2
-
-for depth in 1 2 4 8 16; 
+for env_rand in 0.1 0.01 0
 do
-    ./bin/factored_tree_rl Gridworld $model_name $n_iter $T $depth $env_rand $act_rand $maze $observations >out${depth}
+    for act_rand in 0.01 0 0.1 #0.1 0.01 0
+    do
+        maze_dir=$HOME/projects/beliefbox/dat
+        for observations in 2 16
+        do 
+            for maze in maze6 #maze5 maze6 maze1
+            do
+                out_dir=$HOME/results/bvmdp/icml-workshop/gridworld/${maze}/${observations}obs_${env_rand}er_${act_rand}ar/${n_iter}iter
+                mkdir -p $out_dir
+                echo "observations: " $observations "env rand: " $env_rand "act rand: " $act_rand "maze: " $maze >$out_dir/params
+                for depth in 1 2 4 8 16; 
+                do
+                    echo "observations: " $observations "env rand: " $env_rand "act rand: " $act_rand "maze: " $maze "depth: " $depth
+                    ./bin/factored_tree_rl Gridworld $model_name $n_iter $T $depth $env_rand $act_rand $maze_dir/$maze $observations >$out_dir/bvmdp_${depth}.out
     ##awk -v K=1000 -v col=2 -f ~/scripts/moving_average.awk out${depth} >out${depth}ma
+                done
+            done
+        done
+    done
 done
-
 
 ##gdb --args ./bin/factored_tree_rl Gridworld $model_name $n_iter $T $depth $env_rand $act_rand $maze $observations
