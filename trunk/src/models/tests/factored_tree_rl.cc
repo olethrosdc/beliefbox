@@ -185,7 +185,7 @@ bool EvaluateMaze(std::string maze,
     POMDPGridworld environment(environment_rng, maze.c_str(),
                                n_obs, 
                                world_randomness,
-                               0, 1, 0);
+                               -1.0, 1, 0.1);
     int n_actions = environment.getNActions();
     environment.Reset();
     factored_predictor->Observe(environment.getObservation());
@@ -218,7 +218,7 @@ bool EvaluateMaze(std::string maze,
         }
             
         real p = factored_predictor->Observe(action, observation, reward);
-        real td_error = factored_predictor->QLearning(0.1, 0.9);
+        real td_error = factored_predictor->QLearning(0.1, 0.99);
 
         //assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
@@ -268,7 +268,7 @@ bool Evaluate1DWorld(Corridor& environment,
         real reward = environment.getReward();
 
         real p = factored_predictor->Observe(action, observation, reward);
-        real td_error = factored_predictor->QLearning(0.1, 0.9);
+        real td_error = factored_predictor->QLearning(0.1, 0.99);
         //assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
         statistics.reward[t] += reward;
