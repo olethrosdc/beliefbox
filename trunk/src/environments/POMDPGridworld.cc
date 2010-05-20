@@ -43,7 +43,13 @@ POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
     n_states = width * height + 1;
     terminal_state = n_states - 1;
 
-
+    printf("# Making POMDPGridworld %d x %d from %s with %d states, %d obs, %f randomness, %f pit, %f goal, %f step rewards\n",
+           height, width, fname, n_states, n_obs,
+           random,
+           pit_value,
+           goal_value,
+           step_value);
+           
     std::ifstream ifs(fname, std::ifstream::in);
     if (!ifs.is_open()) {
         Serror ("Could not open file %s", fname);
@@ -154,7 +160,8 @@ void POMDPGridworld::Reset()
         state = rand()%(n_gridpoints);
         x = state % height;
         y = (state - x) / width;
-    } while(whatIs(x, y) != GRID);
+    } while(whatIs(x, y) != GRID || whatIs(x, y) == INVALID || whatIs(x, y) == WALL);
+    //printf ("# Resetting to %d %d (%d)\n", x, y,  whatIs(x, y));
     ox = x;
     oy = y;
     switch(n_obs) {
@@ -198,9 +205,13 @@ bool POMDPGridworld::Act(int action)
         }
     }
     reward = step_value;
-    if (rng->uniform() < random) {
-        reward = 1.0;
-    }
+    
+    //if (rng->uniform() < random) {
+    //reward = 1.0;
+    //}
+    //printf ("%d %d (%d) -> ", ox, oy, whatIs(ox, oy));
+    //printf ("%d %d (%d) %d\n", x, y, whatIs(x, y), action);
+    
     if (whatIs(x,y) != INVALID && whatIs(x,y) != WALL) {
         ox = x;
         oy = y;
@@ -209,6 +220,7 @@ bool POMDPGridworld::Act(int action)
             observation = 1;
         }
     } 
+
     if (whatIs(x,y) == GOAL || whatIs(x,y)== PIT) {
         state = terminal_state;
     }
