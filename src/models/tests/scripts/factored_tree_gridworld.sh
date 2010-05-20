@@ -1,8 +1,8 @@
 model_name=BVMM
-n_iter=1000
+n_iter=10
 T=1000000
 depth=1
-for maze in maze6 maze1 maze5
+for maze in maze1 #maze1 maze5
 do
     for env_rand in 0.1 0.01 0
     do
