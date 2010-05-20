@@ -1,16 +1,16 @@
 model_name=BVMM
-n_iter=1
-T=100000
+n_iter=1000
+T=1000000
 depth=1
-for env_rand in 0.0 #0.01 0
+for maze in maze6 maze1 maze5
 do
-    for act_rand in 0.01 #0 0.1 #0.1 0.01 0
+    for env_rand in 0.1 0.01 0
     do
-        maze_dir=$HOME/projects/beliefbox/dat
-        for observations in 2 16
-        do 
-            for maze in maze1 #maze5 maze6 maze1
-            do
+        for act_rand in 0.1 0.01 #0 0.1 #0.1 0.01 0
+        do
+            maze_dir=$HOME/projects/beliefbox/dat
+            for observations in 2 16
+            do 
                 out_dir=$HOME/results/bvmdp/icml-workshop/${n_iter}iter/gridworld/${maze}/${observations}obs_${env_rand}er_${act_rand}ar/
                 mkdir -p $out_dir
                 echo "observations: " $observations "env rand: " $env_rand "act rand: " $act_rand "maze: " $maze >$out_dir/params

@@ -295,7 +295,7 @@ real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real 
 }
 
 
-/** Q Learning implementation.
+/** Sarsa implementation.
     
  */
 real ContextTreeRL::Sarsa(real step_size, real gamma, int observation, real reward)
