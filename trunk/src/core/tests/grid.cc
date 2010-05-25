@@ -9,13 +9,15 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifdef MAKE_MAIN
+
 #include "Grid.h"
 #include "Vector.h"
 #include "Random.h"
 
 int main (void)
 {
-    int n_dimensions = 10;
+    int n_dimensions = 2;
     Vector L(n_dimensions);
     Vector U(n_dimensions);
     Vector M(n_dimensions);
@@ -36,7 +38,8 @@ int main (void)
         int y = 0;
         for (int i=0; i<n_dimensions; ++i) {
             real alpha = urandom();
-            if (urandom() < 0.5) {
+            real Z = urandom();
+            if (Z < 0.5) {
                 x[i] = alpha * L[i] + (1 - alpha)*M[i];
             } else {
                 x[i] = alpha * U[i] + (1 - alpha)*M[i];
@@ -44,7 +47,7 @@ int main (void)
             }
             d <<= 1;
         }
-        if (d != grid.getInterval(x)) {
+        if (y != grid.getInterval(x)) {
             n_errors++;
         }
     }
@@ -57,3 +60,5 @@ int main (void)
     return n_errors;
     
 }
+
+#endif
