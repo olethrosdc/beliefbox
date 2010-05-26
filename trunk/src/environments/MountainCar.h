@@ -32,6 +32,8 @@ protected:
     static real MCNOISE;        // input noise
     static const int n_states = 2;     // state dimensions
     static const int n_actions = 3;     // action dimensions
+    Vector state_upper_bound;
+    Vector state_lower_bound;
     void Simulate();
     bool endsim;
 public:
@@ -40,19 +42,13 @@ public:
     virtual void Reset();
     virtual bool Act(int action);
     virtual void Simulate(int action);
-    Vector StateUpperBound()
+    Vector& StateUpperBound()
     {
-        Vector U(2);
-        U[0] = U_POS;
-        U[1] = U_VEL;
-        return U;
+        return state_upper_bound;
     }
-    Vector StateLowerBound()
+    Vector& StateLowerBound()
     {
-        Vector L(2);
-        L[0] = L_POS;
-        L[1] = L_VEL;
-        return L;
+        return state_lower_bound;
     }
     void setNoise(real noise)
     {

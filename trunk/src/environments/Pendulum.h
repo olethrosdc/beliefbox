@@ -30,6 +30,8 @@ protected:
     const real CCa;		       ///< inverse total mass  
     static const int n_states = 2;     // state dimensions
     static const int n_actions = 3;     // action dimensions
+    Vector state_upper_bound;
+    Vector state_lower_bound;
     void Simulate();
     bool endsim;
     void penddot(Vector& xdot, real u, Vector& x);
@@ -45,6 +47,15 @@ public:
     virtual void Reset();
     virtual bool Act(int action);
     virtual void Simulate(int action);
+    Vector& StateUpperBound()
+    {
+        return state_upper_bound;
+    }
+    Vector& StateLowerBound()
+    {
+        return state_lower_bound;
+    }
+
 };
 
 

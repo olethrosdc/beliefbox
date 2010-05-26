@@ -36,12 +36,15 @@ public:
     }
 
     virtual void Reset() {
-        return environment.Reset();
+        environment.Reset();
+        state = grid.getInterval(environment.getState());
     }
 
     virtual bool Act(int action) {
-        bool flag = environment.action();
-        state = grid(environment.getState);
+        bool flag = environment.Act(action);
+        state = grid.getInterval(environment.getState());
+        reward = environment.getReward();
+        return flag;
     }
 
     virtual const char* Name()

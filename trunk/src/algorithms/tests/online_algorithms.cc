@@ -389,13 +389,13 @@ Statistics EvaluateAlgorithm (uint n_steps,
     std:: cout << "evaluating..." << environment->Name() << std::endl;
     
     const DiscreteMDP* mdp = environment->getMDP(); 
-    ValueIteration value_iteration(mdp, gamma);
+    //ValueIteration value_iteration(mdp, gamma);
     if (!mdp) {
         Serror("The environment must support the creation of an MDP\n");
         exit(-1);
     }
     std:: cout << "(value iteration)" << std::endl;
-    value_iteration.ComputeStateActionValues(10e-6,1000);
+    //value_iteration.ComputeStateActionValues(10e-6,1000);
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
 
@@ -432,6 +432,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
             current_time++;
         }
         statistics.ep_stats[episode].steps += t;
+#if 0
         real sse = 0.0;
         for (int i=0; i<n_states; i++) {
             for (int a=0; a<n_actions; a++) {
@@ -443,6 +444,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
             }
         }
         statistics.ep_stats[episode].mse += sse /((real) (n_states*n_actions));
+#endif
     }
 
     //std::cout << "REAL MODEL\n";

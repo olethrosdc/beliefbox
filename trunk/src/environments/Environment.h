@@ -61,7 +61,7 @@ public:
         return NULL;
     }
     /// returns a (copy of) the current state
-    S getState()
+    S& getState()
     {
         return state;
     }
