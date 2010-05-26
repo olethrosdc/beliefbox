@@ -24,8 +24,11 @@ public:
     EvenGrid grid;
     DiscretisedEnvironment(T& environment_, int K_)
         : environment(environment_),
-          K(K_)
+          K(K_),
+          grid(environment.StateLowerBound(), environment.StateUpperBound(), K)
     {
+        n_actions = environment.getNActions();
+        n_states = grid.getNIntervals();
     }
 
     virtual ~DiscretisedEnvironment()
@@ -37,9 +40,8 @@ public:
     }
 
     virtual bool Act(int action) {
-        return environment.action();
-    }
-    
+        bool flag = environment.action();
+        state = grid(environment.getState);
     }
 
     virtual const char* Name()
