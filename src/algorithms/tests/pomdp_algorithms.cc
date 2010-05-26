@@ -20,6 +20,10 @@
 // POMDPs
 #include "OneDMaze.h"
 #include "DiscretisedContinuousChain.h"
+#include "MountainCar.h"
+#include "Pendulum.h"
+#include "DiscretisedEnvironment.h"
+
 //-----------------------------------------
 
 //------------- Algorithms ----------------
@@ -154,6 +158,10 @@ int main (int argc, char** argv)
         RandomMDP* random_mdp = NULL;
         OneDMaze* one_d_maze = NULL; 
         DiscretisedContinuousChain* discretised_chain = NULL; 
+        MountainCar continuous_mountain_car;
+        DiscretisedEnvironment<MountainCar>* mountain_car = NULL;
+        Pendulum continuous_pendulum;
+        DiscretisedEnvironment<Pendulum>* pendulum = NULL;
         Gridworld* gridworld = NULL;
         ContextBandit* context_bandit = NULL;
         if (!strcmp(environment_name, "RandomMDP")) { 
@@ -178,6 +186,12 @@ int main (int argc, char** argv)
         } else if (!strcmp(environment_name, "DiscretisedContinuousChain")) { 
             discretised_chain = new DiscretisedContinuousChain(n_original_states);
             environment = discretised_chain;
+        } else if (!strcmp(environment_name, "MountainCar")) { 
+            mountain_car = new DiscretisedEnvironment<MountainCar>(continuous_mountain_car, n_original_states);
+            environment = mountain_car;
+        } else if (!strcmp(environment_name, "Pendulum")) { 
+            pendulum = new DiscretisedEnvironment<Pendulum>(continuous_pendulum, n_original_states);
+            environment = pendulum;
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
@@ -426,7 +440,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
             discount *= gamma;
             //std::cout << "Acting!\n";
             int action = algorithm->Act(reward, state);
-            //std::cout << "s:" << state << " r:" << reward << " a:" << action << std::endl;
+            std::cout << "s:" << state << " r:" << reward << " a:" << action << std::endl;
             bool action_ok = environment->Act(action);
             if (!action_ok) {
                 break;

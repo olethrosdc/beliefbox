@@ -36,6 +36,12 @@ Pendulum::Pendulum(real pendulum_mass_,
     assert(max_noise > 0);
     assert(Dt > 0);
     state.Resize(2);
+    state_upper_bound.Resize(2);
+    state_lower_bound.Resize(2);
+    state_upper_bound[0] = 4;
+    state_upper_bound[1] = 10;
+    state_lower_bound[0] = -4;
+    state_lower_bound[1] = -10;
     endsim = false;
 }
 
@@ -107,7 +113,7 @@ void Pendulum::Simulate(int action)
     }
   
     if (fabs(state[0]) > M_PI/2.0) {
-        reward = 0.0;
+        reward = -1.0;
         endsim = true;
     } else {
         reward = 1.0;

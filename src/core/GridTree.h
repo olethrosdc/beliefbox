@@ -21,7 +21,7 @@
     It subdivides an \f$n\f$-dimensional space in \f$2^n\f$ subspace
     of equal volumes.
     
- */G
+ */
 struct GridTree
 {
     struct Node
