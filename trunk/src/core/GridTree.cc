@@ -23,12 +23,6 @@ GridTree::GridTree(Vector& lower_bound, Vector& upper_bound)
 
 /** Get the index of the interval containing x.
     
-    For any \f$l, u \in R^n\f$, we define the function \f$f(\cdot | l,
-    u) : R^n \to \{0, \ldots, 2^{n} -1\}\f$:
-    \f[
-    f(x | l, u) = \sum_{k=0}^{d - 1} 2^k I\left\{x_k > \frac{l_k + u_k}{2}\right\},
-    \f]
-    where \f$I\f$ is an indicator function.
  */
 std::vector<int> GridTree::getInterval(Vector& x)
 {

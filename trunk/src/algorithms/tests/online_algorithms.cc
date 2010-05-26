@@ -32,6 +32,8 @@
 #include "ContextBanditCollection.h"
 #include "RandomNumberFile.h"
 #include "MersenneTwister.h"
+#include "MountainCar.h"
+#include "DiscretisedEnvironment.h"
 #include <cstring>
 
 struct EpisodeStatistics
@@ -150,6 +152,10 @@ int main (int argc, char** argv)
         Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
         //Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze4",  16, 16, 4, randomness, pit_value, goal_value, step_value);
         ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
+        MountainCar continuous_mountain_car;
+        DiscretisedEnvironment<MountainCar>* mountain_car
+            = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,
+                                                       n_states);
         if (!strcmp(environment_name, "RandomMDP")) { 
             environment = random_mdp;
         } else if (!strcmp(environment_name, "Gridworld")) { 
@@ -158,14 +164,16 @@ int main (int argc, char** argv)
             environment = context_bandit;
         } else if (!strcmp(environment_name, "OneDMaze")) { 
             environment = one_d_maze;
+        } else if (!strcmp(environment_name, "MountainCar")) { 
+            environment = mountain_car;
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
 
 
         // making sure the number of states & actions is correct
-        n_states = environment->GetNStates();
-        n_actions = environment->GetNActions();
+        n_states = environment->getNStates();
+        n_actions = environment->getNActions();
         
         std::cout <<  "Creating environment: " << environment_name
                   << " with " << n_states << "states, "

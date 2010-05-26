@@ -40,6 +40,20 @@ public:
     virtual void Reset();
     virtual bool Act(int action);
     virtual void Simulate(int action);
+    Vector StateUpperBound()
+    {
+        Vector U(2);
+        U[0] = U_POS;
+        U[1] = U_VEL;
+        return U;
+    }
+    Vector StateLowerBound()
+    {
+        Vector L(2);
+        L[0] = L_POS;
+        L[1] = L_VEL;
+        return L;
+    }
     void setNoise(real noise)
     {
         MCNOISE = noise;
