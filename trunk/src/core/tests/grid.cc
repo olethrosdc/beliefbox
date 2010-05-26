@@ -51,9 +51,36 @@ int main (void)
             n_errors++;
         }
     }
+
+    int K = 10;
+    EvenGrid even_grid(L, U, K);
+    printf ("# Making even grid with %d subdivisions for %d intervals\n",
+            K, even_grid.getNIntervals());
+    std::vector<int> counts(even_grid.getNIntervals());
+    for (int i=0; i<even_grid.getNIntervals(); ++i) {
+        counts[i] = 0;
+    }
+    n_points=1000000;
+    real points_per_interval = (real) n_points / (real) even_grid.getNIntervals();
+    for (int t=0; t<n_points; ++t) {
+        Vector x(n_dimensions);
+        for (int i=0; i<n_dimensions; ++i) {
+            real alpha = urandom();
+            x[i] = alpha*U[i] + (1 - alpha)*L[i];
+        }
+        counts[even_grid.getInterval(x)]++;
+    }
+    real err = 0;
+    for (int i=0; i<even_grid.getNIntervals(); ++i) {
+        err += fabs((real) counts[i] - points_per_interval);
+    }
+    real err_prob = 0.01;
     
+    printf ("# average error: %f < %f\n", err / (real) n_points, sqrt(log(1/err_prob) / (2 * points_per_interval)));
+    
+
     if (!n_errors) {
-        printf("Test successful\n");
+        printf("# OK - Test successful\n");
     } else {
         fprintf (stdout, "%d / %d errors found\n", n_errors, n_points);
     }

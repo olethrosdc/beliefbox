@@ -18,9 +18,7 @@
 
 /** A simple grid structure.
 
-    It subdivides an \f$n\f$-dimensional space in \f$2^n\f$ subspace
-    of equal volumes.
-    
+    It subdivides an \f$n\f$-dimensional space in \f$2^n\f$ subspaces.
  */
 struct Grid
 {
@@ -32,6 +30,20 @@ struct Grid
     int getInterval(Vector& x);
 };
 
+/** A simple grid structure.
 
-
+    It subdivides an \f$n\f$-dimensional space in \f$K^n\f$ subspace
+ */
+struct EvenGrid
+{
+    Vector lower_bound;
+    Vector upper_bound;
+    Vector delta;
+    int n_dimensions;
+    int K; ///< Number of subdivisions per dimension.
+    EvenGrid(Vector& lower_bound_, Vector& upper_bound_, int K_);
+    int getInterval(Vector& x) const;
+    int getNIntervals() const;
+ 
+};
 #endif

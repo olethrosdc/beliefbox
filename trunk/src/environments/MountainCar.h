@@ -18,6 +18,8 @@
 #include "Vector.h"
 #include "real.h"
 
+/** The mountain car environment.
+ */
 class MountainCar : public Environment<Vector, int>
 {
 protected:

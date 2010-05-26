@@ -15,14 +15,10 @@
 
     The grid is merely a mid-point subdivision of the n-dimensional space.
  */
-GridTree::GridTree(Vector& lower_bound_, Vector& upper_bound_)
-    :
-    lower_bound(lower_bound_),
-    upper_bound(upper_bound_)
+GridTree::GridTree(Vector& lower_bound, Vector& upper_bound)
 {
     assert(lower_bound.Size() == upper_bound.Size());
-    mid_point = (lower_bound + upper_bound)*0.5;
-    n_dimensions = lower_bound.Size();
+    root = new Node(lower_bound, upper_bound, 0);
 }
 
 /** Get the index of the interval containing x.
@@ -34,17 +30,8 @@ GridTree::GridTree(Vector& lower_bound_, Vector& upper_bound_)
     \f]
     where \f$I\f$ is an indicator function.
  */
-int GridTree::getInterval(Vector& x)
+std::vector<int> GridTree::getInterval(Vector& x)
 {
-    int d = 1;
-    int y = 0;
-    for (int i=0; i<n_dimensions; ++i) {
-        assert(x[i] >= lower_bound[i]);
-        assert(x[i] <= upper_bound[i]);        
-        if (x[i] > mid_point[i]) {
-            y += d;
-        }
-        d <<= 1;
-    }
-    return y;
+    std::vector<int> tmp;
+    return tmp;
 }
