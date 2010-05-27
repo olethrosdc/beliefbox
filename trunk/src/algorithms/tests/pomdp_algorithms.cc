@@ -110,8 +110,8 @@ int main (int argc, char** argv)
     lambda = atof(argv[4]);
     assert (lambda >= 0 && lambda <= 1);
 
-    randomness = atof(argv[5]);
-    assert (randomness >= 0 && randomness <= 1);
+    epsilon = atof(argv[5]);
+    assert (epsilon >= 0 && epsilon <= 1);
     
     n_runs = atoi(argv[6]);
     assert (n_runs > 0);
@@ -430,7 +430,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
     const char* spinner ="_,.-'`'-.,_";
     int max_spin_state = strlen(spinner);
     for (uint episode = 0; episode < n_episodes; ++episode) {
-        fprintf(stderr, "\r%c%d", spinner[spin_state], 100*episode/n_episodes);
+        //fprintf(stderr, "\r%c%d", spinner[spin_state], 100*episode/n_episodes);
         spin_state = (spin_state + 1) % max_spin_state;
         statistics.ep_stats[episode].total_reward = 0.0;
         statistics.ep_stats[episode].discounted_reward = 0.0;
