@@ -144,7 +144,7 @@ int main (int argc, char** argv)
     // remember to use n_runs
     Statistics statistics;
     statistics.ep_stats.resize(n_episodes);
-    statistics.reward.resize(n_episodes*n_steps);
+    //statistics.reward.resize(n_steps);
     for (uint i=0; i<statistics.ep_stats.size(); ++i) {
         statistics.ep_stats[i].total_reward = 0.0;
         statistics.ep_stats[i].discounted_reward = 0.0;
@@ -153,6 +153,7 @@ int main (int argc, char** argv)
     }
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
+        std::cerr << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
 
         RandomMDP* random_mdp = NULL;
@@ -308,9 +309,10 @@ int main (int argc, char** argv)
             statistics.ep_stats[i].steps += run_statistics.ep_stats[i].steps;
             statistics.ep_stats[i].mse += run_statistics.ep_stats[i].mse;
         }
-        for (uint i=0; i<statistics.reward.size(); ++i) {
-            statistics.reward[i] += run_statistics.reward[i];
-        }
+
+        //for (uint i=0; i<statistics.reward.size(); ++i) {
+        //statistics.reward[i] += run_statistics.reward[i];
+        //}
         if (model) {
 #if 0
             if (discrete_mdp) {
@@ -389,11 +391,11 @@ int main (int argc, char** argv)
                   << std::endl;
     }
 
-    for (uint i=0; i<statistics.reward.size(); ++i) {
-        statistics.reward[i] /= (float) n_runs;
-        std::cout << statistics.reward[i] << " # INST_PAYOFF"
-                  << std::endl;
-    }
+    //for (uint i=0; i<statistics.reward.size(); ++i) {
+    //        statistics.reward[i] /= (float) n_runs;
+    //        std::cout << statistics.reward[i] << " # INST_PAYOFF"
+    //                  << std::endl;
+    //    }
 
     std::cout << "Done" << std::endl;
 
@@ -417,13 +419,19 @@ Statistics EvaluateAlgorithm (uint n_steps,
 
     Statistics statistics;
     statistics.ep_stats.resize(n_episodes);
-    statistics.reward.resize(n_episodes*n_steps);
+    //statistics.reward.resize(n_episodes*n_steps);
 
     real discount = 1.0;
     int current_time = 0;
     environment->Reset();
-    std:: cout << "(running)" << std::endl;
+    std::cout << "(running)" << std::endl;
+    int spin_state = 0;
+    //const char* spinner ="|/-\\";
+    const char* spinner ="_,.-'`'-.,_";
+    int max_spin_state = strlen(spinner);
     for (uint episode = 0; episode < n_episodes; ++episode) {
+        fprintf(stderr, "\r%c%d", spinner[spin_state], 100*episode/n_episodes);
+        spin_state = (spin_state + 1) % max_spin_state;
         statistics.ep_stats[episode].total_reward = 0.0;
         statistics.ep_stats[episode].discounted_reward = 0.0;
         statistics.ep_stats[episode].steps = 0;
@@ -434,13 +442,13 @@ Statistics EvaluateAlgorithm (uint n_steps,
         for (t=0; t < n_steps; ++t) {
             int state = environment->getState();
             real reward = environment->getReward();
-            statistics.reward[current_time] = reward;
+            //statistics.reward[current_time] = reward;
             statistics.ep_stats[episode].total_reward += reward;
             statistics.ep_stats[episode].discounted_reward += discount * reward;
             discount *= gamma;
             //std::cout << "Acting!\n";
             int action = algorithm->Act(reward, state);
-            std::cout << "s:" << state << " r:" << reward << " a:" << action << std::endl;
+            //std::cout << "s:" << state << " r:" << reward << " a:" << action << std::endl;
             bool action_ok = environment->Act(action);
             if (!action_ok) {
                 break;
@@ -450,7 +458,8 @@ Statistics EvaluateAlgorithm (uint n_steps,
         statistics.ep_stats[episode].steps += t;
         statistics.ep_stats[episode].mse  = 0;
     }
-
+    fprintf(stderr, "\n");
+    std::cout << "(done)" << std::endl;
     //std::cout << "REAL MODEL\n";
     //mdp->ShowModel();
     
