@@ -1,8 +1,8 @@
 #! /bin/bash
 
-n_runs=10 #00
-n_episodes=10000
-n_steps=10000
+n_runs=10
+n_episodes=100
+n_steps=1000
 gamma=0.99
 lambda=0.8
 n_actions=2
@@ -17,13 +17,13 @@ do
             for K in 2 3 4 5
             do
                 echo ./bin/pomdp_algorithms $K $n_actions $gamma $lambda $random $n_runs $n_episodes $n_steps $algorithm $environment | tee $resdir/run.params
-                nice -n 19 ./bin/pomdp_algorithms $K $n_actions $gamma $lambda $random $n_runs $n_episodes $n_steps $algorithm $environment | grep REWARD > ${resdir}/K${K}reward.out 2>/dev/null &
+                nice -n 19 ./bin/pomdp_algorithms $K $n_actions $gamma $lambda $random $n_runs $n_episodes $n_steps $algorithm $environment | grep REWARD > ${resdir}/K${K}reward.out 2>/dev/null;
             done
             wait;
             for K in 6 7 8 10
             do
                 echo ./bin/pomdp_algorithms $K $n_actions $gamma $lambda $random $n_runs $n_episodes $n_steps $algorithm $environment | tee $resdir/run.params
-                nice -n 19 ./bin/pomdp_algorithms $K $n_actions $gamma $lambda $random $n_runs $n_episodes $n_steps $algorithm $environment | grep REWARD > ${resdir}/K${K}reward.out 2>/dev/null &
+                nice -n 19 ./bin/pomdp_algorithms $K $n_actions $gamma $lambda $random $n_runs $n_episodes $n_steps $algorithm $environment | grep REWARD > ${resdir}/K${K}reward.out 2>/dev/null;
             done
             wait;
         done

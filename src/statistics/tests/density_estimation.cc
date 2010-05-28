@@ -52,8 +52,9 @@ int main (int argc, char** argv)
     //BetaDistribution distribution2(2*Beta,Alpha);
     NormalDistribution distribution(Alpha,Beta);
     //NormalDistribution distribution2(Beta,Alpha);
-    ContextTreeRealLine pdf(2, max_depth, -RAND_MAX, RAND_MAX);
+    //ContextTreeRealLine pdf(2, max_depth, -RAND_MAX, RAND_MAX);
     //ContextTreeRealLine pdf(2, max_depth, 0, 1);
+    NormalDistributionUnknownMean pdf;
 
     int randomise = urandom()*10000;
     for (int i=0; i<randomise; i++) {
