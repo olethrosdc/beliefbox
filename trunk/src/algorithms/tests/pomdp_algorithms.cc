@@ -23,7 +23,10 @@
 #include "MountainCar.h"
 #include "Pendulum.h"
 #include "DiscretisedEnvironment.h"
+//-----------------------------------------
 
+//------------- Models --------------------
+#include "ContextTreeRL.h"
 //-----------------------------------------
 
 //------------- Algorithms ----------------
@@ -41,6 +44,7 @@
 #include "ContextBanditGaussian.h"
 #include "DiscreteMDPCollection.h"
 #include "ContextBanditCollection.h"
+#include "BVMM_QLearning.h"
 //-------------------------------------------
 
 #include "RandomNumberFile.h"
@@ -296,6 +300,9 @@ int main (int argc, char** argv)
                                          epsilon,
                                          collection,
                                          false);
+        } else if  (!strcmp(algorithm_name, "BVMM")){
+            BVMM_QLearning<ContextTreeRL>* bvmm = new BVMM_QLearning<ContextTreeRL>(n_actions, n_states, 2 + 1, epsilon);
+            algorithm = bvmm;
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
         }
