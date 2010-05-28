@@ -18,7 +18,7 @@
 #include "Vector.h"
 #include "Ring.h"
 #include "BetaDistribution.h"
-
+#include "NormalDistribution.h"
 
 /** A context tree implementation.
     
@@ -42,6 +42,7 @@ public:
         real log_w; ///< log of w
         real log_w_prior; ///< initial value
         BetaDistribution reward_prior;
+        //NormalDistributionUnknownMean reward_prior;
         Node(int n_branches_,
              int n_outcomes_);
         Node(Node* prev_);

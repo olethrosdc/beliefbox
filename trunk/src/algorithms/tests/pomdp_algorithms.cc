@@ -94,12 +94,13 @@ int main (int argc, char** argv)
     uint n_runs = 1000;
     uint n_episodes = 1000;
     uint n_steps = 100;
+    int depth = 1;
 
-    if (argc != 11) {
+    if (argc < 11) {
         for (int i=0; i<argc; ++i) {
             printf("arg %d: %s\n", i, argv[i]);
         }
-        std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment\n";
+        std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment [optional args]\n";
         return -1;
     }
     n_original_states = atoi(argv[1]);
@@ -128,6 +129,11 @@ int main (int argc, char** argv)
 
     char* algorithm_name = argv[9];
     char* environment_name = argv[10];
+
+    if (argc >= 12) {
+        depth = atoi(argv[11]);
+    }
+
 
     srand48(34987235);
     srand(34987235);
@@ -301,7 +307,7 @@ int main (int argc, char** argv)
                                          collection,
                                          false);
         } else if  (!strcmp(algorithm_name, "BVMM")){
-            BVMM_QLearning<ContextTreeRL>* bvmm = new BVMM_QLearning<ContextTreeRL>(n_actions, n_states, 2 + 1, epsilon, alpha, lambda);
+            BVMM_QLearning<ContextTreeRL>* bvmm = new BVMM_QLearning<ContextTreeRL>(n_actions, n_states, depth + 1, epsilon, alpha, lambda);
             algorithm = bvmm;
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);

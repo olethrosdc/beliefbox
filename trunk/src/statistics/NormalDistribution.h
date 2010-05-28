@@ -108,6 +108,12 @@ public:
     virtual real pdf(real x) const;
     virtual real getMean() const;
     virtual void calculatePosterior(real x);
+    real Observe(real x)
+    {
+        real p = pdf(x);
+        calculatePosterior(x);
+        return p;
+    }
 };
 
 

@@ -23,20 +23,23 @@ protected:
     int n_actions; ///< the number of actions
     int n_obs; ///< the number of distinct observations
     T tree; ///< the context tree
+    int t;
+    int action; ///< the current action
     int current_obs; ///< the current observation
     real current_reward; ///< the current reward
     real epsilon; ///< the randomness of the action selection
     real alpha; ///< the step-size
-    real lambda; ///< the eligibility trace
+    real gamma; ///< the eligibility trace
 public:
-    BVMM_QLearning(int n_actions_, int n_obs_, int depth, real epsilon_, real alpha_, real lambda_)
+    BVMM_QLearning(int n_actions_, int n_obs_, int depth, real epsilon_, real alpha_, real gamma_)
         : n_actions(n_actions_),
           n_obs(n_obs_),
           tree(n_obs * n_actions, n_obs, n_actions, n_obs, depth),
+          t(0),
           current_obs(0),
           epsilon(epsilon_),
           alpha(alpha_),
-          lambda(lambda_)
+          gamma(gamma_)
     {        
     }
     // --------- OnlineAlgorithm functions -----------
@@ -47,30 +50,43 @@ public:
     /// call this at the end of an episode.
     virtual void Reset()
     {
+        t = 0;
+        action = 0;
     }
     /// Partial observation
     virtual real Observe (real reward, int next_state, int next_action)
     {
         _Observe(next_action, next_state, reward);
-        return QLearning(alpha, lambda);
+        return _QLearning(alpha, gamma);
     }
     /// Get an action using the current exploration policy.
     /// it calls Observe as a side-effect.
     virtual int Act(real reward, int next_state) 
     {
+        if (t) {
+            _Observe(action, next_state, reward);
+        } else {
+            _Observe(next_state);
+        }
+        t++;
+        _QLearning(alpha, gamma);
         if (urandom() < epsilon) {
-            return rand()%n_actions;
+            action =  rand()%n_actions;
+            return action;
         }
         real Q_max = QValue(0);
         int arg_max = 0;
-        for (int i=1; i<n_actions; ++i) {
+        for (int i=0; i<n_actions; ++i) {
             real Q = QValue(i);
+            //printf ("%f ", Q);
             if (Q > Q_max) {
                 Q_max = Q;
                 arg_max = i;
             }
         }
-        return arg_max;
+        //printf(" # Q\n");
+        action = arg_max;
+        return action;
     }
 
     ///
@@ -95,7 +111,7 @@ public:
         int x = act * n_obs + current_obs;
         current_obs = prd;
         current_reward = reward;
-        //printf ("%d %d %f\n", x, prd, reward);
+        //printf ("tree: %d %d %f\n", x, prd, reward);
         return tree.Observe(x, prd, reward);
     }
     
@@ -108,9 +124,8 @@ public:
     }
 
     /// Do q-learning, starting with next observation
-    virtual real QLearning(real step_size, real gamma)
+    virtual real _QLearning(real step_size, real gamma)
     {
-        //Serror("Not implemented\n");
         return tree.QLearning(step_size, gamma, current_obs, current_reward);
     }
 
