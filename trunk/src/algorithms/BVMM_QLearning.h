@@ -25,14 +25,16 @@ protected:
     T tree; ///< the context tree
     int current_obs; ///< the current observation
     real current_reward; ///< the current reward
-    real randomness; ///< the randomness of the action selection
+    real epsilon; ///< the randomness of the action selection
+    real alpha; ///< the step-size
+    real lambda; ///< the eligibility trace
 public:
-    BVMM_QLearning(int n_actions_, int n_obs_, int depth, real randomness_)
+    BVMM_QLearning(int n_actions_, int n_obs_, int depth, real epsilon_, real alpha_, real lambda_)
         : n_actions(n_actions_),
           n_obs(n_obs_),
           tree(n_obs * n_actions, n_obs, n_actions, n_obs, depth),
           current_obs(0),
-          randomness(randomness_),
+          epsilon(epsilon_),
           alpha(alpha_),
           lambda(lambda_)
     {        
@@ -56,7 +58,7 @@ public:
     /// it calls Observe as a side-effect.
     virtual int Act(real reward, int next_state) 
     {
-        if (urandom() < randomness) {
+        if (urandom() < epsilon) {
             return rand()%n_actions;
         }
         real Q_max = QValue(0);

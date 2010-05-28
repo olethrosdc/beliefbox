@@ -301,7 +301,7 @@ int main (int argc, char** argv)
                                          collection,
                                          false);
         } else if  (!strcmp(algorithm_name, "BVMM")){
-            BVMM_QLearning<ContextTreeRL>* bvmm = new BVMM_QLearning<ContextTreeRL>(n_actions, n_states, 2 + 1, epsilon);
+            BVMM_QLearning<ContextTreeRL>* bvmm = new BVMM_QLearning<ContextTreeRL>(n_actions, n_states, 2 + 1, epsilon, alpha, lambda);
             algorithm = bvmm;
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
