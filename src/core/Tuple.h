@@ -10,7 +10,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#infdef TUPLE_H
+#ifndef TUPLE_H
 #define TUPLE_H
 
 class Distribution

@@ -63,6 +63,8 @@ public:
     /// it calls Observe as a side-effect.
     virtual int Act(real reward, int next_state) 
     {
+        assert(next_state >= 0 && next_state < n_obs);
+
         if (t) {
             _Observe(action, next_state, reward);
         } else {

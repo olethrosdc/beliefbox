@@ -88,6 +88,7 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
     //printf ("contexts: %d, d:%d\n", active_contexts.size(), depth);
     real total_probability = 0;
     // calculate probabilities
+    assert (y >= 0 && y < n_outcomes);
 
     // Standard
 #if 1
@@ -119,7 +120,7 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
         }
     }
 #endif
-    alpha[y]++;
+    alpha[y]++; ///< \BUG Valgrind!
 
     // Do it for probability too
     real p_reward = 1;//0.5 + 0 5 * reward_prior.Observe(r);

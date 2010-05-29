@@ -18,7 +18,7 @@
     
     \param n_classes_ set the number of classes
     \param n_dim_ the number of dimensions in the observation space
-    \param K the number of neighbours
+    \param K_ the number of neighbours
     
     As a side-effect, initialise the kd_tree list
  */

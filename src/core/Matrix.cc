@@ -560,17 +560,17 @@ real Matrix::gaussian_elimination_forward(real epsilon)
   
   The matrices A, B are returned in a std::vector<Matrix>.
 
-  \f\[
+  \f[
   AB = X
-  \f\]
+  \f]
 
-  \f\[
-  a_{ii} = 1 \for i \in \{1, \ldots, n\}
-  \f\]
+  \f[
+  a_{ii} = 1, \quad \textrm{for} ~ i \in \{1, \ldots, n\}
+  \f]
 
-  \f\[
+  \f[
   b_{ij} = x_{ij} - \sum_{k=1}^{i-1} a_{ik}b_{kj}
-  \f\]
+  \f]
  
 
   */

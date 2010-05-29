@@ -197,8 +197,6 @@ public:
     /** Pop a datum.
         
         Remove a datum from the head.
-
-        @param x The data to be pushed back.
      */
     void pop()
     {

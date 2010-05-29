@@ -24,9 +24,9 @@
     Note that there is an trade-off between the number of variables
     and the number of paramters.  For example, if you have variable
     \f$Y\f$ conditioned on \f$X\f$, such that \f$Y_i \in \{0,1\}\f$
-   depends on \f$X_j \in \{0,1,2,3\}\f$, then if f\$P(Y_i=1 | X_j=0)
-    = q\f$ and \f$1-q\f$ for all other values of \f$X_j\f$ then one
-    could instead create an auxilliary variable \f$Z = I(X_j=0)'f$ and
+   depends on \f$X_j \in \{0,1,2,3\}\f$, then if \f$P(Y_i=1 | X_j=0)
+   = q\f$ and \f$1-q\f$ for all other values of \f$X_j\f$ then one
+    could instead create an auxilliary variable \f$Z = I(X_j=0)\f$ and
     connect \f$Y\f$ to that.  So we added one graph node and removed
     three parameters.
 */

@@ -344,7 +344,7 @@ DiscreteHiddenMarkovModelStateBelief::DiscreteHiddenMarkovModelStateBelief(int n
     b_{t+1}(s_{t+1})
     = b_t(s_{t+1}|x_{t+1})
     = \frac{b_t(x{t+1}|s_{t+1}) b_t(s_{t+1})}{\sum_s b_t(x{t+1}|s_{t+1}=s) b_t(s_{t+1}=s)}
-    \f]
+    \f].
 */
 real DiscreteHiddenMarkovModelStateBelief::Observe(int x)
 {

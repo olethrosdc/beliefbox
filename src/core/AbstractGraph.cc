@@ -13,7 +13,7 @@
  ***************************************************************************/
 
 /**
-   \file AbstractGraph.c
+   \file AbstractGraph.cc
    
    \brief AbstractGraph theory functions.
    
