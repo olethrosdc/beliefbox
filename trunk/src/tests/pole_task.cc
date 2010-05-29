@@ -1,7 +1,7 @@
 /* -*- Mode: C++; -*- */
 // $Id: test_pole_task.c,v 1.1 2006/10/23 08:33:32 olethros Exp cdimitrakakis $
 
-/*! \file test_pole_task.c
+/*! \file test_pole_task.cc
   \brief Test the pole balancing task.
 
   Use this testbench to evaluate the performance of discrete-space

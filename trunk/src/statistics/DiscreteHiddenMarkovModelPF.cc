@@ -186,7 +186,7 @@ real DiscreteHiddenMarkovModelPF_ReplaceLowest::Observe(int x)
     First, calculate
     \f[
     P_{t+1}(q_i) = P_t (q_i | x_{t+1}).
-    f\]
+    \f]
     Then replace low-weight particles by doing
  */
 real DiscreteHiddenMarkovModelPF_ISReplaceLowest::Observe(int x)
@@ -257,7 +257,7 @@ real DiscreteHiddenMarkovModelPF_ISReplaceLowest::Observe(int x)
     First, calculate
     \f[
     P_{t+1}(q_i) = P_t (q_i | x_{t+1}).
-    f\]
+    \f]
     Then replace low-weight particles by sampling from the Dirichlet
     mixture.
  */

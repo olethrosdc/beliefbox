@@ -13,7 +13,7 @@
  ***************************************************************************/
 
 /**
-   \file Graph.c
+   \file Graph.cc
    
    \brief Graph theory functions.
    

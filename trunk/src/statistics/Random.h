@@ -37,5 +37,6 @@ real urandom(real min, real max);
 real true_random(bool blocking=true);
 
 unsigned long true_random_bits(bool blocking=true);
+/*@}*/
 
 #endif

@@ -379,6 +379,7 @@ int main (int argc, char** argv)
             model = NULL;
         }
         //delete environment;
+        delete mountain_car;
         delete gridworld;
         delete one_d_maze;
         delete discretised_chain;

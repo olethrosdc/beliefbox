@@ -138,15 +138,15 @@ KDNode* KDNode::AddVector(Vector& x, Vector& inf, Vector& sup, void* object)
 
 /** Find nearest neighbour
 
-    At each node \f$i\f$, corresponding to the subset \f$S_i$\f, find
-    all children \f$j \in C(i)\f$ with distance bound \f$D_L(x, S_j) <
-    d\f$. Look at the child with the smallest bound first.
+    At each node \f$i\f$, corresponding to the subset \f$S_i\f$, find
+    all children \f$j \in C(i)\f$ with distance bound \f$D_L(x, S_j) < d\f$.
+    Look at the child with the smallest bound first.
     
     The distance bound is easy to calculate. If we are above \f$c_a\f$
     then the upper subset has bound 0, while the lower partition has
     bound \f$c_a - x_a\f$, since in the best case, the closest point
-    \f$y\f$ in that subset will have \f$y_k = x_k\f$ for all $k \neq
-    a$ and \f$y_a = c_a\f$.
+    \f$y\f$ in that subset will have \f$y_k = x_k\f$ for all 
+    \f$k \neq a\f$ and \f$y_a = c_a\f$.
  */
 void KDNode::NearestNeighbour(Vector& x, KDNode*& nearest, real& dist)
 {

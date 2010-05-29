@@ -47,9 +47,9 @@ class StateActionEstimator
 
     /// If (s_p=i, a=j, s=k), then get the density of the ijk 
     /// transition being x under our prior \f$\xi\f$:
-    /// \f\[
+    /// \f[
     /// p( P(ijk)=x | \xi)
-    /// \f\]
+    /// \f]
     virtual real GetTransitionPrior(int s_p, int a_p, int s, real x) = 0;
     
     /// Sample a possible value for the transition probability

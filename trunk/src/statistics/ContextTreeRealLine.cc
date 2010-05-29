@@ -86,7 +86,7 @@ ContextTreeRealLine::Node::~Node()
     \f[
     P(X | C_k) = U(C_k) w_k + (1 - w_k) [a_{k,0} / n_k P(X | C_{k,0}) + a_{k,1} / n_k P(X | C_{k,1})]
     \f]
-    of course, if $X \in C_k^i$ then
+    of course, if \f$X \in C_k^i\f$ then
     \f[
     P(X | C_k) = U(C_k) w_k + (1 - w_k) [a_{k,i} / n_k P(X | C_{k,i}]
     \f]

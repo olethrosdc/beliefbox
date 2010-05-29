@@ -15,10 +15,10 @@
 #include "SpecialFunctions.h"
 
 /// Calculate
-/// $\[
-///  \exp(\log x(\alpha - 1) + \log (1-x)(\beta - 1) - \Beta(\alpha, \beta)
-///  = \frac {x^{\alpha -1}(1-x)^{\beta -1}}{\Beta(\alpha, \beta)}
-/// $\]
+/// \f[
+///  \exp(\log x(\alpha - 1) + \log (1-x)(\beta - 1) - B(\alpha, \beta)
+///  = \frac {x^{\alpha -1}(1-x)^{\beta -1}}{B(\alpha, \beta)}
+/// \f]
 real BetaDistribution::pdf(real x) const
 {
     if (x<0.0 || x>1.0) {

@@ -93,6 +93,53 @@ real NormalDistributionUnknownMean::getMean() const
 }
 
 //------------------- Unknown mean and precision -------------------------//
+NormalUnknownMeanPrecision::NormalUnknownMeanPrecision()
+{
+    mu_0 = 0.0;
+    tau_0 = 1.0;
+    alpha_0 = 1;
+    beta_0 = 1;
+    Reset();
+}
+
+NormalUnknownMeanPrecision::NormalUnknownMeanPrecision(real mu_0_, real tau_0_)
+    : mu_0(mu_0_), tau_0(tau_0_)
+{
+    Reset();
+}
+void NormalUnknownMeanPrecision::Reset()
+{
+    p_x_mr.setMean(mu_0);
+    p_x_mr.setVariance(1.0 / (tau_0 * tau_0));
+    n = 0;
+    sum = 0.0;
+    tau_n = tau_0;
+    mu_n = mu_0 * tau_0;
+    alpha_n = alpha_0;
+    beta_n = beta_0;
+    M_2n = 0;
+    bx_n = 0;
+}
+NormalUnknownMeanPrecision::~NormalUnknownMeanPrecision()
+{
+}
+real NormalUnknownMeanPrecision::generate()
+{
+    Serror("Fix me!\n");
+    return mu_n;
+}
+real NormalUnknownMeanPrecision::generate() const
+{
+    Serror("Fix me!\n");
+    return mu_n;
+}
+
+real NormalUnknownMeanPrecision::Observe(real x)
+{
+    real p = pdf(x);
+    calculatePosterior(x);
+    return p;
+}
 /** The marginal pdf of the observations.
     
     Instead of calculating the actual marginal:
@@ -104,7 +151,7 @@ real NormalDistributionUnknownMean::getMean() const
     \xi(x) = f(x \mid E_\xi m, E_\xi r),
     \f]
     where \f$E_\xi m = \int m d\xi(m) \f$, \f$E_\xi r = \int r d\xi(r) \f$.
- */
+*/
 real NormalUnknownMeanPrecision::pdf(real x) const
 {
     return p_x_mr.pdf(x);

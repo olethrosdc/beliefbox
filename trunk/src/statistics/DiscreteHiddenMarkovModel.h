@@ -87,17 +87,17 @@ DiscreteHiddenMarkovModel* MakeRandomDiscreteHMM(int n_states, int n_observation
     Given a hidden Markov model, maintain a multinomial distribution
     over the states given the history of observations.
     
-    More specifically, for a prior $\pi$ over states and HMM parameters
-    $\theta$, the multinomial distribution $B$ has parameters
-    \[
+    More specifically, for a prior \f$\pi\f$ over states and HMM parameters
+    \f$\theta\f$, the multinomial distribution \f$B\f$ has parameters
+    \f[
     b(i) = \pi(s_t = i | x^t, \theta).
-    \]
+    \f]
       
  */
 class DiscreteHiddenMarkovModelStateBelief
 {
 protected: 
-    MultinomialDistribution B; /// \pi(s_t | x^t)
+    MultinomialDistribution B; ///< \f$\pi(s_t | x^t)\f$
     int n_states;
 public:
     DiscreteHiddenMarkovModel* hmm;

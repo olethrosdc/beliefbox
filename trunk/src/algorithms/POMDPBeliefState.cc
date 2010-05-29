@@ -113,7 +113,7 @@ real DiscretePOMDPBeliefState::Observe(int a, int x, real r)
     \f]
     \f[
     P(x_{t+1} | a_t, b_t) = \sum_s P(x_{t+1} | s_{t+1} = s) P(s_{t+1} = s | a_t, b_t)
-    \f\]
+    \f]
     
  */
 real DiscretePOMDPBeliefState::ObservationProbability(int a, int x, real r)
