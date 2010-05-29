@@ -41,8 +41,9 @@ public:
         real w; ///< backoff weight
         real log_w; ///< log of w
         real log_w_prior; ///< initial value
-        BetaDistribution reward_prior;
+        //BetaDistribution reward_prior;
         //NormalDistributionUnknownMean reward_prior;
+        NormalUnknownMeanPrecision reward_prior;
         Node(int n_branches_,
              int n_outcomes_);
         Node(Node* prev_);

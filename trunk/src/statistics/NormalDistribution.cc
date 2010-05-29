@@ -93,7 +93,18 @@ real NormalDistributionUnknownMean::getMean() const
 }
 
 //------------------- Unknown mean and precision -------------------------//
-/// The marginal pdf of the mean.
+/** The marginal pdf of the observations.
+    
+    Instead of calculating the actual marginal:
+    \f[
+    \xi(x) = \int f(x \mid m, r) \, d\xi(m, r),
+    \f]
+    we calculate:
+    \f[
+    \xi(x) = f(x \mid E_\xi m, E_\xi r),
+    \f]
+    where \f$E_\xi m = \int m d\xi(m) \f$, \f$E_\xi r = \int r d\xi(r) \f$.
+ */
 real NormalUnknownMeanPrecision::pdf(real x) const
 {
     return p_x_mr.pdf(x);
