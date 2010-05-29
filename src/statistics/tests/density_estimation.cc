@@ -54,7 +54,8 @@ int main (int argc, char** argv)
     //NormalDistribution distribution2(Beta,Alpha);
     //ContextTreeRealLine pdf(2, max_depth, -RAND_MAX, RAND_MAX);
     //ContextTreeRealLine pdf(2, max_depth, 0, 1);
-    NormalDistributionUnknownMean pdf;
+    //NormalDistributionUnknownMean pdf;
+    NormalUnknownMeanPrecision pdf;
 
     int randomise = urandom()*10000;
     for (int i=0; i<randomise; i++) {
@@ -68,8 +69,7 @@ int main (int argc, char** argv)
     }
 #if 1
     for (real x=-10; x<10; x+=0.001) {
-        real p = pdf.pdf(x);
-        printf ("%f %f #Y\n", x, p);
+        printf ("%f %f %f#Y\n", x, pdf.pdf(x), distribution.pdf(x));
     }
     //pdf.Show();
 #endif
