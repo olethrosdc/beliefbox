@@ -125,13 +125,16 @@ public:
     as follows.  The conditional distribution of \f$m\f$ given \f$r\f$
     is \f$\xi_0(m \mid r) = f(m \mid \mu_0, \tau_0 r)\f$ and the marginal of
     the precision is \f$\xi_0(r) = g(r \mid \alpha_0, \beta_0\f$. 
+
+    The predictive posterior distribution \f$\xi_n(x_{n+1})\f$ is
+    actually a generalised student-t distribution, but here we are
+    hacking it as a normal.
  */
 class NormalUnknownMeanPrecision: public ConjugatePrior
 {
 protected:
-    NormalDistribution p_x_mr; ///< \f$f(x | m, r)\f$
-    //NormalDistribution p_m_r; ///< \f$\xi(m | r) = f(m \mid \mu, \tau r)\f$
-    //GammaDistribution p_r; ///< \f$\xi(r) = g(r \mid \alpha, \beta)\f$
+    NormalDistribution p_x_mr; ///< \f$f(x | m, r)\f$  
+    /// GeneralisedStudent p_x; // This should be the marginal predictive
 public:
     // paramters for \xi(m | r) = f(m | \mu, \tau r)
     real mu_0; ///< prior mean
