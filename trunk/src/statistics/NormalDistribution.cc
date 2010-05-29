@@ -92,7 +92,43 @@ real NormalDistributionUnknownMean::getMean() const
     return mu_n / tau_n;
 }
 
+//------------------- Unknown mean and precision -------------------------//
+/// The marginal pdf of the mean.
+real NormalUnknownMeanPrecision::pdf(real x) const
+{
+    return p_x_mr.pdf(x);
+}
 
+
+real NormalUnknownMeanPrecision::getMean() const
+{
+    return mu_n;
+}
+
+
+void NormalUnknownMeanPrecision::calculatePosterior(real x)
+{
+    n++;
+    real bxn_prev = bx_n;
+    real rn = (real) n;
+    real irn = 1 / rn;
+    bx_n = bx_n + (x - bx_n) * irn;
+    M_2n = M_2n + (x - bx_n)*(x - bxn_prev);
+    real delta_mean = (bx_n - mu_0);
+    
+    real gamma = (rn - 1) * irn;
+    mu_n = mu_n * gamma + (1 - gamma) * x;
+    tau_n += 1.0;
+
+    alpha_n += 0.5;
+    beta_n = beta_0 + 0.5 * (M_2n + tau_0*n*delta_mean*delta_mean/(tau_0 + rn));
+
+    p_x_mr.setMean(mu_n);
+    p_x_mr.setVariance(beta_n / alpha_n);
+}
+
+
+//----------------------- Multivariate -----------------------------------//
 /// Multivariate Gaussian generation
 void MultivariateNormal::generate(Vector& x)
 {
