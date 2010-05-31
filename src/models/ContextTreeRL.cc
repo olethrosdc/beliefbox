@@ -180,6 +180,7 @@ real ContextTreeRL::Node::QValue(Ring<int>& history,
     //w = exp(log_w_prior + log_w); 
     real Q_next = Q * w + (1 - w) * Q_prev;
     int k = *x;
+    assert(k >=0 && k < (int) next.size());
     if (x != history.end() && next[k]) {
         ++x;
         Q_next = next[k]->QValue(history, x, Q_next);
@@ -234,7 +235,12 @@ ContextTreeRL::ContextTreeRL(int n_branches_,
       history(max_depth)
 {
     root = new Node(n_branches, n_symbols);
-    std::cout << "# Making new CTRL with depth " << max_depth << std::endl;
+    std::cout << "# Making new CTRL with depth: " << max_depth
+              << " branches:" << n_branches
+              << " actions:" << n_actions
+              << " observations:" << n_observations
+              << " symbols:" << n_symbols
+              << std::endl;
 }
 
 ContextTreeRL::~ContextTreeRL()
@@ -242,9 +248,16 @@ ContextTreeRL::~ContextTreeRL()
     delete root;
 }
 
-/// Observe complete observation x, action y, reward r
+/** Observe complete observation x, next observation y, reward r.
+    
+    @param x: \f$x_t = (y_t, a_t)\f$.
+    @param y: \f$y_{t+1}\f$.
+    @param r: \f$r_{t+1}\f$.
+ */
 real ContextTreeRL::Observe(int x, int y, real r)
 {
+    assert(x >= 0 && x < n_branches);
+    assert(y >= 0 && y < n_observations);
     active_contexts.clear();
     history.push_back(x);
     return root->Observe(history, history.begin(), y, r, 0, active_contexts);

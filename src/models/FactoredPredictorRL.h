@@ -14,7 +14,7 @@
 #include "real.h"
 #include "debug.h"
 #include <cstdio>
-
+#include <cassert>
 
 /// Abstract class for prediction with actios
 class FactoredPredictorRL
@@ -66,6 +66,8 @@ public:
     /// Observe current action and next observation
     virtual real Observe (int act, int prd, real reward) 
     {
+        assert (act >=0 && act < n_actions);
+        assert (prd >=0 && prd < n_obs);
         int x = act * n_obs + current_obs;
         current_obs = prd;
         current_reward = reward;
@@ -76,6 +78,8 @@ public:
     /// Observe current action and next observation
     virtual real QValue (int act) 
     {
+        assert (act >= 0 && act < n_actions);
+        assert (current_obs >= 0 && current_obs < n_obs);
         //Serror("Not implemented\n");
         int x = act * n_obs + current_obs;
         return tree.QValue(x);
@@ -104,6 +108,7 @@ public:
 
     virtual void Reset()
     {
+        current_obs = 0;
     }
 };
 
