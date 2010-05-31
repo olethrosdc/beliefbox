@@ -30,8 +30,6 @@ protected:
     static real INPUT;		// contribution of input
     static real GRAVITY; 	// contribution of gravity
     static real MCNOISE;        // input noise
-    static const int n_states = 2;     // state dimensions
-    static const int n_actions = 3;     // action dimensions
     Vector state_upper_bound;
     Vector state_lower_bound;
     void Simulate();

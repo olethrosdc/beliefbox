@@ -20,6 +20,10 @@
 #include "POMDPBeliefState.h"
 #include "POMDPBeliefPredictor.h"
 #include "ContextTreeRL.h"
+#include "DiscretisedEnvironment.h"
+#include "MountainCar.h"
+#include "Pendulum.h"
+#include "Environment.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -55,9 +59,16 @@ bool Evaluate1DWorld(Corridor& environment,
                      FactoredPredictorRL* factored_predictor,
                      Statistics& statistics);
 
+bool EvaluateGeneral(Environment<int, int>* environment,
+                     real action_randomness,
+                     FactoredPredictorRL* factored_predictor,
+                     Statistics& statistics);
+
 enum EnvironmentType {
     ONEDMAZE,
-    GRIDWORLD
+    GRIDWORLD,
+    MOUNTAIN_CAR,
+    PENDULUM
 };
 
 int main(int argc, char** argv)
@@ -87,7 +98,7 @@ int main(int argc, char** argv)
     real action_random = atof(argv[7]);
 
     EnvironmentType environment_type;
-
+    
     if (!environment_name.compare("1DMaze")) {
         if (argc!=9) {
             Serror("Model parameters: number of states\n");
@@ -104,6 +115,20 @@ int main(int argc, char** argv)
         environment_type = GRIDWORLD;
         n_actions = 4;
         n_obs = atoi(argv[9]);
+    } else if (!environment_name.compare("MountainCar")) {
+        if (argc!=9) {
+            Serror("Model parameters: discretisation > 1\n");
+            exit(-1);
+        }
+        environment_type = MOUNTAIN_CAR;
+        n_obs = atoi(argv[8]);
+    } else if (!environment_name.compare("Pendulum")) {
+        if (argc!=9) {
+            Serror("Model parameters: discretisation > 1\n");
+            exit(-1);
+        }
+        environment_type = PENDULUM;
+        n_obs = atoi(argv[8]);
     } else {
         Serror ("Unknown environment %s\n",environment_name.c_str());
         exit(-1);
@@ -116,7 +141,26 @@ int main(int argc, char** argv)
 
     for (int iter=0; iter<n_iter; ++iter) {
         mersenne_twister.manualSeed(true_random_bits(false));
+        MountainCar continuous_mountain_car;
+        DiscretisedEnvironment<MountainCar>* mountain_car = NULL;
+        Pendulum continuous_pendulum;
+        DiscretisedEnvironment<Pendulum>* pendulum = NULL;
 
+        if (environment_type == MOUNTAIN_CAR) {
+            int n_intervals = atoi(argv[8]);
+            printf ("# Using %d intervals per dimension\n", n_intervals);
+            mountain_car = new DiscretisedEnvironment<MountainCar>(continuous_mountain_car, n_intervals);
+            n_obs = mountain_car->getNStates();
+            n_actions = mountain_car->getNActions();
+            printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
+        } else if (environment_type == PENDULUM) {
+            int n_intervals = atoi(argv[8]);
+            printf ("# Using %d intervals per dimension\n", n_intervals);
+            pendulum = new DiscretisedEnvironment<Pendulum>(continuous_pendulum, n_intervals);
+            n_obs = pendulum->getNStates();
+            n_actions = pendulum->getNActions();
+            printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
+        }
         FactoredPredictorRL* factored_predictor; 
         if (!model_name.compare("BVMM")) {
             factored_predictor = new TFactoredPredictorRL<ContextTreeRL>(n_actions, n_obs, max_depth + 1);
@@ -148,6 +192,24 @@ int main(int argc, char** argv)
                                        maze_random,
                                        action_random,
                                        &mersenne_twister,
+                                       factored_predictor,
+                                       statistics);
+            }
+            break;
+        case MOUNTAIN_CAR:
+            {
+
+                success = EvaluateGeneral(mountain_car,
+                                       action_random,
+                                       factored_predictor,
+                                       statistics);
+            }
+            break;
+        case PENDULUM:
+            {
+
+                success = EvaluateGeneral(pendulum,
+                                       action_random,
                                        factored_predictor,
                                        statistics);
             }
@@ -278,4 +340,59 @@ bool Evaluate1DWorld(Corridor& environment,
 
     return true;
 }
+
+/// This function views looks at a standard MDP-like thing.
+bool EvaluateGeneral(Environment<int, int>* environment, 
+                     real action_randomness,
+                     FactoredPredictorRL* factored_predictor,
+                     Statistics& statistics)
+{
+    int n_obs = environment->getNStates();
+    int n_actions = environment->getNActions();
+    environment->Reset();
+    factored_predictor->Observe(environment->getState());
+    int last_action = rand()%n_actions;
+    int T = statistics.probability.size();
+    printf ("# states: %d, actions: %d, T: %d, a_rand: %f\n", n_obs, n_actions, T, action_randomness);
+
+    std::vector<real> obs_probs(n_obs); // observation probabilities
+    std::vector<real> Q(n_actions);
+
+    bool running = false;
+    for (int t=0; t<T; ++t) {
+        int action = last_action;
+        if (!running) {
+            environment->Reset();
+            factored_predictor->Observe(environment->getState());
+            //last_action = rand()%n_actions;
+            running = false;
+        }
+        for (int a = 0; a < n_actions; ++a) {
+            Q[a] = factored_predictor->QValue(a);
+            //printf ("%f ", Q[a]);
+        }
+        //printf ("# Q\n");
+        action = ArgMax(Q);
+
+        if (urandom() < action_randomness) {
+            action = rand()%n_actions;
+        } 
+
+        running = environment->Act(action);
+
+        int observation = environment->getState();
+        real reward = environment->getReward();
+
+        real p = factored_predictor->Observe(action, observation, reward);
+        real td_error = factored_predictor->QLearning(0.1, 0.99);
+        //assert(p==obs_probs[observation]);
+        statistics.probability[t] += p;
+        statistics.reward[t] += reward;
+        statistics.error[t] += td_error;
+        //printf ("%d %d %f\n", action, observation, reward);
+    }
+
+    return true;
+}
+
 #endif
