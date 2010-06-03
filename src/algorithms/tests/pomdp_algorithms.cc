@@ -79,13 +79,18 @@ Statistics EvaluateAlgorithm(uint n_steps,
                              DiscreteEnvironment* environment,
                              real gamma);
 
+Statistics EvaluateAlgorithmContinuous(uint n_steps,
+                                       OnlineAlgorithm<int,int>* algorithm,
+                                       DiscreteEnvironment* environment,
+                                       real gamma);
+
 int main (int argc, char** argv)
 {
     int n_actions = 4;
     int n_original_states = 4;
     real gamma = 0.9;
     real lambda = 0.9;
-    real alpha = 0.01;
+    real alpha = 0.5;
     real randomness = 0.01;
     real pit_value = -1.0;
     real goal_value = 1.0;
@@ -154,13 +159,17 @@ int main (int argc, char** argv)
     // remember to use n_runs
     Statistics statistics;
     statistics.ep_stats.resize(n_episodes);
-    //statistics.reward.resize(n_steps);
+    statistics.reward.resize(n_steps);
+    for (uint t=0; t<n_steps; ++t) {
+        statistics.reward[t] = 0;
+    }
     for (uint i=0; i<statistics.ep_stats.size(); ++i) {
         statistics.ep_stats[i].total_reward = 0.0;
         statistics.ep_stats[i].discounted_reward = 0.0;
         statistics.ep_stats[i].steps = 0;
         statistics.ep_stats[i].mse = 0;
     }
+
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         std::cerr << "Run: " << run << " - Creating environment.." << std::endl;
@@ -307,7 +316,7 @@ int main (int argc, char** argv)
                                          collection,
                                          false);
         } else if  (!strcmp(algorithm_name, "BVMM")){
-            BVMM_QLearning<ContextTreeRL>* bvmm = new BVMM_QLearning<ContextTreeRL>(n_actions, n_states, depth + 1, epsilon, alpha, lambda);
+            BVMM_QLearning<ContextTreeRL>* bvmm = new BVMM_QLearning<ContextTreeRL>(n_actions, n_states, depth + 1, epsilon, alpha, gamma);
             algorithm = bvmm;
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
@@ -315,17 +324,20 @@ int main (int argc, char** argv)
 
         
         //std::cerr << "run : " << run << std::endl;
-        Statistics run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
+        //Statistics run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
+        Statistics run_statistics = EvaluateAlgorithmContinuous(n_steps, algorithm, environment, gamma);
+        if (0) {
         for (uint i=0; i<statistics.ep_stats.size(); ++i) {
             statistics.ep_stats[i].total_reward += run_statistics.ep_stats[i].total_reward;
             statistics.ep_stats[i].discounted_reward += run_statistics.ep_stats[i].discounted_reward;
             statistics.ep_stats[i].steps += run_statistics.ep_stats[i].steps;
             statistics.ep_stats[i].mse += run_statistics.ep_stats[i].mse;
         }
+        }
+        for (uint i=0; i<statistics.reward.size(); ++i) {
+            statistics.reward[i] += run_statistics.reward[i];
+        }
 
-        //for (uint i=0; i<statistics.reward.size(); ++i) {
-        //statistics.reward[i] += run_statistics.reward[i];
-        //}
         if (model) {
 #if 0
             if (discrete_mdp) {
@@ -405,11 +417,11 @@ int main (int argc, char** argv)
                   << std::endl;
     }
 
-    //for (uint i=0; i<statistics.reward.size(); ++i) {
-    //        statistics.reward[i] /= (float) n_runs;
-    //        std::cout << statistics.reward[i] << " # INST_PAYOFF"
-    //                  << std::endl;
-    //    }
+    for (uint i=0; i<statistics.reward.size(); ++i) {
+            statistics.reward[i] /= (float) n_runs;
+            std::cout << statistics.reward[i] << " # INST_PAYOFF"
+                      << std::endl;
+    }
 
     std::cout << "Done" << std::endl;
 
@@ -479,5 +491,44 @@ Statistics EvaluateAlgorithm (uint n_steps,
     
     return statistics;
 }
+
+
+Statistics EvaluateAlgorithmContinuous (uint n_steps,
+                                        OnlineAlgorithm<int, int>* algorithm,
+                                        DiscreteEnvironment* environment,
+                                        real gamma)
+{
+    Statistics statistics;
+    statistics.reward.resize(n_steps);
+
+    std::cout << "(running)" << std::endl;
+    int spin_state = 0;
+    const char* spinner ="_,.-'`'-.,_";
+    int max_spin_state = strlen(spinner);
+    
+    spin_state = (spin_state + 1) % max_spin_state;
+    environment->Reset();
+    algorithm->Reset();
+    uint t;
+    bool action_ok = true;
+    for (t=0; t < n_steps; ++t) {
+        int state = environment->getState();
+        real reward = environment->getReward();
+        statistics.reward[t] = reward;
+
+
+        if (!action_ok) {
+            environment->Reset();
+        }
+
+        int action = algorithm->Act(reward, state);
+        action_ok = environment->Act(action);
+    }
+    fprintf(stderr, "\n");
+    std::cout << "(done)" << std::endl;
+    return statistics;
+}
+
+
 
 #endif
