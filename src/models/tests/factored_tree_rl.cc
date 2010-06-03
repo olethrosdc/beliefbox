@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 	
     if (argc <= 8) {
         fprintf (stderr, "Usage: factored_model environment model_name n_iter T depth env_rand act_rand [environment parameters]\n\
-  - environment in {1DMaze, Gridworld}\n\
+  - environment in {1DMaze, Gridworld, MountainCar, Pendulum}\n\
   - model_name in {FMC, BFMC, CTW, BVMM}\n\
   - environment parameters:\n\
     - 1DMaze: number_of_states\n\
@@ -314,6 +314,7 @@ bool Evaluate1DWorld(Corridor& environment,
     for (int t=0; t<T; ++t) {
         int action = last_action;
         for (int a = 0; a < n_actions; ++a) {
+            printf ("Q(%d)\n", a);             
             Q[a] = factored_predictor->QValue(a);
             //printf ("%f ", Q[a]);
         }
@@ -362,17 +363,21 @@ bool EvaluateGeneral(Environment<int, int>* environment,
     for (int t=0; t<T; ++t) {
         int action = last_action;
         if (!running) {
-            environment->Reset();
             factored_predictor->Observe(environment->getState());
+            environment->Reset();
+            factored_predictor->Reset();
             //last_action = rand()%n_actions;
             running = false;
         }
+        //printf("# Select action\n");
         for (int a = 0; a < n_actions; ++a) {
             Q[a] = factored_predictor->QValue(a);
+            //printf ("# Q(%d) = %f\n", a, Q[a]);             
+
             //printf ("%f ", Q[a]);
         }
-        //printf ("# Q\n");
         action = ArgMax(Q);
+        //printf ("%d # QV\n", action);
 
         if (urandom() < action_randomness) {
             action = rand()%n_actions;
@@ -382,9 +387,9 @@ bool EvaluateGeneral(Environment<int, int>* environment,
 
         int observation = environment->getState();
         real reward = environment->getReward();
-
+        //printf ("%d %f ", observation, reward);
         real p = factored_predictor->Observe(action, observation, reward);
-        real td_error = factored_predictor->QLearning(0.1, 0.99);
+        real td_error = factored_predictor->QLearning(0.01, 0.99);
         //assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
         statistics.reward[t] += reward;

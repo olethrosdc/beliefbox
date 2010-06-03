@@ -520,8 +520,11 @@ Statistics EvaluateAlgorithmContinuous (uint n_steps,
         if (!action_ok) {
             environment->Reset();
         }
-
         int action = algorithm->Act(reward, state);
+        for (uint a=0; a<environment->getNActions(); ++a) {
+            printf ("%f ", algorithm->getValue(state, a));
+        }
+        printf(" %d #QVALUE\n", action);
         action_ok = environment->Act(action);
     }
     fprintf(stderr, "\n");

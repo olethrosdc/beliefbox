@@ -105,6 +105,8 @@ NormalUnknownMeanPrecision::NormalUnknownMeanPrecision()
 NormalUnknownMeanPrecision::NormalUnknownMeanPrecision(real mu_0_, real tau_0_)
     : mu_0(mu_0_), tau_0(tau_0_)
 {
+    alpha_0 = 1;
+    beta_0 = 1;
     Reset();
 }
 void NormalUnknownMeanPrecision::Reset()
