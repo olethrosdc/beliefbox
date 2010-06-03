@@ -4,10 +4,10 @@ T=100000
 depth=1
 env_rand=0.01;
 environment=Pendulum
-for act_rand in 0.01 #0 0.1 #0.1 0.01 0
+for act_rand in 0.0 #0 0.1 #0.1 0.01 0
 do
     maze_dir=$HOME/projects/beliefbox/dat
-    for observations in 2 3 4 5 6
+    for observations in 4 2 6 5 3
     do 
         out_dir=$HOME/results/bvmdp/icml-workshop/${n_iter}iter/${environment}/${observations}obs_${env_rand}er_${act_rand}ar/
         mkdir -p $out_dir

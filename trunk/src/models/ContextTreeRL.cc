@@ -13,6 +13,8 @@
 #include <cmath>
 #include <cassert>
 
+#define INITIAL_Q_VALUE 0.0
+
 ContextTreeRL::Node::Node(int n_branches_,
                           int n_outcomes_)
     : n_branches(n_branches_),
@@ -21,7 +23,9 @@ ContextTreeRL::Node::Node(int n_branches_,
       prev(NULL),
       next(n_branches),
       P(n_outcomes), alpha(n_outcomes), prior_alpha(0.5),
-      w(1), log_w(0), log_w_prior(0), Q(1)
+      w(1), log_w(0), log_w_prior(0), 
+      reward_prior(0, 0.1),
+      Q(INITIAL_Q_VALUE)
 {
     for (int i=0; i<n_outcomes; ++i) {
         P(i) = 1.0 / (real) n_outcomes;
@@ -41,7 +45,8 @@ ContextTreeRL::Node::Node(ContextTreeRL::Node* prev_)
       prior_alpha(0.5),
       log_w(0),
       log_w_prior(prev_->log_w_prior - log(2)),
-      Q(1)
+      reward_prior(0, 0.1),
+      Q(INITIAL_Q_VALUE)
       //log_w_prior( - log(10))
 {
     w = exp(log_w_prior);
@@ -75,23 +80,30 @@ ContextTreeRL::Node::~Node()
     5. It stores the current context probability.
     6. It adapts the weight of the context.
     7. It returns the prediction.
+
+    @param history The current history
+    @param x An iterator pointing to the end of the current history
+    @param z the next observation
+    @param r the next reward
+    @param probability is used internally
+    @param active_contexts the list of active contexts, for efficiency
    
  */
 real ContextTreeRL::Node::Observe(Ring<int>& history,
                                   Ring<int>::iterator x,
-                                  int y,
+                                  int z,
                                   real r,
                                   real probability,
                                   std::list<Node*>& active_contexts)
 {
     active_contexts.push_back(this);
-    //printf ("contexts: %d, d:%d\n", active_contexts.size(), depth);
+    //printf ("# obs: contexts: %d, d:%d (%d %f)\n", active_contexts.size(), depth, z, r);
     real total_probability = 0;
     // calculate probabilities
-    assert (y >= 0 && y < n_outcomes);
-
+    assert (z >= 0 && z < n_outcomes);
+    
     // Standard
-#if 1
+#if 0
     real S = alpha.Sum();
     real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
     P = (alpha + prior_alpha) * Z;
@@ -99,7 +111,7 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
     //P[y] = (alpha[y] + prior_alpha) * Z;
 #endif
 
-#if 0
+#if 1
     // aka: I-BVMM -- best for many outcomes
     real S = alpha.Sum();
     real N = 0;
@@ -120,41 +132,45 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
         }
     }
 #endif
-    alpha[y]++; ///< \BUG Valgrind!
+    alpha[z]++; ///< \BUG Valgrind!
 
     // Do it for probability too
-    real p_reward = 1;//0.5 + 0 5 * reward_prior.Observe(r);
+    real p_reward = 0.001 + reward_prior.Observe(r);
         
-    // P(y | B_k) = P(y | B_k, h_k) P(h_k | B_k) + (1 - P(h_k | B_k)) P(y | B_{k-1})
+    // P(z | B_k) = P(z | B_k, h_k) P(h_k | B_k) + (1 - P(h_k | B_k)) P(z | B_{k-1})
     w = exp(log_w_prior + log_w); 
     assert(w >= 0 && w <= 1);
 
-    real p_observations = P[y] * p_reward;
+    real p_observations = P[z] * p_reward;
     total_probability = p_observations * w + (1 - w) * probability;
 
     //real log_w_prev = log_w;
     //real log_w2 = log_w  + log(p_observations) - log(total_probability);    
     log_w = log(w * p_observations / total_probability) - log_w_prior;
-
-    //log_w = log_w + log(p_observations) - log(total_probability) - log_w_prior;
+    assert(!isnan(log_w));
+    //log_w = log_w + log(p_observations / total_probability) - log_w_prior;
 
     assert(log_w + log_w_prior <= 0);
     //assert(log_w2 + log_w_prior <= 0);
 
     assert(!isnan(log_w));
-
+    if (isnan(log_w)) {
+        fprintf(stderr, "Warning: log_w at depth %d is nan! log_w=%f, w = %f, p = %f, p(x) = %f, p(z) = %f, p(r)=%f, prior = %f, z = %d, r = %f \n", depth, log_w, w, p_observations, P[z], p_reward, total_probability, log_w_prior, z, r);
+        P.print(stderr);
+        log_w = -2;
+    }
     w_prod = 1; ///< auxilliary calculation
 
     // Go deeper if the context is long enough and the number of
     // observations justifies it.
-    real threshold = 2;
+    real threshold = 0;
     if (x != history.end() && S >  threshold) {
         int k = *x;
         ++x;
         if (!next[k]) {
             next[k] = new Node(this);
         }
-        total_probability = next[k]->Observe(history, x, y, r, total_probability, active_contexts);
+        total_probability = next[k]->Observe(history, x, z, r, total_probability, active_contexts);
         w_prod = next[k]->w_prod; ///< for post facto context probabilities
         assert(!isnan(total_probability));
         assert(!isnan(w_prod));
@@ -177,14 +193,32 @@ real ContextTreeRL::Node::QValue(Ring<int>& history,
                                  Ring<int>::iterator x,
                                  real Q_prev)
 {
-    //w = exp(log_w_prior + log_w); 
+    w = exp(log_w_prior + log_w); 
     real Q_next = Q * w + (1 - w) * Q_prev;
+    if (isnan(Q_prev)) {
+        fprintf(stderr, "Warning: at depth %d, Q_prev is nan\n", depth);
+        Q_prev = 0;
+    }
+    if (isnan(Q)) {
+        fprintf(stderr, "Warning: at depth %d, Q is nan\n", depth);
+        Q = 0;
+    }
+    if (isnan(Q_next)) {
+        fprintf(stderr, "Warning: at depth %d, Q_next is nan\n", depth);
+        Q_next = 0;
+    }
+    if (isnan(w)) {
+        fprintf(stderr, "Warning: at depth %d, w is nan\n", depth);
+        w = 0.5;
+    }
+
     int k = *x;
+    //printf ("# [%d] (%f %f %f) -> %f (%d) ->\n", depth, Q_prev, w, Q, Q_next, k);
     assert(k >=0 && k < (int) next.size());
     if (x != history.end() && next[k]) {
         ++x;
         Q_next = next[k]->QValue(history, x, Q_next);
-    }
+    } 
 
     return Q_next;
 }
@@ -248,19 +282,19 @@ ContextTreeRL::~ContextTreeRL()
     delete root;
 }
 
-/** Observe complete observation x, next observation y, reward r.
+/** Observe complete observation (branch) x, next observation z and reward r.
     
-    @param x: \f$x_t = (y_t, a_t)\f$.
-    @param y: \f$y_{t+1}\f$.
+    @param x: The current \f$x_t = (z_t, a_t)\f$.
+    @param z: \f$z_{t+1}\f$.
     @param r: \f$r_{t+1}\f$.
  */
-real ContextTreeRL::Observe(int x, int y, real r)
+real ContextTreeRL::Observe(int x, int z, real r)
 {
     assert(x >= 0 && x < n_branches);
-    assert(y >= 0 && y < n_observations);
+    assert(z >= 0 && z < n_observations);
     active_contexts.clear();
     history.push_back(x);
-    return root->Observe(history, history.begin(), y, r, 0, active_contexts);
+    return root->Observe(history, history.begin(), z, r, 0, active_contexts);
 }
 
 void ContextTreeRL::Show()
@@ -275,15 +309,20 @@ int ContextTreeRL::NChildren()
 }
 /** Q Learning implementation.
     
+    
  */
 real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real reward)
 {
     real Q_prev = root->QValue(history, history.begin(), 0);
     //assert(!isnan(Q_prev));
-
+    if (isnan(Q_prev)) {
+        Q_prev = 0;
+        fprintf(stderr, "Warning: Q_prev is nan\n");
+    }
     real max_Q = -INF;    
     for (int a = 0; a < n_actions; ++a) {
         int x = a * n_observations + observation;
+        //printf ("# A: %d \n", a);
         real Q_x = QValue(x);
         if (Q_x > max_Q) {
             max_Q = Q_x;
@@ -353,7 +392,7 @@ real ContextTreeRL::Sarsa(real step_size, real gamma, int observation, real rewa
 
 /// Get a Q value
 ///
-/// x = (y, a)
+/// x = (z, a)
 real ContextTreeRL::QValue(int x)
 {
     Ring<int> tmp_history(history);

@@ -22,7 +22,12 @@
 
 /** A context tree implementation.
     
-    Uses rewards.
+    The main idea is that the current context is a function of the
+    current history \f$x^t = x_1, \ldots, x_t\f$, which in turn is a
+    concatenation of observation-action pairs \f$x_t = (z_t, a_t)\f$,
+    with \f$x_t \in X = Z \times A\f$, \f$a_t \in A\f$ and \f$z_t \in
+    Z\f$.
+    
 */
 class ContextTreeRL
 {
@@ -30,8 +35,8 @@ public:
     // public classes
     struct Node
     {
-        int n_branches;
-        int n_outcomes;
+        int n_branches; ///< \f$|X|\f$
+        int n_outcomes; ///< \f$|Y|\f$
         int depth; ///< depth
         Node* prev; ///< previous node
         std::vector<Node*> next; ///< pointers to next nodes
@@ -44,13 +49,15 @@ public:
         //BetaDistribution reward_prior;
         //NormalDistributionUnknownMean reward_prior;
         NormalUnknownMeanPrecision reward_prior;
+        real Q; ///< last Q value of the context
+        real w_prod; ///< \f$\prod_k (1 - w_k)\f$
+        real context_probability; ///< last probability of the context
+
         Node(int n_branches_,
              int n_outcomes_);
         Node(Node* prev_);
         ~Node();
-        real Q; ///< last Q value of the context
-        real w_prod; ///< \f$\prod_k (1 - w_k)\f$
-        real context_probability; ///< last probability of the context
+
         real Observe(Ring<int>& history,
                      Ring<int>::iterator x,
                      int y,
@@ -70,7 +77,7 @@ public:
                   int n_symbols_,
                   int max_depth_= 0);
     ~ContextTreeRL();
-    real Observe(int x, int y, real r);
+    real Observe(int x, int z, real r);
     void Show();
     int NChildren();
     real QValue(int x);

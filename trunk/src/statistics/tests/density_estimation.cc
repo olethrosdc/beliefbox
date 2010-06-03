@@ -62,7 +62,10 @@ int main (int argc, char** argv)
         distribution.generate();
     }
     for (int t=0; t<T; ++t) {
-        real x= distribution.generate();
+        real x= 0.0;
+        if (urandom() < 0.001) {
+            x = -1;
+        }
         real p = pdf.Observe(x);
         //printf ("%f %f #X\n", x, p);
         //std::cout << p << std::endl;
