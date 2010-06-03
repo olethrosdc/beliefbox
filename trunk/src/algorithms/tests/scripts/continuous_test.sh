@@ -1,6 +1,6 @@
 #! /bin/bash
 
-n_runs=100
+n_runs=1000
 n_episodes=10000
 n_steps=10000
 gamma=0.99
