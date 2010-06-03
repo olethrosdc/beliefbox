@@ -1,6 +1,6 @@
 model_name=BVMM
 n_iter=1000
-T=100000
+T=1000000
 depth=1
 env_rand=0.01;
 environment=Pendulum
@@ -9,7 +9,7 @@ do
     maze_dir=$HOME/projects/beliefbox/dat
     for observations in 4 2 6 5 3
     do 
-        out_dir=$HOME/results/bvmdp/icml-workshop/${n_iter}iter/${environment}/${observations}obs_${env_rand}er_${act_rand}ar/
+        out_dir=$HOME/results/bvmdp/icml-workshop/${n_iter}iter/${environment}/g0.99_${observations}obs_${env_rand}er_${act_rand}ar/
         mkdir -p $out_dir
         echo "observations: " $observations "env rand: " $env_rand "act rand: " $act_rand "T: " $T >$out_dir/params
         for depth in 6 8 12 16
