@@ -20,9 +20,23 @@
 #include "BetaDistribution.h"
 
 
-/** A context tree implementation.
+/** A continuous context tree implementation.
     
-    Uses rewards.
+    This tree partitions an \f$nf\$-dimensional space.  It is very
+    similar to ContextTreeRL, the only difference being that the
+    partition is done in the state-space.
+
+    The simplest models are:
+
+    1. Each context model predicts only observations within that level.
+    So, \f$\Pr(z_{t+1} \in c' \mid z_t \in c)\f$, with \f$c, c' \in C_k\f$.
+    
+    2. Each context model predicts next contexts in general
+    So, \f$\Pr(z_{t+1} \in c' \mid z_t \in c)\f$, w'ith \f$c, c' \in C\f$.
+
+    3. There is a full density estimation.
+    
+    @see ContextTreeRL
 */
 class ContinuousContextTreeRL
 {
@@ -30,8 +44,8 @@ public:
     // public classes
     struct Node
     {
-        int n_branches; //< number of conditional observations
-        int n_outcomes; //< number of observations to predict
+        int n_branches; ///< number of conditional observations
+        int n_outcomes; ///< number of observations to predict
         int depth; ///< depth
         Node* prev; ///< previous node
         std::vector<Node*> next; ///< pointers to next nodes
