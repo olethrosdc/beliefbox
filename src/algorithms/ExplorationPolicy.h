@@ -16,6 +16,7 @@
 #include <cassert>
 #include "Matrix.h"
 #include "Random.h"
+#include "Distribution.h"
 
 /// Value-function-based exploration policy
 ///
@@ -81,6 +82,151 @@ public:
 	}
 	return argmax;
     }
+    virtual void Observe(real reward, int state)
+    {
+        this->state = state;
+    }
+
+    virtual DiscretePolicy* getFixedPolicy() 
+    {
+        Serror ("Not implemented\n");
+        exit(-1);
+        return NULL;
+    }
+
+};
+
+class SoftmaxPolicy : public VFExplorationPolicy
+{
+protected:
+    int n_actions;
+    real beta;
+    int state;
+    Matrix* Q;
+public:
+    SoftmaxPolicy(int n_actions_, real beta_) :
+        n_actions(n_actions_), beta(beta_), Q(NULL)
+    {
+	assert(n_actions > 0);
+	assert(beta >= 0);
+    }
+
+    virtual ~SoftmaxPolicy()
+    {
+    }
+
+    real getBeta()
+    {
+        return beta;
+    }
+    real setBeta(real beta_)
+    {
+        beta = beta_;
+        assert(beta >= 0);
+        return beta;
+    }
+    virtual void setValueMatrix(Matrix* Q_)
+    {
+        Q = Q_;
+    }
+
+    virtual int SelectAction() 
+    {
+		Vector eQ(n_actions);
+		real s = 0;
+		for (int a=0; a<n_actions; ++a) {
+			eQ(a) = beta * exp((*Q)(state, a));
+			s += eQ(a);
+		}
+		eQ /= s;
+		return DiscreteDistribution::generate(eQ);
+	}
+
+    virtual void Observe(real reward, int state)
+    {
+        this->state = state;
+    }
+
+    virtual DiscretePolicy* getFixedPolicy() 
+    {
+        Serror ("Not implemented\n");
+        exit(-1);
+        return NULL;
+    }
+
+};
+
+class MaxSoftmaxPolicy : public VFExplorationPolicy
+{
+protected:
+    int n_actions;
+    real beta;
+	real epsilon;
+    int state;
+    Matrix* Q;
+public:
+    MaxSoftmaxPolicy(int n_actions_, real beta_, real epsilon_) :
+        n_actions(n_actions_), beta(beta_), epsilon(epsilon_), Q(NULL)
+    {
+	assert(n_actions > 0);
+	assert(beta >= 0);
+    }
+
+    virtual ~MaxSoftmaxPolicy()
+    {
+    }
+
+    real getBeta()
+    {
+        return beta;
+    }
+    real setBeta(real beta_)
+    {
+        beta = beta_;
+        assert(beta >= 0);
+        return beta;
+    }
+    real getEpsilon()
+    {
+        return epsilon;
+    }
+    real setEpsilon(real epsilon_)
+    {
+		epsilon = epsilon_;
+        assert(epsilon >= 0 && epsilon <=1);
+        return epsilon;
+    }
+    virtual void setValueMatrix(Matrix* Q_)
+    {
+        Q = Q_;
+    }
+
+    virtual int SelectAction() 
+    {
+		// If we must select a random action, use Boltzmann instead of uniform.
+		if (urandom() <= epsilon) {
+			Vector eQ(n_actions);
+			real s = 0;
+			for (int a=0; a<n_actions; ++a) {
+				eQ(a) = beta * exp((*Q)(state, a));
+				s += eQ(a);
+			}
+			eQ /= s;
+			return DiscreteDistribution::generate(eQ);
+		}
+		// If we must select a non-random action, select the maximum.
+		int argmax = 0;
+		real max = (*Q)(state, argmax);
+		for (int a=1; a<n_actions; ++a) {
+			real Qsa = (*Q)(state, a);
+			if (Qsa > max) {
+				max = Qsa;
+				argmax = a;
+			}
+		}
+		return argmax;
+	}
+
     virtual void Observe(real reward, int state)
     {
         this->state = state;

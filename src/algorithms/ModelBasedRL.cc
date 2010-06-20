@@ -27,11 +27,13 @@ ModelBasedRL::ModelBasedRL(int n_states_,
 {
     state = -1;
     mdp = model->CreateMDP();
+	assert(mdp);
     value_iteration = new ValueIteration(mdp, gamma);
     tmpQ.resize(n_actions);
 }
 ModelBasedRL::~ModelBasedRL()
 {
+	//delete mdp;
     delete value_iteration;
 }
 void ModelBasedRL::Reset()

@@ -38,6 +38,7 @@
 #include "ExplorationPolicy.h"
 #include "Sarsa.h"
 #include "QLearning.h"
+#include "HQLearning.h"
 #include "QLearningDirichlet.h"
 #include "ModelBasedRL.h"
 #include "ModelCollectionRL.h"
@@ -90,7 +91,7 @@ int main (int argc, char** argv)
     int n_original_states = 4;
     real gamma = 0.9;
     real lambda = 0.9;
-    real alpha = 0.5;
+    real alpha = 0.01;
     real randomness = 0.01;
     real pit_value = -1.0;
     real goal_value = 1.0;
@@ -225,6 +226,10 @@ int main (int argc, char** argv)
                   << " with " << n_states << "states, "
                   << n_actions << " actions.\n";
 
+        std::cerr <<  "Creating environment: " << environment_name
+                  << " with " << n_states << "states, "
+                  << n_actions << " actions.\n";
+
         //std::cout << "Creating exploration policy" << std::endl;
         VFExplorationPolicy* exploration_policy = NULL;
         exploration_policy = new EpsilonGreedy(n_actions, epsilon);
@@ -248,6 +253,16 @@ int main (int argc, char** argv)
                                       lambda,
                                       alpha,
                                       exploration_policy);
+        } else if (!strcmp(algorithm_name, "HQLearning")) { 
+            algorithm = new HQLearning(
+									   depth,
+									   n_states,
+									   n_actions,
+									   gamma,
+									   lambda,
+									   alpha,
+									   epsilon, 
+									   1.0);
         } else if (!strcmp(algorithm_name, "QLearningDirichlet")) { 
             algorithm = new QLearningDirichlet(n_states,
                                                n_actions,
@@ -392,6 +407,7 @@ int main (int argc, char** argv)
         }
         //delete environment;
         delete mountain_car;
+		delete pendulum;
         delete gridworld;
         delete one_d_maze;
         delete discretised_chain;
@@ -521,10 +537,12 @@ Statistics EvaluateAlgorithmContinuous (uint n_steps,
             environment->Reset();
         }
         int action = algorithm->Act(reward, state);
+#if 0
         for (uint a=0; a<environment->getNActions(); ++a) {
             printf ("%f ", algorithm->getValue(state, a));
         }
         printf(" %d #QVALUE\n", action);
+#endif
         action_ok = environment->Act(action);
     }
     fprintf(stderr, "\n");

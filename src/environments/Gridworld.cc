@@ -156,7 +156,7 @@ Gridworld::Gridworld(const char* fname,
                 }
                 continue;
             } else if (element == GOAL || element == PIT) {
-                std::cout << "TERMINATE: " << s << " " << element << std::endl;
+                //std::cout << "TERMINATE: " << s << " " << element << std::endl;
                 for (uint a=0; a<n_actions; ++a) {
                     mdp->setTransitionProbability (s, a, terminal_state, 1.0);
                 }
@@ -280,21 +280,21 @@ bool Gridworld::Act(int action)
 {
     int x = state % width;
     int y = (state - x) / width;
-    std::cout << "(" << x << ", "<< y << ")" << " " << whatIs(x,y) << " a: " << action;
+    //std::cout << "(" << x << ", "<< y << ")" << " " << whatIs(x,y) << " a: " << action;
     total_time++;
     real prev_reward = reward;
     reward = mdp->generateReward(state, action);
     state = mdp->generateState(state, action);
     x = state % width;
     y = (state - x) / width;
-    std::cout << " -> (" << x << ", "<< y << ")" << " " << whatIs(x,y)
-              << " s: " << state << "r: " << reward << std::endl;
+	//    std::cout << " -> (" << x << ", "<< y << ")" << " " << whatIs(x,y)
+	//<< " s: " << state << "r: " << reward << std::endl;
 
         //Show();
 
     if (state==(int) terminal_state) {
-        std::cout << "t: " << total_time << " TERMINATE "
-                  << prev_reward << " " << reward << std::endl;
+        //std::cout << "t: " << total_time << " TERMINATE "
+		//         << prev_reward << " " << reward << std::endl;
         return false;
     }
     return true;
