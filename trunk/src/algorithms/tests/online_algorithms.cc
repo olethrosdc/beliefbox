@@ -34,6 +34,7 @@
 #include "MersenneTwister.h"
 #include "MountainCar.h"
 #include "DiscretisedEnvironment.h"
+#include "HQLearning.h"
 #include <cstring>
 
 struct EpisodeStatistics
@@ -202,6 +203,16 @@ int main (int argc, char** argv)
                                       lambda,
                                       alpha,
                                       exploration_policy);
+        } else if (!strcmp(algorithm_name, "HQLearning")) { 
+            algorithm = new HQLearning(
+									   4,
+									   n_states,
+									   n_actions,
+									   gamma,
+									   lambda,
+									   alpha,
+									   0.01,
+									   1.0);
         } else if (!strcmp(algorithm_name, "QLearningDirichlet")) { 
             algorithm = new QLearningDirichlet(n_states,
                                                n_actions,

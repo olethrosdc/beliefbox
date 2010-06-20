@@ -12,6 +12,12 @@
 
 #include "QLearning.h"
 
+/** Initialise Q-learning.
+	 
+	 As a side-effect, the exploration_policy is initialised with the Q matrix
+	 of this Q-learning instance. Thus, the same exploration policy pointer
+	 cannot be shared among multiple QLearning instances.
+ */
 QLearning::QLearning(int n_states_,
                      int n_actions_,
                      real gamma_,
@@ -40,6 +46,10 @@ QLearning::QLearning(int n_states_,
     Reset();
 }
 
+/** Reset.
+	
+	Set the current state/action to invalid values. Clear eligibility traces.
+*/
 void QLearning::Reset()
 {
     state = -1;
@@ -52,6 +62,12 @@ void QLearning::Reset()
 
 }
 
+/** Observe the current action and resulting next state and reward.
+	
+	@param action \f$a_t\f$
+	@param next_state \f$s_{t+1}\f$
+	@param reward \f$r_{t+1}\f$
+ */
 real QLearning::Observe (int action, int next_state, real reward)
 {
     int a_max = 0;
