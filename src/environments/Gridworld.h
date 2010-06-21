@@ -38,7 +38,7 @@ public:
               uint n_actions_ = 4,
               real random_ = 0.0,
               real pit_ = -1.0,
-              real goal_ = 0.0,
+              real goal_ = 1.0,
               real step_ = -0.1);
     virtual ~Gridworld();
 

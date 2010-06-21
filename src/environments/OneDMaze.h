@@ -16,9 +16,12 @@
 #include "Environment.h"
 #include "RandomNumberGenerator.h"
 
-/// OneD Maze
+/// OneD Maze.
 ///
-/// Should be used with a discount of 0.75
+/// Should be used with a discount of 0.75.
+///
+/// Returns a reward of 0 at every step,
+/// and a reward of 1 at the end.
 class OneDMaze : public DiscreteEnvironment
 {
 protected:

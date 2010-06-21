@@ -19,10 +19,13 @@
 #include "ContextBandit.h"
 // POMDPs
 #include "OneDMaze.h"
+#include "POMDPGridworld.h"
 #include "DiscretisedContinuousChain.h"
 #include "MountainCar.h"
 #include "Pendulum.h"
 #include "DiscretisedEnvironment.h"
+#include "POMDPWrapper.h"
+
 //-----------------------------------------
 
 //------------- Models --------------------
@@ -184,6 +187,8 @@ int main (int argc, char** argv)
         Pendulum continuous_pendulum;
         DiscretisedEnvironment<Pendulum>* pendulum = NULL;
         Gridworld* gridworld = NULL;
+        POMDPGridworld* pomdp_gridworld = NULL;
+        POMDPWrapper<int, int, POMDPGridworld>* pomdp_wrapper = NULL;
         ContextBandit* context_bandit = NULL;
         if (!strcmp(environment_name, "RandomMDP")) { 
             random_mdp = new RandomMDP (n_actions,
@@ -196,8 +201,12 @@ int main (int argc, char** argv)
                                         false);
             environment = random_mdp;
         } else if (!strcmp(environment_name, "Gridworld")) { 
-            gridworld = new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
+            gridworld = new Gridworld("/home/olethros/projects/beliefbox/dat/maze3",  16, 16);
             environment = gridworld;
+        } else if (!strcmp(environment_name, "POMDPGridworld")) { 
+            pomdp_gridworld = new POMDPGridworld(rng, "/home/olethros/projects/beliefbox/dat/maze1", 2, 0.0, -1.0, 1.0, 0.0);
+            pomdp_wrapper = new POMDPWrapper<int, int, POMDPGridworld>(*pomdp_gridworld);
+            environment = pomdp_wrapper;
         } else if (!strcmp(environment_name, "ContextBandit")) { 
             context_bandit = new ContextBandit(n_actions, 3, 4, rng);
             environment = context_bandit;
@@ -409,6 +418,7 @@ int main (int argc, char** argv)
         delete mountain_car;
 		delete pendulum;
         delete gridworld;
+        delete pomdp_gridworld;
         delete one_d_maze;
         delete discretised_chain;
         delete random_mdp;
@@ -517,7 +527,7 @@ Statistics EvaluateAlgorithmContinuous (uint n_steps,
     Statistics statistics;
     statistics.reward.resize(n_steps);
 
-    std::cout << "(running)" << std::endl;
+    std::cerr << "(running)" << std::endl;
     int spin_state = 0;
     const char* spinner ="_,.-'`'-.,_";
     int max_spin_state = strlen(spinner);
