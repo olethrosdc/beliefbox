@@ -40,7 +40,7 @@ public:
         pomdp.Reset();
         Environment<S,A>::state = pomdp.getObservation();
         Environment<S,A>::reward = pomdp.getReward();
-        S x = Environment<S,A>::getState();
+        //S x = Environment<S,A>::getState();
     }
 
     /// returns true if the action succeeds, false if it does not.
