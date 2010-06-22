@@ -17,6 +17,7 @@
 /** Wrap a POMDP to look like an MDP to a normal agent.
     
     Just map observations to states.
+    
  */
 template <typename S, typename A, typename P>
 class POMDPWrapper : public Environment<S, A>
@@ -24,12 +25,11 @@ class POMDPWrapper : public Environment<S, A>
 public:
     P& pomdp;
     POMDPWrapper(P& pomdp_) 
-        : pomdp(pomdp_)
+        : Environment<S, A>(pomdp_.getNObs(), pomdp_.getNActions()),
+          pomdp(pomdp_)
     {
-        n_states = pomdp.getNObs();
-        n_actions = pomdp.getNActions();
-        state = pomdp.getObservation();
-        reward = pomdp.getReward();
+        Environment<S,A>::state = pomdp.getObservation();
+        Environment<S,A>::reward = pomdp.getReward();
     }
     virtual ~POMDPWrapper()
     {
@@ -38,9 +38,9 @@ public:
     virtual void Reset() 
     {
         pomdp.Reset();
-        state = pomdp.getObservation();
-        reward = pomdp.getReward();
-        S x = getState();
+        Environment<S,A>::state = pomdp.getObservation();
+        Environment<S,A>::reward = pomdp.getReward();
+        S x = Environment<S,A>::getState();
     }
 
     /// returns true if the action succeeds, false if it does not.
@@ -49,9 +49,10 @@ public:
     /// absorbing state.
     virtual bool Act(A action) 
     {
-        bool act = POMDP.Act(action);
-        state = pomdp.getObservation();
-        reward = pomdp.getReward();
+        bool act = pomdp.Act(action);
+        Environment<S,A>::state = pomdp.getObservation();
+        Environment<S,A>::reward = pomdp.getReward();
+        return act;
     }
     
 
