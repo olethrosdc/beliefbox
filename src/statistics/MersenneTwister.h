@@ -46,8 +46,8 @@ public:
 };
 
 
-// This Mersenne Twister random number generator can be passed
-// as an argument.
+/// This Mersenne Twister random number generator can be passed
+/// as an argument.
 class MersenneTwisterRNG : public RandomNumberGenerator
 {
 protected:
