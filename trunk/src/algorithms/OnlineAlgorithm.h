@@ -10,6 +10,11 @@
  *                                                                         *
  ***************************************************************************/
 
+/// \defgroup ReinforcemenLearning Reinforcement learning algorithms.
+
+/// \ingroup ReinforcementLearning
+/// @{
+
 #ifndef ONLINE_ALGORITHM_H
 #define ONLINE_ALGORITHM_H
 
@@ -33,6 +38,9 @@ public:
     /// it calls Observe as a side-effect.
     virtual A Act(real reward, S next_state) = 0;
     virtual real getValue (S state, A action) = 0;
+
 };
+
+/// @}
 
 #endif

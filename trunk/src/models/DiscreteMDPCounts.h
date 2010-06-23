@@ -19,11 +19,15 @@
 #include "real.h"
 #include <vector>
 
+/** This implementation of an MDP model is based on transition counts.
+	
+	
+ */
 class DiscreteMDPCounts : public MDPModel
 {
 protected:
-    std::vector<DirichletDistribution> P;
-    std::vector<MeanEstimator> ER;
+    std::vector<DirichletDistribution> P; ///< Vector of Dirichlet distributions on P
+    std::vector<MeanEstimator> ER; ///< Vector of mean estimators on ER.
     DiscreteMDP mean_mdp;
     int N;
     int getID (int s, int a) const

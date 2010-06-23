@@ -14,6 +14,14 @@
 #include "Random.h"
 #include <stdexcept>
 
+/** Create a counting model of an MDP.
+	
+   \arg n_states the number of MDP states
+   \arg n_actions the number of MDP actions
+   \arg init_transition_count the prior for the Dirichlet. The higher this is, the more the model will expect to see unseen transitions.
+   \arg init_reward_count the prior number of counts for the reward.  This should be used in conjuction with the prior reward average to bias the rewards.
+   \arg The prior reward average. This can be used to bias the average to some particular value.
+ */
 DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count, int init_reward_count, real init_reward) :
     MDPModel(n_states, n_actions),
     mean_mdp(n_states, n_actions, NULL, NULL)

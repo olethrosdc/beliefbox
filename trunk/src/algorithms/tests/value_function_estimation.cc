@@ -14,11 +14,23 @@
 #include "PolicyEvaluation.h"
 #include "ValueIteration.h"
 #include "RandomMDP.h"
+#include "Gridworld.h"
 #include "InventoryManagement.h"
 #include "DiscretePolicy.h"
 #include "Environment.h"
 #include "ExplorationPolicy.h"
 #include "Sarsa.h"
+#include "QLearning.h"
+#include "ModelBasedRL.h"
+#include "DiscreteMDPCounts.h"
+//#include "RandomNumberGenerator.h"
+#include "RandomSourceRNG.h"
+/** 
+    \file value_function_estimation.cc
+	
+    \brief Test accuracy of value function estimation.
+*/
+
 
 struct Statistics
 {
@@ -29,10 +41,10 @@ struct Statistics
 
 
 std::vector<Statistics> EvaluateAlgorithm(int n_steps,
-					  int n_episodes,
-					  OnlineAlgorithm<int,int>* algorithm,
-					  RandomMDP* environment,
-					  real gamma);
+										  int n_episodes,
+										  OnlineAlgorithm<int,int>* algorithm,
+										  Environment<int, int>* environment,
+										  real gamma);
 
 int main (int argc, char** argv)
 {
@@ -45,14 +57,14 @@ int main (int argc, char** argv)
     real pit_value = -1.0;
     real goal_value = 0.0;
     real step_value = -0.1;
-    real epsilon = 0.1;
-    int n_runs = 1000;
-    int n_episodes = 10000;
-    int n_steps = 1000;
+    real epsilon = 0.01;
+    int n_runs = 100;
+    int n_episodes = 100;
+    int n_steps = 10000;
 
     if (argc != 6) {
-	std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness\n";
-	return -1;
+		std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness\n";
+		return -1;
     }
     n_states = atoi(argv[1]);
     assert (n_states > 0);
@@ -77,55 +89,86 @@ int main (int argc, char** argv)
     //const DiscreteMDP* mdp = environment->getMDP();
     //assert(n_states == mdp->GetNStates());
     //assert(n_actions == mdp->GetNActions());
-    
+	RandomSourceRNG rng(false);
     
     std::cout << "Starting evaluation" << std::endl;
 
     // remember to use n_runs
     std::vector<Statistics> statistics(n_episodes);
-    for (uint run=0; run<n_runs; ++run) {
-	//std::cout << "Creating exploration policy" << std::endl;
-	ExplorationPolicy* exploration_policy = NULL;
-	exploration_policy = new EpsilonGreedy(n_actions, epsilon);
+    for (int run=0; run<n_runs; ++run) {
+		std::cerr << "Creating environment" << std::endl;
+		Environment<int, int>* environment = NULL;
+		if (0) {
+			environment = new RandomMDP (n_actions,
+										 n_states,
+										 randomness,
+										 step_value,
+										 pit_value,
+										 goal_value,
+										 &rng);
+		} else {
+			environment = new Gridworld("/home/olethros/projects/beliefbox/dat/maze1",  8, 8);
+		}
+		n_states = environment->getNStates();
+		n_actions = environment->getNActions();
+		
+		std::cerr << "Creating exploration policy" << std::endl;
+		VFExplorationPolicy* exploration_policy = NULL;
+		exploration_policy = new EpsilonGreedy(n_actions, epsilon);
     
     
-	//std::cout << "Creating online algorithm" << std::endl;
-	OnlineAlgorithm<int, int>* algorithm = NULL;
-	algorithm = new Sarsa(n_states,
-			      n_actions,
-			      gamma,
-			      lambda,
-			      alpha,
-			      exploration_policy);
+		std::cerr << "Creating online algorithm" << std::endl;
+		OnlineAlgorithm<int, int>* algorithm = NULL;
+		MDPModel* mdp_model = NULL;
+		if (0) {
+			algorithm = new QLearning(n_states,
+									  n_actions,
+									  gamma,
+									  lambda,
+									  alpha,
+									  exploration_policy);
+		} else {
+			mdp_model = new DiscreteMDPCounts(n_states,
+											  n_actions,
+											  1./((real) n_states));
+											  
+			algorithm = new ModelBasedRL(n_states,
+										 n_actions,
+										 gamma,
+										 epsilon,
+										 mdp_model);
 
-	//std::cout << "Creating environment" << std::endl;
-	RandomMDP* environment = NULL;
-	environment = new RandomMDP (n_actions,
-				     n_states,
-				     randomness,
-				     step_value,
-				     pit_value,
-				     goal_value);
-	//std::cerr << "run : " << run << std::endl;
-	std::vector<Statistics> run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
-	for (uint i=0; i<statistics.size(); ++i) {
-	    statistics[i].total_reward += run_statistics[i].total_reward;
-	    statistics[i].discounted_reward += run_statistics[i].discounted_reward;
-	    statistics[i].steps += run_statistics[i].steps;
-	}
-	delete environment;
-	delete algorithm;
-	delete exploration_policy;
+		}
+
+		std::cerr << "run : " << run << std::endl;
+		std::vector<Statistics> run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
+		for (uint i=0; i<statistics.size(); ++i) {
+			statistics[i].total_reward += run_statistics[i].total_reward;
+			statistics[i].discounted_reward += run_statistics[i].discounted_reward;
+			statistics[i].steps += run_statistics[i].steps;
+		}
+		if (n_runs ==1) {
+			for (int s=0; s<n_states; ++s) {
+				for (int a=0; a<n_actions; ++a) {
+					printf ("%f ", algorithm->getValue(s, a));
+				}
+				printf ("# Q(%d, .)\n", s);
+			}
+		}
+		delete environment;
+		delete algorithm;
+		delete mdp_model;
+		delete exploration_policy;
     }
     
 
     for (uint i=0; i<statistics.size(); ++i) {
-	statistics[i].total_reward /= (float) n_runs;
-	statistics[i].discounted_reward /= (float) n_runs;
-	statistics[i].steps /= n_runs;
-	std::cout << statistics[i].total_reward << " "
-		  << statistics[i].discounted_reward << "# REWARD"
-		  << std::endl;
+		statistics[i].total_reward /= (float) n_runs;
+		statistics[i].discounted_reward /= (float) n_runs;
+		statistics[i].steps /= n_runs;
+		std::cout << statistics[i].total_reward << " "
+				  << statistics[i].discounted_reward << "# REWARD"
+				  << std::endl;
     }
     std::cout << "Done" << std::endl;
 
@@ -135,39 +178,43 @@ int main (int argc, char** argv)
 }
 
 std::vector<Statistics> EvaluateAlgorithm(int n_steps,
-					  int n_episodes,
-					  OnlineAlgorithm<int, int>* algorithm,
-					  RandomMDP* environment,
-					  real gamma)
+										  int n_episodes,
+										  OnlineAlgorithm<int, int>* algorithm,
+										  Environment<int, int>* environment,
+										  real gamma)
 {
     std:: cout << "Evaluating..." << std::endl;
  
     std::vector<Statistics> statistics(n_episodes);
 
-    DiscreteMDP* mdp = environment->getMDP();
-    PolicyEvaluation* policy_eva
-    for (int episode = 0; episode < n_episodes; ++episode) {
-	statistics[episode].total_reward = 0.0;
-	statistics[episode].discounted_reward = 0.0;
-	statistics[episode].steps = 0;
-	real discount = 1.0;
-	environment->Reset();
-	for (int t=0; t < n_steps; ++t) {
-	    int state = environment->getState();
-	    real reward = environment->getReward();
-	    //std::cout << state << " " << reward << std::endl;
-	    statistics[episode].total_reward += reward;
-	    statistics[episode].discounted_reward += discount * reward;
-	    discount *= gamma;
-	    statistics[episode].steps = t;
-	    int action = algorithm->Act(reward, state);
-	    bool action_ok = environment->Act(action);
-	    if (!action_ok) {
-		break;
-	    }
-	}
+    //DiscreteMDP* mdp = environment->getMDP();
+	
+	for (int episode = 0; episode < n_episodes; ++episode) {
+		std::cerr << "Episode: " << episode << std::endl;
+		statistics[episode].total_reward = 0.0;
+		statistics[episode].discounted_reward = 0.0;
+		statistics[episode].steps = 0;
+		real discount = 1.0;
+		environment->Reset();
+		algorithm->Reset();
+		bool action_ok = true;
+		for (int t=0; t < n_steps; ++t) {
+			int state = environment->getState();
+			real reward = environment->getReward();
+			//std::cout << state << " " << reward << std::endl;
+			statistics[episode].total_reward += reward;
+			statistics[episode].discounted_reward += discount * reward;
+			discount *= gamma;
+			statistics[episode].steps = t;
+			int action = algorithm->Act(reward, state);
+			if (!action_ok) {
+				break;
+			}		
+			 action_ok = environment->Act(action);
+
+		}
         
-    }
+	}
     return statistics;
 }
 

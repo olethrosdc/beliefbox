@@ -149,7 +149,7 @@ int main (int argc, char** argv)
                                                goal_value,
                                                rng,
                                                false);
-        OneDMaze* one_d_maze = new OneDMaze(n_states, rng);
+        OneDMaze* one_d_maze = new OneDMagze(n_states, rng);
         Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
         //Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze4",  16, 16, 4, randomness, pit_value, goal_value, step_value);
         ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
