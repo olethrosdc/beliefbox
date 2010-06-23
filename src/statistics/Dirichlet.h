@@ -17,6 +17,10 @@
 #include "Distribution.h"
 #include "MultinomialDistribution.h"
 
+/** Dirichlet distribution.
+	
+	This distribution is conjugate to the multinomial.
+ */
 class DirichletDistribution : public VectorDistribution
 {
 protected:

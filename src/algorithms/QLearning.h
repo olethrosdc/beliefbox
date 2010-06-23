@@ -68,11 +68,11 @@ public:
 	/// Get value of state-action
 	virtual real getValue (int s, int a)
     {
-        return Q(state, action);
+        return Q(s, a);
     }
 	virtual real& QValue (int s, int a)
     {
-        return Q(state, action);
+        return Q(s, a);
     }
 };
 

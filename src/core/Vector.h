@@ -246,6 +246,6 @@ int ArgMin(const Vector* v);
 real Span(const Vector* v);
 #endif
 
-/*@}*/
+/**@}*/
 
 #endif /* VECTOR_H */

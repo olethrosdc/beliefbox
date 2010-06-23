@@ -23,6 +23,14 @@
 #include "ValueIteration.h"
 #include <vector>
 
+/// \ingroup ReinforcementLearning
+/// @{
+	
+/** Direct model-based reinforcement learning.
+	
+	This class maintains a model of the (discrete) MDP.
+	
+ */
 class ModelBasedRL : public OnlineAlgorithm<int, int>
 {
 protected:
@@ -65,5 +73,7 @@ public:
     
 };
 
+
+/// @}
 #endif
 
