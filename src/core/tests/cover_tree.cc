@@ -16,12 +16,17 @@
 #include "Vector.h"
 #include <vector>
 
-int main()
+int main(int argc, char** argv)
 {
     CoverTree tree;
 
-    int n_points = 100;
-    int n_dimensions = 1;
+	if (argc != 4) {
+		fprintf(stderr, "Usage: cover_tree points dimensions n_trials\n");
+		exit(-1);
+	}
+    int n_points = atoi(argv[1]);
+    int n_dimensions = atoi(argv[2]);
+    int n_trials = atoi(argv[3]);
     printf ("Testing with %d points and %d dimensions\n", n_points, n_dimensions);
     std::vector<Vector> X(n_points);
 
@@ -32,13 +37,15 @@ int main()
         }
     }
     
-
+	printf ("# Inserting points\n");
     for (int i=0; i<n_points; i++) {
         tree.Insert(X[i]);
     }    
 
 	int n_errors = 0;
-	for (int i=0; i<1000; ++i) {
+	for (int i=0; i<n_trials; ++i) {
+		printf ("# test :%d\n", i);
+
 		Vector Q(n_dimensions);
 		for (int j=0; j<n_dimensions; j++) {
             Q[j] = urandom();
@@ -63,6 +70,9 @@ int main()
 				printf("Query: "); Q.print(stdout);
 				printf("Found: (%f) ", tree.metric(Q, node->point)); best_point.print(stdout);
 				printf("Best: (%f) ", dist); X[arg_min].print(stdout);
+				Vector Q_alt = X[arg_min];
+				CoverTree::Node* node_alt = tree.NearestNeighbour(Q_alt);
+				printf("Alternative result: "); node_alt->point.print(stdout);
 				n_errors++;
 			}
 		} else {

@@ -120,7 +120,7 @@ int main (int argc, char** argv)
 		std::cerr << "Creating online algorithm" << std::endl;
 		OnlineAlgorithm<int, int>* algorithm = NULL;
 		MDPModel* mdp_model = NULL;
-		if (0) {
+		if (1) {
 			algorithm = new QLearning(n_states,
 									  n_actions,
 									  gamma,
