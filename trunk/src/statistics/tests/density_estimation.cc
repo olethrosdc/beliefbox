@@ -10,6 +10,7 @@
  ***************************************************************************/
 
 #ifdef MAKE_MAIN
+#include "ContextTreeKDTree.h"
 #include "ContextTreeRealLine.h"
 #include "Random.h"
 #include <vector>
@@ -51,29 +52,42 @@ int main (int argc, char** argv)
     //BetaDistribution distribution(Alpha,Beta);
     //BetaDistribution distribution2(2*Beta,Alpha);
     NormalDistribution distribution(Alpha,Beta);
-    //NormalDistribution distribution2(Beta,Alpha);
-    //ContextTreeRealLine pdf(2, max_depth, -RAND_MAX, RAND_MAX);
-    //ContextTreeRealLine pdf(2, max_depth, 0, 1);
-    //NormalDistributionUnknownMean pdf;
-    NormalUnknownMeanPrecision pdf;
+    NormalDistribution distribution2(Beta,Alpha);
+
+	Vector lower_bound(2);
+	Vector upper_bound(2);
+	for (int i=0; i<2; ++i) {
+		lower_bound(i) = -10;
+		upper_bound(i) = 10;
+	}
+    ContextTreeKDTree pdf(2, max_depth, lower_bound, upper_bound);
+    //NormalUnknownMeanPrecision pdf;
 
     int randomise = urandom()*10000;
     for (int i=0; i<randomise; i++) {
         distribution.generate();
     }
     for (int t=0; t<T; ++t) {
-        real x= 0.0;
-        if (urandom() < 0.001) {
-            x = -1;
-        }
+        Vector x(2);
+		x(0) = distribution.generate();
+		x(1) = distribution2.generate();
+		if (urandom()<0.2) {
+			x(1) -= 4;
+			x(0) -= 4;
+		}
         real p = pdf.Observe(x);
-        //printf ("%f %f #X\n", x, p);
-        //std::cout << p << std::endl;
+		printf ("%f\n", p);
     }
 #if 1
-    for (real x=-10; x<10; x+=0.001) {
-        printf ("%f %f %f#Y\n", x, pdf.pdf(x), distribution.pdf(x));
-    }
+    for (real x=-10; x<10; x+=0.1) {
+		for (real y=-10; y<10; y+=0.1) {
+			Vector v(2);
+			v[0] = x;
+			v[1] = y;
+			printf ("%f ", pdf.pdf(v));// distribution.pdf(x)*distribution2.pdf(y));
+		}
+		printf(" #Y\n");
+	}
     //pdf.Show();
 #endif
     return 0;

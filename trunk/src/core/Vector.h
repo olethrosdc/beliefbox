@@ -59,6 +59,9 @@ public:
     real logSum() const;
     real Sum() const;
     real Sum(int start, int end) const;
+    bool operator< (const Vector& rhs);
+    bool operator> (const Vector& rhs);
+    bool operator== (const Vector& rhs);
     Vector operator+ (const Vector& rhs);
     Vector operator- (const Vector& rhs);
     Vector operator* (const Vector& rhs);
@@ -216,6 +219,14 @@ inline real Span(const Vector& v)
     return Max(v) - Min(v);
 }
 
+inline real Volume(const Vector& x)
+{
+	real V = 1;
+	for (int i=0; i<x.Size(); ++i) {
+		V *= x[i];
+	}
+	return V;
+}
 /// Exponentiation
 inline Vector exp (const Vector& rhs)
 {

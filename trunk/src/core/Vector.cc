@@ -109,6 +109,52 @@ void Vector::print(FILE* f) const
     fprintf(f, "\n");
 }
 
+
+/// Inequality operator.
+///
+/// Return true iff this[i] > rhs[i] for all i.
+bool Vector::operator> (const Vector& rhs)
+{
+    if (this == &rhs) return false;
+	assert(n == rhs.n);
+    for (int i=0; i<n; i++) {
+		if (x[i] <= rhs[i]) {
+			return false;
+		}
+    }
+    return true;
+}
+
+/// Inequality operator.
+///
+/// Return true iff this[i] < rhs[i] for all i.
+bool Vector::operator< (const Vector& rhs)
+{
+    if (this == &rhs) return false;
+	assert(n == rhs.n);
+    for (int i=0; i<n; i++) {
+		if (x[i] >= rhs[i]) {
+			return false;
+		}
+    }
+    return true;
+}
+
+/// Equality operator.
+///
+/// Return true iff this[i] == rhs[i] for all i.
+bool Vector::operator== (const Vector& rhs)
+{
+    if (this == &rhs) return true;
+	assert(n == rhs.n);
+    for (int i=0; i<n; i++) {
+		if (x[i] != rhs[i]) {
+			return false;
+		}
+    }
+    return true;
+}
+
 /// Assignment operator
 Vector& Vector::operator= (const Vector& rhs)
 {
