@@ -1,5 +1,6 @@
 #include "KDTree.h"
 #include "Vector.h"
+/// Create a tree
 void_KDTree::void_KDTree(int n) : n_dimensions(n), box_sup(n), box_inf(n), root(NULL)
 {
     for(int i=0; i<n; ++i) {
@@ -7,6 +8,7 @@ void_KDTree::void_KDTree(int n) : n_dimensions(n), box_sup(n), box_inf(n), root(
         box_inf[i] = -RAND_MAX;
     }
 }
+/// Destroy the tree
 void_KDTree::~void_KDTree()
 {
     int N = node_list.size();
@@ -14,6 +16,8 @@ void_KDTree::~void_KDTree()
         delete node_list[i];
     }
 }
+
+/// Add a vector and associated object, creating a node on the fly.
 void void_KDTree::AddVector(Vector& x, void* object)
 {
     if (!root) {
@@ -29,7 +33,7 @@ void void_KDTree::AddVector(Vector& x, void* object)
     }
 }
 
-
+/// Display the tree
 void void_KDTree::Show()
 {
     int N = node_list.size();
@@ -52,6 +56,7 @@ void void_KDTree::Show()
     }
 }
     
+/// Find the nearest neighbour to x by linear search
 KDNode* void_KDTree::FindNearestNeighbourLinear(Vector& x)
 {
     int N = node_list.size();
@@ -67,6 +72,7 @@ KDNode* void_KDTree::FindNearestNeighbourLinear(Vector& x)
     return arg_min;
 }
 
+/// Find the nearest neighour ro x
 KDNode* void_KDTree::FindNearestNeighbour(Vector& x)
 {
     if (!root) {
@@ -81,7 +87,7 @@ KDNode* void_KDTree::FindNearestNeighbour(Vector& x)
 }
 
 
-
+/// Find the first K nearest neigbours to X by linear search through the list.
 OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(Vector& x, int K)
 {
     int N = node_list.size();
@@ -93,6 +99,7 @@ OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(Vector& x, in
     return knn_list;
 }
 
+/// Find the first K nearest neighbours to x.
 OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighbours(Vector& x, int K)
 {
     OrderedFixedList<KDNode> knn_list(K);
@@ -106,7 +113,7 @@ OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighbours(Vector& x, int K)
 }
 
 
-
+/// Add a point to the corresponding (upper or lower) half, creating it if necessary.
 KDNode* KDNode::AddVector(Vector& x, Vector& inf, Vector& sup, void* object)
 {
     box_inf = inf;
