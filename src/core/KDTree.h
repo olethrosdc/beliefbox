@@ -17,17 +17,19 @@
 
 #include <list>
 
+/// Implementation of a KD tree node
 class KDNode
 {
  public:
-    Vector box_sup;
-    Vector box_inf;
-    Vector c;
-    int a;
-    KDNode* lower;
-    KDNode* upper;
+    Vector box_sup; ///< upper bound 
+    Vector box_inf; ///< lower bound
+    Vector c; ///< center
+    int a; ///< split dimension
+    KDNode* lower; ///< lower child
+    KDNode* upper; ///< upper child
     void* object; ///< easiest way to associate an object
-
+	
+	/// Make a node
     KDNode(Vector& c_, int a_, Vector& inf, Vector& sup, void* object_) : c(c_), a(a_), lower(NULL), upper(NULL), object(object_)
     {
         assert(a >= 0 && a < c.Size());
@@ -51,18 +53,23 @@ class KDNode
     
     If there already exists a node \f$j\f$ there then we repeat.
     Otherwise, we add a new node.
+
+	The upper and lower half are defined slightly differently from the
+	standard KD-tree.  Instead of splitting along the longest
+	dimension at \f$x\f$, we split along the longest dimension at the
+	centroid \f$c\f$ of the box.
    
  */
 class void_KDTree
 {
 protected:
-    int n_dimensions;
-    Vector box_sup;
-    Vector box_inf;
-    KDNode* root;
-    std::vector<KDNode*> node_list;
+    int n_dimensions; ///< dimensionality of space
+    Vector box_sup; ///< global upper bound
+    Vector box_inf; ///< global lower bound
+    KDNode* root; ///< root node
+    std::vector<KDNode*> node_list; ///< contains a list of all nodes
 public:	
-    void_KDTree(int n);
+    void_KDTree(int n); 
     virtual ~void_KDTree();
     void AddVector(Vector& x, void* object);
     void Show();
@@ -70,10 +77,12 @@ public:
     KDNode* FindNearestNeighbour(Vector& x);
     OrderedFixedList<KDNode> FindKNearestNeighboursLinear(Vector& x, int K);
     OrderedFixedList<KDNode> FindKNearestNeighbours(Vector& x, int K); 
+	/// Get number of nodes
     int getNumberOfNodes()
     {
         return node_list.size();
     }
+	/// Get number of leaves
     int getNumberOfLeaves()
     {
         int n_leaves = 0;
@@ -95,41 +104,47 @@ template <typename T>
 class KDTree : public void_KDTree
 {
  public:
+	/// Make a KD-Tree
     KDTree(int n) : void_KDTree(n)
     {
     }
-                    
+	/// Find the nearest object, in linear time
     T* FindNearestObjectLinear(Vector& x)
     {
         KDNode* node = void_KDTree::FindNearestNeighbourLinear(x);
         return (T*) node->object;
     }
+	/// Find the nearest object, in logarithmic time.
     T* FindNearestObject(Vector& x)
     {
         KDNode* node = void_KDTree::FindNearestNeighbour(x);
         return (T*) node->object;
     }
+	/// Find the nearest neighbour in linear time.
     KDNode* FindNearestNeighbourLinear(Vector& x)
     {
         return void_KDTree::FindNearestNeighbourLinear(x);
 
     }
+	/// Find the nearest neighbour in logarithmic time.
     KDNode* FindNearestNeighbour(Vector& x)
     {
         return void_KDTree::FindNearestNeighbour(x);
     }
 
-    
+    /// Find the K nearest objects in linear time
     T* FindKNearestObjectsLinear(Vector& x, int K)
     {
         KDNode* node = void_KDTree::FindKNearestNeighboursLinear(x, K);
         return (T*) node->object;
     }
+    /// Find the K nearest objects
     T* FindKNearestObjects(Vector& x, int K)
     {
         KDNode* node = void_KDTree::FindKNearestNeighbours(x, K);
         return (T*) node->object;
     }
+	    /// Find the K nearest objects in linear time
     OrderedFixedList<KDNode> FindKNearestNeighboursLinear(Vector& x, int K)
     {
         return void_KDTree::FindKNearestNeighboursLinear(x, K);

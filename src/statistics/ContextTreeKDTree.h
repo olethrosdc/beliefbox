@@ -18,11 +18,23 @@
 #include "Ring.h"
 
 
-/** Context tree on the real line.
+/** Context tree non-parametric density estimation on \f$R^n\f$.
 
-    This is a generalisation of the binary tree on [a,b] implemented in
-	ContextTreeRealLine to a KD-tree.
-*/
+    This is a generalisation of the binary tree on [a,b] implemented
+	in ContextTreeRealLine to a KD-tree. For any sample \f$x^t \sim
+	D^t\f$, with $x_i \in R^n\f$ it estimates the measure
+	\f[
+	P^t(w) = P(w \mid x^t) \propoto P_w(x^t)P^0(w)
+	\f]
+	and so the marginal
+	\f[
+	P(x_{t+1} \mid x^t) = \sum_w P_w(x_t) P(w \mid x^t).
+	\f]
+	The distribution \f$P^t(w)\f$ is simply a product distribution.
+
+	The model can also be used for estimating conditional densities, directly.
+	However, this is perhaps not a good idea. 
+ */
 class ContextTreeKDTree
 {
 public:

@@ -70,10 +70,10 @@ int main (int argc, char** argv)
     for (int t=0; t<T; ++t) {
         Vector x(2);
 		x(0) = distribution.generate();
-		x(1) = distribution2.generate();
-		if (urandom()<0.2) {
-			x(1) -= 4;
-			x(0) -= 4;
+		if (x(0) < 0) {
+			x(1) = distribution2.generate();
+		} else {
+			x(1) = x(0) + 0.5;
 		}
         real p = pdf.Observe(x);
 		printf ("%f\n", p);
