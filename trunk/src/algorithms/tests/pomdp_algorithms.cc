@@ -204,7 +204,7 @@ int main (int argc, char** argv)
             gridworld = new Gridworld("/home/olethros/projects/beliefbox/dat/maze3",  16, 16);
             environment = gridworld;
         } else if (!strcmp(environment_name, "POMDPGridworld")) { 
-            pomdp_gridworld = new POMDPGridworld(rng, "/home/dimitrakakis/projects/beliefbox/dat/maze6", 2, 0.0, -1.0, 1.0, -0.1);
+            pomdp_gridworld = new POMDPGridworld(rng, "/home/olethros/projects/beliefbox/dat/maze6", 2, 0.0, -1.0, 1.0, -0.1);
             pomdp_wrapper = new POMDPWrapper<int, int, POMDPGridworld>(*pomdp_gridworld);
             environment = pomdp_wrapper;
         } else if (!strcmp(environment_name, "ContextBandit")) { 
