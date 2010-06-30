@@ -2,8 +2,8 @@ n_states=4
 gamma=0.9
 lambda=0.7
 epsilon=0.01
-n_runs=100
-T=1000000
+n_runs=1000
+T=10000000
 Environment=POMDPGridworld
 for model in QLearning HQLearning Sarsa Model;
 do
