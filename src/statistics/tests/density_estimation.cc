@@ -63,7 +63,7 @@ int main (int argc, char** argv)
     ContextTreeKDTree pdf(2, max_depth, lower_bound, upper_bound);
     //NormalUnknownMeanPrecision pdf;
 
-    int randomise = urandom()*10000;
+    int randomise = urandom()*100;
     for (int i=0; i<randomise; i++) {
         distribution.generate();
     }
@@ -76,7 +76,7 @@ int main (int argc, char** argv)
 			x(1) = x(0) + 0.5;
 		}
         real p = pdf.Observe(x);
-		printf ("%f\n", p);
+		//printf ("%f\n", p);
     }
 #if 1
     for (real x=-10; x<10; x+=0.1) {
