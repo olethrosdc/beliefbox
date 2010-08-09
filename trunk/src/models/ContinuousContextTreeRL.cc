@@ -77,12 +77,11 @@ ContinuousContextTreeRL::Node::~Node()
     7. It returns the prediction.
    
  */
-real ContinuousContextTreeRL::Node::Observe(Ring<int>& history,
-                                  Ring<int>::iterator x,
-                                  int y,
-                                  real r,
-                                  real probability,
-                                  std::list<Node*>& active_contexts)
+real ContinuousContextTreeRL::Node::Observe(Vector& x,
+											Vector& y,
+											real r,
+											real probability,
+											std::list<Node*>& active_contexts)
 {
     active_contexts.push_back(this);
     //printf ("contexts: %d, d:%d\n", active_contexts.size(), depth);
@@ -243,7 +242,7 @@ ContinuousContextTreeRL::~ContinuousContextTreeRL()
 
 
 /// Observe complete observation x, action y, reward r
-real ContinuousContextTreeRL::Observe(Vector& x, int y, real r)
+real ContinuousContextTreeRL::Obseerve(Vector& x, int a, Vector& y, real r)
 {
     active_contexts.clear();
     return root->Observe(history, history.begin(), y, r, 0, active_contexts);
