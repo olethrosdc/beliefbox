@@ -63,14 +63,14 @@ public:
         real Q; ///< last Q value of the context
         real w_prod; ///< \f$\prod_k (1 - w_k)\f$
         real context_probability; ///< last probability of the context
-        real Observe(Ring<int>& history,
-                     Ring<int>::iterator x,
-                     int y,
+        real Observe(Vector& x,
+					 int a,
+					 Vector& y,
                      real r,
                      real probability,
                      std::list<Node*>& active_contexts);
-        real QValue(Ring<int>& history,
-                     Ring<int>::iterator x,
+        real QValue(Vector& x,
+					int a,
                     real Q_prev);
         void Show();
         int NChildren();
@@ -82,7 +82,7 @@ public:
                   int n_symbols_,
                   int max_depth_= 0);
     ~ContinuousContextTreeRL();
-    real Observe(Vector& x, int y, real r);
+    real Observe(Vector& x, int a, Vector& y, real r);
     void Show();
     int NChildren();
     real QValue(int x);
