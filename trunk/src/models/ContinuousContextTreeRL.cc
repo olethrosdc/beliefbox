@@ -1,3 +1,4 @@
+#if 0
 /* -*- Mode: c++;  -*- */
 // copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
@@ -342,3 +343,5 @@ real ContinuousContextTreeRL::QValue(int x)
     tmp_history.push_back(x);
     return root->QValue(tmp_history, tmp_history.begin(), 0);
 }
+
+#endif

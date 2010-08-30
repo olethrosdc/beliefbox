@@ -1,6 +1,5 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -15,11 +14,21 @@
 
 #include "Object.h"
 
-class Belief : public T
+/** This is a generic belief container class.
+	
+	The purpose of this class is to serve as a container for various
+	types of beliefs; both those arising from simple conjugate priors
+	of i.i.d. observations, as well as more complex ones.
+	
+	For this reason, the implementation of a belief object should be
+	relatively simple, with most of the functionality being
+	implemented in the contained classes.
+	
+ */
+class Belief : public Object
 {
  public:
-    virtual ~Belief() {}
-    virtual void 
+    virtual ~Belief() {}	
 };
 
 #endif

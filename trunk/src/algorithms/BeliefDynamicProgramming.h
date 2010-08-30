@@ -15,44 +15,29 @@
 
 /** Dynamic programming using beliefs.
 
-We start with an initial belief \f$b_0\f$ which is a distribution over
-possible worlds.  Then, we expand the tree according to the possible
-outcomes at each time \f$t\f$ to obtain \f$\{b_i(t)\}\f$.
-
-The question is, how do we expand the tree?  We have to model all the
-variables as observations.  If we are talking about reinforcement
-learning, then those variables will be the tuple \f$(S_t, A_t,
-S_{t+1}, R_t)\f$.  It is necessary that a distribution be given for
-these tuples.
+This is dynamic programming using only beliefs, so no other state
+variable is included.  
 
 */
-template <typename StateType, typename ActionType>
+template <typename Belief, typename Policy>
 class BeliefDynamicProgramming
 {
 protected:
-	Belief* initial_belief;
+	Belief belief; ///< A belief is a certain type of distribution
+	Policy policy;  
 public:
-	BeliefDynamicProgramming(Belief* initial_belief);
-	~virtual BeliefDynamicProgramming(Belief* initial_belief);
-};
-
-/** Belief MDPs for Continuous Bandit Problems with Bernoulli rewards 
-	Assumes that the space is n-dimensional */
-class BDP_ContinuousBandit
-{
-protected:
-	int n_dimensions; ///< number of dimensions
-public:
-	BDP_ContinuousBandit(int d) 
+	BeliefDynamicProgramming(Belief& initial_belief, Policy& policy)
+		:
+		belief(initial_belief)
+		~virtual BeliefDynamicProgramming()
 	{
-		n_dimensions = d;
 	}
-	virtual ~BDP_ContinuousBandit()
-	{}
-	virtual void Observe(Vector a, real r);
+	void Expand(int T)
+	{
+		
+	}
 	
 };
-
 
 #endif
 
