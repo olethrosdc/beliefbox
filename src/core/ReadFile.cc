@@ -4,6 +4,11 @@
 #include "debug.h"
 #include <cerrno>
 
+/** Read a file in.
+
+	The format is:
+	number_of_lines
+ */
 int FileToIntVector(std::vector<int>& data, char* fname, int tmpT)
 {
     FILE* file = fopen(fname, "r");
@@ -39,6 +44,12 @@ int FileToIntVector(std::vector<int>& data, char* fname, int tmpT)
 	return n_observations;
 }
 
+/** Read a list of class records.
+
+	Format:
+	number_of_lines number_of_colums
+	<data>
+ */
 int ReadClassData(Matrix& data, std::vector<int>& labels, char* fname) 
 {
     FILE* file = fopen(fname, "r");

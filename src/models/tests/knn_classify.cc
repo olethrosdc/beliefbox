@@ -28,7 +28,9 @@ int main(int argc, char** argv)
 
     Matrix test_data; 
     std::vector<int> test_labels;
-    
+	
+	fprintf(stderr, "Usage: knn_classify train_file K test_file\n");
+
     ReadClassData(data, labels, argv[1]);
 
     //fprintf(stderr, "Reading %s\n", argv[1]);

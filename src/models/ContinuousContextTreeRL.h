@@ -1,3 +1,4 @@
+#if 0
 /* -*- Mode: c++;  -*- */
 // copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
@@ -100,5 +101,7 @@ protected:
 };
 
 
+
+#endif
 
 #endif
