@@ -1,5 +1,5 @@
 // -*- Mode: C++; -*-
-// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /************************************************************************
  *                                                                      *
  * This program is free software; you can redistribute it and/or modify *
@@ -9,7 +9,7 @@
  *                                                                      *
  ************************************************************************/
 
-#undef DEBUG_EXPERIMENT
+#define DEBUG_EXPERIMENT
 
 #ifdef MAKE_MAIN
 
@@ -93,7 +93,7 @@ public:
         //printf ("posterior: %f %f -> %f\n",  belief[action].alpha, belief[action].beta, belief[action].getMean());
 
         if (t < T) {
-            //printf("Making children...\n");
+            //printf("Making children... (%d / %d)\n", t, T);
             MakeChildren(outcomes);
         } else {
             //printf ("Ending at action %d belief %f / %f\n", action, prior[action].alpha, prior[action].beta);
@@ -117,13 +117,13 @@ public:
                 HypothesisEdge* edge = new HypothesisEdge;
                 edge->action = a;
                 edge->probability = p;
-                edge->value = 0;
+                edge->value = -INF;
                 edge->outcome = x;
                 //printf("New edge: t = %d, a=%d, x=%f, p=%f\n", t, a, outcomes[i], p);
                 edge->child = new Hypothesis(belief,
                                              n_actions,
                                              t + 1,
-                                             T- t,
+                                             T,
                                              outcomes,
                                              a,
                                              x);
@@ -307,7 +307,7 @@ void Experiment(int n_actions, int T, int n_iter)
     for (int k=0; k<n_iter; ++k) {
         std::vector<real> success_probabilities(2);
         for (int i=0; i<n_actions; ++i) {
-            success_probabilities[i] = urandom();//0.25 + 0.75 * ((real) i) / ((real) n_actions);
+            success_probabilities[i] = 0.1 + 0.5 * ((real) i) / ((real) n_actions);
 #ifdef DEBUG_EXPERIMENT
             printf ("P[%d] = %f\n", i, success_probabilities[i]);
 #endif
@@ -323,7 +323,7 @@ void Experiment(int n_actions, int T, int n_iter)
                 prior[a].beta = 1.0;
             }
             for (int t=0; t < T; ++t) {
-                ExperimentDesign experiment_design(outcomes, n_actions, prior, 4);                
+                ExperimentDesign experiment_design(outcomes, n_actions, prior, T);                
                 int action = experiment_design.SelectAction();
                 real outcome;
                 if (urandom() < success_probabilities[action]) {
@@ -332,7 +332,7 @@ void Experiment(int n_actions, int T, int n_iter)
                     outcome = outcomes[0];
                 }
 #ifdef DEBUG_EXPERIMENT
-                printf ("Value : %f\n", experiment_design.Value());
+                printf ("Expected value : %f\n", experiment_design.Value());
                 experiment_design.ShowValues();
                 printf("Action : %d\n", action);
                 printf ("Outcome: %f\n", outcome);
