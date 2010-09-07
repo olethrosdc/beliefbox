@@ -35,6 +35,7 @@ class HypothesisEdge {
 public:
     Hypothesis* child;
     int action;
+    real outcome;
     real value;
     real probability;
     ~HypothesisEdge();
@@ -78,18 +79,21 @@ public:
     
     /// Create hypothesis from prior and new observation. Make
     /// children if necessary.
-    Hypothesis(std::vector<BetaDistribution>& prior,
-               int n_actions_,
-               int t_,
-               int T_,
-               std::vector<real>& outcomes,
-               int action,
-               real outcome)
+    Hypothesis(const std::vector<BetaDistribution>& prior,
+               const int n_actions_,
+               const int t_,
+               const int T_,
+               const std::vector<real>& outcomes,
+               const int action,
+               const real outcome)
         : belief(prior), n_actions(n_actions_), t(t_), T(T_), Vmax(-INF), V(n_actions)
     {
-        prior[action].calculatePosterior(outcome);
+        //printf ("prior: %f %f -> %f\n", belief[action].alpha, belief[action].beta, belief[action].getMean());
+        belief[action].calculatePosterior(outcome);
+        //printf ("posterior: %f %f -> %f\n",  belief[action].alpha, belief[action].beta, belief[action].getMean());
 
         if (t < T) {
+            //printf("Making children...\n");
             MakeChildren(outcomes);
         } else {
             //printf ("Ending at action %d belief %f / %f\n", action, prior[action].alpha, prior[action].beta);
@@ -103,7 +107,7 @@ public:
         }
     }
     /// How to make children!
-    void MakeChildren(std::vector<real>& outcomes) {
+    void MakeChildren(const std::vector<real>& outcomes) {
         for (int a=0; a<n_actions; ++a) {
             real u = belief[a].getMean();
             //printf ("u[%d] = %f\n", a, u);
@@ -111,17 +115,18 @@ public:
                 real x = outcomes[i];
                 real p = u * x + (1 - u) * (1 - x);
                 HypothesisEdge* edge = new HypothesisEdge;
-                edge->child = new Hypothesis(belief,
-                                             n_actions,
-                                             t + 1,
-                                             T,
-                                             outcomes,
-                                             a,
-                                             i);
                 edge->action = a;
                 edge->probability = p;
                 edge->value = 0;
+                edge->outcome = x;
                 //printf("New edge: t = %d, a=%d, x=%f, p=%f\n", t, a, outcomes[i], p);
+                edge->child = new Hypothesis(belief,
+                                             n_actions,
+                                             t + 1,
+                                             T- t,
+                                             outcomes,
+                                             a,
+                                             x);
                 edges.push_back(edge);
             }
         }
@@ -141,7 +146,9 @@ public:
         }
 
         for (uint i=0; i<edges.size(); ++i) {
-            edges[i]->value = edges[i]->child->Value();
+            real reward = 0;
+            //real reward = edges[i]->outcome;
+            edges[i]->value = reward + edges[i]->child->Value();
             V[edges[i]->action] += edges[i]->value * edges[i]->probability;
 #if 0
             printf(" - edge %d = %f, wp %f\n",
@@ -161,28 +168,34 @@ public:
     {
         Vmax = -INF;
         for (int a=0; a<n_actions; ++a) {
+            //for (int j=0; j<t; ++j) {
+            //printf (".");
+            //}
             real p = belief[a].alpha / (belief[a].alpha + belief[a].beta);
             V[a] = p * CORRECT_VALUE + INCORRECT_VALUE * (1 - p);
+            //printf ("p: %f, a: %f, b:%f, V:%f\n", 
+            //p,
+            //belief[a].alpha,
+            //belief[a].beta,
+            //V[a]);
             if (V[a] > Vmax) {
                 Vmax = V[a];
             }
         }
-        //printf ("EV: %f\n", Vmax);
+
         return Vmax;
     }
 
     void ShowValues()
     {
-        for (int a=0; a<n_actions; ++a) {
-            V[a] = 0;
-        }
         for (uint i=0; i<edges.size(); ++i) {
             for (int k=0; k<t; ++k) {
                 printf ("-");
             }
-            printf ("[%d (%d): %f w.p. %f]\n", 
+            printf ("[%d (%d, %.1f): %f w.p. %f]\n", 
                     i,
                     edges[i]->action,
+                    edges[i]->outcome,
                     edges[i]->value,
                     edges[i]->probability);
             edges[i]->child->ShowValues();
@@ -197,6 +210,7 @@ public:
     }
     int SelectAction()
     {
+        Value();
         return ArgMax(V);
     }
 };
@@ -248,39 +262,48 @@ public:
         return root->SelectAction();
     }
 };
-void Experiment(int n_actions, int T);
+void Experiment(int n_actions, int T, int n_iter);
 int main(int argc, char** argv)
 {
-    int n_actions = atoi(argv[1]);
-    int T = atoi(argv[2]) ;
-
-    if (argc != 3) {
-        fprintf (stderr, "Usage: experiment_design n_actions T\n");
+    if (argc != 4) {
+        fprintf (stderr, "Usage: experiment_design n_actions T n_iter\n");
         return -1;
     }
+
+    int n_actions = atoi(argv[1]);
+    int T = atoi(argv[2]) ;
+    int n_iter = atoi(argv[3]) ;
+
 
     if (n_actions < 1) {
         fprintf (stderr, "n_actions > 0\n");
         return -1;
     }
 
-    if (T < 1) {
-        fprintf (stderr, "T > 0\n");
+    if (T < 0) {
+        fprintf (stderr, "T >= 0\n");
         return -1;
     }
-    Experiment (n_actions, T);
+
+    if (n_iter < 1) {
+        fprintf (stderr, "n_iter > 0\n");
+        return -1;
+    }
+
+    Experiment (n_actions, T, n_iter);
     return 0;
 }
 
-void Experiment(int n_actions, int T)
+void Experiment(int n_actions, int T, int n_iter)
 {
     std::vector<real> outcomes(2);
     outcomes[0] = 0;
     outcomes[1] = 1;
     
-    int n_iter = 1000;
     real randomised_results = 0;
     real lookahead_results = 0;
+    real thompson_results = 0;
+    real bayesopt_results = 0;
     for (int k=0; k<n_iter; ++k) {
         std::vector<real> success_probabilities(2);
         for (int i=0; i<n_actions; ++i) {
@@ -293,13 +316,14 @@ void Experiment(int n_actions, int T)
         
         // Clever trials
         {
+            real reward = 0;
             std::vector<BetaDistribution> prior(n_actions);
             for (int a=0; a<n_actions; ++a)  {
                 prior[a].alpha = 1.0;
                 prior[a].beta = 1.0;
             }
             for (int t=0; t < T; ++t) {
-                ExperimentDesign experiment_design(outcomes, n_actions, prior, T - t);                
+                ExperimentDesign experiment_design(outcomes, n_actions, prior, 4);                
                 int action = experiment_design.SelectAction();
                 real outcome;
                 if (urandom() < success_probabilities[action]) {
@@ -313,6 +337,7 @@ void Experiment(int n_actions, int T)
                 printf("Action : %d\n", action);
                 printf ("Outcome: %f\n", outcome);
 #endif
+                //                reward += outcome;
                 prior[action].alpha += outcome;
                 prior[action].beta += (1 - outcome);
             }
@@ -327,20 +352,21 @@ void Experiment(int n_actions, int T)
 #endif
             real true_value = success_probabilities[a_max] * CORRECT_VALUE
                 + (1 - success_probabilities[a_max]) * INCORRECT_VALUE;
-            lookahead_results += true_value;
+            lookahead_results += reward + true_value;
         }
 
         // Randomised trials
         {
+            real reward = 0;
             std::vector<BetaDistribution> prior(n_actions);
             for (int a=0; a<n_actions; ++a)  {
                 prior[a].alpha = 1.0;
                 prior[a].beta = 1.0;
             }
             RandomDevice rng(false);
+            std::vector<real> policy(n_actions);
             for (int t=0; t < T; ++t) {
                 int action = rng.discrete_uniform(n_actions);
-                //int action = t % n_actions;
                 real outcome;
                 if (urandom() < success_probabilities[action]) {
                     outcome = outcomes[1];
@@ -350,6 +376,7 @@ void Experiment(int n_actions, int T)
                 //printf ("Outcome: %f\n", outcome);
                 prior[action].alpha += outcome;
                 prior[action].beta += (1 - outcome);
+                //reward += outcome;
             }
             std::vector<real> V(n_actions);
             for (int a=0; a<n_actions; ++a) {
@@ -360,12 +387,95 @@ void Experiment(int n_actions, int T)
             //printf ("Selected Treatment : %d\n", a_max);
             real true_value = success_probabilities[a_max] * CORRECT_VALUE
                 + (1 - success_probabilities[a_max]) * INCORRECT_VALUE;
-            randomised_results += true_value;
+            randomised_results += reward + true_value;
         }
+
+        // Bayesopt
+        {
+            real reward = 0;
+            std::vector<BetaDistribution> prior(n_actions);
+            for (int a=0; a<n_actions; ++a)  {
+                prior[a].alpha = 1.0;
+                prior[a].beta = 1.0;
+            }
+            RandomDevice rng(false);
+            std::vector<real> policy(n_actions);
+            for (int t=0; t < T; ++t) {
+                //int action = rng.discrete_uniform(n_actions);
+                //int action = t % n_actions;
+                for (int a=0; a<n_actions; ++a) {
+                    //policy[a] = prior[a].generate();
+                    policy[a] = prior[a].getMean();
+                }
+                int action = ArgMax(policy);
+                real outcome;
+                if (urandom() < success_probabilities[action]) {
+                    outcome = outcomes[1];
+                } else {
+                    outcome = outcomes[0];
+                }
+                //printf ("Outcome: %f\n", outcome);
+                prior[action].alpha += outcome;
+                prior[action].beta += (1 - outcome);
+                //reward += outcome;
+            }
+            std::vector<real> V(n_actions);
+            for (int a=0; a<n_actions; ++a) {
+                real p = prior[a].alpha / (prior[a].alpha + prior[a].beta);
+                V[a] = p * CORRECT_VALUE + (1 - p) * INCORRECT_VALUE;
+            }
+            int a_max = ArgMax(V);
+            //printf ("Selected Treatment : %d\n", a_max);
+            real true_value = success_probabilities[a_max] * CORRECT_VALUE
+                + (1 - success_probabilities[a_max]) * INCORRECT_VALUE;
+            bayesopt_results += reward + true_value;
+        }
+
+        // Randmax
+        {
+            real reward = 0;
+            std::vector<BetaDistribution> prior(n_actions);
+            for (int a=0; a<n_actions; ++a)  {
+                prior[a].alpha = 1.0;
+                prior[a].beta = 1.0;
+            }
+            RandomDevice rng(false);
+            std::vector<real> policy(n_actions);
+            for (int t=0; t < T; ++t) {
+                for (int a=0; a<n_actions; ++a) {
+                    policy[a] = prior[a].generate();
+                }
+                int action = ArgMax(policy);
+                real outcome;
+                if (urandom() < success_probabilities[action]) {
+                    outcome = outcomes[1];
+                } else {
+                    outcome = outcomes[0];
+                }
+                //printf ("Outcome: %f\n", outcome);
+                prior[action].alpha += outcome;
+                prior[action].beta += (1 - outcome);
+                //reward += outcome;
+            }
+            std::vector<real> V(n_actions);
+            for (int a=0; a<n_actions; ++a) {
+                real p = prior[a].alpha / (prior[a].alpha + prior[a].beta);
+                V[a] = p * CORRECT_VALUE + (1 - p) * INCORRECT_VALUE;
+            }
+            int a_max = ArgMax(V);
+            //printf ("Selected Treatment : %d\n", a_max);
+            real true_value = success_probabilities[a_max] * CORRECT_VALUE
+                + (1 - success_probabilities[a_max]) * INCORRECT_VALUE;
+            thompson_results += reward + true_value;
+        }
+
     }
-    printf ("%f %f #VAL\n",
+    printf ("%f %f %f %f #VAL\n",
             lookahead_results / (real) n_iter,
-            randomised_results / (real) n_iter);
+            randomised_results / (real) n_iter,
+            bayesopt_results / (real) n_iter,
+            thompson_results / (real) n_iter);
+
         
 }
 
