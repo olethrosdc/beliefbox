@@ -34,6 +34,19 @@ public:
         this->alpha = alpha;
         this->beta = beta;
     }
+    BetaDistribution(const BetaDistribution& rhs)
+    {
+        alpha = rhs.alpha;
+        beta = rhs.beta;
+    }
+    BetaDistribution& operator = (const BetaDistribution & rhs)
+    {
+        if (this != &rhs) {
+            alpha = rhs.alpha;
+            beta = rhs.beta;
+        }
+        return *this;
+    }
 
     virtual real pdf(real x) const;
     real log_pdf(real x) const;
