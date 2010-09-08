@@ -9,7 +9,7 @@
  *                                                                      *
  ************************************************************************/
 
-#define DEBUG_EXPERIMENT
+#undef DEBUG_EXPERIMENT
 
 #ifdef MAKE_MAIN
 
@@ -21,8 +21,17 @@
 #include <vector>
 #include <cstdlib>
 
-#define CORRECT_VALUE 1
-#define INCORRECT_VALUE 0
+
+real TreatmentValue(real p)
+{
+    return p;
+}
+
+real ExpectedTreatmentValue(Distribution& belief)
+{
+    real p = belief.getMean();
+    return p;
+}
 
 /* Consider the problem of online exploration for experimental design. 
    
@@ -64,12 +73,6 @@ public:
 
         : belief(prior), n_actions(n_actions_), t(t_), T(T_), Vmax(-INF), V(n_actions)
     {
-#ifdef DEBUG_EXPERIMENT
-        for (uint i=0; i<belief.size(); ++i) {
-            printf ("B %d %f\n", i, belief[i].getMean());
-        }
-#endif
-
         if (t < T) {
             MakeChildren(outcomes);
         } else {
@@ -168,16 +171,7 @@ public:
     {
         Vmax = -INF;
         for (int a=0; a<n_actions; ++a) {
-            //for (int j=0; j<t; ++j) {
-            //printf (".");
-            //}
-            real p = belief[a].alpha / (belief[a].alpha + belief[a].beta);
-            V[a] = p * CORRECT_VALUE + INCORRECT_VALUE * (1 - p);
-            //printf ("p: %f, a: %f, b:%f, V:%f\n", 
-            //p,
-            //belief[a].alpha,
-            //belief[a].beta,
-            //V[a]);
+            V[a] = ExpectedTreatmentValue(belief[a]);
             if (V[a] > Vmax) {
                 Vmax = V[a];
             }
@@ -198,7 +192,7 @@ public:
                     edges[i]->outcome,
                     edges[i]->value,
                     edges[i]->probability);
-            edges[i]->child->ShowValues();
+            //edges[i]->child->ShowValues();
         }
         for (int a=0; a<n_actions; ++a) {
             for (int k=0; k<t; ++k) {
@@ -305,9 +299,9 @@ void Experiment(int n_actions, int T, int n_iter)
     real thompson_results = 0;
     real bayesopt_results = 0;
     for (int k=0; k<n_iter; ++k) {
-        std::vector<real> success_probabilities(2);
+        std::vector<real> success_probabilities(n_actions);
         for (int i=0; i<n_actions; ++i) {
-            success_probabilities[i] = 0.1 + 0.5 * ((real) i) / ((real) n_actions);
+            success_probabilities[i] = true_random(false);
 #ifdef DEBUG_EXPERIMENT
             printf ("P[%d] = %f\n", i, success_probabilities[i]);
 #endif
@@ -319,11 +313,11 @@ void Experiment(int n_actions, int T, int n_iter)
             real reward = 0;
             std::vector<BetaDistribution> prior(n_actions);
             for (int a=0; a<n_actions; ++a)  {
-                prior[a].alpha = 1.0;
-                prior[a].beta = 1.0;
+                prior[a].alpha = 0.5;
+                prior[a].beta = 0.5;
             }
             for (int t=0; t < T; ++t) {
-                ExperimentDesign experiment_design(outcomes, n_actions, prior, T);                
+                ExperimentDesign experiment_design(outcomes, n_actions, prior, T - t);                
                 int action = experiment_design.SelectAction();
                 real outcome;
                 if (urandom() < success_probabilities[action]) {
@@ -343,15 +337,13 @@ void Experiment(int n_actions, int T, int n_iter)
             }
             std::vector<real> V(n_actions);
             for (int a=0; a<n_actions; ++a) {
-                real p = prior[a].alpha / (prior[a].alpha + prior[a].beta);
-                V[a] = p * CORRECT_VALUE + (1 - p) * INCORRECT_VALUE;
+                V[a] = ExpectedTreatmentValue(prior[a]);
             }
             int a_max = ArgMax(V);
 #ifdef DEBUG_EXPERIMENT
             printf ("Selected Treatment : %d\n", a_max);
 #endif
-            real true_value = success_probabilities[a_max] * CORRECT_VALUE
-                + (1 - success_probabilities[a_max]) * INCORRECT_VALUE;
+            real true_value = TreatmentValue(success_probabilities[a_max]);
             lookahead_results += reward + true_value;
         }
 
@@ -380,13 +372,11 @@ void Experiment(int n_actions, int T, int n_iter)
             }
             std::vector<real> V(n_actions);
             for (int a=0; a<n_actions; ++a) {
-                real p = prior[a].alpha / (prior[a].alpha + prior[a].beta);
-                V[a] = p * CORRECT_VALUE + (1 - p) * INCORRECT_VALUE;
+                V[a] = ExpectedTreatmentValue(prior[a]);
             }
             int a_max = ArgMax(V);
             //printf ("Selected Treatment : %d\n", a_max);
-            real true_value = success_probabilities[a_max] * CORRECT_VALUE
-                + (1 - success_probabilities[a_max]) * INCORRECT_VALUE;
+            real true_value = TreatmentValue(success_probabilities[a_max]);
             randomised_results += reward + true_value;
         }
 
@@ -421,13 +411,11 @@ void Experiment(int n_actions, int T, int n_iter)
             }
             std::vector<real> V(n_actions);
             for (int a=0; a<n_actions; ++a) {
-                real p = prior[a].alpha / (prior[a].alpha + prior[a].beta);
-                V[a] = p * CORRECT_VALUE + (1 - p) * INCORRECT_VALUE;
+                V[a] = ExpectedTreatmentValue(prior[a]);
             }
             int a_max = ArgMax(V);
             //printf ("Selected Treatment : %d\n", a_max);
-            real true_value = success_probabilities[a_max] * CORRECT_VALUE
-                + (1 - success_probabilities[a_max]) * INCORRECT_VALUE;
+            real true_value = TreatmentValue(success_probabilities[a_max]);
             bayesopt_results += reward + true_value;
         }
 
@@ -459,13 +447,11 @@ void Experiment(int n_actions, int T, int n_iter)
             }
             std::vector<real> V(n_actions);
             for (int a=0; a<n_actions; ++a) {
-                real p = prior[a].alpha / (prior[a].alpha + prior[a].beta);
-                V[a] = p * CORRECT_VALUE + (1 - p) * INCORRECT_VALUE;
+                V[a] = ExpectedTreatmentValue(prior[a]);
             }
             int a_max = ArgMax(V);
             //printf ("Selected Treatment : %d\n", a_max);
-            real true_value = success_probabilities[a_max] * CORRECT_VALUE
-                + (1 - success_probabilities[a_max]) * INCORRECT_VALUE;
+            real true_value = TreatmentValue(success_probabilities[a_max]);
             thompson_results += reward + true_value;
         }
 
