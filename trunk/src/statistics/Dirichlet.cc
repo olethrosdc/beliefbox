@@ -96,11 +96,6 @@ real DirichletDistribution::pdf(Vector& x) const
 }
 
 
-void DirichletDistribution::update(Vector* x)
-{
-    a += *x;
-}
-
 void DirichletDistribution::Observation(int i)
 {
     a[i] += 1.0;
