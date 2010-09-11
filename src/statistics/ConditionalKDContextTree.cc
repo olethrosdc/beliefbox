@@ -61,8 +61,8 @@ ConditionalKDContextTree::Node::Node(ConditionalKDContextTree::Node* prev_,
       next(n_branches),
       log_w(0),
 	  //log_w_prior(log(0.9)),
-	  log_w_prior(prev_->log_w_prior - log(2)),
-      //log_w_prior(-log(2)),
+	  //log_w_prior(prev_->log_w_prior - log(2)),
+      log_w_prior(-log(2)),
       S(0)
       //log_w_prior( - log(10))
 {
