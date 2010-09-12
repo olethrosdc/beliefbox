@@ -62,12 +62,18 @@ int main (int argc, char** argv)
 
 	Vector lower_bound(2);
 	Vector upper_bound(2);
+	Vector lower_bound_x(1);
+	Vector upper_bound_x(1);
 	for (int i=0; i<2; ++i) {
 		lower_bound(i) = -10;
 		upper_bound(i) = 10;
 	}
+	lower_bound_x(0) = -10;
+	upper_bound_x(0) = 10;
     ContextTreeKDTree pdf(2, max_depth, lower_bound, upper_bound);
-    ConditionalKDContextTree cpdf(2, max_depth, max_depth_cond, lower_bound, upper_bound, lower_bound, upper_bound);
+    ConditionalKDContextTree cpdf(2, max_depth, max_depth_cond,
+								  lower_bound_x, upper_bound_x,
+								  lower_bound_x, upper_bound_x);
     //NormalUnknownMeanPrecision pdf;
 
     int randomise = urandom()*100;
@@ -83,9 +89,8 @@ int main (int argc, char** argv)
 		real a = distribution.generate();
 		real b = distribution2.generate();
 		
-		real theta = urandom(0, 2*M_PI);
-		z(0) = 4*cos(theta) + a;
-		z(1) = 4*sin(theta) - 0.5 + b;
+		z(0) = a + 0.5*b;
+		z(1) = b - 0.1*a;
 
         real p = pdf.Observe(z);
 		Vector x(1);
@@ -93,7 +98,7 @@ int main (int argc, char** argv)
 		x(0) = z(0);
 		y(0) = z(1);
 		real p2 = cpdf.Observe(x, y);
-		printf ("%f %f %f %f #Pr \n", z(0), z(1), p, p2);
+		//printf ("%f %f %f %f #Pr \n", z(0), z(1), p, p2);
     }
 #if 1
 	real step = 0.1;
@@ -117,7 +122,11 @@ int main (int argc, char** argv)
 		}
 		printf(" # P_Y_X\n");
 	}
-    //pdf.Show();
+	printf ("PDF model\n");
+    pdf.Show();
+	printf ("CPDF model\n");
+	cpdf.Show();
+
 #endif
     return 0;
 }
