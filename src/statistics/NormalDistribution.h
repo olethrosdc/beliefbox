@@ -32,6 +32,7 @@ class NormalDistribution : public ParametricDistribution {
     {
         setMean (mean);
         setVariance (std*std);
+		cache = false;
     }
     virtual Distribution* clone ()
     {
