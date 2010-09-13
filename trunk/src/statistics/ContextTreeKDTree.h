@@ -17,6 +17,7 @@
 #include "Vector.h"
 #include "Ring.h"
 
+#undef RANDOM_SPLITS
 
 /** Context tree non-parametric density estimation on \f$R^n\f$.
 
@@ -41,14 +42,16 @@ public:
     // public classes
     struct Node
     {
+		ContextTreeKDTree& tree;
         Vector lower_bound; ///< looks at x > lower_bound
         Vector upper_bound; ///< looks at x < upper_bound
         real mid_point; ///< how to split
 		int splitting_dimension; ///< dimension on which to do the split.
-
-        const int n_branches; ///< number of branches
         const int depth; ///< depth of the node
+		/*
+        const int n_branches; ///< number of branches
         const int max_depth; ///< maximum depth
+		*/
         Node* prev; ///< previous node
         std::vector<Node*> next; ///< pointers to next nodes
         real P; ///< probability of next symbols
@@ -57,10 +60,9 @@ public:
         real log_w; ///< log of w
         real log_w_prior; ///< initial value
 
-        Node(Vector& lower_bound_,
-             Vector& upper_bound_,
-             int n_branches_,
-             int max_depth_);
+        Node(ContextTreeKDTree& tree_,
+			 Vector& lower_bound_,
+             Vector& upper_bound_);
         Node(Node* prev_, Vector& lower_bound_, Vector& upper_bound_);
         ~Node();
         real Observe(Vector& x,

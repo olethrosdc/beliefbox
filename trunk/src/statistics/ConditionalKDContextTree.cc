@@ -13,24 +13,17 @@
 #include "BetaDistribution.h"
 #include <cmath>
 
+#include "Random.h"
 
-ConditionalKDContextTree::Node::Node(Vector& lower_bound_x_,
-									 Vector& upper_bound_x_,
-									 Vector& lower_bound_y_,
-									 Vector& upper_bound_y_,
-									 int n_branches_,
-									 int max_depth_,
-									 int max_depth_cond_)
-    : lower_bound_x(lower_bound_x_),
+ConditionalKDContextTree::Node::Node(ConditionalKDContextTree& tree_,
+									 Vector& lower_bound_x_,
+									 Vector& upper_bound_x_)
+    : tree(tree_),
+	  lower_bound_x(lower_bound_x_),
       upper_bound_x(upper_bound_x_),
-	  lower_bound_y(lower_bound_y_),
-      upper_bound_y(upper_bound_y_),
-      n_branches(n_branches_),
       depth(0),
-      max_depth(max_depth_),
-      max_depth_cond(max_depth_cond_),
       prev(NULL),
-      next(n_branches),
+      next(tree.n_branches),
       w(1),
 	  log_w(0),
 	  log_w_prior(0),
@@ -39,26 +32,26 @@ ConditionalKDContextTree::Node::Node(Vector& lower_bound_x_,
     assert(lower_bound_x < upper_bound_x);
     assert(lower_bound_y < upper_bound_y);
 	splitting_dimension = ArgMax(upper_bound_x - lower_bound_x);
+#ifdef RANDOM_SPLITS
+	real phi = 0.1 + 0.8 * urandom();
+	mid_point = phi * upper_bound_x[splitting_dimension] + 
+		(1 - phi) * lower_bound_x[splitting_dimension];
+#else
 	mid_point = (upper_bound_x[splitting_dimension] + lower_bound_x[splitting_dimension]) / 2.0;
-	local_density = new ContextTreeKDTree(n_branches, max_depth_cond, lower_bound_y, upper_bound_y);
+#endif
+	local_density = new ContextTreeKDTree(tree.n_branches, tree.max_depth_cond, tree.lower_bound_y, tree.upper_bound_y);
 }
 
 /// Make a node for K symbols at nominal depth d
 ConditionalKDContextTree::Node::Node(ConditionalKDContextTree::Node* prev_,
 									 Vector& lower_bound_x_,
-									 Vector& upper_bound_x_,
-									 Vector& lower_bound_y_,
-									 Vector& upper_bound_y_)
-    : lower_bound_x(lower_bound_x_),
+									 Vector& upper_bound_x_)
+    : tree(prev_->tree),
+	  lower_bound_x(lower_bound_x_),
       upper_bound_x(upper_bound_x_),
-	  lower_bound_y(lower_bound_y_),
-      upper_bound_y(upper_bound_y_),
-      n_branches(prev_->n_branches),
       depth(prev_->depth + 1),
-      max_depth(prev_->max_depth),
-      max_depth_cond(prev_->max_depth_cond),
       prev(prev_),
-      next(n_branches),
+      next(tree.n_branches),
       log_w(0),
 	  //log_w_prior(log(0.9)),
 	  log_w_prior(prev_->log_w_prior - log(2)),
@@ -68,23 +61,29 @@ ConditionalKDContextTree::Node::Node(ConditionalKDContextTree::Node* prev_,
 {
     assert(lower_bound_x < upper_bound_x);
 	splitting_dimension = ArgMax(upper_bound_x - lower_bound_x);    
+#ifdef RANDOM_SPLITS
+	real phi = 0.1 + 0.8 * urandom();
+	mid_point = phi * upper_bound_x[splitting_dimension] + 
+		(1 - phi) * lower_bound_x[splitting_dimension];
+#else
 	mid_point = (upper_bound_x[splitting_dimension] + lower_bound_x[splitting_dimension]) / 2.0;
+#endif
 
     w = exp(log_w_prior);
-    for (int i=0; i<n_branches; ++i) {
+    for (int i=0; i<tree.n_branches; ++i) {
         next[i] = NULL;
     }
-	local_density = new ContextTreeKDTree(n_branches,
-										  max_depth_cond,
-										  lower_bound_y,
-										  upper_bound_y);
+	local_density = new ContextTreeKDTree(tree.n_branches,
+										  tree.max_depth_cond,
+										  tree.lower_bound_y,
+										  tree.upper_bound_y);
 }
 
 /// make sure to kill all
 ConditionalKDContextTree::Node::~Node()
 {
 	delete local_density;
-    for (int i=0; i<n_branches; ++i) {
+    for (int i=0; i<tree.n_branches; ++i) {
         delete next[i];
     }
 }
@@ -115,7 +114,7 @@ real ConditionalKDContextTree::Node::Observe(Vector& x, Vector& y, real probabil
     } else {
         k = 1;
     }
-    real threshold = 2;
+    real threshold = 2*log(depth);
     S++;
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P_local
@@ -125,16 +124,16 @@ real ConditionalKDContextTree::Node::Observe(Vector& x, Vector& y, real probabil
               << std::endl;
 #endif
 	// Do a forward mixture if there is another node available.
-    if ((max_depth==0 || depth < max_depth) && S >  threshold) {
+    if ((tree.max_depth==0 || depth < tree.max_depth) && S >  threshold) {
         if (!next[k]) {
             if (k == 0) {
 				Vector new_bound_x = upper_bound_x;
 				new_bound_x(splitting_dimension) = mid_point;
-                next[k] = new Node(this, lower_bound_x, new_bound_x, lower_bound_y, upper_bound_y);
+                next[k] = new Node(this, lower_bound_x, new_bound_x);
             } else {
 				Vector new_bound_x = lower_bound_x;
 				new_bound_x(splitting_dimension) = mid_point;
-                next[k] = new Node(this, new_bound_x, upper_bound_x, lower_bound_y, upper_bound_y);
+                next[k] = new Node(this, new_bound_x, upper_bound_x);
             }
         }
 		total_probability = next[k]->Observe(x, y, total_probability);
@@ -181,13 +180,21 @@ real ConditionalKDContextTree::Node::pdf(Vector& x, Vector& y, real probability)
 
 void ConditionalKDContextTree::Node::Show()
 {
+#if 0
+	printf("%d %f #w\n", depth, w);
+	for (int k=0; k<tree.n_branches; ++k) {
+		if (next[k]) {
+			next[k]->Show();
+		}
+	}
+#endif
 	return;
 }
 
 int ConditionalKDContextTree::Node::NChildren()
 {
     int my_children = 0;
-    for (int k=0; k<n_branches; ++k) {
+    for (int k=0; k<tree.n_branches; ++k) {
         if (next[k]) {
             my_children++;
             my_children += next[k]->NChildren();
@@ -201,14 +208,15 @@ ConditionalKDContextTree::ConditionalKDContextTree(int n_branches_,
 												   int max_depth_cond_,
 												   Vector& lower_bound_x,
 												   Vector& upper_bound_x,
-												   Vector& lower_bound_y,
-												   Vector& upper_bound_y)
+												   Vector& lower_bound_y_,
+												   Vector& upper_bound_y_)
     : n_branches(n_branches_),
       max_depth(max_depth_),
-      max_depth_cond(max_depth_cond_)
+      max_depth_cond(max_depth_cond_),
+	  lower_bound_y(lower_bound_y_),
+	  upper_bound_y(upper_bound_y_)
 {
-    root = new Node(lower_bound_x, upper_bound_x, 
-					lower_bound_y, upper_bound_y, n_branches, max_depth, max_depth_cond);
+    root = new Node(*this, lower_bound_x, upper_bound_x);
 }
 
 ConditionalKDContextTree::~ConditionalKDContextTree()

@@ -12,40 +12,43 @@
 #include "ContextTreeKDTree.h"
 #include "BetaDistribution.h"
 #include <cmath>
+#include  "Random.h"
 
-
-ContextTreeKDTree::Node::Node(Vector& lower_bound_,
-                                Vector& upper_bound_,
-                                int n_branches_,
-                                int max_depth_)
-    : lower_bound(lower_bound_),
+ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
+							  Vector& lower_bound_,
+							  Vector& upper_bound_)
+    : tree(tree_),
+	  lower_bound(lower_bound_),
       upper_bound(upper_bound_),
-      n_branches(n_branches_),
       depth(0),
-      max_depth(max_depth_),
       prev(NULL),
-      next(n_branches),
-      alpha(n_branches),
+      next(tree.n_branches),
+      alpha(tree.n_branches),
       w(1), log_w(0), log_w_prior(-log(2)),
       S(0)
 {
     assert(lower_bound < upper_bound);
 	splitting_dimension = ArgMax(upper_bound - lower_bound);
+#ifdef RANDOM_SPLITS
+	real phi = 0.1 + 0.8 * urandom();
+	mid_point = phi * upper_bound[splitting_dimension] + 
+		(1 - phi) * lower_bound[splitting_dimension];
+#else
 	mid_point = (upper_bound[splitting_dimension] + lower_bound[splitting_dimension]) / 2.0;
+#endif
 }
 
 /// Make a node for K symbols at nominal depth d
 ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
                                 Vector& lower_bound_,
                                 Vector& upper_bound_)
-    : lower_bound(lower_bound_),
+    : tree(prev_->tree), 
+	  lower_bound(lower_bound_),
       upper_bound(upper_bound_),
-      n_branches(prev_->n_branches),
       depth(prev_->depth + 1),
-      max_depth(prev_->max_depth),
       prev(prev_),
-      next(n_branches),
-      alpha(n_branches),
+      next(tree.n_branches),
+      alpha(tree.n_branches),
       log_w(0),
       log_w_prior(-log(2)),
       S(0)
@@ -53,10 +56,16 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
 {
     assert(lower_bound < upper_bound);
 	splitting_dimension = ArgMax(upper_bound - lower_bound);    
+#ifdef RANDOM_SPLITS
+	real phi = 0.1 + 0.8 * urandom();
+	mid_point = phi * upper_bound[splitting_dimension] + 
+		(1 - phi) * lower_bound[splitting_dimension];
+#else
 	mid_point = (upper_bound[splitting_dimension] + lower_bound[splitting_dimension]) / 2.0;
+#endif
 
     w = exp(log_w_prior);
-    for (int i=0; i<n_branches; ++i) {
+    for (int i=0; i<tree.n_branches; ++i) {
         next[i] = NULL;
     }
     
@@ -65,7 +74,7 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
 /// make sure to kill all
 ContextTreeKDTree::Node::~Node()
 {
-    for (int i=0; i<n_branches; ++i) {
+    for (int i=0; i<tree.n_branches; ++i) {
         delete next[i];
     }
 }
@@ -120,8 +129,8 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
     alpha[k] ++;
     S++;
 
-    real threshold = 2;
-    if ((max_depth==0 || depth < max_depth) && S >  threshold) {
+    real threshold = log(depth);
+    if ((tree.max_depth==0 || depth < tree.max_depth) && S >  threshold) {
         if (!next[k]) {
             if (k == 0) {
 				Vector new_bound = upper_bound;
@@ -210,7 +219,7 @@ void ContextTreeKDTree::Node::Show()
 int ContextTreeKDTree::Node::NChildren()
 {
     int my_children = 0;
-    for (int k=0; k<n_branches; ++k) {
+    for (int k=0; k<tree.n_branches; ++k) {
         if (next[k]) {
             my_children++;
             my_children += next[k]->NChildren();
@@ -226,7 +235,7 @@ ContextTreeKDTree::ContextTreeKDTree(int n_branches_,
     : n_branches(n_branches_),
       max_depth(max_depth_)
 {
-    root = new Node(lower_bound, upper_bound, n_branches, max_depth);
+    root = new Node(*this, lower_bound, upper_bound);
 }
 
 ContextTreeKDTree::~ContextTreeKDTree()
