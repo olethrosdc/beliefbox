@@ -41,16 +41,12 @@ public:
     // public classes
     struct Node
     {
+		ConditionalKDContextTree& tree; ///< the tree
         Vector lower_bound_x; ///< looks at x > lower_bound
         Vector upper_bound_x; ///< looks at x < upper_bound
-        Vector lower_bound_y; ///< looks at y > lower_bound
-        Vector upper_bound_y; ///< looks at y < upper_bound
         real mid_point; ///< how to split
 		int splitting_dimension; ///< dimension on which to do the split.
-        const int n_branches; ///< number of branches
         const int depth; ///< depth of the node
-        const int max_depth; ///< maximum depth
-        const int max_depth_cond; ///< maximum depth for the density
 		ContextTreeKDTree* local_density; ///< local density estimator
         Node* prev; ///< previous node
         std::vector<Node*> next; ///< pointers to next nodes
@@ -58,16 +54,11 @@ public:
         real log_w; ///< log of w
         real log_w_prior; ///< initial value
 
-        Node(Vector& lower_bound_x_,
-			 Vector& upper_bound_x_,
-			 Vector& lower_bound_y_,
-			 Vector& upper_bound_y_,
-			 int n_branches_,
-             int max_depth_,
-			 int max_depth_cond_);
+        Node(ConditionalKDContextTree& tree_,
+			 Vector& lower_bound_x_,
+			 Vector& upper_bound_x_);
         Node(Node* prev_, 
-			 Vector& lower_bound_x, Vector& upper_bound_x,
-			 Vector& lower_bound_y, Vector& upper_bound_y);
+			 Vector& lower_bound_x, Vector& upper_bound_x);
         ~Node();
         real Observe(Vector& x, Vector& y, real probability);
         real pdf(Vector& x, Vector& y, real probability);
@@ -89,6 +80,8 @@ protected:
     int n_branches;
     int max_depth;
     int max_depth_cond;
+	Vector lower_bound_y;
+	Vector upper_bound_y;
     Node* root;
 };
 
