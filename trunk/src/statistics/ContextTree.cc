@@ -163,7 +163,7 @@ real ContextTree::Node::Observe(Ring<int>& history,
 
     // Go deeper when there has been at least one observations
     // node. 
-    real threshold = 2;
+    real threshold = sqrt((real) depth);//2;
 
     // Always go deepr, no matter what
     //real threshold = 0; 
