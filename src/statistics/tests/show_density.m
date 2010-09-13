@@ -8,7 +8,7 @@ set (gcf(), "defaultlinelinewidth", linewidth)
 set(gcf(), "defaulttextfontsize", fontsize)
 
 
-s="100000_16_16"; 
+s="1000000_16_8"; 
 f_xy = ["P_XY_", s]; 
 f_y_x = ["P_Y_X_", s];
 P_XY=load (f_xy); 

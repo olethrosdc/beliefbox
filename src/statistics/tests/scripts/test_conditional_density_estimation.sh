@@ -8,11 +8,12 @@ D_c=8
 a=1
 b=2
 
+ulimit -v 2000000
 for T in 10 100 1000 10000 100000 1000000
 do
-	for D in 16 #4 8 12 16 32 64 128
+	for D in 8 16 32
 	do
-		for D_c in 16 #4 8 12 16 32 64 128
+		for D_c in 8 16 32
 		do
 			echo $T $D $D_c
 			${exe} $T $D $D_c $a $b >out
