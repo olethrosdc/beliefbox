@@ -168,6 +168,18 @@ real NormalUnknownMeanPrecision::getMean() const
 }
 
 
+/** Calculate the posterior parameter distribution given a new real observation.
+
+    This is the standard approach, but, instead of calculating
+    \f[
+    M_{2,n} = \sum_{i=1}^n (x_i - \bar{x}_n)^2
+    \f]
+    at each pass, we use Knuth's algorithm to calculate
+    \f[
+    M_{2,n} = M_{2,n-1} + (x_n - \bar{x}_{n})(x_n - \bar{x}_{n-1})
+    \f]
+
+ */
 void NormalUnknownMeanPrecision::calculatePosterior(real x)
 {
     n++;
@@ -242,34 +254,33 @@ MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
     mu_0 = 0.0;
     tau_0 = 1.0;
     alpha_0 = 1;
-    beta_0 = 1;
+    T_0 = Matrix::Unity(1,1);
     Reset();
 }
 
-MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(Vector& mu_0_, Matrix& tau_0_) 
-    : n_dim(mu_0_.Size()),
+MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(Vector& mu, real tau, real alpha, Matrix& T) 
+    : n_dim(mu.Size()),
       p_x_mr(n_dim),
-      mu_0(mu_0_),
-      tau_0(tau_0_),
+      mu_0(mu),
+      tau_0(tau),
       mu_n(n_dim),
-      tau_n(n_dim, n_dim),
+      alpha_0(alpha),
+      T_0(T),
       bx_n(n_dim),
       M_2n(n_dim, n_dim)
 {
-    alpha_0 = 1;
-    beta_0 = 1;
     Reset();
 }
 void MultivariateNormalUnknownMeanPrecision::Reset()
 {
     p_x_mr.setMean(mu_0);
-    p_x_mr.setAccuracy(tau_0);
+    p_x_mr.setAccuracy(T_0);
     n = 0;
     sum = 0.0;
     tau_n = tau_0;
     mu_n = mu_0;
     alpha_n = alpha_0;
-    beta_n = beta_0;
+    T_n = T_0;
     M_2n.Clear();
     bx_n.Clear();
 }
@@ -318,6 +329,19 @@ const Vector& MultivariateNormalUnknownMeanPrecision::getMean() const
 
 
 // TODO: Complete the posterior calculation
+/** Calculate the posterior parameter distribution given a new real observation.
+
+    As opposed to the unimodal case, \f$x \in R^d\f$.
+    We need to calculate the \f$d \times d\f$ matrix:
+    \f[
+    M_{2,n} = \sum_{i=1}^n (x_i - \bar{x}_n)^2
+    \f]
+    at each pass. However we use Knuth's algorithm to obtain:
+    \f[
+    M_{2,n} = M_{2,n-1} + (x_n - \bar{x}_{n})(x_n - \bar{x}_{n-1})'
+    \f]
+
+ */
 void MultivariateNormalUnknownMeanPrecision::calculatePosterior(Vector& x)
 {
     n++;
@@ -336,11 +360,13 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(Vector& x)
     mu_n = mu_n * gamma + x * (1 - gamma);
     tau_n += 1.0;
 
-    alpha_n += 0.5;
-    //beta_n = beta_0 + (M_2n + tau_0*n*delta_mean*delta_mean*(tau_0 + rn));
+    alpha_n += 1.0;
+    // T_n = T_0 + M_2n + delta_mean*delta_mean' * tau_0 * n / tau_n;
+    Product(&delta_mean, &delta_mean, &T_n);
+    T_n = T_0 + M_2n + T_n * (tau_0 * n / tau_n);
 
     p_x_mr.setMean(mu_n);
-    //p_x_mr.setVariance(beta_n / alpha_n);
+    p_x_mr.setAccuracy(T_n);
 }
 
 

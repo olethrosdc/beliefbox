@@ -643,19 +643,58 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
     return retval;
 }
 
-Matrix Inverse(real epsilon = 0.0000001)
+/** Matrix inversion using the LU decomposition.
+    
+    First call LUDecomposition with accuracy epsilon to obtain $\fL,
+    U\f$ such that \f$A = LU\f$.  Then solve for \f$X = A^{-1}\f$:
+    \f[
+    LUX = I,
+    \f]
+    by dynamic programming.
+ */
+Matrix Matrix::Inverse(real epsilon)
 {
     real determinant;
     std::vector<Matrix> LU = LUDecomposition(determinant, epsilon);
     Matrix&L = LU[0];
     Matrix&U = LU[1];
     int n = Rows();
+
+
+    // Build this column by column
+    Matrix B = Unity(n,n);
+
+
+    // Forward substitution
+    Matrix Y(n, n);
+    for (int c=0; c<n; ++c) {
+        Y(0,c) = B(0, c) / L(0,0);
+        for (int i=1; i<n; ++i) {
+            real s = 0;
+            for (int j=0; j<i; ++j) {
+                s += Y(j,c) * L(i,j);
+            }
+            Y(i,c) = (B(i, c) - s) / L(i,i);
+        }
+    }
+
+    // Backward substitution
+    // Forward substitution
     Matrix X(n, n);
-    for (int active_row = 0; active_row<n; ++active_row) {
-        // TODO: inverse
+    for (int c=0; c<n; ++c) {
+        X(n - 1, c) = Y(n - 1, c) / U(n - 1, n - 1);
+        for (int i = n-2; i>=0; --i) {
+            real s = 0;
+            for (int j=i+1; j<n; ++j) {
+                s += X(j, c) * U (i, j);
+            }
+            X(i, c) = (Y(i, c) - s) / U(i, i);
+        }
     }
     
+    return X;
 }
+
 real Matrix::ColumnSum(int c)
 {
     real sum = 0.0;
