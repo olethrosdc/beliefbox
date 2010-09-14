@@ -25,7 +25,7 @@
 	in ContextTreeRealLine to a KD-tree. For any sample \f$x^t \sim
 	D^t\f$, with $x_i \in R^n\f$ it estimates the measure
 	\f[
-	P^t(w) = P(w \mid x^t) \propoto P_w(x^t)P^0(w)
+	P^t(w) = P(w \mid x^t) \propto P_w(x^t)P^0(w)
 	\f]
 	and so the marginal
 	\f[

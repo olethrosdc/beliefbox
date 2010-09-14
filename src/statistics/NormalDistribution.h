@@ -218,15 +218,15 @@ protected:
 public:
     // paramters for \xi(m | r) = f(m | \mu, \tau r)
     Vector mu_0; ///< prior mean
-    Matrix tau_0; ///< prior accuracy
+    real tau_0; ///< prior accuracy
     Vector mu_n; ///< current mean
-    Matrix tau_n; ///< current accuracy
+    real tau_n; ///< current accuracy
 
     // parameters for \xi(r) = g(r | \alpha, \beta)
     real alpha_0; ///< prior alpha
-    real beta_0; ///< prior beta
+    Matrix T_0; ///< prior T
     real alpha_n; ///< posterior alpha
-    real beta_n; ///< posterior beta
+    Matrix T_n; ///< posterior T
 
     // auxilliary parameters
     Vector bx_n; ///< \f$\bar{x}_n = \frac{1}{n} \sum_{i=1}^n x_i\f$.
@@ -234,7 +234,7 @@ public:
     int n;
     real sum;
     MultivariateNormalUnknownMeanPrecision();
-    MultivariateNormalUnknownMeanPrecision(Vector& mu_0_, Matrix& tau_0_);
+    MultivariateNormalUnknownMeanPrecision(Vector& mu, real tau, real alpha, Matrix& T);
     void Reset();
     virtual ~MultivariateNormalUnknownMeanPrecision();
     virtual Vector generate();

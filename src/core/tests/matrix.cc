@@ -193,6 +193,19 @@ int main()
     } else {
         printf ("All tests OK\n");
     }
+
+    printf("Testing inverse:\n");
+    W.print(stdout);
+    printf("Inverse of W:\n");
+    Matrix invW = W.Inverse();
+    invW.print(stdout);
+    printf("Inverse of Inverse of W:\n");
+    Matrix reinvW = invW.Inverse();
+    reinvW.print(stdout);
+    Matrix ShouldBeUnity = W * invW;
+    printf("Should be Unity:\n");
+    ShouldBeUnity.print(stdout);
+
     double start_time = GetCPU();
     SpeedTest();
     double end_time = GetCPU();
