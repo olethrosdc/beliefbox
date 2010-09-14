@@ -118,7 +118,7 @@ void NormalUnknownMeanPrecision::Reset()
     n = 0;
     sum = 0.0;
     tau_n = tau_0;
-    mu_n = mu_0 * tau_0;
+    mu_n = mu_0; 
     alpha_n = alpha_0;
     beta_n = beta_0;
     M_2n = 0;
@@ -191,6 +191,25 @@ void NormalUnknownMeanPrecision::calculatePosterior(real x)
 
 
 //----------------------- Multivariate -----------------------------------//
+
+MultivariateNormal::MultivariateNormal(int n_dim_)
+    : n_dim(n_dim_),
+      mean(n_dim),
+      accuracy(n_dim, n_dim)
+{
+    mean.Clear();
+    accuracy.Clear();
+    for (int i=0; i<n_dim; ++i) {
+        accuracy(i,i) = 1;
+    }
+}
+
+MultivariateNormal::MultivariateNormal(Vector mean_, Matrix accuracy_)
+    :  n_dim(mean_.Size()), mean(mean_), accuracy(accuracy_)
+{
+    
+}
+
 /// Multivariate Gaussian generation
 void MultivariateNormal::generate(Vector& x)
 {
@@ -218,6 +237,7 @@ real MultivariateNormal::pdf(Vector& x) const
 
 //----------------- Multivariate Unknown mean and precision -----------------------//
 MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
+    : n_dim(1), p_x_mr(1),  bx_n(n_dim), M_2n(n_dim, n_dim)
 {
     mu_0 = 0.0;
     tau_0 = 1.0;
@@ -226,8 +246,15 @@ MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
     Reset();
 }
 
-MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(real mu_0_, real tau_0_)
-    : mu_0(mu_0_), tau_0(tau_0_)
+MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(Vector& mu_0_, Matrix& tau_0_) 
+    : n_dim(mu_0_.Size()),
+      p_x_mr(n_dim),
+      mu_0(mu_0_),
+      tau_0(tau_0_),
+      mu_n(n_dim),
+      tau_n(n_dim, n_dim),
+      bx_n(n_dim),
+      M_2n(n_dim, n_dim)
 {
     alpha_0 = 1;
     beta_0 = 1;
@@ -236,31 +263,31 @@ MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(r
 void MultivariateNormalUnknownMeanPrecision::Reset()
 {
     p_x_mr.setMean(mu_0);
-    p_x_mr.setVariance(1.0 / (tau_0 * tau_0));
+    p_x_mr.setAccuracy(tau_0);
     n = 0;
     sum = 0.0;
     tau_n = tau_0;
-    mu_n = mu_0 * tau_0;
+    mu_n = mu_0;
     alpha_n = alpha_0;
     beta_n = beta_0;
-    M_2n = 0;
-    bx_n = 0;
+    M_2n.Clear();
+    bx_n.Clear();
 }
 MultivariateNormalUnknownMeanPrecision::~MultivariateNormalUnknownMeanPrecision()
 {
 }
-real MultivariateNormalUnknownMeanPrecision::generate()
+Vector MultivariateNormalUnknownMeanPrecision::generate()
 {
     Serror("Fix me!\n");
     return mu_n;
 }
-real MultivariateNormalUnknownMeanPrecision::generate() const
+Vector MultivariateNormalUnknownMeanPrecision::generate() const
 {
     Serror("Fix me!\n");
     return mu_n;
 }
 
-real MultivariateNormalUnknownMeanPrecision::Observe(real x)
+real MultivariateNormalUnknownMeanPrecision::Observe(Vector& x)
 {
     real p = pdf(x);
     calculatePosterior(x);
@@ -278,37 +305,42 @@ real MultivariateNormalUnknownMeanPrecision::Observe(real x)
     \f]
     where \f$E_\xi m = \int m d\xi(m) \f$, \f$E_\xi r = \int r d\xi(r) \f$.
 */
-real MultivariateNormalUnknownMeanPrecision::pdf(real x) const
+real MultivariateNormalUnknownMeanPrecision::pdf(Vector& x) const
 {
     return p_x_mr.pdf(x);
 }
 
 
-real MultivariateNormalUnknownMeanPrecision::getMean() const
+const Vector& MultivariateNormalUnknownMeanPrecision::getMean() const
 {
     return mu_n;
 }
 
 
-void MultivariateNormalUnknownMeanPrecision::calculatePosterior(real x)
+// TODO: Complete the posterior calculation
+void MultivariateNormalUnknownMeanPrecision::calculatePosterior(Vector& x)
 {
     n++;
-    real bxn_prev = bx_n;
+    Vector bxn_prev = bx_n;
     real rn = (real) n;
     real irn = 1 / rn;
     bx_n = bx_n + (x - bx_n) * irn;
-    M_2n = M_2n + (x - bx_n)*(x - bxn_prev);
-    real delta_mean = (bx_n - mu_0);
+    for (int i=0; i<n_dim; ++i) {
+        for (int j=0; j<n_dim; ++j) {
+            M_2n(i,j) += (x[i] - bx_n[i])*(x[j] - bxn_prev[j]);
+        }
+    }
+    Vector delta_mean = (bx_n - mu_0);
     
     real gamma = (rn - 1) * irn;
-    mu_n = mu_n * gamma + (1 - gamma) * x;
+    mu_n = mu_n * gamma + x * (1 - gamma);
     tau_n += 1.0;
 
     alpha_n += 0.5;
-    beta_n = beta_0 + 0.5 * (M_2n + tau_0*n*delta_mean*delta_mean/(tau_0 + rn));
+    //beta_n = beta_0 + (M_2n + tau_0*n*delta_mean*delta_mean*(tau_0 + rn));
 
     p_x_mr.setMean(mu_n);
-    p_x_mr.setVariance(beta_n / alpha_n);
+    //p_x_mr.setVariance(beta_n / alpha_n);
 }
 
 

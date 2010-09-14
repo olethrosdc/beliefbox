@@ -46,6 +46,7 @@ public:
     Matrix& operator*= (const real& rhs);
     Matrix operator* (const Matrix& rhs);
     Matrix operator* (const real& rhs);
+    Matrix Inverse();
     bool isTriangular();
     bool isUpperTriangular();
     bool isLowerTriangular();
@@ -55,6 +56,7 @@ public:
     real compute_det_triangular();
     real gaussian_elimination_forward(real epsilon = 0.000001);
     std::vector<Matrix> LUDecomposition(real& determinant, real epsilon = 0.000001);
+    void Clear();
     void Transpose();
     Vector getColumn(int c);
     Vector getRow(int r);
