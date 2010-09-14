@@ -9,6 +9,15 @@
  *                                                                         *
  ***************************************************************************/
 
+/** \file 
+    
+    This program discretises a continuous MDP with state space \f$S\f$
+    via a projection \f$D : S \to X\f$. Then the problem becomes a POMDP
+    with state space \f$S\f$ and observation space \f$X\f$.
+
+    It then uses a context-tree-based POMDP model to perform
+    predictions and q-value-function approximation.
+ */
 #ifdef MAKE_MAIN
 
 #include "FactoredPredictorRL.h"

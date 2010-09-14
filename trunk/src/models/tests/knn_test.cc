@@ -19,6 +19,7 @@
 #include "MountainCar.h"
 #include "Pendulum.h"
 #include "ContinuousChain.h"
+#include <cstring>
 
 bool knn_test(int n_neighbours, real rbf_beta)
 {
@@ -84,7 +85,7 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
         // select an action
         real epsilon = 1.0 / (1.0 + (real) t);
         if (t > 1000) {
-            epsilon = 0;
+            epsilon = 0.01;
         }
         state = environment.getState();
         if (t < n_actions) {
