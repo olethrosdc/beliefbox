@@ -171,14 +171,23 @@ public:
 
 
 /// Multivariate Gaussian probability distribution
-class MultivariateNormal : public VectorDistribution {
+class MultivariateNormal : public VectorDistribution
+{
  private:
+    int n_dim;
     Vector mean;
     Matrix accuracy;
  public:
-
-    MultivariateNormal(); 
+    MultivariateNormal(int n_dim_);
     MultivariateNormal(Vector mean_, Matrix std_);
+    void setMean(Vector& mean_)
+    {
+        mean = mean_;
+    }
+    void setAccuracy(Matrix& accuracy_)
+    {
+        accuracy = accuracy_;
+    }
     virtual ~MultivariateNormal() {}
     virtual void generate(Vector& x);
     virtual Vector generate();
@@ -200,10 +209,11 @@ class MultivariateNormal : public VectorDistribution {
     actually a generalised student-t distribution, but here we are
     hacking it as a normal.
  */
-class MultivariateNormalUnknownMeanPrecision: public ConjugatePrior
+class MultivariateNormalUnknownMeanPrecision
 {
 protected:
-    MultivariateNormalDistribution p_x_mr; ///< \f$f(x | m, r)\f$  
+    int n_dim;
+    MultivariateNormal p_x_mr; ///< \f$f(x | m, r)\f$  
     /// GeneralisedStudent p_x; // This should be the marginal predictive
 public:
     // paramters for \xi(m | r) = f(m | \mu, \tau r)
@@ -219,19 +229,19 @@ public:
     real beta_n; ///< posterior beta
 
     // auxilliary parameters
-    real bx_n; ///< \f$\bar{x}_n = \frac{1}{n} \sum_{i=1}^n x_i\f$.
-    real M_2n; ///< \f$M_{2,n} = \sum_{i=1}^n (x_n - \bar{x})^2\f$.
+    Vector bx_n; ///< \f$\bar{x}_n = \frac{1}{n} \sum_{i=1}^n x_i\f$.
+    Matrix M_2n; ///< \f$M_{2,n} = \sum_{i=1}^n (x_n - \bar{x})^2\f$.
     int n;
     real sum;
     MultivariateNormalUnknownMeanPrecision();
     MultivariateNormalUnknownMeanPrecision(Vector& mu_0_, Matrix& tau_0_);
     void Reset();
     virtual ~MultivariateNormalUnknownMeanPrecision();
-    virtual real generate();
-    virtual real generate() const;
+    virtual Vector generate();
+    virtual Vector generate() const;
     /// Note that this the marginal likelihood!
-    virtual real pdf(real x) const;
-    virtual real getMean() const;
+    virtual real pdf(Vector& x) const;
+    virtual const Vector& getMean() const;
     virtual void calculatePosterior(Vector& x);
     real Observe(Vector& x);
 };

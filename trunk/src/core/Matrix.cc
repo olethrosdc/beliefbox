@@ -176,6 +176,15 @@ Matrix& Matrix::operator= (const Matrix& rhs)
     return *this;
 }
 
+void Matrix::Clear ()
+{
+    for (int i=0; i<rows; ++i) {
+        for (int j=0; j<columns; ++j) {
+            (*this)(i,j) = 0.0;
+        }
+    }
+}
+
 /// Resize matrix
 void Matrix::Resize (int rows_, int columns_)
 {
@@ -634,6 +643,19 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
     return retval;
 }
 
+Matrix Inverse(real epsilon = 0.0000001)
+{
+    real determinant;
+    std::vector<Matrix> LU = LUDecomposition(determinant, epsilon);
+    Matrix&L = LU[0];
+    Matrix&U = LU[1];
+    int n = Rows();
+    Matrix X(n, n);
+    for (int active_row = 0; active_row<n; ++active_row) {
+        // TODO: inverse
+    }
+    
+}
 real Matrix::ColumnSum(int c)
 {
     real sum = 0.0;
