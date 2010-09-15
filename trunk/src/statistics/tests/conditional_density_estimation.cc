@@ -89,14 +89,18 @@ int main (int argc, char** argv)
 		real a = distribution.generate();
 		real b = distribution2.generate();
 
-		if (urandom() < 0.5) {
-			z(0) = a - 3;
-			z(1) = b - 3;
+#if 0
+          if (urandom() < 0.5) {
+			z(0) = a ;
+			z(1) = b ;
 		} else {
-			z(0) = b + 3;
-			z(1) = a + 3;
+			z(0) = a+1;
+			z(1) = b + 3;
 		}
-
+#else
+          z(0) = 5*sin(a*10) + 0.5*b;
+          z(1) = 5*cos(a*10) - 0.2*b;
+#endif
         real p = pdf.Observe(z);
 		Vector x(1);
 		Vector y(1);
@@ -123,7 +127,7 @@ int main (int argc, char** argv)
 			Vector Y(1);
 			X(0) = x;
 			Y(0) = y;
-			printf ("%f ", cpdf.pdf(X, Y));// distribution.pdf(x)*distribution2.pdf(y));
+			printf (" %f ", cpdf.pdf(X, Y));// distribution.pdf(x)*distribution2.pdf(y));
 		}
 		printf(" # P_Y_X\n");
 	}

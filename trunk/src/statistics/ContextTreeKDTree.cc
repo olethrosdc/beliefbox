@@ -119,11 +119,10 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
     
     // the local distribution
     real P_uniform = 1.0 / Volume (upper_bound - lower_bound);
-    //real P_local = P_uniform;
+
 	//printf ("P_u = %f\n", P_uniform);
     // probability of recursion
     P =  (1.0 + alpha[k]) / (2.0 + S);
-
 
     // adapt parameters
     alpha[k] ++;
@@ -150,19 +149,10 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
     w = exp(log_w_prior + log_w); 
 
 
-    //real P_local = w_uni * P_uniform + w_tri * P_tri;
-    //w_uni = P_uniform * w_uni / P_local;
-    //w_tri = 1 - w_uni;
-
-
-
     real total_probability = P_uniform * w + (1 - w) * P;
-    //real total_probability = P_local * w + (1 - w) * P;
-	//printf ("P_l = %f\n", total_probability);
 
     // posterior weight
     log_w = log(w * P_uniform / total_probability) - log_w_prior;
-    //log_w = log(w * P_local / total_probability) - log_w_prior;
 
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P

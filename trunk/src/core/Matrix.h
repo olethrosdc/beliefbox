@@ -68,7 +68,7 @@ public:
     int Columns() const;
     real& operator() (int i, int j);
     const real& operator() (int i, int j) const;
-    void print(FILE* f);
+    void print(FILE* f) const;
     friend Matrix operator* (const real& lhs, const Matrix& rhs);
     friend Matrix operator* (const Vector& lhs, const Matrix& rhs);
     friend Vector operator* (const Matrix& lhs, const Vector& rhs);

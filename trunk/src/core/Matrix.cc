@@ -368,7 +368,7 @@ Matrix Matrix::operator* (const real& rhs)
 }
 
 
-void Matrix::print(FILE* f)
+void Matrix::print(FILE* f) const
 {
     for (int i=0; i<Rows(); ++i) {
         for (int j=0; j<Columns(); ++j) {
@@ -788,7 +788,7 @@ real Mahalanobis2 (const Vector& x, const Matrix& A, const Vector& y)
     for (int i=0; i<n; ++i) {
         real x_i = x(i);
         for (int j=0; j<n; ++j) {
-            d += x_i * A(i,j) + y(j);
+            d += x_i * A(i,j) * y(j);
         }
     }
     return d;
