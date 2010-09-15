@@ -113,7 +113,7 @@ void Vector::print(FILE* f) const
 /// Inequality operator.
 ///
 /// Return true iff this[i] > rhs[i] for all i.
-bool Vector::operator> (const Vector& rhs)
+bool Vector::operator> (const Vector& rhs) const
 {
     if (this == &rhs) return false;
 	assert(n == rhs.n);
@@ -128,7 +128,7 @@ bool Vector::operator> (const Vector& rhs)
 /// Inequality operator.
 ///
 /// Return true iff this[i] < rhs[i] for all i.
-bool Vector::operator< (const Vector& rhs)
+bool Vector::operator< (const Vector& rhs) const
 {
     if (this == &rhs) return false;
 	assert(n == rhs.n);
@@ -143,7 +143,7 @@ bool Vector::operator< (const Vector& rhs)
 /// Equality operator.
 ///
 /// Return true iff this[i] == rhs[i] for all i.
-bool Vector::operator== (const Vector& rhs)
+bool Vector::operator== (const Vector& rhs) const
 {
     if (this == &rhs) return true;
 	assert(n == rhs.n);
@@ -203,7 +203,7 @@ real Vector::Sum(int start, int end) const
 }
 
 /// Addition
-Vector Vector::operator+ (const Vector& rhs)
+Vector Vector::operator+ (const Vector& rhs) const
 {
     assert (rhs.n==n);
     Vector lhs (n);
@@ -225,7 +225,7 @@ Vector& Vector::operator+= (const Vector& rhs)
 
 
 /// Subtraction
-Vector Vector::operator- (const Vector& rhs)
+Vector Vector::operator- (const Vector& rhs) const
 {
     assert (rhs.n==n);
     Vector lhs (n);
@@ -247,7 +247,7 @@ Vector& Vector::operator-= (const Vector& rhs)
 
 
 /// Per-element multiplication
-Vector Vector::operator* (const Vector& rhs)
+Vector Vector::operator* (const Vector& rhs) const
 {
     assert (rhs.n==n);
     Vector lhs (n);
@@ -268,7 +268,7 @@ Vector& Vector::operator*= (const Vector& rhs)
 }
 
 /// Per-element division
-Vector Vector::operator/ (const Vector& rhs)
+Vector Vector::operator/ (const Vector& rhs) const
 {
     assert (rhs.n==n);
     Vector lhs (n);
@@ -291,7 +291,7 @@ Vector& Vector::operator/= (const Vector& rhs)
 
 /* ----------- SCALAR OPERATORS -------------------------*/
 /// Scalar addition
-Vector Vector::operator+ (const real& rhs)
+Vector Vector::operator+ (const real& rhs) const
 {
     Vector lhs (n);
     for (int i=0; i<n; i++) {
@@ -300,7 +300,7 @@ Vector Vector::operator+ (const real& rhs)
     return lhs;
 }
 /// Scalar subtraction
-Vector Vector::operator- (const real& rhs)
+Vector Vector::operator- (const real& rhs) const
 {
     Vector lhs (n);
     for (int i=0; i<n; i++) {
@@ -309,7 +309,7 @@ Vector Vector::operator- (const real& rhs)
     return lhs;
 }
 /// Scalar multiplication
-Vector Vector::operator* (const real& rhs)
+Vector Vector::operator* (const real& rhs) const
 {
     Vector lhs (n);
     for (int i=0; i<n; i++) {
@@ -318,7 +318,7 @@ Vector Vector::operator* (const real& rhs)
     return lhs;
 }
 /// Scalar division
-Vector Vector::operator/ (const real& rhs)
+Vector Vector::operator/ (const real& rhs) const
 {
     Vector lhs (n);
     for (int i=0; i<n; i++) {

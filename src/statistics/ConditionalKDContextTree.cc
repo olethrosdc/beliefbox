@@ -30,7 +30,7 @@ ConditionalKDContextTree::Node::Node(ConditionalKDContextTree& tree_,
       S(0)
 {
     assert(lower_bound_x < upper_bound_x);
-    assert(lower_bound_y < upper_bound_y);
+    //assert(lower_bound_y < upper_bound_y);
 	splitting_dimension = ArgMax(upper_bound_x - lower_bound_x);
 #ifdef RANDOM_SPLITS
 	real phi = 0.1 + 0.8 * urandom();

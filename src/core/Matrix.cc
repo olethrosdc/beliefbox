@@ -774,4 +774,22 @@ void Matrix::SortColumn(int c)
     }
 }
 
+/// Quick estimation of \f$d = x'Ayf\f$.
+///
+/// This is much faster than writing d * x * A *  y explicitly.
+real Mahalanobis2 (const Vector& x, const Matrix& A, const Vector& y)
+{
+    assert(x.Size() == y.Size());
+    assert(A.Rows() == A.Columns());
+    assert(A.Rows() == x.Size());
 
+    int n = x.Size();
+    real d = 0;
+    for (int i=0; i<n; ++i) {
+        real x_i = x(i);
+        for (int j=0; j<n; ++j) {
+            d += x_i * A(i,j) + y(j);
+        }
+    }
+    return d;
+}
