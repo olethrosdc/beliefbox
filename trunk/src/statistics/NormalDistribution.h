@@ -1,6 +1,6 @@
 /* -*- Mode: C++; -*- */
 /* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
-// copyright (c) 2004-2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2004-2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,6 +17,7 @@
 #include "Matrix.h"
 #include "Vector.h"
 
+#include "Student.h"
 
 /// Gaussian probability distribution 
 class NormalDistribution : public ParametricDistribution {
@@ -178,13 +179,13 @@ class MultivariateNormal : public VectorDistribution
     Vector mean;
     Matrix accuracy;
  public:
-    MultivariateNormal(int n_dim_);
-    MultivariateNormal(Vector mean_, Matrix std_);
-    void setMean(Vector& mean_)
+    MultivariateNormal(const int n_dim_);
+    MultivariateNormal(const Vector& mean_, const Matrix& accuracy_);
+    void setMean(const Vector& mean_)
     {
         mean = mean_;
     }
-    void setAccuracy(Matrix& accuracy_)
+    void setAccuracy(const Matrix& accuracy_)
     {
         accuracy = accuracy_;
     }
@@ -195,15 +196,15 @@ class MultivariateNormal : public VectorDistribution
 };
 
 
-/** A normal distribution with unknown mean and precision.
+/** A multivariate normal distribution with unknown mean and precision.
     
     We have a sample \f$x_1, \ldots, x_n\f$ from a normal distribution
-    with unknown mean \f$m\f$ and precision \f$r\f$. We denote the
+    with unknown mean \f$m\f$ and precision matrix \f$r\f$. We denote the
     normal density by \f$f(x \mid m, r)\f$. The prior joint parameter
     distribution \f$\xi_0(m, r) = \xi_0(m \mid r) \xi_0(r)\f$ is specified
     as follows.  The conditional distribution of \f$m\f$ given \f$r\f$
     is \f$\xi_0(m \mid r) = f(m \mid \mu_0, \tau_0 r)\f$ and the marginal of
-    the precision is \f$\xi_0(r) = g(r \mid \alpha_0, \beta_0)\f$. 
+    the precision is \f$\xi_0(r) = g(r \mid \alpha_0, T_0)\f$. 
 
     The predictive posterior distribution \f$\xi_n(x_{n+1})\f$ is
     actually a generalised student-t distribution, but here we are
@@ -214,6 +215,7 @@ class MultivariateNormalUnknownMeanPrecision
 protected:
     int n_dim;
     MultivariateNormal p_x_mr; ///< \f$f(x | m, r)\f$  
+    Student p_x; ///< \f$f(x | m)\f$  
     /// GeneralisedStudent p_x; // This should be the marginal predictive
 public:
     // paramters for \xi(m | r) = f(m | \mu, \tau r)
@@ -242,7 +244,8 @@ public:
     /// Note that this the marginal likelihood!
     virtual real pdf(Vector& x) const;
     virtual const Vector& getMean() const;
-    virtual void calculatePosterior(Vector& x);
+    virtual void calculatePosterior(const Vector& x);
     real Observe(Vector& x);
+    void Show();
 };
 #endif

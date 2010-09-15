@@ -67,7 +67,10 @@ real NormalDistributionUnknownMean::generate() const
     return prior.generate();
 }
 
-/// TODO: Check that the marginal likelihood is correctly calculated
+/** Marginal pdf of a normal distribution with unknown mean.
+    
+  TODO Check that the marginal likelihood is correctly calculated
+*/
 real NormalDistributionUnknownMean::pdf(real x) const
 {
 
@@ -204,7 +207,7 @@ void NormalUnknownMeanPrecision::calculatePosterior(real x)
 
 //----------------------- Multivariate -----------------------------------//
 
-MultivariateNormal::MultivariateNormal(int n_dim_)
+MultivariateNormal::MultivariateNormal(const int n_dim_)
     : n_dim(n_dim_),
       mean(n_dim),
       accuracy(n_dim, n_dim)
@@ -216,7 +219,7 @@ MultivariateNormal::MultivariateNormal(int n_dim_)
     }
 }
 
-MultivariateNormal::MultivariateNormal(Vector mean_, Matrix accuracy_)
+MultivariateNormal::MultivariateNormal(const Vector& mean_, const Matrix& accuracy_)
     :  n_dim(mean_.Size()), mean(mean_), accuracy(accuracy_)
 {
     
@@ -249,7 +252,7 @@ real MultivariateNormal::pdf(Vector& x) const
 
 //----------------- Multivariate Unknown mean and precision -----------------------//
 MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
-    : n_dim(1), p_x_mr(1),  bx_n(n_dim), M_2n(n_dim, n_dim)
+    : n_dim(1), p_x_mr(1),  p_x(1, n_dim), bx_n(n_dim), M_2n(n_dim, n_dim)
 {
     mu_0 = 0.0;
     tau_0 = 1.0;
@@ -261,6 +264,7 @@ MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
 MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(Vector& mu, real tau, real alpha, Matrix& T) 
     : n_dim(mu.Size()),
       p_x_mr(n_dim),
+      p_x(1, n_dim),
       mu_0(mu),
       tau_0(tau),
       mu_n(n_dim),
@@ -319,6 +323,7 @@ real MultivariateNormalUnknownMeanPrecision::Observe(Vector& x)
 real MultivariateNormalUnknownMeanPrecision::pdf(Vector& x) const
 {
     return p_x_mr.pdf(x);
+    //return p_x.pdf(x);
 }
 
 
@@ -328,7 +333,6 @@ const Vector& MultivariateNormalUnknownMeanPrecision::getMean() const
 }
 
 
-// TODO: Complete the posterior calculation
 /** Calculate the posterior parameter distribution given a new real observation.
 
     As opposed to the unimodal case, \f$x \in R^d\f$.
@@ -341,8 +345,9 @@ const Vector& MultivariateNormalUnknownMeanPrecision::getMean() const
     M_{2,n} = M_{2,n-1} + (x_n - \bar{x}_{n})(x_n - \bar{x}_{n-1})'
     \f]
 
+    
  */
-void MultivariateNormalUnknownMeanPrecision::calculatePosterior(Vector& x)
+void MultivariateNormalUnknownMeanPrecision::calculatePosterior(const Vector& x)
 {
     n++;
     Vector bxn_prev = bx_n;
@@ -359,14 +364,30 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(Vector& x)
     real gamma = (rn - 1) * irn;
     mu_n = mu_n * gamma + x * (1 - gamma);
     tau_n += 1.0;
-
     alpha_n += 1.0;
     // T_n = T_0 + M_2n + delta_mean*delta_mean' * tau_0 * n / tau_n;
     Product(&delta_mean, &delta_mean, &T_n);
     T_n = T_0 + M_2n + T_n * (tau_0 * n / tau_n);
-
+    
+    Matrix InvT = T_n.Inverse();
     p_x_mr.setMean(mu_n);
-    p_x_mr.setAccuracy(T_n);
+    p_x_mr.setAccuracy(n * InvT);
+    p_x.setDegrees(alpha_n + 1 - n_dim);
+    p_x.setLocation(mu_n);
+    InvT.print(stdout);
+    real Tscale = tau_n * (alpha_n - n_dim + 1);
+    //Matrix InvT2 = InvT * ((real) (tau_n * (alpha_n - n_dim + 1)));
+    //InvT2.print(stdout);
+    p_x.setPrecision(InvT * Tscale);
 }
 
 
+void MultivariateNormalUnknownMeanPrecision::Show() 
+{
+    printf("Conditional normal mean: ");  mu_n.print(stdout);
+    printf("Conditional normal scaling: %f\n", tau_n);
+    printf("Wishart Degrees: %f\n", alpha_n);
+    printf("Wishart Precision: \n");  T_n.print(stdout);
+    printf("Marginal:\n");
+    p_x.Show();
+}

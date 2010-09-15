@@ -90,6 +90,8 @@ protected:
 Matrix operator* (const real& lhs, const Matrix& rhs);
 Matrix operator* (const Vector& lhs, const Matrix& rhs);
 Vector operator* (const Matrix& lhs, const Vector& rhs);
+real Mahalanobis2 (const Vector& x, const Matrix& A, const Vector& y);
+
 Matrix Transpose (const Matrix& rhs);
 
 inline

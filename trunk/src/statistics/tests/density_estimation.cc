@@ -60,8 +60,12 @@ int main (int argc, char** argv)
 		lower_bound(i) = -10;
 		upper_bound(i) = 10;
 	}
-    ContextTreeKDTree pdf(2, max_depth, lower_bound, upper_bound);
-    //NormalUnknownMeanPrecision pdf;
+    //ContextTreeKDTree pdf(2, max_depth, lower_bound, upper_bound);
+    Vector mu(2);
+    Matrix S = Matrix::Unity(2,2);
+    real tau = 1.0;
+    real alpha = 1.0;
+    MultivariateNormalUnknownMeanPrecision pdf(mu, tau, alpha, S);
 
     int randomise = urandom()*100;
     for (int i=0; i<randomise; i++) {
@@ -70,11 +74,7 @@ int main (int argc, char** argv)
     for (int t=0; t<T; ++t) {
         Vector x(2);
 		x(0) = distribution.generate();
-		if (x(0) < 0) {
-			x(1) = distribution2.generate();
-		} else {
-			x(1) = x(0) + 0.5;
-		}
+        x(1) = 0.5*x(0) + distribution2.generate();
         real p = pdf.Observe(x);
 		//printf ("%f\n", p);
     }
@@ -88,7 +88,7 @@ int main (int argc, char** argv)
 		}
 		printf(" #Y\n");
 	}
-    //pdf.Show();
+    pdf.Show();
 #endif
     return 0;
 }

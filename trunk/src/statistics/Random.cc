@@ -62,7 +62,8 @@ real true_random(bool blocking)
 	if (rand_device) {
 		do {
 			unsigned int i;
-			fread(&i, sizeof(unsigned int), 1, rand_device);
+			int items_read = fread(&i, sizeof(unsigned int), 1, rand_device);
+            assert(items_read == 1);
 			x = ((double) i / (double) std::numeric_limits<int>::max());
 		} while (x>=1.0);
 		fclose (rand_device);
@@ -86,7 +87,8 @@ unsigned long true_random_bits(bool blocking)
 		rand_device = fopen ("/dev/urandom", "r");
 	}
 	if (rand_device) {
-        fread(&x, sizeof(unsigned long), 1, rand_device);
+        int items_read = fread(&x, sizeof(unsigned long), 1, rand_device);
+        assert(items_read == 1);
 		fclose (rand_device);
 		return x;
 	} else if (!warned) {
