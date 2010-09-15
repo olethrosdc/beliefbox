@@ -597,7 +597,7 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
     Matrix& B = retval[1];
     Matrix& X = (*this);
 
-    determinant = 1.0;
+
     for (int k=0; k<n-1; ++k) {
         real d = X(k,k);
         int m = k;
@@ -616,7 +616,6 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
                 X(m,j) = tmp;
 
             }
-            determinant *= -1.0;
         }
     }
 
@@ -639,6 +638,11 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
             }
             A(i,j) = invd * (X(i,j) - sum);
         }
+    }
+
+    determinant = 1.0;
+    for (int i=0; i<n; ++i) {
+        determinant *= A(i,i)*B(i,i);
     }
     return retval;
 }

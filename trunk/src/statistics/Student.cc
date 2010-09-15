@@ -49,9 +49,12 @@ void Student::setPrecision(const Matrix& precision)
 {
     T = precision;
     T.LUDecomposition(det);
+    //printf("New Precision det:%f\n", det);
+    //T.print(stdout);
 }
 
-/// Obtain the logarithm of the pdf at x
+/** Obtain the logarithm of the pdf at x.   
+ */
 real Student::log_pdf(const Vector& x) const
 {
 
@@ -62,7 +65,7 @@ real Student::log_pdf(const Vector& x) const
     Vector delta = x - mu;
     real g = 1 + Mahalanobis2(delta, T, delta) / rn;
 
-    real log_c = logGamma(r) + 0.5 * det - logGamma(0.5*rn) - (0.5*rk)*log(rn*M_PI);
+    real log_c = logGamma(r) - logGamma(0.5*rn) + 0.5 * det - (0.5*rk)*log(rn*M_PI);
     return log_c - r * log(g);
 }
 

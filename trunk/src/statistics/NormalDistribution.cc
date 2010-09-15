@@ -330,8 +330,9 @@ real MultivariateNormalUnknownMeanPrecision::Observe(Vector& x)
 */
 real MultivariateNormalUnknownMeanPrecision::pdf(Vector& x) const
 {
-    return p_x_mr.pdf(x);
-    //return p_x.pdf(x);
+    printf ("%f %f # compare\n", p_x_mr.pdf(x), p_x.pdf(x));
+    //return p_x_mr.pdf(x);
+    return p_x.pdf(x);
 }
 
 
