@@ -63,10 +63,22 @@ real Student::log_pdf(const Vector& x) const
     real r = 0.5*(rn + rk);
 
     Vector delta = x - mu;
-    real g = 1 + Mahalanobis2(delta, T, delta) / rn;
-
+    real g = 1 + Mahalanobis2(delta, T, delta) / ((real) n);
+    
     real log_c = logGamma(r) - logGamma(0.5*rn) + 0.5 * det - (0.5*rk)*log(rn*M_PI);
-    return log_c - r * log(g);
+    //real log_c = logGamma((real) (n+k)/2) - logGamma((real) n/2) + 0.5 * det - 0.5*k*log(n*M_PI);
+#if 0
+    printf ("lG:%f - lG:%f + %f/2 - 0.5*%f*log(%f) = %f\n", 
+            logGamma(r),
+            logGamma(0.5*rn),
+            det,
+            rk,
+            rn*M_PI,
+            log_c);
+#endif
+    real log_p = log_c - r * log(g);
+    //printf ("%f - %f * %f = %f\n", log_c, r, log(g), log_p);
+    return log_p;
 }
 
 void Student::Show()
