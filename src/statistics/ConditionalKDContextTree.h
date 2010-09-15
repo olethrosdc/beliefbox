@@ -17,7 +17,7 @@
 #include "Vector.h"
 #include "Ring.h"
 #include "ContextTreeKDTree.h"
-
+#include "NormalDistribution.h"
 /** Context tree non-parametric conditional density estimation on \f$R^n \times R^m\f$.
 
     This is a generalisation of the binary tree on [a,b] implemented
@@ -47,7 +47,9 @@ public:
         real mid_point; ///< how to split
 		int splitting_dimension; ///< dimension on which to do the split.
         const int depth; ///< depth of the node
+        real log_prior_normal;
 		ContextTreeKDTree* local_density; ///< local density estimator
+		MultivariateNormalUnknownMeanPrecision* normal_density; ///< local density estimator
         Node* prev; ///< previous node
         std::vector<Node*> next; ///< pointers to next nodes
         real w; ///< backoff weight
@@ -68,7 +70,8 @@ public:
     };
     
     // public methods
-    ConditionalKDContextTree(int n_branches_, int max_depth_, int max_depth_cond_,
+    ConditionalKDContextTree(int n_branches_, int max_depth_,
+                             int max_depth_cond_,
 							 Vector& lower_bound_x, Vector& upper_bound_x,
 							 Vector& lower_bound_y, Vector& upper_bound_y);
     ~ConditionalKDContextTree();

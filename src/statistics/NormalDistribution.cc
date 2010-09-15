@@ -217,12 +217,13 @@ MultivariateNormal::MultivariateNormal(const int n_dim_)
     for (int i=0; i<n_dim; ++i) {
         accuracy(i,i) = 1;
     }
+    determinant = 1;
 }
 
 MultivariateNormal::MultivariateNormal(const Vector& mean_, const Matrix& accuracy_)
     :  n_dim(mean_.Size()), mean(mean_), accuracy(accuracy_)
 {
-    
+    accuracy.LUDecomposition(determinant);
 }
 
 /// Multivariate Gaussian generation
@@ -237,15 +238,22 @@ Vector MultivariateNormal::generate()
 	return mean; /// NOTE: FIX ME
 }
 
-/// Multivariate Gaussian density
+/** Multivariate Gaussian density.
+
+    For a gaussian with mean and precision \f$\mu, T\f$, the pdf is given by
+    \f[
+    f(x \mid \mu, T) = (2\pi)^{-k/2} |T|^{1/2} 
+    \f]
+ */
 real MultivariateNormal::pdf(Vector& x) const
 {
 	assert (x.Size()==mean.Size());
 	real n = (real) x.Size();
-    Matrix diff = x - mean;
-	real d = (Transpose(diff) * accuracy * diff)(0,0);
-	real determinant = 1.0f; // well, not really.
-	real log_pdf = - 0.5 * d - 0.5*(log(2.0*M_PI)*n + log(determinant));
+    Vector diff = x - mean;
+	real d = Mahalanobis2(diff, accuracy, diff);
+    assert(d > 0);
+	real log_pdf = 0.5 * (log(determinant) - d - n * log(2*M_PI));
+
 	return exp(log_pdf);
 }
 
@@ -261,7 +269,7 @@ MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
     Reset();
 }
 
-MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(Vector& mu, real tau, real alpha, Matrix& T) 
+MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(const Vector& mu, const real tau, const real alpha, const Matrix& T) 
     : n_dim(mu.Size()),
       p_x_mr(n_dim),
       p_x(1, n_dim),
@@ -374,7 +382,7 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(const Vector& x)
     p_x_mr.setAccuracy(n * InvT);
     p_x.setDegrees(alpha_n + 1 - n_dim);
     p_x.setLocation(mu_n);
-    InvT.print(stdout);
+    //InvT.print(stdout);
     real Tscale = tau_n * (alpha_n - n_dim + 1);
     //Matrix InvT2 = InvT * ((real) (tau_n * (alpha_n - n_dim + 1)));
     //InvT2.print(stdout);

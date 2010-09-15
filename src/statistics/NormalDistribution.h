@@ -178,6 +178,7 @@ class MultivariateNormal : public VectorDistribution
     int n_dim;
     Vector mean;
     Matrix accuracy;
+    real determinant;
  public:
     MultivariateNormal(const int n_dim_);
     MultivariateNormal(const Vector& mean_, const Matrix& accuracy_);
@@ -188,6 +189,7 @@ class MultivariateNormal : public VectorDistribution
     void setAccuracy(const Matrix& accuracy_)
     {
         accuracy = accuracy_;
+        accuracy.LUDecomposition(determinant);
     }
     virtual ~MultivariateNormal() {}
     virtual void generate(Vector& x);
@@ -236,7 +238,7 @@ public:
     int n;
     real sum;
     MultivariateNormalUnknownMeanPrecision();
-    MultivariateNormalUnknownMeanPrecision(Vector& mu, real tau, real alpha, Matrix& T);
+    MultivariateNormalUnknownMeanPrecision(const Vector& mu, const real tau, const real alpha, const Matrix& T);
     void Reset();
     virtual ~MultivariateNormalUnknownMeanPrecision();
     virtual Vector generate();
