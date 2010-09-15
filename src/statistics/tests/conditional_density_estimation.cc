@@ -89,12 +89,12 @@ int main (int argc, char** argv)
 		real a = distribution.generate();
 		real b = distribution2.generate();
 
-#if 0
-          if (urandom() < 0.5) {
-			z(0) = a ;
-			z(1) = b ;
+#if 1
+          if (urandom() < 0.99) {
+			z(0) = a + 0.1*b;
+			z(1) = b - 0.1*a ;
 		} else {
-			z(0) = a+1;
+			z(0) = a + 2;
 			z(1) = b + 3;
 		}
 #else

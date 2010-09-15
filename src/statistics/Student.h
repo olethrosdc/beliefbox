@@ -17,7 +17,24 @@
 #include "Matrix.h"
 #include "Vector.h"
 
-/// Multivariate student t-distribution
+/**
+   \ingroup StatisticsGroup
+ */
+/*@{*/
+
+/** \brief Multivariate Student t-distribution.
+    
+    A multivariate t distribution with \f$n\f$ degrees of freedom,
+    location vector \f$\mu \in R^k\f$ and precision matrix
+    \f$T \in R^{k \times k}\f$ has a density defined for all \f$x \in \mathbb{R}^k\f$.
+    \f[
+    f(x \mid n, \mu, T) = c\left[1 + \frac{1}{n} (x-\mu)'T(x-\mu)\right]^{-(n+k)/2},
+    \f]
+    where
+    \f[
+    c = \frac{\Gamma[(n + k) / 2] |T|^{1/2}}{\Gamma(n / 2)(n \pi)^{k/2}}.
+    \f]
+*/
 class Student
 {
  protected:
@@ -40,5 +57,7 @@ class Student
     }
     void Show();
 };
+
+/*@}*/
 
 #endif
