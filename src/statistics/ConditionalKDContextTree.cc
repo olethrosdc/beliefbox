@@ -44,7 +44,7 @@ ConditionalKDContextTree::Node::Node(ConditionalKDContextTree& tree_,
 	local_density = new ContextTreeKDTree(tree.n_branches, tree.max_depth_cond, tree.lower_bound_y, tree.upper_bound_y);
     int y_dim = tree.upper_bound_y.Size();
 	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_y + tree.lower_bound_y)*0.5 , 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
-
+    log_prior_normal = log(0.5);
 }
 
 /// Make a node for K symbols at nominal depth d
