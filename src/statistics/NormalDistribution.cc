@@ -384,7 +384,7 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(const Vector& x)
     p_x.setDegrees(alpha_0 + n + 1 - n_dim);
     p_x.setLocation(mu_n);
     //InvT.print(stdout);
-    real Tscale = tau_0 * (alpha_n - n_dim + 1);
+    real Tscale = tau_n * (alpha_n - n_dim + 1);// should it not be tau_n ??
     //Matrix InvT2 = InvT * ((real) (tau_n * (alpha_n - n_dim + 1)));
     //InvT2.print(stdout);
     p_x.setPrecision(InvT * Tscale); // or inv T?
