@@ -330,9 +330,9 @@ real MultivariateNormalUnknownMeanPrecision::Observe(Vector& x)
 */
 real MultivariateNormalUnknownMeanPrecision::pdf(Vector& x) const
 {
-    printf ("%f %f # compare\n", p_x_mr.pdf(x), p_x.pdf(x));
+    //printf ("%f %f # compare\n", p_x_mr.pdf(x), p_x.pdf(x));
     //return p_x_mr.pdf(x);
-    return p_x.pdf(x);
+    return p_x.pdf(x); // (2.0 * M_PI);
 }
 
 
@@ -376,18 +376,19 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(const Vector& x)
     alpha_n += 1.0;
     // T_n = T_0 + M_2n + delta_mean*delta_mean' * tau_0 * n / tau_n;
     Product(&delta_mean, &delta_mean, &T_n);
-    T_n = T_0 + M_2n + T_n * (tau_0 * n / tau_n);
+    T_n = T_0 + M_2n + T_n * (tau_0 * n / (tau_0 + n));
     
     Matrix InvT = T_n.Inverse();
     p_x_mr.setMean(mu_n);
     p_x_mr.setAccuracy(n * InvT);
-    p_x.setDegrees(alpha_n + 1 - n_dim);
+    p_x.setDegrees(alpha_0 + n + 1 - n_dim);
     p_x.setLocation(mu_n);
     //InvT.print(stdout);
-    real Tscale = tau_n * (alpha_n - n_dim + 1);
+    real Tscale = tau_0 * (alpha_n - n_dim + 1);
     //Matrix InvT2 = InvT * ((real) (tau_n * (alpha_n - n_dim + 1)));
     //InvT2.print(stdout);
-    p_x.setPrecision(InvT * Tscale);
+    p_x.setPrecision(InvT * Tscale); // or inv T?
+
 }
 
 

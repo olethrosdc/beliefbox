@@ -89,7 +89,7 @@ int main (int argc, char** argv)
 		real a = distribution.generate();
 		real b = distribution2.generate();
 
-#if 1
+#if 0
           if (urandom() < 0.99) {
 			z(0) = a + 0.1*b;
 			z(1) = b - 0.1*a ;
@@ -98,8 +98,8 @@ int main (int argc, char** argv)
 			z(1) = b + 3;
 		}
 #else
-          z(0) = 5*sin(a*10) + 0.5*b;
-          z(1) = 5*cos(a*10) - 0.2*b;
+          z(0) = 5*sin(0.1*t) + a + 0.5*b;
+          z(1) = 5*cos(0.1*t) + b  - 0.2*a;
 #endif
         real p = pdf.Observe(z);
 		Vector x(1);
