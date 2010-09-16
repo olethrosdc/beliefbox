@@ -61,7 +61,8 @@ class NormalDistribution : public ParametricDistribution {
     virtual real getMean () const
     {
         return m;
-    }
+    }                                         
+    void Show() const;
 };
 
 
@@ -135,8 +136,7 @@ public:
 class NormalUnknownMeanPrecision: public ConjugatePrior
 {
 protected:
-    NormalDistribution p_x_mr; ///< \f$f(x | m, r)\f$  
-    Student p_x; ///< This should be the marginal predictive
+    NormalDistribution p_x_mr; ///< \f$\xi(x) = \int f(x \mid m, r) \, d\xi(m, r)\f$  
 public:
     // paramters for \xi(m | r) = f(m | \mu, \tau r)
     real mu_0; ///< prior mean
@@ -166,6 +166,7 @@ public:
     virtual real getMean() const;
     virtual void calculatePosterior(real x);
     real Observe(real x);
+    void Show() const;
 };
 
 
@@ -195,6 +196,7 @@ class MultivariateNormal : public VectorDistribution
     virtual void generate(Vector& x);
     virtual Vector generate();
     virtual real pdf(Vector& x) const;
+    void Show() const;
 };
 
 
@@ -216,9 +218,7 @@ class MultivariateNormalUnknownMeanPrecision
 {
 protected:
     int n_dim;
-    MultivariateNormal p_x_mr; ///< \f$f(x | m, r)\f$  
-    Student p_x; ///< \f$f(x | m)\f$  
-    /// GeneralisedStudent p_x; // This should be the marginal predictive
+    MultivariateNormal p_x_mr; ///< \f$\xi(x) = \int f(x | m, r) \, d\xi(m ,r)\f$  
 public:
     // paramters for \xi(m | r) = f(m | \mu, \tau r)
     Vector mu_0; ///< prior mean

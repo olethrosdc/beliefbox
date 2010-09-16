@@ -45,6 +45,7 @@ ConditionalKDContextTree::Node::Node(ConditionalKDContextTree& tree_,
     int y_dim = tree.upper_bound_y.Size();
 	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_y + tree.lower_bound_y)*0.5 , 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
     log_prior_normal = log(0.5);
+    prior_normal = 0.5;
 }
 
 /// Make a node for K symbols at nominal depth d
@@ -86,6 +87,7 @@ ConditionalKDContextTree::Node::Node(ConditionalKDContextTree::Node* prev_,
     int y_dim = tree.upper_bound_y.Size();
 	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_y + tree.lower_bound_y)*0.5 , 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
     log_prior_normal = log(0.5);
+    prior_normal = 0.5;
 }
 
 /// make sure to kill all
@@ -108,11 +110,12 @@ real ConditionalKDContextTree::Node::Observe(Vector& x, Vector& y, real probabil
 	real total_probability;
 
     // the local distribution
-    real prior_normal = exp(log_prior_normal);
+    //real prior_normal = exp(log_prior_normal);
     real P_tree = local_density->Observe(y);
     real P_normal = normal_density->Observe(y);
     real P_local = prior_normal * P_normal + (1 - prior_normal) * P_tree;
-    log_prior_normal += log(P_normal) - log(P_local);
+    //log_prior_normal += log(P_normal) - log(P_local);
+    prior_normal *= P_normal / P_local;
     //printf ("%f %f = %f -> %f\n", P_tree, P_normal, P_local, prior_normal);
 	// Mixture with the previous ones
     w = exp(log_w_prior + log_w); 
@@ -165,7 +168,7 @@ real ConditionalKDContextTree::Node::pdf(Vector& x, Vector& y, real probability)
 
     // the local distribution
     //real P_local = local_density->pdf(y);
-    real prior_normal = exp(log_prior_normal);
+    //real prior_normal = exp(log_prior_normal);
     real P_tree = local_density->pdf(y);
     real P_normal = normal_density->pdf(y);
     real P_local = prior_normal * P_normal + (1 - prior_normal) * P_tree;
