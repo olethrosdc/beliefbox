@@ -287,6 +287,11 @@ void MultivariateNormalUnknownMeanPrecision::Reset()
 {
     p_x_mr.setMean(mu_0);
     p_x_mr.setAccuracy(T_0);
+    Matrix InvT = T_0.Inverse();
+    p_x.setDegrees(alpha_0 + 1 - n_dim);
+    p_x.setLocation(mu_0);
+    real Tscale = tau_0 * (alpha_0 - n_dim + 1);
+    p_x.setPrecision(InvT * Tscale);
     n = 0;
     sum = 0.0;
     tau_n = tau_0;
@@ -332,7 +337,7 @@ real MultivariateNormalUnknownMeanPrecision::pdf(Vector& x) const
 {
     //printf ("%f %f # compare\n", p_x_mr.pdf(x), p_x.pdf(x));
     //return p_x_mr.pdf(x);
-    return p_x.pdf(x); // (2.0 * M_PI);
+    return p_x.pdf(x) / 2; // (2.0 * M_PI);
 }
 
 
@@ -384,7 +389,7 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(const Vector& x)
     p_x.setDegrees(alpha_0 + n + 1 - n_dim);
     p_x.setLocation(mu_n);
     //InvT.print(stdout);
-    real Tscale = tau_n * (alpha_n - n_dim + 1);// should it not be tau_n ??
+    real Tscale = tau_0 * (alpha_n - n_dim + 1);// should it not be tau_n ??
     //Matrix InvT2 = InvT * ((real) (tau_n * (alpha_n - n_dim + 1)));
     //InvT2.print(stdout);
     p_x.setPrecision(InvT * Tscale); // or inv T?
