@@ -48,6 +48,7 @@ public:
 		int splitting_dimension; ///< dimension on which to do the split.
         const int depth; ///< depth of the node
         real log_prior_normal;
+        real prior_normal;
 		ContextTreeKDTree* local_density; ///< local density estimator
 		MultivariateNormalUnknownMeanPrecision* normal_density; ///< local density estimator
         Node* prev; ///< previous node

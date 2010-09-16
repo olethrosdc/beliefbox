@@ -43,7 +43,7 @@ int main (int argc, char** argv)
         exit(-1);
     }
     //BetaDistribution distribution2(2*Beta,Alpha);
-    NormalDistribution distribution(mean, variance);
+    NormalDistribution distribution(mean, sqrt(variance));
 
 	Vector lower_bound(2);
 	Vector upper_bound(2);
@@ -54,8 +54,22 @@ int main (int argc, char** argv)
     //ContextTreeKDTree pdf(2, max_depth, lower_bound, upper_bound);
     Vector mu(1);
     Matrix S = Matrix::Unity(1,1);
+    S(0,0) = 1.0 / variance;
+    mu(0) = 1;
     real tau = 1.0;
     real alpha = 1.0;
+    MultivariateNormal multivariate_normal(mu, S);
+
+    distribution.Show();
+    multivariate_normal.Show();
+    for (real x=-10; x<10; x+=0.01) {
+        Vector X(1);
+        X(0) = x;
+        printf ("%f %f %f #X\n",
+                x,
+                distribution.pdf(x),
+                multivariate_normal.pdf(X));
+    }
     MultivariateNormalUnknownMeanPrecision normal_wishart(mu, tau, alpha, S);
     NormalUnknownMeanPrecision normal_gamma(mu(0), tau);
 
@@ -64,18 +78,23 @@ int main (int argc, char** argv)
         distribution.generate();
     }
     for (int t=0; t<T; ++t) {
-        Vector x(2);
+        Vector x(1);
 		x(0) = distribution.generate();
         normal_gamma.Observe(x(0));
         normal_wishart.Observe(x);
     }
 #if 1
     for (real x=-10; x<10; x+=0.1) {
-        Vector v(2);
-        v[0] = x;
-        printf ("%f %f %f %f", x, normal_wishart.pdf(v), normal_gamma.pdf(x), distribution.pdf(x));// distribution.pdf(x)*distribution2.pdf(y));
+        Vector v(1);
+        v(0) = x;
+        printf ("%f %f %f %f",
+                x,
+                normal_wishart.pdf(v),
+                normal_gamma.pdf(x),
+                distribution.pdf(x));
 		printf(" #Y\n");
 	}
+    normal_gamma.Show();
     normal_wishart.Show();
 #endif
     return 0;
