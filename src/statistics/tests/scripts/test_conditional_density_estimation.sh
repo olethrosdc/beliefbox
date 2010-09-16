@@ -16,8 +16,9 @@ do
 		for D_c in 8 16 32
 		do
 			echo $T $D $D_c
-			${exe} $T $D $D_c $a $b >out
+			${exe} $T $D $D_c $a $b 1 >out
 			grep P_XY out > results/P_XY_${T}_${D}_${D_c}
+		    ${exe} $T $D $D_c $a $b 0 >out
 			grep P_Y_X out > results/P_Y_X_${T}_${D}_${D_c}
 		done
 	done

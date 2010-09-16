@@ -21,8 +21,8 @@
 
 int main (int argc, char** argv)
 {
-    if (argc != 6) {
-        Serror ("Usage: density_estimation T D D_c Alpha Beta\n");
+    if (argc != 7) {
+        Serror ("Usage: density_estimation T D D_c Alpha Beta 0/1\n");
         exit(-1);
     }
     int T = atoi(argv[1]);
@@ -54,6 +54,9 @@ int main (int argc, char** argv)
         Serror("Beta should be >= 0\n");
         exit(-1);
     }
+
+    bool joint = atoi(argv[6]);
+    printf ("Joint: %d\n", joint);
 
     //BetaDistribution distribution(Alpha,Beta);
     //BetaDistribution distribution2(2*Beta,Alpha);
@@ -101,36 +104,41 @@ int main (int argc, char** argv)
           z(0) = 5*sin(0.1*t) + a + 0.5*b;
           z(1) = 5*cos(0.1*t) + b  - 0.2*a;
 #endif
-        real p = pdf.Observe(z);
-		Vector x(1);
-		Vector y(1);
-		x(0) = z(0);
-		y(0) = z(1);
-		real p2 = cpdf.Observe(x, y);
-		//printf ("%f %f %f %f #Pr \n", z(0), z(1), p, p2);
+          if (joint) {
+              real p = pdf.Observe(z);
+          } else {
+              Vector x(1);
+              Vector y(1);
+              x(0) = z(0);
+              y(0) = z(1);
+              real p2 = cpdf.Observe(x, y);
+          }
+          //printf ("%f %f %f %f #Pr \n", z(0), z(1), p, p2);
     }
 #if 1
 	real step = 0.1;
-	for (real y=-10; y<10; y+=step) {
-		for (real x=-10; x<10; x+=step) {
-			Vector v(2);
-			v[0] = x;
-			v[1] = y;
-			printf ("%f ", pdf.pdf(v));// distribution.pdf(x)*distribution2.pdf(y));
-		}
+    if (joint) {
+        for (real y=-10; y<10; y+=step) {
+            for (real x=-10; x<10; x+=step) {
+                Vector v(2);
+                v[0] = x;
+                v[1] = y;
+                printf ("%f ", pdf.pdf(v));// distribution.pdf(x)*distribution2.pdf(y));
+            }
 		printf(" # P_XY\n");
-	}
-
-	for (real y=-10; y<10; y+=step) {
-		for (real x=-10; x<10; x+=step) {
-			Vector X(1);
-			Vector Y(1);
-			X(0) = x;
-			Y(0) = y;
-			printf (" %f ", cpdf.pdf(X, Y));// distribution.pdf(x)*distribution2.pdf(y));
-		}
-		printf(" # P_Y_X\n");
-	}
+        }
+    } else {
+        for (real y=-10; y<10; y+=step) {
+            for (real x=-10; x<10; x+=step) {
+                Vector X(1);
+                Vector Y(1);
+                X(0) = x;
+                Y(0) = y;
+                printf (" %f ", cpdf.pdf(X, Y));// distribution.pdf(x)*distribution2.pdf(y));
+            }
+            printf(" # P_Y_X\n");
+        }
+    }
 	printf ("PDF model\n");
     pdf.Show();
 	printf ("CPDF model\n");
