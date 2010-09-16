@@ -136,7 +136,7 @@ class NormalUnknownMeanPrecision: public ConjugatePrior
 {
 protected:
     NormalDistribution p_x_mr; ///< \f$f(x | m, r)\f$  
-    /// GeneralisedStudent p_x; // This should be the marginal predictive
+    Student p_x; ///< This should be the marginal predictive
 public:
     // paramters for \xi(m | r) = f(m | \mu, \tau r)
     real mu_0; ///< prior mean

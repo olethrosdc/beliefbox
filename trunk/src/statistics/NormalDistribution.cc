@@ -161,7 +161,8 @@ real NormalUnknownMeanPrecision::Observe(real x)
 */
 real NormalUnknownMeanPrecision::pdf(real x) const
 {
-    return p_x_mr.pdf(x);
+    return p_x.pdf(x);
+    //return p_x_mr.pdf(x);
 }
 
 
