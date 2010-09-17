@@ -8,11 +8,11 @@ set (gcf(), "defaultlinelinewidth", linewidth)
 set(gcf(), "defaulttextfontsize", fontsize)
 
 
-s="1000000_16_8"; 
+s="1000000_8_8"; 
 f_xy = ["P_XY_", s]; 
 f_y_x = ["P_Y_X_", s];
 P_XY=load (f_xy); 
-P_Y_X=load (f_y_x); 
+
 
 figure(1); 
 imagesc(P_XY);
@@ -21,6 +21,7 @@ ylabel("y");
 title("p(x, y)"); 
 print([f_xy, ".eps"], FF, "-color"); 
 
+P_Y_X=load (f_y_x); 
 figure(2); 
 imagesc(P_Y_X); 
 xlabel("x");

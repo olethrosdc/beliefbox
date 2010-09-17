@@ -11,9 +11,9 @@ b=2
 ulimit -v 2000000
 for T in 10 100 1000 10000 100000 1000000
 do
-	for D in 8 16 32
+	for D in 8 16 
 	do
-		for D_c in 8 16 32
+		for D_c in 8 16 
 		do
 			echo $T $D $D_c
 			${exe} $T $D $D_c $a $b 1 >out
