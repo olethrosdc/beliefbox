@@ -18,10 +18,18 @@
 #include "Ring.h"
 #include "ContextTreeKDTree.h"
 #include "NormalDistribution.h"
+
+
 /** Context tree non-parametric conditional density estimation on \f$R^n \times R^m\f$.
 
-    This is a generalisation of the binary tree on [a,b] implemented
-	in ContextTreeRealLine to a KD-tree. For any sample \f$x^t \sim
+    This is a variant of the ContextTree class. The first difference
+    is that it defines a conditional distribution \f$P(\cdot \mid
+    x)\f$ with \f$x \in R^n\f$ rather than the set of all strings
+    \f$X^*\f$. The second difference is that \f$P\f$ is a distribution
+    on \f$R^m\f$ rather than on \f$X\f$.
+
+	in ContextTreeRealLine to a KD-tree. 
+    For any sample \f$x^t \sim
 	D^t\f$, with \f$x_i \in R^n\f$ it estimates the measure
 	\f[
 	P^t(w) = P(w \mid x^t) \propto P_w(x^t)P^0(w)
