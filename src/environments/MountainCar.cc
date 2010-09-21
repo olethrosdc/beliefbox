@@ -25,12 +25,21 @@ real MountainCar::MCNOISE = 0.2;
 MountainCar::MountainCar() : Environment<Vector, int>(2, 3)
 {
     state.Resize(n_states);
-    state_upper_bound.Resize(n_states);
+   
+	state_upper_bound.Resize(n_states);
     state_lower_bound.Resize(n_states);
     state_upper_bound[0] = U_POS;
     state_upper_bound[1] = U_VEL;
     state_lower_bound[0] = L_POS;
     state_lower_bound[1] = L_VEL;
+   
+	action_upper_bound.Resize(n_actions);
+	action_lower_bound.Resize(n_actions);
+	action_upper_bound += 1;
+	
+	state_action_lower_bound.Resize(n_states + n_actions);
+	state_action_upper_bound.Resize(n_states + n_actions);
+
     endsim = false;
 }
 

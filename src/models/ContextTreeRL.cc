@@ -313,7 +313,7 @@ int ContextTreeRL::NChildren()
  */
 real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real reward)
 {
-    real Q_prev = root->QValue(history, history.begin(), 0);
+    real Q_prev = root->QValue(history, history.begin(), 0); ///< previous prediction 
     //assert(!isnan(Q_prev));
     if (isnan(Q_prev)) {
         Q_prev = 0;
@@ -354,7 +354,10 @@ real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real 
 /** Sarsa implementation.
     
  */
-real ContextTreeRL::Sarsa(real step_size, real gamma, int observation, real reward)
+real ContextTreeRL::Sarsa(real step_size, 
+						  real gamma,
+						  int observation, 
+						  real reward)
 {
     real Q_prev = root->QValue(history, history.begin(), 0);
     //assert(!isnan(Q_prev));

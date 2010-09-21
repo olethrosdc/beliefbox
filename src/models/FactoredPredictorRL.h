@@ -13,6 +13,7 @@
 
 #include "real.h"
 #include "debug.h"
+#include "Vector.h"
 #include <cstdio>
 #include <cassert>
 
@@ -52,6 +53,24 @@ public:
           current_obs(0)
     {        
     }
+
+    TFactoredPredictorRL(Vector& lower_bound_state_action,
+						 Vector& upper_bound_state_action,
+						 Vector& lower_bound_action,
+						 Vector& upper_bound_action,
+						 int context_depth,
+						 int prediction_depth)
+        : n_actions(lower_bound_action.Size()),
+          n_obs(lower_bound_state_action.Size()),
+          tree(2,  context_depth, prediction_depth,
+			   lower_bound_state_action,
+			   upper_bound_state_action,
+			   lower_bound_action,
+			   upper_bound_action),
+			   current_obs(0)
+    {        
+    }
+
 
     virtual ~TFactoredPredictorRL()
     {
