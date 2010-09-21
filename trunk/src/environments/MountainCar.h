@@ -32,6 +32,10 @@ protected:
     static real MCNOISE;        // input noise
     Vector state_upper_bound;
     Vector state_lower_bound;
+    Vector state_action_upper_bound;
+    Vector state_action_lower_bound;
+    Vector action_upper_bound;
+    Vector action_lower_bound;
     void Simulate();
     bool endsim;
 public:
@@ -48,6 +52,23 @@ public:
     {
         return state_lower_bound;
     }
+    Vector& StateActionUpperBound()
+    {
+        return state_action_upper_bound;
+    }
+    Vector& StateActionLowerBound()
+    {
+        return state_action_lower_bound;
+    }
+    Vector& ActionUpperBound()
+    {
+        return action_upper_bound;
+    }
+    Vector& ActionLowerBound()
+    {
+        return action_lower_bound;
+    }
+
     void setNoise(real noise)
     {
         MCNOISE = noise;

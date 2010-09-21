@@ -28,7 +28,7 @@
 #include "DiscretePOMDP.h"
 #include "POMDPBeliefState.h"
 #include "POMDPBeliefPredictor.h"
-#include "ContextTreeRL.h"
+#include "ContinuousContextTreeRL.h"
 #include "DiscretisedEnvironment.h"
 #include "MountainCar.h"
 #include "Pendulum.h"
@@ -154,13 +154,20 @@ int main(int argc, char** argv)
         DiscretisedEnvironment<MountainCar>* mountain_car = NULL;
         Pendulum continuous_pendulum;
         DiscretisedEnvironment<Pendulum>* pendulum = NULL;
-
+		Vector L_SA;
+		Vector U_SA;
+		Vector L_A;
+		Vector U_A;
         if (environment_type == MOUNTAIN_CAR) {
             int n_intervals = atoi(argv[8]);
             printf ("# Using %d intervals per dimension\n", n_intervals);
             mountain_car = new DiscretisedEnvironment<MountainCar>(continuous_mountain_car, n_intervals);
             n_obs = mountain_car->getNStates();
             n_actions = mountain_car->getNActions();
+			L_SA = mountain_car->getLowerStateActionBound();
+			U_SA = mountain_car->getUpperStateActionBound();
+			L_SA = mountain_car->getLowerActionBound();
+			U_SA = mountain_car->getUpperActionBound();
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         } else if (environment_type == PENDULUM) {
             int n_intervals = atoi(argv[8]);
@@ -168,11 +175,15 @@ int main(int argc, char** argv)
             pendulum = new DiscretisedEnvironment<Pendulum>(continuous_pendulum, n_intervals);
             n_obs = pendulum->getNStates();
             n_actions = pendulum->getNActions();
+			L_SA = pendulum->getLowerStateActionBound();
+			U_SA = pendulum->getUpperStateActionBound();
+			L_SA = pendulum->getLowerActionBound();
+			U_SA = pendulum->getUpperActionBound();
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         }
         FactoredPredictorRL* factored_predictor; 
         if (!model_name.compare("BVMM")) {
-            factored_predictor = new TFactoredPredictorRL<ContextTreeRL>(n_actions, n_obs, max_depth + 1);
+            factored_predictor = new TFactoredPredictorRL<ContinuousContextTreeRL>(L_SA, U_SA, L_A, L_U, max_depth + 1, max_depth + 1);
         } else {
             fprintf(stderr, "Unrecognised model name %s\n", model_name.c_str());
             exit(-1);
@@ -256,7 +267,7 @@ bool EvaluateMaze(std::string maze,
     POMDPGridworld environment(environment_rng, maze.c_str(),
                                n_obs, 
                                world_randomness,
-                               -1.0, 1, -0.1);
+                               -1.0, 1, 0.0);
     int n_actions = environment.getNActions();
     environment.Reset();
     factored_predictor->Observe(environment.getObservation());

@@ -60,12 +60,16 @@ public:
     {
         return NULL;
     }
-    /// returns a (copy of) the current state
+    /// returns a (reference to) the current state
     S& getState()
     {
         return state;
     }
-
+	///  sets the current state
+	void setState(S s_next)
+	{
+		state = s_next;
+	}
     /// returns the current reward
     real getReward()
     {

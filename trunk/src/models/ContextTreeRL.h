@@ -60,7 +60,7 @@ public:
 
         real Observe(Ring<int>& history,
                      Ring<int>::iterator x,
-                     int y,
+                     int z,
                      real r,
                      real probability,
                      std::list<Node*>& active_contexts);
