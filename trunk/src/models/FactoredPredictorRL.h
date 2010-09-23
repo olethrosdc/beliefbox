@@ -119,6 +119,7 @@ class ContinuousTFactoredPredictorRL : public FactoredPredictorRL<Vector, Vector
 {
 protected:
     int n_actions; ///< the number of actions
+    int n_contexts; ///< the number of distinct contexts
     int n_obs; ///< the number of distinct observations
     T tree; ///< the context tree
     Vector current_obs; ///< the current observation
@@ -131,7 +132,8 @@ public:
 										int context_depth,
 										int prediction_depth)
         : n_actions(lower_bound_action.Size()),
-          n_obs(lower_bound_state_action.Size()),
+          n_contexts(lower_bound_state_action.Size()),
+          n_obs(n_contexts - n_actions),
           tree(2,  context_depth, prediction_depth,
 			   lower_bound_state_action,
 			   upper_bound_state_action,
@@ -177,7 +179,6 @@ public:
     /// Observe current action and next observation
     virtual real QValue (Vector& act) 
     {
-		assert(n_obs == obs.Size());
 		assert(n_actions == act.Size());
 
 		Vector x(n_actions + n_obs);
