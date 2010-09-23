@@ -131,8 +131,8 @@ int main(int argc, char** argv)
             n_actions = mountain_car.getNActions();
 			L_SA = mountain_car.StateActionLowerBound();
 			U_SA = mountain_car.StateActionUpperBound();
-			L_SA = mountain_car.ActionLowerBound();
-			U_SA = mountain_car.ActionUpperBound();
+			L_A = mountain_car.ActionLowerBound();
+			U_A = mountain_car.ActionUpperBound();
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         } else if (environment_type == PENDULUM) {
             int n_intervals = atoi(argv[8]);
@@ -141,10 +141,15 @@ int main(int argc, char** argv)
             n_actions = pendulum.getNActions();
 			L_SA = pendulum.StateActionLowerBound();
 			U_SA = pendulum.StateActionUpperBound();
-			L_SA = pendulum.ActionLowerBound();
-			U_SA = pendulum.ActionUpperBound();
+			L_A = pendulum.ActionLowerBound();
+			U_A = pendulum.ActionUpperBound();
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         }
+		printf("L_SA: "); L_SA.print(stdout);
+		printf("U_SA: "); U_SA.print(stdout);
+		printf("L_A: "); L_A.print(stdout);
+		printf("U_A: "); U_A.print(stdout);
+
         FactoredPredictorRL<Vector, Vector>* factored_predictor; 
         if (!model_name.compare("BVMM")) {
             factored_predictor = new ContinuousTFactoredPredictorRL<ContinuousContextTreeRL>(L_SA, U_SA, L_A, U_A, max_depth + 1, max_depth + 1);
