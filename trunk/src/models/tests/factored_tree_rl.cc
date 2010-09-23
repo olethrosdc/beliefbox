@@ -60,7 +60,7 @@ bool EvaluateMaze(std::string maze,
                   real maze_random,
                   real action_random,
                   RandomNumberGenerator* environment_rng,
-                  FactoredPredictorRL* factored_predictor,
+                  FactoredPredictorRL<int, int>* factored_predictor,
                   Statistics& statistics);
 
 bool Evaluate1DWorld(Corridor& environment,
@@ -70,7 +70,7 @@ bool Evaluate1DWorld(Corridor& environment,
 
 bool EvaluateGeneral(Environment<int, int>* environment,
                      real action_randomness,
-                     FactoredPredictorRL* factored_predictor,
+                     FactoredPredictorRL<int, int>* factored_predictor,
                      Statistics& statistics);
 
 enum EnvironmentType {

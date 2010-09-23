@@ -88,7 +88,7 @@ public:
 							 Vector& lower_bound_x, Vector& upper_bound_x,
 							 Vector& lower_bound_y, Vector& upper_bound_y);
     ~ContinuousContextTreeRL();
-    real Observe(Vector& x, Vector& y, real r, ContextList& active_contexts);
+    real Observe(Vector& x, Vector& y, real r);
     //real pdf(Vector& x, Vector& y);
 	real QValue(Vector& x);
 	real QLearning(real step_size, real gamma, Vector& y, real reward);
