@@ -183,6 +183,42 @@ real ContinuousContextTreeRL::Node::Observe(Vector& x, Vector& y, real reward, r
     return total_probability;
 }
 
+real ContinuousContextTreeRL::Node::QValue(Vector& x,
+										   real Q_prev)
+{
+    w = exp(log_w_prior + log_w); 
+    real Q_next = Q * w + (1 - w) * Q_prev;
+    if (isnan(Q_prev)) {
+        fprintf(stderr, "Warning: at depth %d, Q_prev is nan\n", depth);
+        Q_prev = 0;
+    }
+    if (isnan(Q)) {
+        fprintf(stderr, "Warning: at depth %d, Q is nan\n", depth);
+        Q = 0;
+    }
+    if (isnan(Q_next)) {
+        fprintf(stderr, "Warning: at depth %d, Q_next is nan\n", depth);
+        Q_next = 0;
+    }
+    if (isnan(w)) {
+        fprintf(stderr, "Warning: at depth %d, w is nan\n", depth);
+        w = 0.5;
+    }
+
+    int k;
+    if ( x[splitting_dimension] < mid_point) {
+        k = 0;
+    } else {
+        k = 1;
+    }
+
+	if (next[k]) {
+        Q_next = next[k]->QValue(x, Q_next);
+    } 
+
+    return Q_next;
+}
+
 /** Perform one Q-learning step.
 
 	The step-size is the amount by which to change the Q-values.
@@ -294,10 +330,17 @@ ContinuousContextTreeRL::~ContinuousContextTreeRL()
 
 /** Obtain \f$\xi_t(y \mid x)\f$ and calculate \f$\xi_{t+1}(w) = \xi_t(w \mid x, y)\f$.
  */
-real ContinuousContextTreeRL::Observe(Vector& x, Vector& y, real r, ContextList& active_contexts)
+real ContinuousContextTreeRL::Observe(Vector& x, Vector& y, real r)
 {
 	active_contexts.clear();
     return root->Observe(x, y, r, 1, active_contexts);
+}
+
+/** Obtain \f$\xi_t(y \mid x)\f$ and calculate \f$\xi_{t+1}(w) = \xi_t(w \mid x, y)\f$.
+ */
+real ContinuousContextTreeRL::QValue(Vector& x)
+{
+    return root->QValue(x, 0);
 }
 
 void ContinuousContextTreeRL::Show()
