@@ -15,8 +15,8 @@
 #include "Environment.h"
 #include "BasisSet.h"
 
-
-class RBF_Environment : DiscreteEnvironment
+/// Discretise an environment via a set of RBFs.
+class RBF_Environment : public DiscreteEnvironment
 {
 protected:
     RBF_Environment<Vector, int>& environment;

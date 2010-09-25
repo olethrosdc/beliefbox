@@ -27,12 +27,21 @@ class Matrix
 public:
     /// Check bounds?
     enum BoundsCheckingStatus {NO_CHECK_BOUNDS=0, CHECK_BOUNDS=1};
+#ifdef NDEBUG
     static Matrix Null(int rows, int columns, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     static Matrix Unity(int rows, int columns, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
 
     Matrix (int rows = 1, int columns = 1,  enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     Matrix (int rows, int columns, real* y, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     Matrix (const Vector& v, enum BoundsCheckingStatus check_ = NO_CHECK_BOUNDS);
+#else
+    static Matrix Null(int rows, int columns, enum BoundsCheckingStatus check = CHECK_BOUNDS);
+    static Matrix Unity(int rows, int columns, enum BoundsCheckingStatus check = CHECK_BOUNDS);
+
+    Matrix (int rows = 1, int columns = 1,  enum BoundsCheckingStatus check = CHECK_BOUNDS);
+    Matrix (int rows, int columns, real* y, enum BoundsCheckingStatus check = CHECK_BOUNDS);
+    Matrix (const Vector& v, enum BoundsCheckingStatus check_ = CHECK_BOUNDS);
+#endif
     Matrix (const Matrix& rhs, bool clone = true);
     ~Matrix();
     void Resize(int rows_, int columns_);
@@ -54,8 +63,8 @@ public:
     real ColumnSum(int c);
     real RowSum(int r);
     real compute_det_triangular();
-    real gaussian_elimination_forward(real epsilon = 0.000001);
-    std::vector<Matrix> LUDecomposition(real& determinant, real epsilon = 0.000001);
+    real gaussian_elimination_forward(real epsilon = 10e-6);
+    std::vector<Matrix> LUDecomposition(real& determinant, real epsilon = 10e-6);
     void Clear();
     void Transpose();
     Vector getColumn(int c);

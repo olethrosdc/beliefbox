@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONTINUOUS_CONTEXT_TREE_RL_H
-#define CONTINUOUS_CONTEXT_TREE_RL_H
+#ifndef CONTINUOUS_STATE_CONTEXT_TREE_RL_H
+#define CONTINUOUS_STATE_CONTEXT_TREE_RL_H
 
 #include <vector>
 #include <list>
@@ -26,21 +26,9 @@
     similar to ContextTreeRL, the only difference being that the
     partition is done in the state-space.
 
-    The simplest models are:
-
-    1. Each context model predicts only observations within that level.
-    So, \f$\Pr(z_{t+1} \in c' \mid z_t \in c)\f$, with \f$c, c' \in C_k\f$.
-    
-    2. Each context model predicts next contexts in general
-    So, \f$\Pr(z_{t+1} \in c' \mid z_t \in c)\f$, w'ith \f$c, c' \in C\f$.
-
-    3. There is a full density estimation.
-
-	The observations are the concatenations of actions and observations.
-
-    @see ContextTreeRL, ConditionalKDContextTree
+	There is a different tree for each action.
 */
-class ContinuousContextTreeRL
+class ContinuousStateContextTreeRL
 {
 public:
 	struct Node;
@@ -48,7 +36,7 @@ public:
     // public classes
     struct Node
     {
-		ContinuousContextTreeRL& tree; ///< the tree
+		ContinuousStateContextTreeRL& tree; ///< the tree
         Vector lower_bound_x; ///< looks at x > lower_bound
         Vector upper_bound_x; ///< looks at x < upper_bound
         real mid_point; ///< how to split
@@ -68,29 +56,29 @@ public:
 		real w_prod; ///< \f$\prod_k (1 - w_k)\f$
         real context_probability; ///< last probability of the context
 
-        Node(ContinuousContextTreeRL& tree_,
+        Node(ContinuousStateContextTreeRL& tree_,
 			 Vector& lower_bound_x_,
 			 Vector& upper_bound_x_);
         Node(Node* prev_, 
 			 Vector& lower_bound_x, Vector& upper_bound_x);
         ~Node();
         real Observe(Vector& x, Vector& y, real reward, real probability, ContextList& active_contexts);
-		real QValue(Vector& state_action, real Q_prev);
+		real QValue(Vector& state, real Q_prev);
         void Show();
         int NChildren();    
         int S;
     };
 
     // public methods
-    ContinuousContextTreeRL(int n_branches_,
-							int max_depth_,
-                             int max_depth_cond_,
-							 Vector& lower_bound_x, Vector& upper_bound_x,
-							 Vector& lower_bound_y, Vector& upper_bound_y);
-    ~ContinuousContextTreeRL();
-    real Observe(Vector& x, Vector& y, real r);
+    ContinuousStateContextTreeRL(int n_actions_,
+								 int max_depth_,
+								 int max_depth_cond_,
+								 Vector& lower_bound_x, Vector& upper_bound_x);
+    ~ContinuousStateContextTreeRL();
+    real Observe(Vector& x, int a, Vector& y, real r);
     //real pdf(Vector& x, Vector& y);
 	real QValue(Vector& x);
+	real QValue(Vector& x, int a);
 	real QLearning(real step_size, real gamma, Vector& y, real reward);
 	real Sarsa(real step_size, real gamma, Vector& y, real reward)
 	{
@@ -99,6 +87,7 @@ public:
 	}
 	void Reset()
 	{
+		current_action = -1;
 		active_contexts.clear();
 	}
     void Show();
@@ -109,10 +98,11 @@ protected:
     int n_branches;
     int max_depth;
     int max_depth_cond;
-	Vector lower_bound_y;
-	Vector upper_bound_y;
-    Node* root;
-	Vector current_state_action; ///< current state and action pair
+	Vector lower_bound_x;
+	Vector upper_bound_x;
+	std::vector<Node*> root;
+	Vector current_state; ///< current state 
+	int current_action; ///< current action
 	std::list<Node*> active_contexts;
 };
 
