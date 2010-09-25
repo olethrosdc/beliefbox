@@ -264,7 +264,7 @@ real MultivariateNormal::pdf(Vector& x) const
 	real n = (real) x.Size();
     Vector diff = x - mean;
 	real d = Mahalanobis2(diff, accuracy, diff);
-    assert(d > 0);
+    assert(d >= 0);
 	real log_pdf = 0.5 * (log(determinant) - d - n * log(2*M_PI));
 
 	return exp(log_pdf);
