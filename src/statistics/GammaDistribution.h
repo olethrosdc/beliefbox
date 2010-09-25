@@ -30,7 +30,7 @@ public:
     /// uniform distribution
     GammaDistribution();
     GammaDistribution(real alpha_, real beta_);
-    virtual real pdf(real x);
+    virtual real pdf(real x) const;
     virtual real generate();
     virtual real generate() const;
 };

@@ -24,20 +24,30 @@
 	
 	The reward at time t is \f$r_t \mid a_t = i, x_t = x \sim {\cal N}(x' M_i, \sigma_i)\f$
  */
-class LinearContextBandit : public DiscreteEnvironment
+class LinearContextBandit : public ContinuousStateEnvironment
 {
 protected:
-	uint n_actions;
-	uint n_features;
 	std::vector<Vector> mean;
-	Vector std;
-
+	Vector var;
+    Matrix G; ///< generator matrix
     RandomNumberGenerator* rng;
+    Vector U_x; ///< upper bound
+    Vector L_x; ///< lower bound
 public:
     LinearContextBandit(uint n_actions_,
 						uint n_features_,
-						RandomNumberGenerator* rng);
+						RandomNumberGenerator* rng_);
     virtual ~LinearContextBandit();
+    void GenerateContext();
+    Vector& StateUpperBound()
+    {
+        return U_x;
+    }
+    Vector& StateLowerBound()
+    {
+        return L_x;
+    }
+
     virtual void Reset();
     virtual bool Act(int action);
     virtual const char* Name()
@@ -46,7 +56,6 @@ public:
     }
 protected:
     NormalDistribution normal;
-    std::vector<Distribution*> rewards;
 };
 
 #endif

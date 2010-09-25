@@ -26,6 +26,7 @@
 #include "ContinuousStateContextTreeRL.h"
 #include "MountainCar.h"
 #include "Pendulum.h"
+#include "LinearContextBandit.h"
 #include "Environment.h"
 
 #include <cstdlib>
@@ -57,7 +58,8 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
 
 enum EnvironmentType {
     MOUNTAIN_CAR,
-    PENDULUM
+    PENDULUM,
+    LINEAR_BANDIT
 };
 
 int main(int argc, char** argv)
@@ -68,7 +70,7 @@ int main(int argc, char** argv)
 	
     if (argc <= 7) {
         fprintf (stderr, "Usage: factored_model environment model_name n_iter T depth env_rand act_rand [environment parameters]\n\
-  - environment in {MountainCar, Pendulum}\n\
+  - environment in {MountainCar, Pendulum, LinearBandit}\n\
   - model_name in {BVMM}\n\
   - environment parameters:\n");
         return -argc;
@@ -92,6 +94,8 @@ int main(int argc, char** argv)
         environment_type = MOUNTAIN_CAR;
     } else if (!environment_name.compare("Pendulum")) {
         environment_type = PENDULUM;
+    } else if (!environment_name.compare("LinearBandit")) {
+        environment_type = LINEAR_BANDIT;
     } else {
         Serror ("Unknown environment %s\n",environment_name.c_str());
         exit(-1);
@@ -106,39 +110,30 @@ int main(int argc, char** argv)
         mersenne_twister.manualSeed(true_random_bits(false));
         MountainCar mountain_car;
         Pendulum pendulum;
-		Vector L_SA;
-		Vector U_SA;
+        LinearContextBandit bandit(2,2, &mersenne_twister);
 		Vector L_S;
 		Vector U_S;
-		Vector L_A;
-		Vector U_A;
         if (environment_type == MOUNTAIN_CAR) {
             n_obs = mountain_car.getNStates();
             n_actions = mountain_car.getNActions();
-			L_SA = mountain_car.StateActionLowerBound();
-			U_SA = mountain_car.StateActionUpperBound();
 			L_S = mountain_car.StateLowerBound();
 			U_S = mountain_car.StateUpperBound();
-			L_A = mountain_car.ActionLowerBound();
-			U_A = mountain_car.ActionUpperBound();
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         } else if (environment_type == PENDULUM) {
             n_obs = pendulum.getNStates();
             n_actions = pendulum.getNActions();
-			L_SA = pendulum.StateActionLowerBound();
-			U_SA = pendulum.StateActionUpperBound();
 			L_S = pendulum.StateLowerBound();
 			U_S = pendulum.StateUpperBound();
-			L_A = pendulum.ActionLowerBound();
-			U_A = pendulum.ActionUpperBound();
+            printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
+        } else if (environment_type == LINEAR_BANDIT) {
+            n_obs = bandit.getNStates();
+            n_actions = bandit.getNActions();
+			L_S = bandit.StateLowerBound();
+			U_S = bandit.StateUpperBound();
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         }
-		printf("L_SA: "); L_SA.print(stdout);
-		printf("U_SA: "); U_SA.print(stdout);
 		printf("L_S: "); L_S.print(stdout);
 		printf("U_S: "); U_S.print(stdout);
-		printf("L_A: "); L_A.print(stdout);
-		printf("U_A: "); U_A.print(stdout);
 
         FactoredPredictorRL<Vector, int>* factored_predictor; 
         if (!model_name.compare("BVMM")) {
@@ -165,6 +160,15 @@ int main(int argc, char** argv)
                                        action_random,
                                        factored_predictor,
                                        statistics);
+            }
+            break;
+        case LINEAR_BANDIT:
+            {
+
+                success = EvaluateGeneral(bandit,
+                                          action_random,
+                                          factored_predictor,
+                                          statistics);
             }
             break;
         default:

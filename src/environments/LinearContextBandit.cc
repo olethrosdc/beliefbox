@@ -15,48 +15,75 @@
 
 LinearContextBandit::LinearContextBandit(uint n_actions_,
                              uint n_features_,
-                             RandomNumberGenerator* rng)
-	: n_actions(n_actions_),
-	  n_features(n_features_),
+                             RandomNumberGenerator* rng_)
+	: ContinuousStateEnvironment(n_features_, n_actions_),
 	  mean(n_actions),
-	  std(n_actions)
+	  var(n_actions),
+      G(n_states, n_states),
+      rng(rng_),
+      U_x(n_states),
+      L_x(n_states)
 { 
-    this->rng = rng;
+    state.Resize(n_states);
+
+    for (uint i=0; i<n_states; ++i) {
+        U_x(i) = 100;
+        L_x(i) = -100;
+    }
     // this bandit is binary
-	NormalDistribution normal(0,1);
 	for (uint j=0; j<n_actions; ++j) {
-		mean[j].Resize(n_features);
-		for (uint i=0; i<n_features; ++i) {
-			mean[i](j) = normal.generate();
+		mean[j].Resize(n_states);
+		for (uint i=0; i<n_states; ++i) {
+			mean[j](i) = normal.generate();
 		}
 	}
 
 	GammaDistribution gamma(1,1);
 	for (uint j=0; j<n_actions; ++j) {
-		std(j) = gamma.generate();
+		var(j) = gamma.generate();
 	}
-	
+
+    for (uint i=0; i<n_states; ++i) {
+        for (uint j=i; j<n_states; ++j) {
+            real X = rng->uniform();
+            G(i,j) = X;
+            G(j,i) = X;
+        }
+    }
+    GenerateContext();
 }
 
+LinearContextBandit::~LinearContextBandit()
+{
+}
+
+void LinearContextBandit::GenerateContext()
+{
+    Vector y(n_states);
+    for (uint j=0; j<n_states; ++j) {
+        y(j) = normal.generate();
+    }
+    const Matrix& rG = G;
+    const Vector& ry = y;
+    state = rG * ry;
+}
 
 /// put the environment in its natural state
 void LinearContextBandit::Reset()
 {
-    state = (int) rng->discrete_uniform(n_states);
+    GenerateContext();
     reward = 0;
 }
 
 /// returns true if the action succeeds, false if we are in a terminal state
 bool LinearContextBandit::Act(int action)
 {
-    real sigma = 2.0;
-    normal.setVariance();
-    normal.setMean(getMean(action));
-
+    normal.setVariance(var(action));
+    normal.setMean(Product(&mean[action], &state));
+    
     reward = normal.generate();
     //printf("reward: %f\n", reward);
-    state = (int) rng->discrete_uniform(n_states);
-
-
+    GenerateContext();
+    
     return true;  // we continue
 }

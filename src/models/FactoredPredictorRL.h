@@ -139,7 +139,7 @@ public:
 			   upper_bound_state_action,
 			   lower_bound_state,
 			   upper_bound_state),
-			   current_obs(0)
+			   current_obs(n_obs)
     {        
 		printf ("contexts: %d, obs: %d, actions: %d\n", n_contexts, n_obs, n_actions);
     }
@@ -216,7 +216,7 @@ public:
 
     virtual void Reset()
     {
-        current_obs = 0;
+        current_obs.Clear();
 		tree.Reset();
     }
 };
@@ -244,7 +244,7 @@ public:
           tree(n_actions,  context_depth, prediction_depth,
 			   lower_bound_state,
 			   upper_bound_state),
-		  current_obs(0),
+		  current_obs(n_obs),
 		  current_action(-1)
     {        
 		printf (" obs: %d, actions: %d\n", n_obs, n_actions);
@@ -309,7 +309,7 @@ public:
 
     virtual void Reset()
     {
-        current_obs = 0;
+        current_obs.Clear();
 		current_action = -1;
 		tree.Reset();
     }
