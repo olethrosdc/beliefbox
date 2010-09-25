@@ -32,6 +32,7 @@ public:
     GammaDistribution(real alpha_, real beta_);
     virtual real pdf(real x);
     virtual real generate();
+    virtual real generate() const;
 };
 
 #endif

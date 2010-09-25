@@ -39,5 +39,11 @@ real GammaDistribution::pdf(real x)
 /// Generate using ranlib
 real GammaDistribution::generate()
 {
-    return genbet(alpha, beta);
+    return gengam(alpha, beta);
+}
+
+/// Generate using ranlib
+real GammaDistribution::generate() const
+{
+    return gengam(alpha, beta);
 }

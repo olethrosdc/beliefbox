@@ -12,13 +12,14 @@
 // NOTE: This should use ConditionalKDContextTree
 
 
-#include "ContinuousContextTreeRL.h"
+#include "ContinuousStateContextTreeRL.h"
 #include "BetaDistribution.h"
 #include <cmath>
 
 #include "Random.h"
+#define INITIAL_Q_VALUE 0.0
 
-ContinuousContextTreeRL::Node::Node(ContinuousContextTreeRL& tree_,
+ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
 									 Vector& lower_bound_x_,
 									 Vector& upper_bound_x_)
     : tree(tree_),
@@ -30,6 +31,7 @@ ContinuousContextTreeRL::Node::Node(ContinuousContextTreeRL& tree_,
       w(1),
 	  log_w(0),
 	  log_w_prior(0),
+	  Q(INITIAL_Q_VALUE),
       S(0)
 {
     assert(lower_bound_x < upper_bound_x);
@@ -43,20 +45,20 @@ ContinuousContextTreeRL::Node::Node(ContinuousContextTreeRL& tree_,
 #endif
 
 	
-	local_density = new ContextTreeKDTree(tree.n_branches, tree.max_depth_cond, tree.lower_bound_y, tree.upper_bound_y);
-    int y_dim = tree.upper_bound_y.Size();
-	Vector mean  = (tree.upper_bound_y + tree.lower_bound_y)*0.5;
-	printf("y_dim: %d %d- ", y_dim, tree.lower_bound_y.Size()); 
+	local_density = new ContextTreeKDTree(tree.n_branches, tree.max_depth_cond, tree.lower_bound_x, tree.upper_bound_x);
+    int y_dim = tree.upper_bound_x.Size();
+	Vector mean  = (tree.upper_bound_x + tree.lower_bound_x)*0.5;
+	printf("y_dim: %d %d- ", y_dim, tree.lower_bound_x.Size()); 
 	mean.print(stdout);
-	tree.lower_bound_y.print(stdout);
-	tree.upper_bound_y.print(stdout);
+	tree.lower_bound_x.print(stdout);
+	tree.upper_bound_x.print(stdout);
 	normal_density = new MultivariateNormalUnknownMeanPrecision(mean, 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
     log_prior_normal = log(0.5);
     prior_normal = 0.5;
 }
 
 /// Make a node for K symbols at nominal depth d
-ContinuousContextTreeRL::Node::Node(ContinuousContextTreeRL::Node* prev_,
+ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* prev_,
 									 Vector& lower_bound_x_,
 									 Vector& upper_bound_x_)
     : tree(prev_->tree),
@@ -89,16 +91,16 @@ ContinuousContextTreeRL::Node::Node(ContinuousContextTreeRL::Node* prev_,
 
 	local_density = new ContextTreeKDTree(tree.n_branches,
 										  tree.max_depth_cond,
-										  tree.lower_bound_y,
-										  tree.upper_bound_y);
-    int y_dim = tree.upper_bound_y.Size();
-	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_y + tree.lower_bound_y)*0.5 , 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
+										  tree.lower_bound_x,
+										  tree.upper_bound_x);
+    int y_dim = tree.upper_bound_x.Size();
+	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_x + tree.lower_bound_x)*0.5 , 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
     log_prior_normal = log(0.5);
     prior_normal = 0.5;
 }
 
 /// make sure to kill all
-ContinuousContextTreeRL::Node::~Node()
+ContinuousStateContextTreeRL::Node::~Node()
 {
 	delete local_density;
     delete normal_density;
@@ -116,7 +118,7 @@ ContinuousContextTreeRL::Node::~Node()
 	y is the next observation
 	r is the next reward
 */
-real ContinuousContextTreeRL::Node::Observe(Vector& x, Vector& y, real reward, real probability, ContextList& active_contexts)
+real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real reward, real probability, ContextList& active_contexts)
 {
 	active_contexts.push_back(this);
 	real total_probability;
@@ -188,13 +190,13 @@ real ContinuousContextTreeRL::Node::Observe(Vector& x, Vector& y, real reward, r
     return total_probability;
 }
 
-real ContinuousContextTreeRL::Node::QValue(Vector& x,
+real ContinuousStateContextTreeRL::Node::QValue(Vector& x,
 										   real Q_prev)
 {
 	
     w = exp(log_w_prior + log_w); 
     real Q_next = Q * w + (1 - w) * Q_prev;
-	printf ("%f -(%f,%f)-> %f\n", Q_prev, Q, w, Q_next);
+	//printf ("%f -(%f,%f)-> %f\n", Q_prev, Q, w, Q_next);
     if (isnan(Q_prev)) {
         fprintf(stderr, "Warning: at depth %d, Q_prev is nan\n", depth);
         Q_prev = 0;
@@ -233,36 +235,22 @@ real ContinuousContextTreeRL::Node::QValue(Vector& x,
 	y is the next observation
 	r is the next reward.
 
+	We wish to move Q(s,a) towards r + \max_a' Q(s',a').
+
 	The function returns the TD-error.
  */
-real ContinuousContextTreeRL::QLearning(real step_size, real gamma, Vector& y, real reward)
+real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma, Vector& y, real reward)
 {
-	real Q_prev = root->QValue(current_state_action, 0);
+	if (current_action == -1) {
+		return 0;
+	}
+    real max_Q = QValue(y);
+
+	real Q_prev = QValue(current_state, current_action);
 
     if (isnan(Q_prev)) {
         Q_prev = 0;
         fprintf(stderr, "Warning: Q_prev is nan\n");
-    }
-
-    real max_Q = -INF;    
-	Vector x(n_states + n_actions);
-	for (int i=0; i<n_states; ++i) {
-		x(i) = y(i);
-	}
-    for (int a = 0; a < n_actions; ++a) {
-		for (int i=0; i<n_actions; ++i) {
-			if (a==i) {
-				x(i) = 1;
-			} else {
-				x(i) = 0;
-			}
-		}
-        real Q_x = QValue(x);
-        if (Q_x > max_Q) {
-            max_Q = Q_x;
-        }
-
-		printf("Q[%d] = %f\n", a, Q_x);
     }
 
     real td_err = 0;
@@ -272,22 +260,19 @@ real ContinuousContextTreeRL::QLearning(real step_size, real gamma, Vector& y, r
          i != active_contexts.end();
          ++i) {
         real p_i = (*i)->context_probability;
-        //real dQ_i = reward + gamma * max_Q - (*i)->Q; // Alternative approach.
         p += p_i;
         real delta = p_i * dQ_i; 
         (*i)->Q += step_size * delta;
-        //printf ("%f * %f = %f ->  %f\n", p_i, dQ_i, delta, (*i)->Q);
-        //td_err += fabs(delta);
     }
     td_err = fabs(dQ_i);
-    printf ("# max_Q:%f Q:%f r:%f TD:%f, (%f %f %f)\n",
-			max_Q, Q_prev, reward, td_err, step_size, dQ_i, p);
+    //printf ("# max_Q:%f Q:%f r:%f TD:%f, (%f %f %f)\n",
+	//max_Q, Q_prev, reward, td_err, step_size, dQ_i, p);
     return td_err;
 }
 
 
 
-void ContinuousContextTreeRL::Node::Show()
+void ContinuousStateContextTreeRL::Node::Show()
 {
 #if 0
 	printf("%d %f #w\n", depth, w);
@@ -300,7 +285,7 @@ void ContinuousContextTreeRL::Node::Show()
 	return;
 }
 
-int ContinuousContextTreeRL::Node::NChildren()
+int ContinuousStateContextTreeRL::Node::NChildren()
 {
     int my_children = 0;
     for (int k=0; k<tree.n_branches; ++k) {
@@ -312,55 +297,94 @@ int ContinuousContextTreeRL::Node::NChildren()
     return my_children;
 }
 
-ContinuousContextTreeRL::ContinuousContextTreeRL(int n_branches_,
-												   int max_depth_,
-												   int max_depth_cond_,
-												   Vector& lower_bound_x,
-												 Vector& upper_bound_x,
-												   Vector& lower_bound_y_,
-												   Vector& upper_bound_y_)
-    : 	n_branches(n_branches_),
+ContinuousStateContextTreeRL::ContinuousStateContextTreeRL(int n_actions_,
+														   int max_depth_,
+														   int max_depth_cond_,
+														   Vector& lower_bound_x_,
+														   Vector& upper_bound_x_)
+    : 	n_states(lower_bound_x_.Size()),
+		n_actions(n_actions_),
+		n_branches(2),
 		max_depth(max_depth_),
 		max_depth_cond(max_depth_cond_),
-		lower_bound_y(lower_bound_y_),
-		upper_bound_y(upper_bound_y_)
+		lower_bound_x(lower_bound_x_),
+		upper_bound_x(upper_bound_x_),
+		root(n_actions)
 {
-    root = new Node(*this, lower_bound_x, upper_bound_x);
-	n_actions= lower_bound_y.Size();
-	n_states = lower_bound_x.Size() - n_actions;
+    for (int i=0; i<n_actions; ++i) {
+		root[i] = new Node(*this, lower_bound_x, upper_bound_x);
+	}
+	assert(n_states == upper_bound_x.Size());
 	assert(n_actions > 0);
 	assert(n_states > 0);
-	current_state_action.Resize(n_actions + n_states);
+	assert(n_branches > 0);
+	current_state.Resize(n_states);
+	current_action = -1;
 }
 
-ContinuousContextTreeRL::~ContinuousContextTreeRL()
+ContinuousStateContextTreeRL::~ContinuousStateContextTreeRL()
 {
-    delete root;
+	for (int i=0; i<n_actions; ++i) {
+		delete root[i];
+	}
 }
 
-/** Obtain \f$\xi_t(y \mid x)\f$ and calculate \f$\xi_{t+1}(w) = \xi_t(w \mid x, y)\f$.
+/** Observe a transition and update the model and active contexts.
+
+	x is the current state
+	a is the current action
+	y is the next state
+	r is the next reward
  */
-real ContinuousContextTreeRL::Observe(Vector& x, Vector& y, real r)
+real ContinuousStateContextTreeRL::Observe(Vector& x, int a, Vector& y, real r)
 {
+	assert(a >= 0 && a < n_actions);
 	active_contexts.clear();
-    return root->Observe(x, y, r, 1, active_contexts);
+	current_state = x;
+	current_action = a;
+    return root[a]->Observe(x, y, r, 1, active_contexts);
 }
 
-/** Obtain \f$\xi_t(y \mid x)\f$ and calculate \f$\xi_{t+1}(w) = \xi_t(w \mid x, y)\f$.
+/** Calculate \f$Q(x,a)\f$
  */
-real ContinuousContextTreeRL::QValue(Vector& x)
+real ContinuousStateContextTreeRL::QValue(Vector& x, int a)
 {
-    return root->QValue(x, -9999);
+    return root[a]->QValue(x, -9999);
 }
 
-void ContinuousContextTreeRL::Show()
+/** Calculate \f$\max_a Q(x,a)\f$
+ */
+real ContinuousStateContextTreeRL::QValue(Vector& x)
 {
-    root->Show();
+	real Q_max = -INF;
+	int a_max = -1;
+	for (int i=0; i<n_actions; ++i) { 
+		real Q_i = root[i]->QValue(x, -9999);
+		if (Q_i > Q_max) {
+			Q_max = Q_i;
+			a_max = i;
+		}
+	}
+
+    return Q_max;
+}
+
+/// Show some statistics about the tree
+void ContinuousStateContextTreeRL::Show()
+{
+	for (int i=0; i<n_actions; ++i) {
+		root[i]->Show();
+	}
     std::cout << "Total contexts: " << NChildren() << std::endl;
 }
 
-int ContinuousContextTreeRL::NChildren()
+/// Get the number of children.
+int ContinuousStateContextTreeRL::NChildren()
 {
-    return root->NChildren();
+	int n_children = 0;
+	for (int i=0; i<n_actions; ++i) {
+		n_children += root[i]->NChildren();
+	}
+    return n_children;
 }
 

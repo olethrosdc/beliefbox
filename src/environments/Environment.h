@@ -14,6 +14,7 @@
 #define ENVIRONMENT_H
 
 #include "MDP.h"
+#include "Vector.h"
 #include <cstdlib>
 /**
    \defgroup EnvironmentGroup Environments
@@ -93,6 +94,12 @@ public:
 
 /// Default type for discrete environments
 typedef Environment<int, int> DiscreteEnvironment;
+
+/// Default type for continuous state environments
+typedef Environment<Vector, int> ContinuousStateEnvironment;
+
+/// Default type for continuous environments
+typedef Environment<Vector, Vector> ContinuousEnvironment;
 
 /*@}*/
 

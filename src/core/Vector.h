@@ -32,8 +32,13 @@ public:
     real* x;
     int n;
     Vector ();
+#ifdef NDEBUG
     Vector (int N_, real* y, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     Vector (int N_, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
+#else
+    Vector (int N_, real* y, enum BoundsCheckingStatus check = CHECK_BOUNDS);
+    Vector (int N_, enum BoundsCheckingStatus check = CHECK_BOUNDS);
+#endif
     Vector (const Vector& rhs);
     ~Vector ();
     Vector& operator= (const Vector& rhs);

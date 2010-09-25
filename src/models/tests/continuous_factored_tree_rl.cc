@@ -21,15 +21,9 @@
 #ifdef MAKE_MAIN
 
 #include "FactoredPredictorRL.h"
-#include "POMDPGridworld.h"
-#include "Corridor.h"
 #include "Random.h"
 #include "MersenneTwister.h"
-#include "DiscretePOMDP.h"
-#include "POMDPBeliefState.h"
-#include "POMDPBeliefPredictor.h"
-#include "ContinuousContextTreeRL.h"
-#include "DiscretisedEnvironment.h"
+#include "ContinuousStateContextTreeRL.h"
 #include "MountainCar.h"
 #include "Pendulum.h"
 #include "Environment.h"
@@ -58,7 +52,7 @@ struct Statistics
 
 bool EvaluateGeneral(Environment<Vector, int>& environment,
                      real action_randomness,
-                     FactoredPredictorRL<Vector, Vector>* factored_predictor,
+                     FactoredPredictorRL<Vector, int>* factored_predictor,
                      Statistics& statistics);
 
 enum EnvironmentType {
@@ -72,15 +66,17 @@ int main(int argc, char** argv)
     int n_actions = 4;
     int n_obs;
 	
-    if (argc <= 8) {
+    if (argc <= 7) {
         fprintf (stderr, "Usage: factored_model environment model_name n_iter T depth env_rand act_rand [environment parameters]\n\
   - environment in {MountainCar, Pendulum}\n\
-  - model_name in {FMC, BFMC, CTW, BVMM}\n\
+  - model_name in {BVMM}\n\
   - environment parameters:\n");
         return -argc;
     }
 	
-
+	for (int i=0; i<argc; ++i) {
+		printf("%d: %s\n", i, argv[i]);
+	}
     std::string environment_name(argv[1]);
     std::string model_name(argv[2]);
 
@@ -93,19 +89,9 @@ int main(int argc, char** argv)
     EnvironmentType environment_type;
     
     if (!environment_name.compare("MountainCar")) {
-        if (argc!=9) {
-            Serror("Model parameters: discretisation > 1\n");
-            exit(-1);
-        }
         environment_type = MOUNTAIN_CAR;
-        n_obs = atoi(argv[8]);
     } else if (!environment_name.compare("Pendulum")) {
-        if (argc!=9) {
-            Serror("Model parameters: discretisation > 1\n");
-            exit(-1);
-        }
         environment_type = PENDULUM;
-        n_obs = atoi(argv[8]);
     } else {
         Serror ("Unknown environment %s\n",environment_name.c_str());
         exit(-1);
@@ -122,37 +108,41 @@ int main(int argc, char** argv)
         Pendulum pendulum;
 		Vector L_SA;
 		Vector U_SA;
+		Vector L_S;
+		Vector U_S;
 		Vector L_A;
 		Vector U_A;
         if (environment_type == MOUNTAIN_CAR) {
-            int n_intervals = atoi(argv[8]);
-            printf ("# Using %d intervals per dimension\n", n_intervals);
             n_obs = mountain_car.getNStates();
             n_actions = mountain_car.getNActions();
 			L_SA = mountain_car.StateActionLowerBound();
 			U_SA = mountain_car.StateActionUpperBound();
+			L_S = mountain_car.StateLowerBound();
+			U_S = mountain_car.StateUpperBound();
 			L_A = mountain_car.ActionLowerBound();
 			U_A = mountain_car.ActionUpperBound();
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         } else if (environment_type == PENDULUM) {
-            int n_intervals = atoi(argv[8]);
-            printf ("# Using %d intervals per dimension\n", n_intervals);
             n_obs = pendulum.getNStates();
             n_actions = pendulum.getNActions();
 			L_SA = pendulum.StateActionLowerBound();
 			U_SA = pendulum.StateActionUpperBound();
+			L_S = pendulum.StateLowerBound();
+			U_S = pendulum.StateUpperBound();
 			L_A = pendulum.ActionLowerBound();
 			U_A = pendulum.ActionUpperBound();
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         }
 		printf("L_SA: "); L_SA.print(stdout);
 		printf("U_SA: "); U_SA.print(stdout);
+		printf("L_S: "); L_S.print(stdout);
+		printf("U_S: "); U_S.print(stdout);
 		printf("L_A: "); L_A.print(stdout);
 		printf("U_A: "); U_A.print(stdout);
 
-        FactoredPredictorRL<Vector, Vector>* factored_predictor; 
+        FactoredPredictorRL<Vector, int>* factored_predictor; 
         if (!model_name.compare("BVMM")) {
-            factored_predictor = new ContinuousTFactoredPredictorRL<ContinuousContextTreeRL>(L_SA, U_SA, L_A, U_A, max_depth + 1, max_depth + 1);
+            factored_predictor = new ContinuousStateTFactoredPredictorRL<ContinuousStateContextTreeRL>(n_actions, L_S, U_S, max_depth + 1, max_depth + 1);
         } else {
             fprintf(stderr, "Unrecognised model name %s\n", model_name.c_str());
             exit(-1);
@@ -191,7 +181,7 @@ int main(int argc, char** argv)
     for (int t=0; t<T; ++t) {
         //printf ("%f %f\n", statistics.probability[t] * inv_iter,
         //statistics.error[t] * inv_iter);
-        printf ("%f %f %f\n",
+        printf ("%f %f %f #STATS\n",
                 statistics.probability[t] * inv_iter,
                 statistics.reward[t] * inv_iter, 
                 statistics.error[t] * inv_iter);
@@ -203,7 +193,7 @@ int main(int argc, char** argv)
 /// This function views looks at a standard MDP-like thing.
 bool EvaluateGeneral(Environment<Vector, int>& environment, 
                      real action_randomness,
-                     FactoredPredictorRL<Vector, Vector>* factored_predictor,
+                     FactoredPredictorRL<Vector, int>* factored_predictor,
                      Statistics& statistics)
 {
     int n_obs = environment.getNStates();
@@ -224,46 +214,25 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
             factored_predictor->Observe(environment.getState());
             environment.Reset();
             factored_predictor->Reset();
-            //last_action = rand()%n_actions;
             running = false;
         }
-        //printf("# Select action\n");
-		Vector caction(n_actions);
-        for (int a = 0; a < n_actions; ++a) {
-			for (int i=0; i<n_actions; ++i) {
-				if (i==a) {
-					caction(i) = 1;
-				} else {
-					caction(i) = 0;
-				}
-			}
-            Q[a] = factored_predictor->QValue(caction);
-            //printf ("# Q(%d) = %f\n", a, Q[a]);             
-
-            //printf ("%f ", Q[a]);
-        }
-        action = ArgMax(Q);
-        //printf ("%d # QV\n", action);
 
         if (urandom() < action_randomness) {
             action = rand()%n_actions;
-        } 
-
-	
-		for (int i=0; i<n_actions; ++i) {
-			if (i==action) {
-				caction(i) = 1;
-			} else {
-				caction(i) = 0;
+		} else {
+			for (int a = 0; a < n_actions; ++a) {
+				Q[a] = factored_predictor->QValue(a);
 			}
-		}
+			action = ArgMax(Q);
+		} 
+
         running = environment.Act(action);
 
         Vector observation = environment.getState();
         real reward = environment.getReward();
         //printf ("%d %f ", observation, reward);
-        real p = factored_predictor->Observe(caction, observation, reward);
-        real td_error = factored_predictor->QLearning(0.01, 0.99);
+        real p = factored_predictor->Observe(action, observation, reward);
+        real td_error = factored_predictor->QLearning(0.1, 0.95);
         //assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
         statistics.reward[t] += reward;
