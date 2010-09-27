@@ -26,6 +26,7 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
 	  lower_bound_x(lower_bound_x_),
       upper_bound_x(upper_bound_x_),
       depth(0),
+      mean_reward(0),
       prev(NULL),
       next(tree.n_branches),
       w(1),
@@ -65,12 +66,14 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
 	  lower_bound_x(lower_bound_x_),
       upper_bound_x(upper_bound_x_),
       depth(prev_->depth + 1),
+      mean_reward(0),
       prev(prev_),
       next(tree.n_branches),
       log_w(0),
 	  //log_w_prior(log(0.9)),
 	  log_w_prior(prev_->log_w_prior - log(2)),
-      //log_w_prior(-log(2)),
+      Q(INITIAL_Q_VALUE),
+      //Q(prev_->Q),
       S(0)
       //log_w_prior( - log(10))
 {
@@ -133,6 +136,7 @@ real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real rewa
     //printf ("%f %f = %f -> %f\n", P_tree, P_normal, P_local, prior_normal);
 
 	real p_reward = reward_prior.Observe(reward);
+    real mean_reward = reward_prior.getMean();
 	P_local *= p_reward;
  	// Mixture with the previous ones
     w = exp(log_w_prior + log_w); 
@@ -270,6 +274,41 @@ real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma, Vector&
     return td_err;
 }
 
+/** Perform value iteration.
+    
+    Randomly select an x.
+    
+    Select a context that matches.
+    
+    Update value of said context.
+
+ */
+real ContinuousStateContextTreeRL::ValueIteration()
+{
+
+	real Q_prev = QValue(current_state, current_action);
+
+    if (isnan(Q_prev)) {
+        Q_prev = 0;
+        fprintf(stderr, "Warning: Q_prev is nan\n");
+    }
+
+    real td_err = 0;
+    real dQ_i = reward + gamma * max_Q - Q_prev; 
+    real p = 0;
+    for (std::list<Node*>::iterator i = active_contexts.begin();
+         i != active_contexts.end();
+         ++i) {
+        real p_i = (*i)->context_probability;
+        p += p_i;
+        real delta = p_i * dQ_i; 
+        (*i)->Q += step_size * delta;
+    }
+    td_err = fabs(dQ_i);
+    //printf ("# max_Q:%f Q:%f r:%f TD:%f, (%f %f %f)\n",
+	//max_Q, Q_prev, reward, td_err, step_size, dQ_i, p);
+    return td_err;
+}
 
 
 void ContinuousStateContextTreeRL::Node::Show()

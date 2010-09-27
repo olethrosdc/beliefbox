@@ -47,6 +47,7 @@ public:
 		ContextTreeKDTree* local_density; ///< local density estimator
 		MultivariateNormalUnknownMeanPrecision* normal_density; ///< local density estimator
 		NormalUnknownMeanPrecision reward_prior; ///< local density estimator
+        real mean_reward; ///< mean reward
         Node* prev; ///< previous node
         std::vector<Node*> next; ///< pointers to next nodes
         real w; ///< backoff weight

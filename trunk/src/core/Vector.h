@@ -41,6 +41,7 @@ public:
 #endif
     Vector (const Vector& rhs);
     ~Vector ();
+    Vector& operator= (const real& rhs);
     Vector& operator= (const Vector& rhs);
     void Clear();
     void Resize(int N_);
