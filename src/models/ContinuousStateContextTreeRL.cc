@@ -125,25 +125,40 @@ real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real rewa
 {
 	active_contexts.push_back(this);
 	real total_probability;
-
+    real fudge = MIN_PRECISION;
     // the local distribution
     //real prior_normal = exp(log_prior_normal);
     real P_tree = local_density->Observe(y);
     real P_normal = normal_density->Observe(y);
-    real P_local = prior_normal * P_normal + (1 - prior_normal) * P_tree;
+    real P_local =  prior_normal * P_normal + (1 - prior_normal) * P_tree;
     //log_prior_normal += log(P_normal) - log(P_local);
-    prior_normal *= P_normal / P_local;
+    if (P_local > fudge) {
+        prior_normal *= P_normal / P_local;
+    } else {
+        P_local = fudge;
+    }
     //printf ("%f %f = %f -> %f\n", P_tree, P_normal, P_local, prior_normal);
 
 	real p_reward = reward_prior.Observe(reward);
     real mean_reward = reward_prior.getMean();
 	P_local *= p_reward;
+
+    if (P_local < fudge) {
+        P_local = fudge;
+    }
  	// Mixture with the previous ones
     w = exp(log_w_prior + log_w); 
+    if (w > 1) {
+        w = 1;
+    } else if (w < 0) {
+        w = 0;
+    }
 	total_probability = P_local * w + (1 - w) * probability;
 
     // adapt parameters
-    log_w = log(w * P_local / total_probability) - log_w_prior;
+    //log_w = log(w * P_local / total_probability) - log_w_prior;
+    log_w =  log_w + log(P_local) - log(total_probability);
+    assert(!isnan(log_w));
 
 	w_prod = 1; ///< auxilliary calculation
 
@@ -201,22 +216,10 @@ real ContinuousStateContextTreeRL::Node::QValue(Vector& x,
     w = exp(log_w_prior + log_w); 
     real Q_next = Q * w + (1 - w) * Q_prev;
 	//printf ("%f -(%f,%f)-> %f\n", Q_prev, Q, w, Q_next);
-    if (isnan(Q_prev)) {
-        fprintf(stderr, "Warning: at depth %d, Q_prev is nan\n", depth);
-        Q_prev = 0;
-    }
-    if (isnan(Q)) {
-        fprintf(stderr, "Warning: at depth %d, Q is nan\n", depth);
-        Q = 0;
-    }
-    if (isnan(Q_next)) {
-        fprintf(stderr, "Warning: at depth %d, Q_next is nan\n", depth);
-        Q_next = 0;
-    }
-    if (isnan(w)) {
-        fprintf(stderr, "Warning: at depth %d, w is nan\n", depth);
-        w = 0.5;
-    }
+    assert (!isnan(Q_prev));
+    assert (!isnan(Q));
+    assert (!isnan(Q_next));
+    assert (!isnan(w));
 
     int k;
     if ( x[splitting_dimension] < mid_point) {
@@ -252,10 +255,7 @@ real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma, Vector&
 
 	real Q_prev = QValue(current_state, current_action);
 
-    if (isnan(Q_prev)) {
-        Q_prev = 0;
-        fprintf(stderr, "Warning: Q_prev is nan\n");
-    }
+    assert (!isnan(Q_prev));
 
     real td_err = 0;
     real dQ_i = reward + gamma * max_Q - Q_prev; 
@@ -282,32 +282,13 @@ real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma, Vector&
     
     Update value of said context.
 
+    NOT IMPLEMENTED
  */
 real ContinuousStateContextTreeRL::ValueIteration()
 {
+    
 
-	real Q_prev = QValue(current_state, current_action);
-
-    if (isnan(Q_prev)) {
-        Q_prev = 0;
-        fprintf(stderr, "Warning: Q_prev is nan\n");
-    }
-
-    real td_err = 0;
-    real dQ_i = reward + gamma * max_Q - Q_prev; 
-    real p = 0;
-    for (std::list<Node*>::iterator i = active_contexts.begin();
-         i != active_contexts.end();
-         ++i) {
-        real p_i = (*i)->context_probability;
-        p += p_i;
-        real delta = p_i * dQ_i; 
-        (*i)->Q += step_size * delta;
-    }
-    td_err = fabs(dQ_i);
-    //printf ("# max_Q:%f Q:%f r:%f TD:%f, (%f %f %f)\n",
-	//max_Q, Q_prev, reward, td_err, step_size, dQ_i, p);
-    return td_err;
+    return 0;
 }
 
 
