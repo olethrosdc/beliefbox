@@ -167,6 +167,14 @@ Vector& Vector::operator= (const Vector& rhs)
     return *this;
 }
 
+/// Assignment operator
+Vector& Vector::operator= (const real& rhs)
+{
+    Resize(1);
+    x[0] = rhs;
+    return *this;
+}
+
 /// log Sum of all in vector
 real Vector::logSum() const
 {
