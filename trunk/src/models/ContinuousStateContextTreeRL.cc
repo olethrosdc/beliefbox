@@ -72,8 +72,8 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
       log_w(0),
 	  //log_w_prior(log(0.9)),
 	  log_w_prior(prev_->log_w_prior - log(2)),
-      Q(INITIAL_Q_VALUE),
-      //Q(prev_->Q),
+      //Q(INITIAL_Q_VALUE),
+      Q(prev_->Q),
       S(0)
       //log_w_prior( - log(10))
 {
