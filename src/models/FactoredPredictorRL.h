@@ -31,7 +31,7 @@ public:
     virtual real ObservationProbability (A& act, X& x) = 0;
     virtual real QValue (A& act) = 0;
     virtual real QLearning (real step_size, real gamma ) = 0;
-    virtual real Sarsa (real step_size, real gamma ) = 0;
+    virtual real Sarsa (real step_size, real gamma, real epsilon = 0.01 ) = 0;
     //virtual real ObservationProbability (int x) = 0;
     virtual void Reset() = 0;
     
@@ -96,7 +96,7 @@ public:
     }
 
     /// Do q-learning, starting with next observation
-    virtual real Sarsa(real step_size, real gamma)
+    virtual real Sarsa(real step_size, real gamma, real epsilon)
     {
         Serror("Not implemented\n");
         return tree.Sarsa(step_size, gamma, current_obs, current_reward);
@@ -202,7 +202,7 @@ public:
     }
 
     /// Do q-learning, starting with next observation
-    virtual real Sarsa(real step_size, real gamma)
+    virtual real Sarsa(real step_size, real gamma, real epsilon)
     {
         Serror("Not implemented\n");
         return tree.Sarsa(step_size, gamma, current_obs, current_reward);
@@ -295,10 +295,9 @@ public:
     }
 
     /// Do q-learning, starting with next observation
-    virtual real Sarsa(real step_size, real gamma)
+    virtual real Sarsa(real step_size, real gamma, real epsilon)
     {
-        Serror("Not implemented\n");
-        return tree.Sarsa(step_size, gamma, current_obs, current_reward);
+        return tree.Sarsa(epsilon, step_size, gamma, current_obs, current_reward);
     }
 
     virtual real ObservationProbability (int& act, Vector& x) 

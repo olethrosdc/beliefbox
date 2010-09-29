@@ -221,7 +221,8 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
             running = false;
         }
 
-        if (urandom() < action_randomness) {
+        real epsilon = action_randomness / (real) T;
+        if (urandom() < epsilon) {
             action = rand()%n_actions;
 		} else {
 			for (int a = 0; a < n_actions; ++a) {
@@ -236,7 +237,8 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
         real reward = environment.getReward();
         //printf ("%d %f ", observation, reward);
         real p = factored_predictor->Observe(action, observation, reward);
-        real td_error = factored_predictor->QLearning(0.5, 0.95);
+        real td_error = factored_predictor->QLearning(0.1, 0.95);
+        //real td_error = factored_predictor->Sarsa(0.1, 0.95, action_randomness);
         //assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
         statistics.reward[t] += reward;

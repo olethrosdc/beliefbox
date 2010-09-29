@@ -272,9 +272,10 @@ real ContinuousContextTreeRL::QLearning(real step_size, real gamma, Vector& y, r
          i != active_contexts.end();
          ++i) {
         real p_i = (*i)->context_probability;
-        //real dQ_i = reward + gamma * max_Q - (*i)->Q; // Alternative approach.
         p += p_i;
-        real delta = p_i * dQ_i; 
+        real delta = p_i * dQ_i;  // proper way to do it..
+        //real delta = dQ_i; 
+        //real delta = reward + gamma * max_Q - (*i)->Q; // Alternative approach.
         (*i)->Q += step_size * delta;
         //printf ("%f * %f = %f ->  %f\n", p_i, dQ_i, delta, (*i)->Q);
         //td_err += fabs(delta);
@@ -284,6 +285,7 @@ real ContinuousContextTreeRL::QLearning(real step_size, real gamma, Vector& y, r
 			max_Q, Q_prev, reward, td_err, step_size, dQ_i, p);
     return td_err;
 }
+
 
 
 

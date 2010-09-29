@@ -82,11 +82,7 @@ public:
 	real QValue(Vector& x, int a);
 	real QLearning(real step_size, real gamma, Vector& y, real reward);
 	real ValueIteration();
-	real Sarsa(real step_size, real gamma, Vector& y, real reward)
-	{
-		Serror("Not implemented\n");
-		return -1;
-	}
+	real Sarsa(real epsilon, real step_size, real gamma, Vector& y, real reward);
 	void Reset()
 	{
 		current_action = -1;

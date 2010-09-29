@@ -266,6 +266,7 @@ real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma, Vector&
         real p_i = (*i)->context_probability;
         p += p_i;
         real delta = p_i * dQ_i; 
+        //real delta = reward + gamma * max_Q - (*i)->Q; // Alternative approach.
         (*i)->Q += step_size * delta;
     }
     td_err = fabs(dQ_i);
@@ -274,6 +275,48 @@ real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma, Vector&
     return td_err;
 }
 
+/// Sarsa
+real ContinuousStateContextTreeRL::Sarsa(real epsilon, real step_size, real gamma, Vector& y, real reward)
+{
+	if (current_action == -1) {
+		return 0;
+	}
+	real Q_max = -INF;
+	int a_max = -1;
+    Vector Qa(n_actions);
+	for (int i=0; i<n_actions; ++i) { 
+		Qa(i) = QValue(y, i);
+		if (Qa(i) > Q_max) {
+			Q_max = Qa(i);
+			a_max = i;
+		}
+	}
+    real p_a = epsilon / (real) n_actions;
+    real EQ = Q_max * (1 - epsilon);
+	for (int i=0; i<n_actions; ++i) { 
+        EQ += p_a * Qa(i);
+    }
+
+	real Q_prev = QValue(current_state, current_action);
+
+    assert (!isnan(Q_prev));
+
+    real td_err = 0;
+    real dQ_i = reward + gamma * EQ - Q_prev; 
+    real p = 0;
+    for (std::list<Node*>::iterator i = active_contexts.begin();
+         i != active_contexts.end();
+         ++i) {
+        real p_i = (*i)->context_probability;
+        p += p_i;
+        real delta = p_i * dQ_i; 
+        (*i)->Q += step_size * delta;
+    }
+    td_err = fabs(dQ_i);
+    //printf ("# max_Q:%f Q:%f r:%f TD:%f, (%f %f %f)\n",
+	//max_Q, Q_prev, reward, td_err, step_size, dQ_i, p);
+    return td_err;
+}
 /** Perform value iteration.
     
     Randomly select an x.
