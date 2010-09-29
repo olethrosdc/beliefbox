@@ -4,10 +4,10 @@ exe=./bin/continuous_factored_tree_rl
 
 environment=Pendulum
 model=BVMM
-T=100000
+T=1000000
 iter=10
 erand=0.01
-arand=0.0
+arand=0.001
 ulimit -v 2000000
 
 for D in 1 2 3 4 5 6 7 8
