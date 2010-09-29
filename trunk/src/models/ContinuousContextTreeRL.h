@@ -92,11 +92,10 @@ public:
     //real pdf(Vector& x, Vector& y);
 	real QValue(Vector& x);
 	real QLearning(real step_size, real gamma, Vector& y, real reward);
-	real Sarsa(real step_size, real gamma, Vector& y, real reward)
-	{
-		Serror("Not implemented\n");
-		return -1;
-	}
+	real Sarsa(real epsilon, real step_size, real gamma, Vector& y, real reward) {
+        Serror("Not implemented\n");
+        return 0;
+    }
 	void Reset()
 	{
 		active_contexts.clear();

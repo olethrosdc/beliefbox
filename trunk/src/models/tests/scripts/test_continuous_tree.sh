@@ -4,7 +4,7 @@ exe=./bin/continuous_factored_tree_rl
 
 environment=Pendulum
 model=BVMM
-T=1000000
+T=100000
 iter=10
 erand=0.01
 arand=0.001
