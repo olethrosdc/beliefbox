@@ -18,6 +18,9 @@
 
 #include "Random.h"
 
+#define DEFAULT_PRIOR_NORMAL 0.5
+#define RANDOM_SPLITS
+
 ContinuousContextTreeRL::Node::Node(ContinuousContextTreeRL& tree_,
 									 Vector& lower_bound_x_,
 									 Vector& upper_bound_x_)
@@ -51,8 +54,8 @@ ContinuousContextTreeRL::Node::Node(ContinuousContextTreeRL& tree_,
 	tree.lower_bound_y.print(stdout);
 	tree.upper_bound_y.print(stdout);
 	normal_density = new MultivariateNormalUnknownMeanPrecision(mean, 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
-    log_prior_normal = log(0.5);
-    prior_normal = 0.5;
+    log_prior_normal = log(DEFAULT_PRIOR_NORMAL);
+    prior_normal = DEFAULT_PRIOR_NORMAL;
 }
 
 /// Make a node for K symbols at nominal depth d
@@ -93,8 +96,8 @@ ContinuousContextTreeRL::Node::Node(ContinuousContextTreeRL::Node* prev_,
 										  tree.upper_bound_y);
     int y_dim = tree.upper_bound_y.Size();
 	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_y + tree.lower_bound_y)*0.5 , 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
-    log_prior_normal = log(0.5);
-    prior_normal = 0.5;
+    log_prior_normal = log(DEFAULT_PRIOR_NORMAL);
+    prior_normal = DEFAULT_PRIOR_NORMAL;
 }
 
 /// make sure to kill all

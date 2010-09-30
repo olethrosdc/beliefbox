@@ -62,7 +62,7 @@ void MountainCar::Reset()
     state[0] = 0.0;// urandom(-, U_POS);
     state[1] = 0.0;//urandom(L_VEL, U_VEL);
     endsim = false;
-    reward = -0.01;
+    reward = -1;
 }
 bool MountainCar::Act(int action)
 {
@@ -109,10 +109,10 @@ void MountainCar::Simulate(int action)
     }
         //printf ("S: %f %f\n", state[0], state[1]);
     if (state[0] == U_POS) {
-        reward = 0.0;
+        reward = 1.0;
         endsim = true;
     } else {
-        reward = -0.01;
+        reward = -1;
         endsim = false;
     }
   

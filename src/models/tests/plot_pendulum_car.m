@@ -27,14 +27,14 @@ y7=moving_average(load("Pendulum_d7.out"), K);
 y8=moving_average(load("Pendulum_d8.out"), K);
 
 subplot(2,1,1);
-plot(cumsum(0.01 + x1(:,2)), ';1;',
-     cumsum(0.01 + x2(:,2)), ';2;',
-     cumsum(0.01 + x3(:,2)), ';3;',
-     cumsum(0.01 + x4(:,2)), ';4;',
-     cumsum(0.01 + x5(:,2)), ';5;',
-     cumsum(0.01 + x6(:,2)), ';6;',
-     cumsum(0.01 + x7(:,2)), ';7;',
-     cumsum(0.01 + x8(:,2)), '0;8;');
+plot(cumsum(1 + x1(:,2)), ';1;',
+     cumsum(1 + x2(:,2)), ';2;',
+     cumsum(1 + x3(:,2)), ';3;',
+     cumsum(1 + x4(:,2)), ';4;',
+     cumsum(1 + x5(:,2)), ';5;',
+     cumsum(1 + x6(:,2)), ';6;',
+     cumsum(1 + x7(:,2)), ';7;',
+     cumsum(1 + x8(:,2)), '0;8;');
 
 subplot(2,1,2);
 plot(y1(:,2), ';1;',

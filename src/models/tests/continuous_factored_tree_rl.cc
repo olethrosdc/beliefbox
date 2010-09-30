@@ -25,6 +25,7 @@
 #include "MersenneTwister.h"
 #include "ContinuousStateContextTreeRL.h"
 #include "MountainCar.h"
+#include "MountainCar3D.h"
 #include "Pendulum.h"
 #include "LinearContextBandit.h"
 #include "Environment.h"
@@ -58,6 +59,7 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
 
 enum EnvironmentType {
     MOUNTAIN_CAR,
+    MOUNTAIN_CAR_3D,
     PENDULUM,
     LINEAR_BANDIT
 };
@@ -70,7 +72,7 @@ int main(int argc, char** argv)
 	
     if (argc <= 7) {
         fprintf (stderr, "Usage: factored_model environment model_name n_iter T depth env_rand act_rand [environment parameters]\n\
-  - environment in {MountainCar, Pendulum, LinearBandit}\n\
+  - environment in {MountainCar, Pendulum, LinearBandit, MountainCar3D}\n\
   - model_name in {BVMM}\n\
   - environment parameters:\n");
         return -argc;
@@ -92,6 +94,8 @@ int main(int argc, char** argv)
     
     if (!environment_name.compare("MountainCar")) {
         environment_type = MOUNTAIN_CAR;
+    } else if (!environment_name.compare("MountainCar3D")) {
+        environment_type = MOUNTAIN_CAR_3D;
     } else if (!environment_name.compare("Pendulum")) {
         environment_type = PENDULUM;
     } else if (!environment_name.compare("LinearBandit")) {
@@ -109,8 +113,9 @@ int main(int argc, char** argv)
     for (int iter=0; iter<n_iter; ++iter) {
         mersenne_twister.manualSeed(true_random_bits(false));
         MountainCar mountain_car;
+        MountainCar3D mountain_car_3d;
         Pendulum pendulum;
-        LinearContextBandit bandit(2,2, &mersenne_twister);
+        LinearContextBandit bandit(4,4, &mersenne_twister);
 		Vector L_S;
 		Vector U_S;
         if (environment_type == MOUNTAIN_CAR) {
@@ -118,6 +123,12 @@ int main(int argc, char** argv)
             n_actions = mountain_car.getNActions();
 			L_S = mountain_car.StateLowerBound();
 			U_S = mountain_car.StateUpperBound();
+            printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
+        } else if (environment_type == MOUNTAIN_CAR_3D) {
+            n_obs = mountain_car_3d.getNStates();
+            n_actions = mountain_car_3d.getNActions();
+			L_S = mountain_car_3d.StateLowerBound();
+			U_S = mountain_car_3d.StateUpperBound();
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         } else if (environment_type == PENDULUM) {
             n_obs = pendulum.getNStates();
@@ -146,8 +157,16 @@ int main(int argc, char** argv)
         switch(environment_type) {
         case MOUNTAIN_CAR:
             {
-
                 success = EvaluateGeneral(mountain_car,
+                                       action_random,
+                                       factored_predictor,
+                                       statistics);
+            }
+            break;
+        case MOUNTAIN_CAR_3D:
+            {
+
+                success = EvaluateGeneral(mountain_car_3d,
                                        action_random,
                                        factored_predictor,
                                        statistics);
