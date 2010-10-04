@@ -69,8 +69,8 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
       mean_reward(0),
       prev(prev_),
       next(tree.n_branches),
-      log_w(depth * log(0.5)),
-	  //log_w(depth * log(2)),
+      //log_w(depth * log(0.5)),
+	  log_w(log(0.5)),
       w(exp(log_w)),
       //Q(INITIAL_Q_VALUE),
       Q(prev_->Q),
@@ -176,7 +176,7 @@ real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real rewa
         k = 1;
     }
 
-    real threshold = sqrt((real) depth);
+    real threshold = 1;//sqrt((real) depth);
     S++;
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P_local
