@@ -50,9 +50,8 @@ public:
         real mean_reward; ///< mean reward
         Node* prev; ///< previous node
         std::vector<Node*> next; ///< pointers to next nodes
-        real w; ///< backoff weight
         real log_w; ///< log of w
-        real log_w_prior; ///< initial value
+        real w; ///< backoff weight
 		real Q; ///< Q-value
 		real w_prod; ///< \f$\prod_k (1 - w_k)\f$
         real context_probability; ///< last probability of the context

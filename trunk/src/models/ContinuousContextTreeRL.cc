@@ -19,7 +19,7 @@
 #include "Random.h"
 
 #define DEFAULT_PRIOR_NORMAL 0.5
-#define RANDOM_SPLITS
+#undef RANDOM_SPLITS
 
 ContinuousContextTreeRL::Node::Node(ContinuousContextTreeRL& tree_,
 									 Vector& lower_bound_x_,
