@@ -121,26 +121,26 @@ int main(int argc, char** argv)
         if (environment_type == MOUNTAIN_CAR) {
             n_obs = mountain_car.getNStates();
             n_actions = mountain_car.getNActions();
-			L_S = mountain_car.StateLowerBound();
-			U_S = mountain_car.StateUpperBound();
+			L_S = mountain_car.StateLowerBound() - 1;
+			U_S = mountain_car.StateUpperBound() + 1;
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         } else if (environment_type == MOUNTAIN_CAR_3D) {
             n_obs = mountain_car_3d.getNStates();
             n_actions = mountain_car_3d.getNActions();
-			L_S = mountain_car_3d.StateLowerBound();
-			U_S = mountain_car_3d.StateUpperBound();
+			L_S = mountain_car_3d.StateLowerBound() - 1;
+			U_S = mountain_car_3d.StateUpperBound() + 1;
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         } else if (environment_type == PENDULUM) {
             n_obs = pendulum.getNStates();
             n_actions = pendulum.getNActions();
-			L_S = pendulum.StateLowerBound();
-			U_S = pendulum.StateUpperBound();
+			L_S = pendulum.StateLowerBound() - 1;
+			U_S = pendulum.StateUpperBound() + 1;
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         } else if (environment_type == LINEAR_BANDIT) {
             n_obs = bandit.getNStates();
             n_actions = bandit.getNActions();
-			L_S = bandit.StateLowerBound();
-			U_S = bandit.StateUpperBound();
+			L_S = bandit.StateLowerBound() - 1;
+			U_S = bandit.StateUpperBound() + 1;
             printf ("# Total observations: %d, actions: %d\n", n_obs, n_actions);
         }
 		printf("L_S: "); L_S.print(stdout);

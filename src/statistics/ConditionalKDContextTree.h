@@ -63,7 +63,7 @@ public:
         std::vector<Node*> next; ///< pointers to next nodes
         real w; ///< backoff weight
         real log_w; ///< log of w
-        real log_w_prior; ///< initial value
+        ///real log_w_prior; ///< initial value
 
         Node(ConditionalKDContextTree& tree_,
 			 Vector& lower_bound_x_,

@@ -18,6 +18,7 @@
 
 #include "Random.h"
 #define INITIAL_Q_VALUE 0.0
+#define NORMAL_PRIOR  0.5
 
 ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
 									 Vector& lower_bound_x_,
@@ -31,7 +32,6 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
       next(tree.n_branches),
       w(1),
 	  log_w(0),
-	  log_w_prior(0),
 	  Q(INITIAL_Q_VALUE),
       S(0)
 {
@@ -54,8 +54,8 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
 	tree.lower_bound_x.print(stdout);
 	tree.upper_bound_x.print(stdout);
 	normal_density = new MultivariateNormalUnknownMeanPrecision(mean, 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
-    log_prior_normal = log(0.5);
-    prior_normal = 0.5;
+    log_prior_normal = log(NORMAL_PRIOR);
+    prior_normal = NORMAL_PRIOR;
 }
 
 /// Make a node for K symbols at nominal depth d
@@ -69,13 +69,12 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
       mean_reward(0),
       prev(prev_),
       next(tree.n_branches),
-      log_w(0),
-	  //log_w_prior(log(0.9)),
-	  log_w_prior(prev_->log_w_prior - log(2)),
+      log_w(depth * log(0.5)),
+	  //log_w(depth * log(2)),
+      w(exp(log_w)),
       //Q(INITIAL_Q_VALUE),
       Q(prev_->Q),
       S(0)
-      //log_w_prior( - log(10))
 {
     assert(lower_bound_x < upper_bound_x);
 	splitting_dimension = ArgMax(upper_bound_x - lower_bound_x);    
@@ -87,7 +86,7 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
 	mid_point = (upper_bound_x[splitting_dimension] + lower_bound_x[splitting_dimension]) / 2.0;
 #endif
 
-    w = exp(log_w_prior);
+    w = exp(log_w);
     for (int i=0; i<tree.n_branches; ++i) {
         next[i] = NULL;
     }
@@ -98,8 +97,8 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
 										  tree.upper_bound_x);
     int y_dim = tree.upper_bound_x.Size();
 	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_x + tree.lower_bound_x)*0.5 , 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
-    log_prior_normal = log(0.5);
-    prior_normal = 0.5;
+    log_prior_normal = log(NORMAL_PRIOR);
+    prior_normal = NORMAL_PRIOR;
 }
 
 /// make sure to kill all
@@ -146,20 +145,27 @@ real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real rewa
     if (P_local < fudge) {
         P_local = fudge;
     }
- 	// Mixture with the previous ones
-    w = exp(log_w_prior + log_w); 
+    w = exp(log_w);
     if (w > 1) {
         w = 1;
     } else if (w < 0) {
         w = 0;
     }
+
 	total_probability = P_local * w + (1 - w) * probability;
 
     // adapt parameters
-    //log_w = log(w * P_local / total_probability) - log_w_prior;
-    log_w =  log_w + log(P_local) - log(total_probability);
+    log_w  += log(P_local) - log(total_probability);
     assert(!isnan(log_w));
 
+#if 0
+    w = exp(log_w);
+    if (w > 1) {
+        w = 1;
+    } else if (w < 0) {
+        w = 0;
+    }
+#endif
 	w_prod = 1; ///< auxilliary calculation
 
     // Which interval is the x lying at
@@ -213,7 +219,7 @@ real ContinuousStateContextTreeRL::Node::QValue(Vector& x,
 										   real Q_prev)
 {
 	
-    w = exp(log_w_prior + log_w); 
+    //w = exp(log_w); 
     real Q_next = Q * w + (1 - w) * Q_prev;
 	//printf ("%f -(%f,%f)-> %f\n", Q_prev, Q, w, Q_next);
     assert (!isnan(Q_prev));
@@ -243,6 +249,11 @@ real ContinuousStateContextTreeRL::Node::QValue(Vector& x,
 	r is the next reward.
 
 	We wish to move Q(s,a) towards r + \max_a' Q(s',a').
+    
+    There are two possible methods. The first is to simply move the
+    complete estimate, using stochastic gradient descent. However this
+    may have poor performance, since the leaf node Q-values will not
+    be updated so well.
 
 	The function returns the TD-error.
  */
@@ -265,8 +276,8 @@ real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma, Vector&
          ++i) {
         real p_i = (*i)->context_probability;
         p += p_i;
-        real delta = p_i * dQ_i; 
-        //real delta = reward + gamma * max_Q - (*i)->Q; // Alternative approach.
+        //real delta = p_i * dQ_i; 
+        real delta = reward + gamma * max_Q - (*i)->Q; // Alternative approach.
         (*i)->Q += step_size * delta;
     }
     td_err = fabs(dQ_i);

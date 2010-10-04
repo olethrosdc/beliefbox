@@ -68,11 +68,11 @@ int main (int argc, char** argv)
 	Vector lower_bound_x(1);
 	Vector upper_bound_x(1);
 	for (int i=0; i<2; ++i) {
-		lower_bound(i) = -10;
-		upper_bound(i) = 10;
+		lower_bound(i) = -100;
+		upper_bound(i) = 100;
 	}
-	lower_bound_x(0) = -10;
-	upper_bound_x(0) = 10;
+	lower_bound_x(0) = -100;
+	upper_bound_x(0) = 100;
     ContextTreeKDTree pdf(2, max_depth, lower_bound, upper_bound);
     ConditionalKDContextTree cpdf(2, max_depth, max_depth_cond,
 								  lower_bound_x, upper_bound_x,
@@ -118,8 +118,8 @@ int main (int argc, char** argv)
 #if 1
 	real step = 0.1;
     if (joint) {
-        for (real y=-10; y<10; y+=step) {
-            for (real x=-10; x<10; x+=step) {
+        for (real y=-100; y<100; y+=step) {
+            for (real x=-100; x<100; x+=step) {
                 Vector v(2);
                 v[0] = x;
                 v[1] = y;
@@ -128,8 +128,8 @@ int main (int argc, char** argv)
 		printf(" # P_XY\n");
         }
     } else {
-        for (real y=-10; y<10; y+=step) {
-            for (real x=-10; x<10; x+=step) {
+        for (real y=-100; y<100; y+=step) {
+            for (real x=-100; x<100; x+=step) {
                 Vector X(1);
                 Vector Y(1);
                 X(0) = x;
