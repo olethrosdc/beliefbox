@@ -148,7 +148,7 @@ int main(int argc, char** argv)
 
         FactoredPredictorRL<Vector, int>* factored_predictor; 
         if (!model_name.compare("BVMM")) {
-            factored_predictor = new ContinuousStateTFactoredPredictorRL<ContinuousStateContextTreeRL>(n_actions, L_S, U_S, max_depth + 1, max_depth + 1);
+            factored_predictor = new ContinuousStateTFactoredPredictorRL<ContinuousStateContextTreeRL>(n_actions, L_S, U_S, max_depth , max_depth);
         } else {
             fprintf(stderr, "Unrecognised model name %s\n", model_name.c_str());
             exit(-1);
@@ -197,6 +197,7 @@ int main(int argc, char** argv)
         if (!success) {
             fprintf(stderr, "Failure in iteration %d\n", iter);
         }
+        factored_predictor->Show();
         delete factored_predictor;
     }
 	
@@ -209,6 +210,7 @@ int main(int argc, char** argv)
                 statistics.reward[t] * inv_iter, 
                 statistics.error[t] * inv_iter);
     }
+
     return 0;
 }
 

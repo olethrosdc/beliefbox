@@ -64,7 +64,7 @@ public:
         ~Node();
         real Observe(Vector& x, Vector& y, real reward, real probability, ContextList& active_contexts);
 		real QValue(Vector& state, real Q_prev);
-        void Show();
+        virtual void Show();
         int NChildren();    
         int S;
     };
@@ -87,7 +87,7 @@ public:
 		current_action = -1;
 		active_contexts.clear();
 	}
-    void Show();
+    virtual void Show();
     int NChildren();
 protected: 
 	int n_states;

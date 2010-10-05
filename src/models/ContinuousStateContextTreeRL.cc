@@ -20,6 +20,7 @@
 #define INITIAL_Q_VALUE 0.0
 #define NORMAL_PRIOR  0.5
 
+/** Construction of the root node */
 ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
 									 Vector& lower_bound_x_,
 									 Vector& upper_bound_x_)
@@ -69,13 +70,14 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
       mean_reward(0),
       prev(prev_),
       next(tree.n_branches),
-      //log_w(depth * log(0.5)),
-	  log_w(log(0.5)),
+       log_w(depth * log(0.5)),
+	  //log_w(log(1)),
       w(exp(log_w)),
       //Q(INITIAL_Q_VALUE),
       Q(prev_->Q),
       S(0)
 {
+    printf("Making new node at depth %d\n", depth);
     assert(lower_bound_x < upper_bound_x);
 	splitting_dimension = ArgMax(upper_bound_x - lower_bound_x);    
 #ifdef RANDOM_SPLITS
@@ -186,8 +188,9 @@ real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real rewa
               << std::endl;
 #endif
 	// Do a forward mixture if there is another node available.
-    if ((tree.max_depth==0 || depth < tree.max_depth) && S >  threshold) {
+    if ((tree.max_depth==-1 || depth < tree.max_depth) && S >  threshold) {
         if (!next[k]) {
+            printf ("Making new node from depth %d, max: %d\n", depth, tree.max_depth);
             if (k == 0) {
 				Vector new_bound_x = upper_bound_x;
 				new_bound_x(splitting_dimension) = mid_point;
@@ -348,7 +351,7 @@ real ContinuousStateContextTreeRL::ValueIteration()
 
 void ContinuousStateContextTreeRL::Node::Show()
 {
-#if 0
+#if 1
 	printf("%d %f #w\n", depth, w);
 	for (int k=0; k<tree.n_branches; ++k) {
 		if (next[k]) {
@@ -446,7 +449,9 @@ real ContinuousStateContextTreeRL::QValue(Vector& x)
 /// Show some statistics about the tree
 void ContinuousStateContextTreeRL::Show()
 {
+    printf("ContinuousStateContextTreeRL:\n");
 	for (int i=0; i<n_actions; ++i) {
+        printf("Action %d:\n", i);
 		root[i]->Show();
 	}
     std::cout << "Total contexts: " << NChildren() << std::endl;
@@ -457,7 +462,7 @@ int ContinuousStateContextTreeRL::NChildren()
 {
 	int n_children = 0;
 	for (int i=0; i<n_actions; ++i) {
-		n_children += root[i]->NChildren();
+		n_children += 1 + root[i]->NChildren();
 	}
     return n_children;
 }
