@@ -34,6 +34,10 @@ public:
     virtual real Sarsa (real step_size, real gamma, real epsilon = 0.01 ) = 0;
     //virtual real ObservationProbability (int x) = 0;
     virtual void Reset() = 0;
+    virtual void Show()
+    {
+        printf("FactoredPredictorRL: Nothing to show\n");
+    }
     
 }; 
 
@@ -311,6 +315,10 @@ public:
         current_obs.Clear();
 		current_action = -1;
 		tree.Reset();
+    }
+    virtual void Show()
+    {
+        tree.Show();
     }
 };
 
