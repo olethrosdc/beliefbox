@@ -31,8 +31,8 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
       mean_reward(0),
       prev(NULL),
       next(tree.n_branches),
-      w(1),
 	  log_w(0),
+      w(1),
 	  Q(INITIAL_Q_VALUE),
       S(0)
 {
@@ -59,7 +59,14 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
     prior_normal = NORMAL_PRIOR;
 }
 
-/// Make a node for K symbols at nominal depth d
+/** Make a node for K symbols at nominal depth d
+    
+    If the depth factor is a and the weight factor is c, then the
+    prior weight of the expert is simply:
+    \f[
+    w_0 = c^{1 + (d-1)a}
+    \f]
+ */
 ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* prev_,
 									 Vector& lower_bound_x_,
 									 Vector& upper_bound_x_)
@@ -70,8 +77,7 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
       mean_reward(0),
       prev(prev_),
       next(tree.n_branches),
-       log_w(depth * log(0.5)),
-	  //log_w(log(1)),
+	  log_w((1 + (depth - 1)*tree.depth_factor) * log(tree.weight_factor)),
       w(exp(log_w)),
       //Q(INITIAL_Q_VALUE),
       Q(prev_->Q),
@@ -141,7 +147,7 @@ real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real rewa
     //printf ("%f %f = %f -> %f\n", P_tree, P_normal, P_local, prior_normal);
 
 	real p_reward = reward_prior.Observe(reward);
-    real mean_reward = reward_prior.getMean();
+    //real mean_reward = reward_prior.getMean();
 	P_local *= p_reward;
 
     if (P_local < fudge) {
@@ -378,7 +384,10 @@ ContinuousStateContextTreeRL::ContinuousStateContextTreeRL(int n_actions_,
 														   int max_depth_,
 														   int max_depth_cond_,
 														   Vector& lower_bound_x_,
-														   Vector& upper_bound_x_)
+														   Vector& upper_bound_x_,
+                                                           real depth_factor_,
+                                                           real weight_factor_
+                                                           )
     : 	n_states(lower_bound_x_.Size()),
 		n_actions(n_actions_),
 		n_branches(2),
@@ -386,6 +395,8 @@ ContinuousStateContextTreeRL::ContinuousStateContextTreeRL(int n_actions_,
 		max_depth_cond(max_depth_cond_),
 		lower_bound_x(lower_bound_x_),
 		upper_bound_x(upper_bound_x_),
+        depth_factor(depth_factor_),
+        weight_factor(weight_factor_),
 		root(n_actions)
 {
     for (int i=0; i<n_actions; ++i) {

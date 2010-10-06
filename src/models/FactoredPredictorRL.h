@@ -242,12 +242,16 @@ public:
 								   Vector& lower_bound_state,
 								   Vector& upper_bound_state,
 								   int context_depth,
-								   int prediction_depth)
+                                        int prediction_depth,
+                                        real depth_factor,
+                                        real weight_factor)
         : n_obs(lower_bound_state.Size()),
 		  n_actions(n_actions_),
           tree(n_actions,  context_depth, prediction_depth,
 			   lower_bound_state,
-			   upper_bound_state),
+			   upper_bound_state,
+               depth_factor,
+               weight_factor),
 		  current_obs(n_obs),
 		  current_action(-1)
     {        
