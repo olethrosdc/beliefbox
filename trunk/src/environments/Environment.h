@@ -89,6 +89,11 @@ public:
     {
         return "Undefined environment name";
     }
+    /// Set the overall randomness of the environment
+    virtual void setRandomness(real randomness)
+    {
+        
+    }
 
 };
 

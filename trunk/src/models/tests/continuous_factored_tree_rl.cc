@@ -70,9 +70,12 @@ int main(int argc, char** argv)
     int n_actions = 4;
     int n_obs;
 	
-    if (argc <= 7) {
-        fprintf (stderr, "Usage: factored_model environment model_name n_iter T depth env_rand act_rand [environment parameters]\n\
+    if (argc <= 9) {
+        fprintf (stderr, "Usage: factored_model environment model_name n_iter T depth env_rand act_rand weight_factor depth_factor[environment parameters]\n\
   - environment in {MountainCar, Pendulum, LinearBandit, MountainCar3D}\n\
+  - env_rand environment randomness in [0,1]\n\
+  - weight_factor in (0,1]\n\
+  - depth_factor in [0,1]\n\
   - model_name in {BVMM}\n\
   - environment parameters:\n");
         return -argc;
@@ -87,8 +90,10 @@ int main(int argc, char** argv)
     int n_iter = atoi(argv[3]);
     int T = atoi(argv[4]);
     int max_depth = atoi(argv[5]);
-    real maze_random = atof(argv[6]);
+    real environment_randomness = atof(argv[6]);
     real action_random = atof(argv[7]);
+    real weight_factor = atof(argv[8]);
+    real depth_factor = atof(argv[9]);
 
     EnvironmentType environment_type;
     
@@ -115,7 +120,10 @@ int main(int argc, char** argv)
         MountainCar mountain_car;
         MountainCar3D mountain_car_3d;
         Pendulum pendulum;
-        LinearContextBandit bandit(4,4, &mersenne_twister);
+        LinearContextBandit bandit(4,4, &mersenne_twister);        
+        mountain_car.setRandomness(environment_randomness);
+        mountain_car_3d.setRandomness(environment_randomness);
+        pendulum.setRandomness(environment_randomness);
 		Vector L_S;
 		Vector U_S;
         if (environment_type == MOUNTAIN_CAR) {
@@ -145,10 +153,10 @@ int main(int argc, char** argv)
         }
 		printf("L_S: "); L_S.print(stdout);
 		printf("U_S: "); U_S.print(stdout);
-
+        
         FactoredPredictorRL<Vector, int>* factored_predictor; 
         if (!model_name.compare("BVMM")) {
-            factored_predictor = new ContinuousStateTFactoredPredictorRL<ContinuousStateContextTreeRL>(n_actions, L_S, U_S, max_depth , max_depth);
+            factored_predictor = new ContinuousStateTFactoredPredictorRL<ContinuousStateContextTreeRL>(n_actions, L_S, U_S, max_depth , 8, depth_factor, weight_factor);
         } else {
             fprintf(stderr, "Unrecognised model name %s\n", model_name.c_str());
             exit(-1);

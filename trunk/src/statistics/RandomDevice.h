@@ -16,7 +16,11 @@
 #include "real.h"
 #include "RandomNumberGenerator.h"
 
-/** This is a 'high quality' random device */
+/** This is a 'high quality' random device.
+
+    It differs from RandomSourceRNG in that the file used is always
+    opened and closed. This may be detrimental to performance.
+ */
 class RandomDevice : public RandomNumberGenerator 
 {
 protected:

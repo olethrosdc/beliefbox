@@ -23,13 +23,17 @@
 class MountainCar : public Environment<Vector, int>
 {
 protected:
-    static real U_POS; 		// Upper bound on position
-    static real L_POS; 		// Lower bound on position
-    static real U_VEL;  	        // Upper bound on velocity
-    static real L_VEL;  		// Lower bound on velocity
-    static real INPUT;		// contribution of input
-    static real GRAVITY; 	// contribution of gravity
-    static real MCNOISE;        // input noise
+    struct Parameters {
+        real U_POS;         ///< Upper bound on position
+        real L_POS;         ///< Lower bound on position
+        real U_VEL;         ///< Upper bound on velocity
+        real L_VEL;         ///< Lower bound on velocity
+        real INPUT;         ///< contribution of input
+        real GRAVITY;       ///< contribution of gravity
+        real MCNOISE;       ///< input noise        
+    };
+    static Parameters default_parameters;
+    Parameters parameters;
     Vector state_upper_bound;
     Vector state_lower_bound;
     Vector state_action_upper_bound;
@@ -39,7 +43,7 @@ protected:
     void Simulate();
     bool endsim;
 public:
-    MountainCar();
+    MountainCar(bool random_parameters = false);
     virtual ~MountainCar();
     virtual void Reset();
     virtual bool Act(int action);
@@ -69,9 +73,9 @@ public:
         return action_lower_bound;
     }
 
-    void setNoise(real noise)
+    virtual void setRandomness(real randomness)
     {
-        MCNOISE = noise;
+        parameters.MCNOISE = randomness;
     }
 };
 

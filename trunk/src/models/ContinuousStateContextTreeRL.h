@@ -73,7 +73,9 @@ public:
     ContinuousStateContextTreeRL(int n_actions_,
 								 int max_depth_,
 								 int max_depth_cond_,
-								 Vector& lower_bound_x, Vector& upper_bound_x);
+								 Vector& lower_bound_x, Vector& upper_bound_x,
+                                 real depth_factor_,
+                                 real weight_factor_);
     ~ContinuousStateContextTreeRL();
     real Observe(Vector& x, int a, Vector& y, real r);
     //real pdf(Vector& x, Vector& y);
@@ -97,6 +99,8 @@ protected:
     int max_depth_cond;
 	Vector lower_bound_x;
 	Vector upper_bound_x;
+    real depth_factor;
+    real weight_factor;
 	std::vector<Node*> root;
 	Vector current_state; ///< current state 
 	int current_action; ///< current action

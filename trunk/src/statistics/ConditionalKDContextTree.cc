@@ -26,7 +26,6 @@ ConditionalKDContextTree::Node::Node(ConditionalKDContextTree& tree_,
       next(tree.n_branches),
       w(1),
 	  log_w(0),
-	  //log_w_prior(0),
       S(0)
 {
     assert(lower_bound_x < upper_bound_x);
@@ -59,11 +58,7 @@ ConditionalKDContextTree::Node::Node(ConditionalKDContextTree::Node* prev_,
       prev(prev_),
       next(tree.n_branches),
       log_w(-depth * log(2)),
-	  //log_w_prior(log(0.9)),
-	  //log_w_prior(prev_->log_w_prior - log(2)),
-      //log_w_prior(-log(2)),
       S(0)
-      //log_w_prior( - log(10))
 {
     assert(lower_bound_x < upper_bound_x);
 	splitting_dimension = ArgMax(upper_bound_x - lower_bound_x);    
@@ -118,14 +113,13 @@ real ConditionalKDContextTree::Node::Observe(Vector& x, Vector& y, real probabil
     prior_normal *= P_normal / P_local;
     //printf ("%f %f = %f -> %f\n", P_tree, P_normal, P_local, prior_normal);
 	// Mixture with the previous ones
-    //w = exp(log_w_prior + log_w); 
+
     w = exp(log_w); 
     assert (w >= 0 && w <= 1);
     
 	total_probability = P_local * w + (1 - w) * probability;
 
     // adapt parameters
-    //log_w = log(w * P_local / total_probability) - log_w_prior;
     log_w += log(P_local) - log(total_probability);
 
     // Which interval is the x lying at
@@ -178,7 +172,6 @@ real ConditionalKDContextTree::Node::pdf(Vector& x, Vector& y, real probability)
     real P_local = prior_normal * P_normal + (1 - prior_normal) * P_tree;
 
 	// Mix the current one with all previous ones
-   ///    w =  exp(log_w_prior + log_w); 
     w =  exp(log_w);
 	total_probability = P_local * w + (1 - w) * probability;
 

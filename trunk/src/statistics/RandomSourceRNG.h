@@ -14,7 +14,7 @@
 #include "RandomNumberGenerator.h"
 #include "Random.h"
 
-/// This Mersenne Twister random number generator can be passed
+/// This random number generator can be passed
 /// as an argument.
 class RandomSourceRNG : public RandomNumberGenerator
 {
