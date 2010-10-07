@@ -42,6 +42,11 @@ public:
     virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
     virtual void ShowModel() const;
+    virtual DiscreteMDP* generate()
+    {
+        fprintf(stderr, "Not implemented!\n");
+        exit(-1);
+    }
     virtual const DiscreteMDP* getMeanMDP() const
     {
         fprintf(stderr, "There is no mean MDP!\n");

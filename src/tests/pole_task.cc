@@ -14,7 +14,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include <getopt.h>
+#include <getopt>
 #include "Distribution.h"
 #include "MathFunctions.h"
 #include "DiscretePolicy.h"

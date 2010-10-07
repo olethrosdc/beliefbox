@@ -25,6 +25,7 @@
 #include "QLearning.h"
 #include "QLearningDirichlet.h"
 #include "ModelBasedRL.h"
+#include "SampleBasedRL.h"
 #include "ModelCollectionRL.h"
 #include "ContextBanditGaussian.h"
 #include "ContextBandit.h"
@@ -36,6 +37,7 @@
 #include "DiscretisedEnvironment.h"
 #include "HQLearning.h"
 #include <cstring>
+#include <getopt.h>
 
 struct EpisodeStatistics
 {
@@ -64,6 +66,7 @@ Statistics EvaluateAlgorithm(uint n_steps,
                              OnlineAlgorithm<int,int>* algorithm,
                              DiscreteEnvironment* environment,
                              real gamma);
+static const char* const help_text = "Usage: online_algorithms [options] n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment\n";
 
 int main (int argc, char** argv)
 {
@@ -81,8 +84,9 @@ int main (int argc, char** argv)
     uint n_episodes = 1000;
     uint n_steps = 100;
 
-    if (argc != 11) {
-        std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment\n";
+    if (argc < 11) {
+        std::cerr << argc << " arguments , but 11 needed\n";
+        std::cerr << "Usage: online_algorithms [options] n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment\n";
         return -1;
     }
     n_states = atoi(argv[1]);
@@ -112,6 +116,71 @@ int main (int argc, char** argv)
     char* algorithm_name = argv[9];
     char* environment_name = argv[10];
 
+    int max_samples = 4;
+    char* maze_name = NULL;
+    int maze_height = 0;
+    int maze_width = 0;
+    {
+        // options
+        int c;
+        int digit_optind = 0;
+        while (1) {
+            int this_option_optind = optind ? optind : 1;
+            int option_index = 0;
+            static struct option long_options[] = {
+                {"max_samples", required_argument, 0, 0}, //0
+                {"multi-sample", no_argument, 0, 0}, //1
+                {"maze_name", required_argument, 0, 0}, //2
+                {"maze_height", required_argument, 0, 0}, //3
+                {"maze_width", required_argument, 0, 0}, //4
+                {0, 0, 0, 0}
+            };
+            c = getopt_long (argc, argv, "",
+                             long_options, &option_index);
+            if (c == -1)
+                break;
+
+            switch (c) {
+            case 0:
+#if 0
+                printf ("option %s (%d)", long_options[option_index].name, option_index);
+                if (optarg)
+                    printf (" with arg %s", optarg);
+                printf ("\n");
+#endif
+                switch (option_index) {
+                case 0: max_samples = atoi(optarg); break;
+                case 1: printf("multi-sample not implented; ignored\n"); break;
+                case 2: maze_name = optarg; break;
+                case 3: maze_height = atoi(optarg); break;
+                case 4: maze_width = atoi(optarg); break;
+                default:
+                    fprintf (stderr, "%s", help_text);
+                    exit(0);
+                    break;
+                }
+                break;
+            case '0':
+            case '1':
+            case '2':
+                if (digit_optind != 0 && digit_optind != this_option_optind)
+                    printf ("digits occur in two different argv-elements.\n");
+            digit_optind = this_option_optind;
+            printf ("option %c\n", c);
+            break;
+            default:
+                printf ("?? getopt returned character code 0%o ??\n", c);
+                exit (-1);
+            }
+        }
+	
+        if (optind < argc) {
+            printf ("non-option ARGV-elements: ");
+            while (optind < argc)
+                printf ("%s ", argv[optind++]);
+            printf ("\n");
+        }
+    }
     srand48(34987235);
     srand(34987235);
     setRandomSeed(34987235);
@@ -149,9 +218,8 @@ int main (int argc, char** argv)
                                                goal_value,
                                                rng,
                                                false);
-        OneDMaze* one_d_maze = new OneDMagze(n_states, rng);
-        Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze2",  8, 8);
-        //Gridworld* gridworld= new Gridworld("/home/olethros/projects/beliefbox/dat/maze4",  16, 16, 4, randomness, pit_value, goal_value, step_value);
+        OneDMaze* one_d_maze = new OneDMaze(n_states, rng);
+        Gridworld* gridworld= new Gridworld(maze_name, maze_height, maze_width);
         ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
         MountainCar continuous_mountain_car;
         DiscretisedEnvironment<MountainCar>* mountain_car
@@ -223,12 +291,20 @@ int main (int argc, char** argv)
         } else if (!strcmp(algorithm_name, "Model")) {
             discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions);
             model= (MDPModel*) discrete_mdp;
-
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
                                          gamma,
                                          epsilon,
                                          model);
+        } else if (!strcmp(algorithm_name, "Sampling")) {
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions);
+            model= (MDPModel*) discrete_mdp;
+            algorithm = new SampleBasedRL(n_states,
+                                          n_actions,
+                                          gamma,
+                                          epsilon,
+                                          model,
+                                          10);
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
                 new ContextBanditGaussian(n_states,
@@ -399,6 +475,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
 {
     std:: cout << "evaluating..." << environment->Name() << std::endl;
     
+#if 0
     const DiscreteMDP* mdp = environment->getMDP(); 
     //ValueIteration value_iteration(mdp, gamma);
     if (!mdp) {
@@ -409,6 +486,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
     //value_iteration.ComputeStateActionValues(10e-6,1000);
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
+#endif
 
     Statistics statistics;
     statistics.ep_stats.resize(n_episodes);

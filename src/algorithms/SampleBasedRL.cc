@@ -91,8 +91,8 @@ int SampleBasedRL::Act(real reward, int next_state)
         //printf ("Q[%d] = %f ", i, tmpQ[i]);
     }
     
-    // choose action
     int next_action;
+    // choose action
     if (urandom()<epsilon) {
         next_action = (int) floor(urandom(0.0, n_actions));
         //printf ("\n");
@@ -101,6 +101,9 @@ int SampleBasedRL::Act(real reward, int next_state)
     }
     action = next_action;
 
+    for (int i=0; i<max_samples; ++i) {
+        delete mdp_list[i];
+    }
     return action;
 }
 
