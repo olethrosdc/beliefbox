@@ -23,7 +23,7 @@ class MultiMDPValueIteration
 {
 public:
     Vector w;
-    const std::vector<const DiscreteMDP*> mdp_list;
+    std::vector<const DiscreteMDP*> mdp_list;
     real gamma;
     int n_states;
     int n_actions;
@@ -56,6 +56,27 @@ public:
         return V(state);
     }
     FixedDiscretePolicy* getPolicy();
+    void setMDPList(const std::vector<const DiscreteMDP*>& mdp_list_)
+    {
+        mdp_list = mdp_list_;
+
+        assert(mdp_list.size() == n_mdps);
+        assert(w.Size() == n_mdps);
+
+        real w_i = 1.0 / (real) n_mdps;
+        for (int i=0; i<n_mdps; i++) {
+            w(i) = w_i;
+        }
+    }
+    void SetMDPList(const Vector& w_,
+                    const std::vector<const DiscreteMDP*>& mdp_list_)
+    {
+        w = w_;
+        mdp_list = mdp_list_;
+
+        assert(mdp_list.size() == n_mdps);
+        assert(w.Size() == n_mdps);
+    }
 protected:
     real ComputeActionValueForMDPs(int s, int a);
     real ComputeStateActionValueForSingleMDP(int mu, int s, int a);
