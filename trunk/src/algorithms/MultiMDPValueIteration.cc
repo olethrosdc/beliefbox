@@ -25,7 +25,7 @@ MultiMDPValueIteration::MultiMDPValueIteration(const Vector& w_,
     gamma(gamma_),
     n_mdps(mdp_list.size())
 {
-    assert (mdp_list);
+    assert (mdp_list.size());
     assert (gamma>=0 && gamma <=1);
     assert (mdp_list.size() == w.Size());
     n_actions = mdp_list[0]->GetNActions();

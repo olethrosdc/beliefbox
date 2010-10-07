@@ -60,7 +60,7 @@ public:
     {
         mdp_list = mdp_list_;
 
-        assert(mdp_list.size() == n_mdps);
+        assert(mdp_list.size() == (uint) n_mdps);
         assert(w.Size() == n_mdps);
 
         real w_i = 1.0 / (real) n_mdps;
@@ -74,7 +74,7 @@ public:
         w = w_;
         mdp_list = mdp_list_;
 
-        assert(mdp_list.size() == n_mdps);
+        assert(mdp_list.size() == (uint) n_mdps);
         assert(w.Size() == n_mdps);
     }
 protected:

@@ -42,6 +42,11 @@ public:
     int get_n_models();
     std::vector<real> & GetModelProbabilities();
     std::vector<DiscreteMDPCounts*> & GetModels();
+    virtual DiscreteMDP* generate() 
+    {
+        fprintf(stderr, "Not implemented!\n");
+        exit(-1);
+    }
     virtual const DiscreteMDP* getMeanMDP() const
     {
         fprintf(stderr, "There is no mean MDP!\n");
