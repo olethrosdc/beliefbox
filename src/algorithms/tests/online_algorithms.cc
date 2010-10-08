@@ -66,7 +66,24 @@ Statistics EvaluateAlgorithm(uint n_steps,
                              OnlineAlgorithm<int,int>* algorithm,
                              DiscreteEnvironment* environment,
                              real gamma);
-static const char* const help_text = "Usage: online_algorithms [options] n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment\n";
+static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
+\nOptions:\n\
+    --algorithm:   {QLearning, Model, Sarsa, Sampling}\n\
+    --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld}\n\
+    --n_states:    number of states (usually there is no need to specify it)\n\
+    --n_actions:   number of actions (usually there is no need to specify it)\n\
+    --gamma:       reward discounting in [0,1]\n\
+    --lambda:      eligibility trace parameter (for some algorithms)\n\
+    --randomness:  environment randomness\n\
+    --n_runs:      maximum number of runs\n\
+    --n_episodes:  maximum number of episodes\n\
+    --n_steps:     maximum number of steps in each episode\n\
+    --grid_size:   number of grid intervals for discretised environments\n\
+    --maze_name:   (Gridworld) file name for the maze\n\
+    --maze_height: (Gridworld) width of the maze\n\
+    --maze_width:  (Gridworld) height of the maze\n\
+\n";
+
 
 int main (int argc, char** argv)
 {
@@ -83,38 +100,11 @@ int main (int argc, char** argv)
     uint n_runs = 1000;
     uint n_episodes = 1000;
     uint n_steps = 100;
+    uint grid_size = 4;
 
-    if (argc < 11) {
-        std::cerr << argc << " arguments , but 11 needed\n";
-        std::cerr << "Usage: online_algorithms [options] n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment\n";
-        return -1;
-    }
-    n_states = atoi(argv[1]);
-    assert (n_states > 0);
+    const char * algorithm_name = "QLearning";
+    const char * environment_name = "Gridworld";
 
-    n_actions = atoi(argv[2]);
-    assert (n_actions > 0);
-
-    gamma = atof(argv[3]);
-    assert (gamma >= 0 && gamma <= 1);
-
-    lambda = atof(argv[4]);
-    assert (lambda >= 0 && lambda <= 1);
-
-    randomness = atof(argv[5]);
-    assert (randomness >= 0 && randomness <= 1);
-    
-    n_runs = atoi(argv[6]);
-    assert (n_runs > 0);
-
-    n_episodes = atoi(argv[7]);
-    assert (n_episodes > 0);
-
-    n_steps = atoi(argv[8]);
-    assert (n_steps > 0);
-
-    char* algorithm_name = argv[9];
-    char* environment_name = argv[10];
 
     int max_samples = 4;
     char* maze_name = NULL;
@@ -128,11 +118,22 @@ int main (int argc, char** argv)
             int this_option_optind = optind ? optind : 1;
             int option_index = 0;
             static struct option long_options[] = {
-                {"max_samples", required_argument, 0, 0}, //0
-                {"multi-sample", no_argument, 0, 0}, //1
-                {"maze_name", required_argument, 0, 0}, //2
-                {"maze_height", required_argument, 0, 0}, //3
-                {"maze_width", required_argument, 0, 0}, //4
+                {"n_states", required_argument, 0, 0}, //0
+                {"n_actions", required_argument, 0, 0}, //1
+                {"gamma", required_argument, 0, 0}, //2
+                {"lambda", required_argument, 0, 0}, //3
+                {"n_runs", required_argument, 0, 0}, //4
+                {"n_episodes", required_argument, 0, 0}, //5
+                {"n_steps", required_argument, 0, 0}, //6
+                {"max_samples", required_argument, 0, 0}, //7
+                {"multi-sample", no_argument, 0, 0}, //8
+                {"maze_name", required_argument, 0, 0}, //9
+                {"maze_height", required_argument, 0, 0}, //10
+                {"maze_width", required_argument, 0, 0}, //11
+                {"algorithm", required_argument, 0, 0}, //12
+                {"environment", required_argument, 0, 0}, //13
+                {"grid_size", required_argument, 0, 0}, //14
+                {"randomness", required_argument, 0, 0}, //15
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -149,11 +150,22 @@ int main (int argc, char** argv)
                 printf ("\n");
 #endif
                 switch (option_index) {
-                case 0: max_samples = atoi(optarg); break;
-                case 1: printf("multi-sample not implented; ignored\n"); break;
-                case 2: maze_name = optarg; break;
-                case 3: maze_height = atoi(optarg); break;
-                case 4: maze_width = atoi(optarg); break;
+                case 0: n_states = atoi(optarg); break;
+                case 1: n_actions = atoi(optarg); break;
+                case 2: gamma = atof(optarg); break;
+                case 3: lambda = atof(optarg); break;
+                case 4: n_runs = atoi(optarg); break;
+                case 5: n_episodes = atoi(optarg); break;
+                case 6: n_steps = atoi(optarg); break;
+                case 7: max_samples = atoi(optarg); break;
+                case 8: printf("multi-sample not implented; ignored\n"); break;
+                case 9: maze_name = optarg; break;
+                case 10: maze_height = atoi(optarg); break;
+                case 11: maze_width = atoi(optarg); break;
+                case 12: algorithm_name = optarg; break;
+                case 13: environment_name = optarg; break;
+                case 14: grid_size = atoi(optarg); break;
+                case 15: randomness = atof(optarg); break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -169,18 +181,31 @@ int main (int argc, char** argv)
             printf ("option %c\n", c);
             break;
             default:
-                printf ("?? getopt returned character code 0%o ??\n", c);
+                std::cout << help_text;
                 exit (-1);
             }
         }
 	
         if (optind < argc) {
             printf ("non-option ARGV-elements: ");
-            while (optind < argc)
+            while (optind < argc) {
                 printf ("%s ", argv[optind++]);
+                
+            }
             printf ("\n");
         }
     }
+
+    assert (n_states > 0);
+    assert (n_actions > 0);
+    assert (gamma >= 0 && gamma <= 1);
+    assert (lambda >= 0 && lambda <= 1);
+    assert (randomness >= 0 && randomness <= 1);
+    assert (n_runs > 0);
+    assert (n_episodes > 0);
+    assert (n_steps > 0);
+    assert (grid_size > 0);
+
     srand48(34987235);
     srand(34987235);
     setRandomSeed(34987235);
@@ -444,8 +469,6 @@ int main (int argc, char** argv)
         statistics.ep_stats[i].discounted_reward /= (float) n_runs;
         statistics.ep_stats[i].steps /= n_runs;
         statistics.ep_stats[i].mse /= n_runs;
-        std::cout << i << "i" << std::endl;
-
         std::cout << statistics.ep_stats[i].total_reward << " "
                   << statistics.ep_stats[i].discounted_reward << "# REWARD"
                   << std::endl;
@@ -516,6 +539,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
             //std::cout << "s:" << state << " r:" << reward << " a:" << action << std::endl;
             bool action_ok = environment->Act(action);
             if (!action_ok) {
+                //std::cout << "Terminating!\n";
                 break;
             }
             current_time++;

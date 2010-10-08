@@ -31,16 +31,27 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
     next_states.resize(N);
     
     real p = 1.0 / (real) n_states;
-
-    for (int i=0; i<N; i++) {
-        P[i] = &P_data[i*n_states];
-        if (initial_transitions) {
+    
+    if (initial_transitions) {
+        for (int i=0; i<N; i++) {
+            P[i] = &P_data[i*n_states];
             for (int j=0; j<n_states; j++) {
                 P[i][j] = initial_transitions[i][j];
             }
-        } else {
-            for (int j=0; j<n_states; j++) {
-                P[i][j] = p;
+        } 
+    } else {
+        int i=0;
+        for (int s=0; s<n_states; s++) {
+            for (int a=0; a<n_actions; a++, i++) {
+                P[i] = &P_data[i*n_states];
+
+                for (int j=0; j<n_states; j++) {
+                    if (s == j) {
+                        P[i][j] = 1;
+                    } else {
+                        P[i][j] = 0;
+                    }
+                }
             }
         }
     }
