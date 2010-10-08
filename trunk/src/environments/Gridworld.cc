@@ -168,32 +168,31 @@ Gridworld::Gridworld(const char* fname,
 
             int num = 4;
             // the hardest part is checking walls
-            bool Nd = true;
+            // check whether movement in a particular direction is possible
+            bool Nd = true; 
             bool Sd = true;
             bool Wd = true;
             bool Ed = true;
+            // Collect the types of states of all different directions
             int Es = getState(x + 1, y);
             int Ws = getState(x - 1, y);
             int Ns = getState(x, y - 1);
             int Ss = getState(x, y + 1);
 
-            if (x<=0 || whatIs(x-1, y) == WALL)  {
-                Ws = s;
+            // collect movements
+            if (x<=0 || whatIs(x-1, y) == WALL || whatIs(x-1, y) == INVALID)  {
                 Wd = false;
                 num--;
             } 
-            if (x>=width-1 || whatIs(x+1, y) == WALL)  {
-                Es = s;
+            if (x>=width-1 || whatIs(x+1, y) == WALL || whatIs(x+1, y) == INVALID)  {
                 Ed = false;
                 num--;
             } 
-            if (y<=0 || whatIs(x, y-1) == WALL)  {
-                Ns = s;
+            if (y<=0 || whatIs(x, y-1) == WALL || whatIs(x, y-1) == INVALID)  {
                 Nd = false;
                 num--;
             } 
-            if (y>=height-1 || whatIs(x, y+1) == WALL)  {
-                Ss = s;
+            if (y>=height-1 || whatIs(x, y+1) == WALL || whatIs(x, y+1) == WALL)  {
                 Sd = false;
                 num--;
             } 
@@ -214,16 +213,28 @@ Gridworld::Gridworld(const char* fname,
                 }
                 switch(a) {
                 case NORTH:
-                    mdp->setTransitionProbability (s, a, Ns, 1 - random + theta);
+                    if (Nd) {
+                        mdp->setTransitionProbability (s, a, Ns, 1 - random + theta);
+                        //printf("a: %d: %d -> %d\n", a, s, Ns);
+                    }
                     break;
                 case SOUTH:
-                    mdp->setTransitionProbability (s, a, Ss, 1 - random + theta);
+                    if (Sd) {
+                        mdp->setTransitionProbability (s, a, Ss, 1 - random + theta);
+                        //printf("a: %d: %d -> %d\n", a, s, Ss);
+                    }
                     break;
                 case EAST:
-                    mdp->setTransitionProbability (s, a, Es, 1 - random + theta);
+                    if (Ed) {
+                        mdp->setTransitionProbability (s, a, Es, 1 - random + theta);
+                        //printf("a: %d: %d -> %d\n", a, s, Es);
+                    }
                     break;
                 case WEST:
-                    mdp->setTransitionProbability (s, a, Ws, 1 - random + theta);
+                    if (Wd) {
+                        mdp->setTransitionProbability (s, a, Ws, 1 - random + theta);
+                        //printf("a: %d: %d -> %d\n", a, s, Ws);
+                    }
                     break;
                 }
             }
@@ -280,21 +291,29 @@ bool Gridworld::Act(int action)
 {
     int x = state % width;
     int y = (state - x) / width;
-    //std::cout << "(" << x << ", "<< y << ")" << " " << whatIs(x,y) << " a: " << action;
+    assert(state == getState(x, y));
+    assert(whatIs(x,y) != INVALID && whatIs(x, y) != WALL);
+    //std::cout << "(" << x << ", "<< y << ")" << " [" << whatIs(x,y) << "] a: " << action;
     total_time++;
     real prev_reward = reward;
     reward = mdp->generateReward(state, action);
     state = mdp->generateState(state, action);
     x = state % width;
     y = (state - x) / width;
-	//    std::cout << " -> (" << x << ", "<< y << ")" << " " << whatIs(x,y)
-	//<< " s: " << state << "r: " << reward << std::endl;
 
-        //Show();
+    assert((state == (int) terminal_state) || (whatIs(x,y) != INVALID && whatIs(x, y) != WALL));
+
+    ox = x;
+    oy = y;
+
+    //std::cout << " -> (" << x << ", "<< y << ")" << " [" << whatIs(x,y)
+    //              << "] s: " << state << "r: " << reward << std::endl;
+
+    //Show();
 
     if (state==(int) terminal_state) {
         //std::cout << "t: " << total_time << " TERMINATE "
-		//         << prev_reward << " " << reward << std::endl;
+        //<< prev_reward << " " << reward << std::endl;
         return false;
     }
     return true;
@@ -302,6 +321,8 @@ bool Gridworld::Act(int action)
 
 void Gridworld::Show()
 {
+
+
     for (uint y=0; y<height; ++y) {
         for (uint x=0; x<width; ++x) {
             if (x == ox && y == oy) {
