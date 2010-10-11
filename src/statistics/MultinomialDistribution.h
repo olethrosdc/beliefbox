@@ -38,9 +38,12 @@ public:
     {
         return p[i];
     }
-    
-	virtual real pdf(Vector* x) const;
-    virtual real pdf(Vector& x) const;
+    /// To enhance the API somewhat
+	virtual real pdf(Vector* x) const
+    {
+        return pdf(*x);
+    }
+    virtual real pdf(const Vector& x) const;
     virtual void generate(Vector& x);
 
 };

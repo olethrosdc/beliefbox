@@ -33,16 +33,14 @@ public:
     DiscreteMDP* mdp;
     uint terminal_state;
     Gridworld(const char* fname,
-              uint height_,
-              uint width_,
-              uint n_actions_ = 4,
               real random_ = 0.0,
               real pit_ = -1.0,
               real goal_ = 1.0,
               real step_ = -0.1);
     virtual ~Gridworld();
 
-
+    static void GetMazeDimensions(const char* fname);
+    
     virtual DiscreteMDP* getMDP() const
     {
         return mdp;
@@ -82,6 +80,7 @@ public:
     }
 
 protected:
+    void CalculateDimensions(const char* fname);
     uint height;
     uint width;
     //uint n_aactions;

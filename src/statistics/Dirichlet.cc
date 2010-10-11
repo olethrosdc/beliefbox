@@ -73,7 +73,7 @@ void DirichletDistribution::generate(Vector& y)
 /** Dirichlet distribution
     Gets the parameters of a multinomial distribution as input.
 */
-real DirichletDistribution::pdf(Vector& x) const
+real DirichletDistribution::pdf(const Vector& x) const
 {
     assert(x.Size() == n);
 

@@ -33,7 +33,7 @@ public:
     virtual ~DirichletDistribution();
     virtual void generate(Vector& x);
     virtual Vector generate();
-    virtual real pdf(Vector& x) const;
+    virtual real pdf(const Vector& x) const;
     virtual void update(Vector* x)
 	{
 		a += *x;

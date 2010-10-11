@@ -22,7 +22,7 @@
     
     As a side-effect, initialise the kd_tree list
  */
-KNNClassifier::KNNClassifier(int n_classes_, int n_dim_, int K_)
+KNNClassifier::KNNClassifier(int n_dim_, int n_classes_, int K_)
     : n_classes(n_classes_), n_dim(n_dim_), K(K_),
       kd_tree(n_dim), output(n_classes)
 {

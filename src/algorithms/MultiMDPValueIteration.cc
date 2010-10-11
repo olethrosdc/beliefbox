@@ -62,6 +62,7 @@ void MultiMDPValueIteration::Reset()
     V_mu.resize(n_mdps);
     for (int i=0; i<n_mdps; ++i) {
         V_mu[i].Resize(n_states);
+        V_mu[i].Clear();
     }
 }
 

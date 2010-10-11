@@ -42,10 +42,12 @@ protected:
     int state; ///< current state
     int action; ///< current action
     MDPModel* model;
-    const DiscreteMDP* mdp;
+    std::vector<const DiscreteMDP*> mdp_list;
     MultiMDPValueIteration* value_iteration;
     std::vector<real> tmpQ;
     int max_samples;
+    int T;
+    int update_interval;
 public:
     SampleBasedRL(int n_states_,
                  int n_actions_,
