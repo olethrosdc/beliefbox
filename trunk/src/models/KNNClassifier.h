@@ -40,7 +40,7 @@ protected:
     void AddSample(DataSample sample);
 public:	
     Vector output;
-    KNNClassifier(int n_classes_, int n_dim_, int K_);
+    KNNClassifier(int n_dim_, int n_classes_, int K_);
     ~KNNClassifier();
     int Classify(Vector& x)
     {

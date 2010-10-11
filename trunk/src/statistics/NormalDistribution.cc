@@ -251,6 +251,7 @@ Vector MultivariateNormal::generate()
 	return mean; /// NOTE: FIX ME
 }
 
+
 /** Multivariate Gaussian density.
 
     For a gaussian with mean and precision \f$\mu, T\f$, the pdf is given by
@@ -258,7 +259,7 @@ Vector MultivariateNormal::generate()
     f(x \mid \mu, T) = (2\pi)^{-k/2} |T|^{1/2} 
     \f]
  */
-real MultivariateNormal::pdf(Vector& x) const
+real MultivariateNormal::logPdf(const Vector& x) const
 {
 	assert (x.Size()==mean.Size());
 	real n = (real) x.Size();
@@ -266,9 +267,9 @@ real MultivariateNormal::pdf(Vector& x) const
 	real d = Mahalanobis2(diff, accuracy, diff);
     assert(d >= 0);
 	real log_pdf = 0.5 * (log(determinant) - d - n * log(2*M_PI));
-
-	return exp(log_pdf);
+    return log_pdf;
 }
+
 
 void MultivariateNormal::Show()  const
 {
@@ -329,7 +330,7 @@ Vector MultivariateNormalUnknownMeanPrecision::generate() const
     return mu_n;
 }
 
-real MultivariateNormalUnknownMeanPrecision::Observe(Vector& x)
+real MultivariateNormalUnknownMeanPrecision::Observe(const Vector& x)
 {
     real p = pdf(x);
     calculatePosterior(x);
@@ -347,9 +348,25 @@ real MultivariateNormalUnknownMeanPrecision::Observe(Vector& x)
     \f]
     where \f$E_\xi m = \int m d\xi(m) \f$, \f$E_\xi r = \int r d\xi(r) \f$.
 */
-real MultivariateNormalUnknownMeanPrecision::pdf(Vector& x) const
+real MultivariateNormalUnknownMeanPrecision::pdf(const Vector& x) const
 {
-    return p_x_mr.pdf(x);
+    real p = p_x_mr.pdf(x);
+    if (isnan(p)) {
+        p_x_mr.Show();
+    }
+    return p;
+
+
+}
+real MultivariateNormalUnknownMeanPrecision::logPdf(const Vector& x) const
+{
+    real log_p = p_x_mr.logPdf(x);
+    if (isnan(log_p)) {
+        p_x_mr.Show();
+    }
+    return log_p;
+
+
 }
 
 

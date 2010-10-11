@@ -68,7 +68,7 @@ public:
             w(i) = w_i;
         }
     }
-    void SetMDPList(const Vector& w_,
+    void setMDPList(const Vector& w_,
                     const std::vector<const DiscreteMDP*>& mdp_list_)
     {
         w = w_;

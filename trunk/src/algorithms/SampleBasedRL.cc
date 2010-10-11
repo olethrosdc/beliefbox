@@ -23,13 +23,15 @@ SampleBasedRL::SampleBasedRL(int n_states_,
       gamma(gamma_),
       epsilon(epsilon_),
       model(model_),
-      max_samples(max_samples_)
+      max_samples(max_samples_),
+      T(0),
+      update_interval(1)
 {
     state = -1;
 
     Vector w(max_samples);
     real w_i = 1.0 / (real) max_samples;
-    std::vector<const DiscreteMDP*> mdp_list(max_samples);
+    mdp_list.resize(max_samples);
     for (int i=0; i<max_samples; ++i) {
         mdp_list[i] = model->generate();
         w[i] = w_i;
@@ -40,7 +42,9 @@ SampleBasedRL::SampleBasedRL(int n_states_,
 }
 SampleBasedRL::~SampleBasedRL()
 {
-	//delete mdp;
+    for (int i=0; i<max_samples; ++i) {
+        delete mdp_list[i];
+    }
     delete value_iteration;
 }
 void SampleBasedRL::Reset()
@@ -71,20 +75,24 @@ real SampleBasedRL::Observe (real reward, int next_state, int next_action)
 int SampleBasedRL::Act(real reward, int next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
+    T++;
 
     // update the model
     if (state >= 0) {
         model->AddTransition(state, action, reward, next_state);
     }
     state = next_state;
-
-    std::vector<const DiscreteMDP*> mdp_list(max_samples);
-    for (int i=0; i<max_samples; ++i) {
-        mdp_list[i] = model->generate();
+    
+    if (T >= update_interval) {    
+        update_interval *= 2;
+        for (int i=0; i<max_samples; ++i) {
+            delete mdp_list[i];
+            mdp_list[i] = model->generate();
+        }
     }
-    value_iteration->setMDPList(mdp_list);
     
     // update values
+    value_iteration->setMDPList(mdp_list);
     value_iteration->ComputeStateActionValues(0.00, 1);
     for (int i=0; i<n_actions; i++) {
         tmpQ[i] = value_iteration->getValue(next_state, i);
@@ -101,9 +109,6 @@ int SampleBasedRL::Act(real reward, int next_state)
     }
     action = next_action;
 
-    for (int i=0; i<max_samples; ++i) {
-        delete mdp_list[i];
-    }
     return action;
 }
 

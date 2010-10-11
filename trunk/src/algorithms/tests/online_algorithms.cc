@@ -80,8 +80,6 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --n_steps:     maximum number of steps in each episode\n\
     --grid_size:   number of grid intervals for discretised environments\n\
     --maze_name:   (Gridworld) file name for the maze\n\
-    --maze_height: (Gridworld) width of the maze\n\
-    --maze_width:  (Gridworld) height of the maze\n\
 \n";
 
 
@@ -101,15 +99,14 @@ int main (int argc, char** argv)
     uint n_episodes = 1000;
     uint n_steps = 100;
     uint grid_size = 4;
-
+    uint maze_height = 4;
+    uint maze_width = 4;
     const char * algorithm_name = "QLearning";
     const char * environment_name = "Gridworld";
 
 
     int max_samples = 4;
     char* maze_name = NULL;
-    int maze_height = 0;
-    int maze_width = 0;
     {
         // options
         int c;
@@ -128,8 +125,8 @@ int main (int argc, char** argv)
                 {"max_samples", required_argument, 0, 0}, //7
                 {"multi-sample", no_argument, 0, 0}, //8
                 {"maze_name", required_argument, 0, 0}, //9
-                {"maze_height", required_argument, 0, 0}, //10
-                {"maze_width", required_argument, 0, 0}, //11
+                {"maze_height", required_argument, 0, 0}, //10 - deprecataed
+                {"maze_width", required_argument, 0, 0}, //11 - deprecated
                 {"algorithm", required_argument, 0, 0}, //12
                 {"environment", required_argument, 0, 0}, //13
                 {"grid_size", required_argument, 0, 0}, //14
@@ -160,8 +157,8 @@ int main (int argc, char** argv)
                 case 7: max_samples = atoi(optarg); break;
                 case 8: printf("multi-sample not implented; ignored\n"); break;
                 case 9: maze_name = optarg; break;
-                case 10: maze_height = atoi(optarg); break;
-                case 11: maze_width = atoi(optarg); break;
+                case 10: maze_height = atoi(optarg); break; // deprecated
+                case 11: maze_width = atoi(optarg); break; // deprecated
                 case 12: algorithm_name = optarg; break;
                 case 13: environment_name = optarg; break;
                 case 14: grid_size = atoi(optarg); break;
@@ -244,7 +241,7 @@ int main (int argc, char** argv)
                                                rng,
                                                false);
         OneDMaze* one_d_maze = new OneDMaze(n_states, rng);
-        Gridworld* gridworld= new Gridworld(maze_name, maze_height, maze_width);
+        Gridworld* gridworld= new Gridworld(maze_name, randomness);
         ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
         MountainCar continuous_mountain_car;
         DiscretisedEnvironment<MountainCar>* mountain_car
@@ -314,7 +311,7 @@ int main (int argc, char** argv)
                                                alpha,
                                                exploration_policy);
         } else if (!strcmp(algorithm_name, "Model")) {
-            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions);
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states);
             model= (MDPModel*) discrete_mdp;
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
@@ -322,14 +319,14 @@ int main (int argc, char** argv)
                                          epsilon,
                                          model);
         } else if (!strcmp(algorithm_name, "Sampling")) {
-            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions);
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states);
             model= (MDPModel*) discrete_mdp;
             algorithm = new SampleBasedRL(n_states,
                                           n_actions,
                                           gamma,
                                           epsilon,
                                           model,
-                                          10);
+                                          max_samples);
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
                 new ContextBanditGaussian(n_states,
@@ -457,6 +454,8 @@ int main (int argc, char** argv)
         }
         //delete environment;
         delete gridworld;
+        delete one_d_maze;
+        delete mountain_car;
         delete random_mdp;
         delete context_bandit;
         delete algorithm;
@@ -518,6 +517,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
     real discount = 1.0;
     int current_time = 0;
     environment->Reset();
+
     std:: cout << "(running)" << std::endl;
     for (uint episode = 0; episode < n_episodes; ++episode) {
         statistics.ep_stats[episode].total_reward = 0.0;
@@ -526,6 +526,7 @@ Statistics EvaluateAlgorithm (uint n_steps,
         discount = 1.0;
         environment->Reset();
         algorithm->Reset();
+        bool action_ok = true;
         uint t;
         for (t=0; t < n_steps; ++t) {
             int state = environment->getState();
@@ -537,11 +538,11 @@ Statistics EvaluateAlgorithm (uint n_steps,
             //std::cout << "Acting!\n";
             int action = algorithm->Act(reward, state);
             //std::cout << "s:" << state << " r:" << reward << " a:" << action << std::endl;
-            bool action_ok = environment->Act(action);
             if (!action_ok) {
-                //std::cout << "Terminating!\n";
                 break;
             }
+            action_ok = environment->Act(action);
+
             current_time++;
         }
         statistics.ep_stats[episode].steps += t;

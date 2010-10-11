@@ -195,7 +195,11 @@ class MultivariateNormal : public VectorDistribution
     virtual ~MultivariateNormal() {}
     virtual void generate(Vector& x);
     virtual Vector generate();
-    virtual real pdf(Vector& x) const;
+    virtual real logPdf(const Vector& x) const;
+    virtual real pdf(const Vector& x) const
+    {
+        return exp(logPdf(x));
+    }
     void Show() const;
 };
 
@@ -244,10 +248,12 @@ public:
     virtual Vector generate();
     virtual Vector generate() const;
     /// Note that this the marginal likelihood!
-    virtual real pdf(Vector& x) const;
+    virtual real pdf(const Vector& x) const;
+    /// The marginal log-likelihood
+    virtual real logPdf(const Vector& x) const;
     virtual const Vector& getMean() const;
     virtual void calculatePosterior(const Vector& x);
-    real Observe(Vector& x);
+    real Observe(const Vector& x);
     void Show();
 };
 #endif

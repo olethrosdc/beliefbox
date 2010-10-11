@@ -94,20 +94,41 @@ Vector MultinomialDistribution::generate()
 	return x;
 }
 
-/// Gives the pdf at any vector on R^n even though it is normally non-zero
-/// only on a simplex.
-real MultinomialDistribution::pdf(Vector* x) const
+
+/** Get the pdf.
+    
+    Note that 
+    \f[
+    f(x \mid p) = \prod_{i=1}^n p_i^{x_i},
+    \f]
+    if there is a single observation that is non-zero.
+    Howeer, in general
+    \f[
+    f(x \mid p) = \|x\|_1! \prod_{i=1}^n p_i^{x_i} / {x_i!},
+    \f]
+ */
+
+real MultinomialDistribution::pdf(const Vector& x) const
 {
 	int n = p.Size();
 	real log_density = LOG_ONE;
+    real sum_x = 0;
 	for (int i=0; i<n; i++) {
-		log_density += p[i] + (*x)[i];
+		log_density += x(i) * log(p(i));
+        sum_x += x(i);
 	}
+    if (sum_x >= 2) {
+        Swarning("Unexpected value\n");
+        for (int i=0; i<n; i++) {
+            for (int k=0; k<x(i); k++) {
+                log_density -= k;
+            }
+        }
+        for (int k=0; k<sum_x; ++k) {
+            log_density += k;
+        }
+    }
 	return exp(log_density);
-}
-real MultinomialDistribution::pdf(Vector& x) const
-{
-    return pdf(&x);
 }
 
 

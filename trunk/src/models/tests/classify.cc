@@ -13,12 +13,30 @@
 
 #include "LinearClassifier.h"
 #include "ClassifierMixture.h"
+#include "KNNClassifier.h"
+#include "MultivariateGaussianClassifier.h"
 #include "ReadFile.h"
 #include "Matrix.h"
 #include <vector>
 #include <cstdlib>
 #include <cstdio>
 #include <string>
+
+template <class C>
+void Evaluate(C& classifier, Matrix& data, std::vector<int>& labels)
+{
+    real n_errors = 0;
+    real accuracy = 0;
+    int T = data.Rows();
+    for (int t=0; t<T; ++t) {
+        Vector x = data.getRow(t);
+        if (classifier.Classify(x) != labels[t]) {
+            n_errors+=1;
+        }
+        accuracy += classifier.output(labels[t]);
+    }
+    printf ("%f %f\n", n_errors / (real) T, accuracy / (real) T);
+}
 
 int main(int argc, char** argv)
 {
@@ -28,6 +46,7 @@ int main(int argc, char** argv)
     Matrix test_data; 
     std::vector<int> test_labels;
     
+    printf("Arguments: training_data, n_classifiers, test_data\n");
     ReadClassData(data, labels, argv[1]);
 
     //fprintf(stderr, "Reading %s\n", argv[1]);
@@ -92,10 +111,14 @@ int main(int argc, char** argv)
 
     //LinearClassifier classifier(n_inputs, n_classes);
     //LinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
-    HashedLinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
+    //HashedLinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
+    //MultivariateGaussianClassifier classifier(n_inputs, n_classes);
+    KNNClassifier classifier(n_inputs, n_classes, 3);
 
-    int n_iter = 32;
+    int n_iter = 1;
     real alpha = 0.001;
+
+    //classifier.setStepSize(alpha);
 
     printf ("# K: %d, T: %d, d: %d inputs, n: %d classes, iter:%d, alpha: %f\n",
             n_classifiers,
@@ -105,50 +128,34 @@ int main(int argc, char** argv)
             n_iter,
             alpha);
 
-    classifier.setStepSize(alpha);
+
     for (int iter=0; iter<n_iter; ++iter) {
         real n_errors = 0;
         real accuracy = 0;
         for (int t=0; t<T; ++t) {
             Vector x = data.getRow(t);
+            ///Hash
             if (classifier.Classify(x) != labels[t]) {
                 n_errors+=1;
             }
             accuracy += classifier.output(labels[t]);
             classifier.Observe(x, labels[t]);
+            //printf ("%f %f\n", n_errors / (real) t, accuracy / (real) t);
         }
         //printf ("%f %f\n", n_errors / (real) T, accuracy / (real) T);
     }
     
+    printf ("# TRAIN \n");
     if (1) {
-        real n_errors = 0;
-        real accuracy = 0;
-        for (int t=0; t<T; ++t) {
-            Vector x = data.getRow(t);
-            if (classifier.Classify(x) != labels[t]) {
-                n_errors+=1;
-            }
-            accuracy += classifier.output(labels[t]);
-        }
-        printf ("%f %f #TRAIN\n", n_errors / (real) T, accuracy / (real) T);
+        Evaluate(classifier, data, labels);
     }
 
+    printf ("# TEST \n");
     if (test) {
-        real n_errors = 0;
-        real accuracy = 0;
-        int T = test_data.Rows();
-        for (int t=0; t<T; ++t) {
-            Vector x = test_data.getRow(t);
-            if (classifier.Classify(x) != test_labels[t]) {
-                n_errors+=1;
-            }
-            accuracy += classifier.output(test_labels[t]);
-        }
-        printf ("%f %f # TEST\n", n_errors / (real) T, accuracy / (real) T);
+        Evaluate(classifier, test_data, test_labels);
     }
-    //classifier.Show();
-
-    
 }
+
+
 
 #endif

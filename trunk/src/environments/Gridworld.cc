@@ -17,19 +17,17 @@
 #include <fstream>
 
 Gridworld::Gridworld(const char* fname,
-                     uint height_,
-                     uint width_,
-                     uint n_actions_,
                      real random_,
                      real pit_,
                      real goal_,
                      real step_)
     :  total_time(0),
-       height(height_), width(width_), 
        random(random_), pit_value(pit_), goal_value(goal_), step_value(step_)
 {
+    n_actions = 4;
+
+    CalculateDimensions(fname);
     n_states = width * height + 1; // plus a terminal state
-    n_actions = n_actions_;
     terminal_state = n_states - 1;
     
     std::ifstream ifs(fname, std::ifstream::in);
@@ -312,8 +310,7 @@ bool Gridworld::Act(int action)
     //Show();
 
     if (state==(int) terminal_state) {
-        //std::cout << "t: " << total_time << " TERMINATE "
-        //<< prev_reward << " " << reward << std::endl;
+        reward = 0;
         return false;
     }
     return true;
@@ -341,4 +338,31 @@ void Gridworld::Show()
         }
         std::cout << std::endl;
     }
+}
+
+void Gridworld::CalculateDimensions(const char* fname)
+{
+    std::ifstream ifs(fname, std::ifstream::in);
+    if (!ifs.is_open()) {
+        Serror ("Could not open file %s", fname);
+        exit(-1);
+    }
+    std::string line;
+    height = 0;
+    width = 0;
+    while (getline(ifs, line)) {// && y<height) {
+        if (!width) {
+            width = line.length();
+            if (!width) {
+                Serror ("Empty first line\n");
+                exit(-1);
+            }
+        } else if (line.length() != width) {
+            Serror ("Line length (%ld) does not match width (%d)",
+                    line.length(), width);
+            exit(-1);
+        }
+        height++;
+    }
+    ifs.close();
 }

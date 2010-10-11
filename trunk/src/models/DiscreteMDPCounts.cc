@@ -155,12 +155,13 @@ void DiscreteMDPCounts::ShowModel() const
         }
    }
 }
+
 DiscreteMDP* DiscreteMDPCounts::generate() 
 {
     DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL, NULL);
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
-            Vector C =  P[getID (s,a)].generate();
+            Vector C =  P[getID (s,a)].GetMean();// P[getID (s,a)].generate();
             real expected_reward = getExpectedReward(s,a);
             mdp->addFixedReward(s, a, expected_reward);
             for (int s2=0; s2<n_states; s2++) {

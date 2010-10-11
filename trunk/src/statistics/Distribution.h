@@ -34,7 +34,7 @@ public:
     virtual ~AbstractDistribution() {};
     virtual void generate(T& x) = 0;
     virtual T generate() = 0;
-    virtual real pdf(T& x) const =0;
+    virtual real pdf(const T& x) const =0;
 };
 
 typedef AbstractDistribution<Object> ObjectDistribution;

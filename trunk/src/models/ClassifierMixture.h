@@ -16,7 +16,7 @@
 #include "Random.h"
 #include <vector>
 
-class LinearClassifierMixture
+class LinearClassifierMixture 
 {
 public:
     const int n_inputs;
