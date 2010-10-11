@@ -15,6 +15,7 @@
 #include "ClassifierMixture.h"
 #include "KNNClassifier.h"
 #include "MultivariateGaussianClassifier.h"
+#include "ConditionalKDGaussianClassifier.h"
 #include "ReadFile.h"
 #include "Matrix.h"
 #include <vector>
@@ -61,32 +62,44 @@ int main(int argc, char** argv)
     int n_inputs = data.Columns();
     int n_classes = 1 + Span(labels);
 
+
     Vector mean(n_inputs);
     Vector std(n_inputs);
+    Vector lower_bound(n_inputs);
+    Vector upper_bound(n_inputs);
+    bool normalise = false;
 
     for (int i=0; i<n_inputs; ++i) {
         mean(i) = 0;
         std(i) = 0;
+        lower_bound(i) = -1;
+        upper_bound(i) = +1;
         for (int t=0; t<T; ++t) {
             mean(i) += data(t,i);
+            lower_bound(i) = std::min(lower_bound(i), data(t, i));
+            upper_bound(i) = std::max(upper_bound(i), data(t, i));
         }
         mean *= (1.0 / (real) T);
-        for (int t=0; t<T; ++t) {
-            real delta = data(t,i) - mean(i);
-            std(i) += delta * delta;
+        if (normalise) {
+            for (int t=0; t<T; ++t) {
+                real delta = data(t,i) - mean(i);
+                std(i) += delta * delta;
+            }
         }
         std(i) *= (1.0 / (real) T);
     }
     
     
-    for (int i=0; i<n_inputs; ++i) {
-        real istd = 1;
-        if (std(i) >= 0.001) {
-            istd = 1 / std(i);
-        }
-        for (int t=0; t<data.Rows(); ++t) {
-            data(t,i) -= mean(i);
-            data(t,i) *= istd;                
+    if (normalise) {
+        for (int i=0; i<n_inputs; ++i) {
+            real istd = 1;
+            if (std(i) >= 0.001) {
+                istd = 1 / std(i);
+            }
+            for (int t=0; t<data.Rows(); ++t) {
+                data(t,i) -= mean(i);
+                data(t,i) *= istd;                
+            }
         }
     }
     
@@ -96,7 +109,7 @@ int main(int argc, char** argv)
     //data.print(stdout);
 
 
-    if (test) {
+    if (test && normalise) {
         for (int i=0; i<n_inputs; ++i) {
             real istd = 1;
             if (std(i) >= 0.001) {
@@ -109,11 +122,13 @@ int main(int argc, char** argv)
         }
     }
 
+
     //LinearClassifier classifier(n_inputs, n_classes);
     //LinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
     //HashedLinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
     //MultivariateGaussianClassifier classifier(n_inputs, n_classes);
-    KNNClassifier classifier(n_inputs, n_classes, 3);
+    //KNNClassifier classifier(n_inputs, n_classes, 3);
+    ConditionalKDGaussianClassifier classifier(2, n_classifiers, lower_bound, upper_bound, n_classes);
 
     int n_iter = 1;
     real alpha = 0.001;
@@ -140,7 +155,7 @@ int main(int argc, char** argv)
             }
             accuracy += classifier.output(labels[t]);
             classifier.Observe(x, labels[t]);
-            //printf ("%f %f\n", n_errors / (real) t, accuracy / (real) t);
+            printf ("%f %f\n", n_errors / (real) t, accuracy / (real) t);
         }
         //printf ("%f %f\n", n_errors / (real) T, accuracy / (real) T);
     }

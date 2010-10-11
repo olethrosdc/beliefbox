@@ -31,7 +31,7 @@ public:
         return ArgMax(Output(x));
     }
     Vector& Output(const Vector& x);
-    void Observe(const Vector& x, int label);
+    real Observe(const Vector& x, const int label);
 
 };
 
