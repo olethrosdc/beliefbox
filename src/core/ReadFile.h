@@ -16,7 +16,7 @@
 #include <vector>
 #include "Matrix.h"
 
-int FileToIntVector(std::vector<int>& data, char* fname, int tmpT);
-int ReadClassData(Matrix& data, std::vector<int>& labels, char* fname);
+int FileToIntVector(std::vector<int>& data, const char* fname, int tmpT);
+int ReadClassData(Matrix& data, std::vector<int>& labels, const char* fname);
 
 #endif

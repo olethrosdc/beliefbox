@@ -9,7 +9,7 @@
 	The format is:
 	number_of_lines
  */
-int FileToIntVector(std::vector<int>& data, char* fname, int tmpT)
+int FileToIntVector(std::vector<int>& data, const char* fname, int tmpT)
 {
     FILE* file = fopen(fname, "r");
     if (!file) {
@@ -50,7 +50,7 @@ int FileToIntVector(std::vector<int>& data, char* fname, int tmpT)
 	number_of_lines number_of_colums
 	<data>
  */
-int ReadClassData(Matrix& data, std::vector<int>& labels, char* fname) 
+int ReadClassData(Matrix& data, std::vector<int>& labels, const char* fname) 
 {
     FILE* file = fopen(fname, "r");
     if (!file) {
@@ -69,7 +69,7 @@ int ReadClassData(Matrix& data, std::vector<int>& labels, char* fname)
     printf("# horizon: %d, columns: %d\n", T, columns);
     data.Resize(T, columns - 1);
     labels.resize(T);
-    int n_observations = 0;
+
     for (int t=0; t<T; ++t) {
         for (int i=0; i<columns - 1; ++i) {
             int success = fscanf(file, "%lf ", &data(t,i));
@@ -88,5 +88,5 @@ int ReadClassData(Matrix& data, std::vector<int>& labels, char* fname)
         //printf("%d\n", labels[t]);
     }
     fclose(file);
-	return n_observations;
+	return T;
 }

@@ -22,9 +22,10 @@
 #include <cstdlib>
 #include <cstdio>
 #include <string>
+#include <getopt.h>
 
 template <class C>
-void Evaluate(C& classifier, Matrix& data, std::vector<int>& labels)
+void Evaluate(C& classifier, Matrix& data, std::vector<int>& labels, const char* s)
 {
     real n_errors = 0;
     real accuracy = 0;
@@ -36,8 +37,43 @@ void Evaluate(C& classifier, Matrix& data, std::vector<int>& labels)
         }
         accuracy += classifier.output(labels[t]);
     }
-    printf ("%f %f\n", n_errors / (real) T, accuracy / (real) T);
+    printf ("%f %f #%s\n", n_errors / (real) T, accuracy / (real) T, s);
 }
+
+template <class C>
+void Train(C& classifier, Matrix& data, std::vector<int>& labels)
+{
+    real n_errors = 0;
+    real accuracy = 0;
+    int T = data.Rows();
+
+    for (int t=0; t<T; ++t) {
+        Vector x = data.getRow(t);
+        ///Hash
+        if (classifier.Classify(x) != labels[t]) {
+            n_errors+=1;
+        }
+        accuracy += classifier.output(labels[t]);
+        classifier.Observe(x, labels[t]);
+        printf ("%f %f #PREQ\n", n_errors / (real) (t+1), accuracy / (real) (t+1));
+    }
+}
+
+enum ClassifierType {
+    GAUSSIAN_TREE,
+    NEAREST_NEIGHBOUR,
+    HASHED_MIXTURE,
+    LINEAR
+};
+static const char* const help_text = "Usage: ... \n\
+ --train \n\
+ --test \n\
+ --tree \n\
+ --mixture \n\
+ --knn \n\
+ --iterations \n\
+ --step_size \n\
+ --normalise \n";
 
 int main(int argc, char** argv)
 {
@@ -48,15 +84,111 @@ int main(int argc, char** argv)
     std::vector<int> test_labels;
     
     printf("Arguments: training_data, n_classifiers, test_data\n");
-    ReadClassData(data, labels, argv[1]);
 
-    //fprintf(stderr, "Reading %s\n", argv[1]);
-    int n_classifiers = atoi(argv[2]);
+    const char* train_filename = NULL;
+    const char* test_filename = NULL;
+    int tree_depth = 1;
+    int n_classifiers = 1;
+    int n_neighbours = 1;
+    int n_iterations = 1;
+    real step_size = 0.001;
+    ClassifierType classifier_type = LINEAR;
+    {
+        // options
+        int c;
+        int digit_optind = 0;
+        while (1) {
+            int this_option_optind = optind ? optind : 1;
+            int option_index = 0;
+            static struct option long_options[] = {
+                {"train", required_argument, 0, 0}, //0
+                {"test", required_argument, 0, 0}, //1
+                {"tree", required_argument, 0, 0}, //2
+                {"mixture", required_argument, 0, 0}, //3
+                {"knn", required_argument, 0, 0}, //4
+                {"iterations", required_argument, 0, 0}, //5
+                {"step_size", required_argument, 0, 0}, // 6
+                {"normalise", no_argument, 0, 0}, // 7 
+                {0, 0, 0, 0}
+            };
+            c = getopt_long (argc, argv, "",
+                             long_options, &option_index);
+            if (c == -1)
+                break;
+
+            switch (c) {
+            case 0:
+#if 0
+                printf ("option %s (%d)", long_options[option_index].name, option_index);
+                if (optarg)
+                    printf (" with arg %s", optarg);
+                printf ("\n");
+#endif
+                switch (option_index) {
+                case 0: train_filename = optarg; break;
+                case 1: test_filename = optarg; break;
+                case 2:
+                    tree_depth = atoi(optarg); 
+                    classifier_type = GAUSSIAN_TREE;
+                    break;
+                case 3:
+                    n_classifiers = atoi(optarg); 
+                    classifier_type = HASHED_MIXTURE;
+                    break;
+                case 4: 
+                    n_neighbours = atoi(optarg); 
+                    classifier_type = NEAREST_NEIGHBOUR;
+                    break;
+                case 5:
+                    n_iterations = atoi(optarg); 
+                    break;
+                case 6:
+                    step_size = atof(optarg); 
+                    break;
+                default:
+                    fprintf (stderr, "%s", help_text);
+                    exit(0);
+                    break;
+                }
+                break;
+            case '0':
+            case '1':
+            case '2':
+                if (digit_optind != 0 && digit_optind != this_option_optind)
+                    printf ("digits occur in two different argv-elements.\n");
+            digit_optind = this_option_optind;
+            printf ("option %c\n", c);
+            break;
+            default:
+                std::cout << help_text;
+                exit (-1);
+            }
+        }
+        
+        if (optind < argc) {
+            printf ("non-option ARGV-elements: ");
+            while (optind < argc) {
+                printf ("%s ", argv[optind++]);
+                
+            }
+            printf ("\n");
+        }
+    }
+
+    
+    if (!ReadClassData(data, labels, train_filename)) {
+        Serror("Could not read train data\n");
+    }
+
+
+    
     bool test = false;
-    if (argc==4) {
-        //fprintf(stderr, "Reading %s\n", argv[3]);
-        ReadClassData(test_data, test_labels, argv[3]);
-        test = true;
+    if (test_filename) {
+        if (ReadClassData(test_data, test_labels, test_filename)) {
+            test = true;
+        } else {
+            Serror("Could not read test data\n");
+        }
     }
     int T = data.Rows();
     int n_inputs = data.Columns();
@@ -123,52 +255,76 @@ int main(int argc, char** argv)
     }
 
 
-    //LinearClassifier classifier(n_inputs, n_classes);
+    LinearClassifier linear_classifier(n_inputs, n_classes);
     //LinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
-    //HashedLinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
-    //MultivariateGaussianClassifier classifier(n_inputs, n_classes);
-    //KNNClassifier classifier(n_inputs, n_classes, 3);
-    ConditionalKDGaussianClassifier classifier(2, n_classifiers, lower_bound, upper_bound, n_classes);
+    HashedLinearClassifierMixture linear_classifier_mixture(n_inputs, n_classes, n_classifiers);
+    //MultivariateGaussianClassifier gaussian_classifier(n_inputs, n_classes);
+    KNNClassifier knn_classifier(n_inputs, n_classes, n_neighbours);
+    ConditionalKDGaussianClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
 
-    int n_iter = 1;
-    real alpha = 0.001;
 
     //classifier.setStepSize(alpha);
 
-    printf ("# K: %d, T: %d, d: %d inputs, n: %d classes, iter:%d, alpha: %f\n",
+    printf ("# K: %d, T: %d, d: %d inputs, n: %d classes\n",
             n_classifiers,
             T,
             n_inputs,
-            n_classes,
-            n_iter,
-            alpha);
-
-
-    for (int iter=0; iter<n_iter; ++iter) {
-        real n_errors = 0;
-        real accuracy = 0;
-        for (int t=0; t<T; ++t) {
-            Vector x = data.getRow(t);
-            ///Hash
-            if (classifier.Classify(x) != labels[t]) {
-                n_errors+=1;
-            }
-            accuracy += classifier.output(labels[t]);
-            classifier.Observe(x, labels[t]);
-            //printf ("%f %f\n", n_errors / (real) t, accuracy / (real) t);
+            n_classes);
+    
+    for (int iter=0; iter<n_iterations; ++iter) {
+        switch(classifier_type) {
+        case GAUSSIAN_TREE:
+            Train(tree_gaussian, data, labels);
+            break;
+        case NEAREST_NEIGHBOUR:
+            Train(knn_classifier, data, labels);
+            break;
+        case HASHED_MIXTURE:
+            Train(linear_classifier_mixture, data, labels);
+            break;
+        case LINEAR:
+            Train(linear_classifier, data, labels);
+            break;
         }
-        printf ("%f %f\n", n_errors / (real) T, accuracy / (real) T);
     }
 	
-	classifier.Show();
-    printf ("# TRAIN \n");
+
+    
     if (1) {
-        Evaluate(classifier, data, labels);
+        printf("# Evaluating ...\n");
+        switch(classifier_type) {
+        case GAUSSIAN_TREE:
+            Evaluate(tree_gaussian, data, labels, "TRAIN");
+            break;
+        case NEAREST_NEIGHBOUR:
+            Evaluate(knn_classifier, data, labels, "TRAIN");
+            break;
+        case HASHED_MIXTURE:
+            Evaluate(linear_classifier_mixture, data, labels, "TRAIN");
+            break;
+        case LINEAR:
+            Evaluate(linear_classifier, data, labels, "TRAIN");
+            break;
+        }
     }
 
-    printf ("# TEST \n");
     if (test) {
-        Evaluate(classifier, test_data, test_labels);
+        printf("# Evaluating ...\n");
+        switch(classifier_type) {
+        case GAUSSIAN_TREE:
+            Evaluate(tree_gaussian, test_data, test_labels, "TEST");
+            break;
+        case NEAREST_NEIGHBOUR:
+            Evaluate(knn_classifier, test_data, test_labels, "TEST");
+            break;
+        case HASHED_MIXTURE:
+            Evaluate(linear_classifier_mixture, test_data, test_labels, "TEST");
+            break;
+        case LINEAR:
+            Evaluate(linear_classifier, test_data, test_labels, "TEST");
+            break;
+        }
+
     }
 }
 

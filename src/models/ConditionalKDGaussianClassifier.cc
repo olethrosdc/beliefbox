@@ -153,12 +153,14 @@ real ConditionalKDGaussianClassifier::Node::Observe(const Vector& x, const int y
                 mid_point = 0.5*(upper_bound_x(splitting_dimension) + lower_bound_x(splitting_dimension));
             }
                 
+#if 0
             std::cout << "# d: " << depth << ", i: " 
                       << splitting_dimension
                       << " x_i: " << mid_point 
                       << "[" << mean(splitting_dimension) 
                       << ", " << other_mean(splitting_dimension) << "]"
                       << std::endl;
+#endif
         }
         // Which interval is the x lying at
         int interval = 0;
