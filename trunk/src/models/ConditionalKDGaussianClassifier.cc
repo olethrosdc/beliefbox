@@ -53,7 +53,7 @@ ConditionalKDGaussianClassifier::Node::Node(ConditionalKDGaussianClassifier::Nod
       depth(prev_->depth + 1),
       prev(prev_),
       next(tree.n_branches),
-      log_w(-depth * log(2)),
+      log_w(- depth * log(2)),
       S(0)
 {
     assert(lower_bound_x < upper_bound_x);
@@ -263,7 +263,7 @@ Vector ConditionalKDGaussianClassifier::Node::Output(const Vector& x, const Vect
 
 void ConditionalKDGaussianClassifier::Node::Show()
 {
-#if 0
+#if 1
 	printf("%d %f #w\n", depth, w);
 	for (int k=0; k<tree.n_branches; ++k) {
 		if (next[k]) {

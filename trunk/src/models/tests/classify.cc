@@ -159,7 +159,8 @@ int main(int argc, char** argv)
         }
         printf ("%f %f\n", n_errors / (real) T, accuracy / (real) T);
     }
-    
+	
+	classifier.Show();
     printf ("# TRAIN \n");
     if (1) {
         Evaluate(classifier, data, labels);
