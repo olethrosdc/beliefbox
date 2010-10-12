@@ -566,6 +566,8 @@ Vector exp (const Vector& rhs)
 }
 #endif
 
+
+#if 0
 /// Logarithmication
 Vector log (const Vector& rhs)
 {
@@ -576,7 +578,7 @@ Vector log (const Vector& rhs)
     }
     return lhs;
 }
-
+#endif
 
 void exp(const Vector& v, Vector& res)
 {

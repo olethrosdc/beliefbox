@@ -14,6 +14,7 @@
 #define MULTIVARIATE_GAUSSIAN_CLASSIFIER_H
 
 #include "NormalDistribution.h"
+#include "Dirichlet.h"
 #include <vector>
 
 /// A classifier using a multivariate gaussian for each class.
@@ -23,6 +24,7 @@ public:
     const int n_inputs; ///< dimensionality  of observations
     const int n_classes; ///< number of classes
     std::vector<MultivariateNormalUnknownMeanPrecision*> class_distribution; ///< the distribution for each class
+    DirichletDistribution prior; ///< The class prior distribution
     Vector output;
     MultivariateGaussianClassifier(int n_inputs_, int n_classes_);
     ~MultivariateGaussianClassifier();
@@ -32,6 +34,7 @@ public:
     }
     Vector& Output(const Vector& x);
     real Observe(const Vector& x, const int label);
+    Vector getClassMean(const int label) const;
 
 };
 

@@ -155,9 +155,9 @@ int main(int argc, char** argv)
             }
             accuracy += classifier.output(labels[t]);
             classifier.Observe(x, labels[t]);
-            printf ("%f %f\n", n_errors / (real) t, accuracy / (real) t);
+            //printf ("%f %f\n", n_errors / (real) t, accuracy / (real) t);
         }
-        //printf ("%f %f\n", n_errors / (real) T, accuracy / (real) T);
+        printf ("%f %f\n", n_errors / (real) T, accuracy / (real) T);
     }
     
     printf ("# TRAIN \n");

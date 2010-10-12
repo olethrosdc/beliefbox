@@ -72,8 +72,8 @@ void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
 {
     int ID = getID (s, a);
     //printf ("(%d, %d) [%.2f] -> %d\n", s, a, r, s2);
-    P[ID].Observation(s2);
-    ER[ID].Observation(r);
+    P[ID].Observe(s2);
+    ER[ID].Observe(r);
 
     Vector C =  P[ID].GetMean();
     real expected_reward = getExpectedReward(s,a);
