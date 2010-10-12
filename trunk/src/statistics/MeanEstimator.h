@@ -36,7 +36,7 @@ class MeanEstimator
         min = mean;
         max = mean;
     }
-    real Observation(real x)
+    real Observe(real x)
     {
         real alpha = 1.0 / ((real) (++n_samples));
         mean = alpha * x + (1 - alpha)*mean;

@@ -245,13 +245,33 @@ inline Vector exp (const Vector& rhs)
 }
 
 /// Logarithmication
-Vector log (const Vector& rhs);
+inline Vector log (const Vector& rhs)
+{
+    int n = rhs.Size();
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = log(rhs[i]);
+    }
+    return lhs;
+}
+
+/// Absolute value
+inline Vector abs (const Vector& rhs)
+{
+    int n = rhs.Size();
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = fabs(rhs[i]);
+    }
+    return lhs;
+}
+
 
 /// exponentiate to a target vector
 void exp(const Vector& v, Vector& res);
 
 /// logarthimicate to a target vector
-void log(const Vector& v, Vector& res);
+void lorg(const Vector& v, Vector& res);
 
 #if 0
 real L1Norm (const Vector* lhs, const Vector* rhs);

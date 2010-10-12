@@ -30,13 +30,13 @@ ConditionalKDGaussianClassifier::Node::Node(ConditionalKDGaussianClassifier& tre
 {
     assert(lower_bound_x < upper_bound_x);
     //assert(lower_bound_y < upper_bound_y);
-	splitting_dimension = ArgMax(upper_bound_x - lower_bound_x);
+	splitting_dimension = -1 ;//ArgMax(upper_bound_x - lower_bound_x);
 #ifdef RANDOM_SPLITS
 	real phi = 0.1 + 0.8 * urandom();
 	mid_point = phi * upper_bound_x[splitting_dimension] + 
 		(1 - phi) * lower_bound_x[splitting_dimension];
 #else
-	mid_point = (upper_bound_x[splitting_dimension] + lower_bound_x[splitting_dimension]) / 2.0;
+	mid_point = 0;//(upper_bound_x[splitting_dimension] + lower_bound_x[splitting_dimension]) / 2.0;
 #endif
 
 
@@ -53,17 +53,17 @@ ConditionalKDGaussianClassifier::Node::Node(ConditionalKDGaussianClassifier::Nod
       depth(prev_->depth + 1),
       prev(prev_),
       next(tree.n_branches),
-      log_w(-log(2)),
+      log_w(-depth * log(2)),
       S(0)
 {
     assert(lower_bound_x < upper_bound_x);
-	splitting_dimension = ArgMax(upper_bound_x - lower_bound_x);    
+	splitting_dimension = -1;//ArgMax(upper_bound_x - lower_bound_x);    
 #ifdef RANDOM_SPLITS
 	real phi = 0.1 + 0.8 * urandom();
 	mid_point = phi * upper_bound_x[splitting_dimension] + 
 		(1 - phi) * lower_bound_x[splitting_dimension];
 #else
-	mid_point = (upper_bound_x[splitting_dimension] + lower_bound_x[splitting_dimension]) / 2.0;
+	mid_point = 0;//(upper_bound_x[splitting_dimension] + lower_bound_x[splitting_dimension]) / 2.0;
 #endif
 
     w = exp(log_w);
@@ -105,16 +105,35 @@ real ConditionalKDGaussianClassifier::Node::Observe(const Vector& x, const int y
     log_w += log(P_local) - log(total_probability);
     w = exp(log_w); 
     assert (w >= 0 && w <= 1);
-    // Which interval is the x lying at
-    int k;
-    if (x[splitting_dimension] < mid_point) {
-        k = 0;
-    } else {
-        k = 1;
-    }
-    real threshold = 1;//depth; //sqrt((real) depth);
+
+
+    real threshold = depth; //sqrt((real) depth);
     S++;
+
+    DirichletDistribution& prior = local_probability->prior;
+    int most_observed_class = ArgMax(prior.GetMean());
+    //real n_most_observed_class = prior.GetMean()(most_observed_class);
+    int second_most_observed_class = -1;
+    real n_second_most_observed_class = 0;
+    int number_of_observed_classes = 0;
+    Vector A=prior.GetParameters();
+    for (int i=0; i<tree.n_classes; ++i) {
+        if (A(i) > 1) {
+            number_of_observed_classes++;
+            if (i != most_observed_class 
+                && A(i) > n_second_most_observed_class) {
+                second_most_observed_class = i;
+                n_second_most_observed_class = A(i);
+            }
+        }
+    }
+
 #if 0
+    std::cout << "observed classes: " << number_of_observed_classes
+              << ", most observed: " << most_observed_class
+              << ", second most observed: " << second_most_observed_class
+              << std::endl;
+
     std::cout << depth << ": P(y|h_k)=" << P_local
               << ", P(h_k|B_k)=" << w 
               << ", P(y|B_{k-1})="<< probability
@@ -122,19 +141,45 @@ real ConditionalKDGaussianClassifier::Node::Observe(const Vector& x, const int y
               << std::endl;
 #endif
 	// Do a forward mixture if there is another node available.
-    if ((tree.max_depth<0 || depth < tree.max_depth) && S >  threshold) {
-        if (!next[k]) {
-            if (k == 0) {
+    if ((tree.max_depth<0 || depth < tree.max_depth) && S >  threshold && number_of_observed_classes > 1) {
+        if (splitting_dimension < 0) {
+            Vector mean = local_probability->getClassMean(most_observed_class);
+            Vector other_mean = local_probability->getClassMean(second_most_observed_class);
+            splitting_dimension = ArgMax(abs(mean - other_mean));
+            mid_point = 0.5 * (mean(splitting_dimension) + other_mean(splitting_dimension));
+            if (mid_point > upper_bound_x(splitting_dimension)
+                || mid_point < lower_bound_x(splitting_dimension)) {
+                std::cerr << "Warning: mid point exceeds bounds\n";
+                mid_point = 0.5*(upper_bound_x(splitting_dimension) + lower_bound_x(splitting_dimension));
+            }
+                
+            std::cout << "# d: " << depth << ", i: " 
+                      << splitting_dimension
+                      << " x_i: " << mid_point 
+                      << "[" << mean(splitting_dimension) 
+                      << ", " << other_mean(splitting_dimension) << "]"
+                      << std::endl;
+        }
+        // Which interval is the x lying at
+        int interval = 0;
+        if (splitting_dimension >= 0 && x[splitting_dimension] < mid_point) {
+            interval = 0;
+        } else {
+            interval = 1;
+        }
+        if (!next[interval]) {
+
+            if (interval == 0) {
 				Vector new_bound_x = upper_bound_x;
 				new_bound_x(splitting_dimension) = mid_point;
-                next[k] = new Node(this, lower_bound_x, new_bound_x);
+                next[interval] = new Node(this, lower_bound_x, new_bound_x);
             } else {
 				Vector new_bound_x = lower_bound_x;
 				new_bound_x(splitting_dimension) = mid_point;
-                next[k] = new Node(this, new_bound_x, upper_bound_x);
+                next[interval] = new Node(this, new_bound_x, upper_bound_x);
             }
         }
-		total_probability = next[k]->Observe(x, y, total_probability);
+		total_probability = next[interval]->Observe(x, y, total_probability);
     }
 
     return total_probability;
@@ -162,15 +207,17 @@ real ConditionalKDGaussianClassifier::Node::pdf(const Vector& x, const int y, re
               << std::endl;
 #endif
     // Which interval is the x lying at
-    int k;
-    if ( x[splitting_dimension] < mid_point) {
-        k = 0;
-    } else {
-        k = 1;
-    }    
-	// Do one more mixing step if required
-    if (next[k]) {
+    if (splitting_dimension >= 0) {
+        int k;
+        if ( x[splitting_dimension] < mid_point) {
+            k = 0;
+        } else {
+            k = 1;
+        }    
+        // Do one more mixing step if required
+        if (next[k]) {
 			total_probability = next[k]->pdf(x, y, total_probability);
+        }
     }
     return total_probability;
 }
@@ -197,15 +244,17 @@ Vector ConditionalKDGaussianClassifier::Node::Output(const Vector& x, const Vect
               << std::endl;
 #endif
     // Which interval is the x lying at
-    int k;
-    if ( x[splitting_dimension] < mid_point) {
-        k = 0;
-    } else {
-        k = 1;
-    }    
-	// Do one more mixing step if required
-    if (next[k]) {
+    if (splitting_dimension >= 0) {
+        int k;
+        if ( x[splitting_dimension] < mid_point) {
+            k = 0;
+        } else {
+            k = 1;
+        }    
+        // Do one more mixing step if required
+        if (next[k]) {
 			total_probability = next[k]->Output(x, total_probability);
+        }
     }
     return total_probability;
 }

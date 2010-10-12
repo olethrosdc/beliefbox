@@ -16,6 +16,7 @@ MultivariateGaussianClassifier::MultivariateGaussianClassifier(int n_inputs_, in
     : n_inputs(n_inputs_),
       n_classes(n_classes_),
       class_distribution(n_classes),
+      prior(n_classes, 0.5),
       output(n_classes)
 {
     Vector mu(n_inputs);
@@ -46,6 +47,7 @@ Vector& MultivariateGaussianClassifier::Output(const Vector& x)
             class_distribution[i]->Show();
         }
     }
+    output += log(prior.GetMean());
     real S = output.logSum();
     output -= S;
     for (int i=0; i<n_classes; ++i) {
@@ -63,6 +65,11 @@ real MultivariateGaussianClassifier::Observe(const Vector& x, const int label)
     assert(label >= 0 && label < n_classes);
     real probability = Output(x)(label);
     class_distribution[label]->Observe(x);
+    prior.Observe(label);
     return probability;
 }
 
+Vector MultivariateGaussianClassifier::getClassMean(const int label) const
+{
+    return class_distribution[label]->getMean();
+}
