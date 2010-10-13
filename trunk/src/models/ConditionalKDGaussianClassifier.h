@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef CONDITIONAL_KD_GAUSSIAN_CLASSIFIE_H
-#define CONDITIONAL_KD_GAUSSIAN_CLASSIFIE_H
+#ifndef CONDITIONAL_KD_GAUSSIAN_CLASSIFIER_H
+#define CONDITIONAL_KD_GAUSSIAN_CLASSIFIER_H
 
 
 #include <vector>
@@ -85,6 +85,7 @@ protected:
     int max_depth;
     int n_classes;
     Node* root;
+    static real FUDGE;
 public:
     Vector output;
 };

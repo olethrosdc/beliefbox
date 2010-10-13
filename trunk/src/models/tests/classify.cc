@@ -16,6 +16,7 @@
 #include "KNNClassifier.h"
 #include "MultivariateGaussianClassifier.h"
 #include "ConditionalKDGaussianClassifier.h"
+#include "MersenneTwister.h"
 #include "ReadFile.h"
 #include "Matrix.h"
 #include <vector>
@@ -41,13 +42,33 @@ void Evaluate(C& classifier, Matrix& data, std::vector<int>& labels, const char*
 }
 
 template <class C>
-void Train(C& classifier, Matrix& data, std::vector<int>& labels)
+void Train(C& classifier, Matrix& data, std::vector<int>& labels, bool randomise=false)
 {
     real n_errors = 0;
     real accuracy = 0;
     int T = data.Rows();
+    std::vector<int> indices;
+    if (randomise) {
+        MersenneTwisterRNG rng;
+        indices.resize(T);
+        for (int i=0; i<T; ++i) {
+            indices[i] = i;
+        }
+        for (int i=0; i<T; ++i) {
+            int j = i + rng.discrete_uniform(T - i);
+            int tmp = indices[j];
+            indices[j] = indices[i];
+            indices[i] = tmp;
+        }
+    }
 
-    for (int t=0; t<T; ++t) {
+    for (int i=0; i<T; ++i) {
+        int t;
+        if (randomise) {
+            t = indices[i];
+        } else {
+            t = i;
+        }
         Vector x = data.getRow(t);
         ///Hash
         if (classifier.Classify(x) != labels[t]) {
@@ -55,8 +76,10 @@ void Train(C& classifier, Matrix& data, std::vector<int>& labels)
         }
         accuracy += classifier.output(labels[t]);
         classifier.Observe(x, labels[t]);
-        printf ("%f %f #PREQ\n", n_errors / (real) (t+1), accuracy / (real) (t+1));
+        //printf ("%f %f #PREQ\n", n_errors / (real) (T), accuracy / (real) (T));
     }
+    printf ("%f %f #PREQ\n", n_errors / (real) (T), accuracy / (real) (T));
+
 }
 
 enum ClassifierType {
@@ -66,14 +89,15 @@ enum ClassifierType {
     LINEAR
 };
 static const char* const help_text = "Usage: ... \n\
- --train \n\
- --test \n\
- --tree \n\
- --mixture \n\
- --knn \n\
- --iterations \n\
- --step_size \n\
- --normalise \n";
+ --train file\n\
+ --test file\n\
+ --tree N\n\
+ --mixture N\n\
+ --knn N\n\
+ --iterations N\n\
+ --step_size [0,1]\n\
+ --normalise\n\
+ --randomise\n";
 
 int main(int argc, char** argv)
 {
@@ -91,7 +115,9 @@ int main(int argc, char** argv)
     int n_classifiers = 1;
     int n_neighbours = 1;
     int n_iterations = 1;
-    real step_size = 0.001;
+    real step_size = 0.01;
+    bool normalise = false;
+    bool randomise = false;
     ClassifierType classifier_type = LINEAR;
     {
         // options
@@ -109,6 +135,7 @@ int main(int argc, char** argv)
                 {"iterations", required_argument, 0, 0}, //5
                 {"step_size", required_argument, 0, 0}, // 6
                 {"normalise", no_argument, 0, 0}, // 7 
+                {"randomise", no_argument, 0, 0}, // 7 
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -144,6 +171,12 @@ int main(int argc, char** argv)
                     break;
                 case 6:
                     step_size = atof(optarg); 
+                    break;
+                case 7:
+                    normalise = true;
+                    break;
+                case 8:
+                    randomise = true;
                     break;
                 default:
                     fprintf (stderr, "%s", help_text);
@@ -199,7 +232,7 @@ int main(int argc, char** argv)
     Vector std(n_inputs);
     Vector lower_bound(n_inputs);
     Vector upper_bound(n_inputs);
-    bool normalise = false;
+
 
     for (int i=0; i<n_inputs; ++i) {
         mean(i) = 0;
@@ -256,8 +289,10 @@ int main(int argc, char** argv)
 
 
     LinearClassifier linear_classifier(n_inputs, n_classes);
+    linear_classifier.setStepSize(step_size);
     //LinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
     HashedLinearClassifierMixture linear_classifier_mixture(n_inputs, n_classes, n_classifiers);
+    linear_classifier_mixture.setStepSize(step_size);
     //MultivariateGaussianClassifier gaussian_classifier(n_inputs, n_classes);
     KNNClassifier knn_classifier(n_inputs, n_classes, n_neighbours);
     ConditionalKDGaussianClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
@@ -274,16 +309,16 @@ int main(int argc, char** argv)
     for (int iter=0; iter<n_iterations; ++iter) {
         switch(classifier_type) {
         case GAUSSIAN_TREE:
-            Train(tree_gaussian, data, labels);
+            Train(tree_gaussian, data, labels, randomise);
             break;
         case NEAREST_NEIGHBOUR:
-            Train(knn_classifier, data, labels);
+            Train(knn_classifier, data, labels, randomise);
             break;
         case HASHED_MIXTURE:
-            Train(linear_classifier_mixture, data, labels);
+            Train(linear_classifier_mixture, data, labels, randomise);
             break;
         case LINEAR:
-            Train(linear_classifier, data, labels);
+            Train(linear_classifier, data, labels, randomise);
             break;
         }
     }

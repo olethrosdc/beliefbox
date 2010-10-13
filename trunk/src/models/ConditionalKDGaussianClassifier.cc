@@ -15,6 +15,8 @@
 
 #include "Random.h"
 
+static real ConditionalKDGaussianClassifier::FUDGE = 10e-6;
+
 ConditionalKDGaussianClassifier::Node::Node(ConditionalKDGaussianClassifier& tree_,
 									 Vector& lower_bound_x_,
 									 Vector& upper_bound_x_)
@@ -94,7 +96,7 @@ real ConditionalKDGaussianClassifier::Node::Observe(const Vector& x, const int y
 	real total_probability;
 
     // the local distribution
-    real P_local = 0.001 / (real) tree.n_classes + 0.999 * local_probability->Observe(x, y);
+    real P_local = FUDGE / (real) tree.n_classes + (1 - FUDGE) * local_probability->Observe(x, y);
 
 	// Mixture with the previous ones
     w = exp(log_w); 
@@ -194,7 +196,7 @@ real ConditionalKDGaussianClassifier::Node::pdf(const Vector& x, const int y, re
 	real total_probability;
 
     // the local distribution
-    real P_local =  0.001 / (real) tree.n_classes + 0.999 * local_probability->Output(x)(y);
+    real P_local =  FUDGE / (real) tree.n_classes + (1 - FUDGE) * local_probability->Output(x)(y);
 
 	// Mix the current one with all previous ones
     w =  exp(log_w);
@@ -231,7 +233,7 @@ Vector ConditionalKDGaussianClassifier::Node::Output(const Vector& x, const Vect
 	Vector total_probability(tree.n_classes);
 
     // the local distribution
-    Vector P_local =   local_probability->Output(x) * 0.999 + 0.001 / (real) tree.n_classes;
+    Vector P_local =   local_probability->Output(x) * (1 - FUDGE) + FUDGE / (real) tree.n_classes;
 
 	// Mix the current one with all previous ones
     w =  exp(log_w);
