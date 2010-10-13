@@ -79,7 +79,7 @@ int ReadClassData(Matrix& data, std::vector<int>& labels, const char* fname)
                 exit(-1);
             }
         }
-
+        
         int success = fscanf(file, "%d", &labels[t]);
         if (success <=0) {
             Serror("Could not scan file, line %d\n", t);
@@ -87,6 +87,9 @@ int ReadClassData(Matrix& data, std::vector<int>& labels, const char* fname)
         }
         //printf("%d\n", labels[t]);
     }
-    fclose(file);
+    int min_label = Min(labels);
+    for (int t=0; t<T; ++t) {
+        labels[t] -= min_label;
+    }
 	return T;
 }
