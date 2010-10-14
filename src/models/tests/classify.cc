@@ -304,7 +304,7 @@ int main(int argc, char** argv)
     SparseLinearClassifier sparse_linear_classifier(n_inputs, n_classes, projection_size);
     sparse_linear_classifier.setStepSize(step_size);
     //LinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
-    HashedLinearClassifierMixture linear_classifier_mixture(n_inputs, n_classes, n_classifiers);
+    HashedLinearClassifierMixture linear_classifier_mixture(n_inputs, n_classes, n_classifiers, projection_size);
     linear_classifier_mixture.setStepSize(step_size);
     //MultivariateGaussianClassifier gaussian_classifier(n_inputs, n_classes);
     KNNClassifier knn_classifier(n_inputs, n_classes, n_neighbours);
