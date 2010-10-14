@@ -66,7 +66,7 @@ void LinearClassifier::Observe(const Vector& x, int label)
     }
 
     for (int j=0; j<n_classes; ++j) {
-        //        dg_df(j) = hidden(j) * output(j) * (1 + output(j));
+        //dg_df(j) = hidden(j) * output(j) * (1 + output(j));
         dg_df(j) = dc_dg(j) - output(j) * sum;
     }
 

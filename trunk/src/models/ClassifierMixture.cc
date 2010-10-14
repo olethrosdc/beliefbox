@@ -12,6 +12,7 @@
 #include "ClassifierMixture.h"
 #include "Distribution.h"
 #include "Random.h"
+#include "MersenneTwister.h"
 
 LinearClassifierMixture::LinearClassifierMixture(int n_inputs_,
                                                  int n_classes_,
@@ -24,9 +25,11 @@ LinearClassifierMixture::LinearClassifierMixture(int n_inputs_,
       output(n_classes),
       alpha(0.1)
 {
+    MersenneTwisterRNG rng;
     real p = 1.0 / (real) n_classifiers;
     for (int i=0; i<n_classifiers; ++i) {
-        classifiers[i] = new LinearClassifier(n_inputs, n_classes);
+        int projection_size = 1 + rng.discrete_uniform(2 * (n_inputs + n_classes));
+        classifiers[i] = new SparseLinearClassifier(n_inputs, n_classes, projection_size);
         classifiers[i]->setStepSize(alpha);
         w[i] = p;
     }
@@ -94,6 +97,12 @@ void HashedLinearClassifierMixture::Observe(const Vector& x, int label)
     assert(x.Size() == n_inputs);
     assert(label >= 0 && label < n_classes);
 
+    for (int i=0; i<(int) classifiers.size(); ++i) {
+        P(i) = w(i) * (classifiers[i]->Output(x))(label);
+    }
+    w = P / P.Sum();
+
+    
     unsigned long hash = secret;
     for (int i=0; i<x.Size(); ++i) {
         void* ptr = (void*) &x[i];

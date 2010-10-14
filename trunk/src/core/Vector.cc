@@ -281,17 +281,17 @@ Vector Vector::operator/ (const Vector& rhs) const
     assert (rhs.n==n);
     Vector lhs (n);
     for (int i=0; i<n; i++) {
-        lhs.x[i] = x[i] * rhs[i];
+        lhs.x[i] = x[i] / rhs[i];
     }
     return lhs;
 }
 
-/// Per-element self-multiplication
+/// Per-element self-division
 Vector& Vector::operator/= (const Vector& rhs)
 {
     assert (rhs.n==n);
     for (int i=0; i<n; i++) {
-        x[i] *= rhs[i];
+        x[i] /= rhs[i];
     }
     return *this;
 }
@@ -329,8 +329,9 @@ Vector Vector::operator* (const real& rhs) const
 Vector Vector::operator/ (const real& rhs) const
 {
     Vector lhs (n);
+    real inv = 1.0 / rhs;
     for (int i=0; i<n; i++) {
-        lhs.x[i] = x[i]/rhs;
+        lhs.x[i] = x[i] * inv;
     }
     return lhs;
 }
@@ -369,8 +370,9 @@ Vector& Vector::operator*= (const real& rhs)
 /// Self scalar multiplication
 Vector& Vector::operator/= (const real& rhs)
 {
+    real inv = 1.0 / rhs;
     for (int i=0; i<n; i++) {
-        x[i] /= rhs;
+        x[i] *= inv;
     }
     return *this;
 }

@@ -12,7 +12,7 @@
 #ifndef CLASSIFIER_MIXTURE_H
 #define CLASSIFIER_MIXTURE_H
 
-#include "LinearClassifier.h"
+#include "SparseLinearClassifier.h"
 #include "Random.h"
 #include <vector>
 
@@ -21,7 +21,7 @@ class LinearClassifierMixture
 public:
     const int n_inputs;
     const int n_classes;
-    std::vector<LinearClassifier*> classifiers;
+    std::vector<SparseLinearClassifier*> classifiers;
     Vector w; ///< classifier weights
     Vector P; ///< classifier selection probabilities
     Vector output;
