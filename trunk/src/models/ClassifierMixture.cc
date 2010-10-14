@@ -16,7 +16,8 @@
 
 LinearClassifierMixture::LinearClassifierMixture(int n_inputs_,
                                                  int n_classes_,
-                                                 int n_classifiers) 
+                                                 int n_classifiers,
+                                                 int projection_size) 
     : n_inputs(n_inputs_),
       n_classes(n_classes_),
       classifiers(n_classifiers),
@@ -28,7 +29,6 @@ LinearClassifierMixture::LinearClassifierMixture(int n_inputs_,
     MersenneTwisterRNG rng;
     real p = 1.0 / (real) n_classifiers;
     for (int i=0; i<n_classifiers; ++i) {
-        int projection_size = 1 + rng.discrete_uniform(2 * (n_inputs + n_classes));
         classifiers[i] = new SparseLinearClassifier(n_inputs, n_classes, projection_size);
         classifiers[i]->setStepSize(alpha);
         w[i] = p;
@@ -86,7 +86,7 @@ void LinearClassifierMixture::Show()
 }
 
 
-HashedLinearClassifierMixture::HashedLinearClassifierMixture(int n_inputs_, int n_classes_, int n_classifiers) : LinearClassifierMixture(n_inputs_, n_classes_, n_classifiers)
+HashedLinearClassifierMixture::HashedLinearClassifierMixture(int n_inputs_, int n_classes_, int n_classifiers, int projection_size) : LinearClassifierMixture(n_inputs_, n_classes_, n_classifiers, projection_size)
 {
     secret = true_random_bits(false);
 }

@@ -27,7 +27,7 @@ public:
     Vector output;
     real alpha;
     LinearClassifierMixture(int n_inputs_, int n_classes_,
-                            int n_classifiers);
+                            int n_classifiers, int projection_size);
     virtual ~LinearClassifierMixture();
     int Classify(const Vector& x)
     {
@@ -45,7 +45,7 @@ protected:
     unsigned long secret;
 public:
     
-    HashedLinearClassifierMixture(int n_inputs_, int n_classes_, int n_classifiers); 
+    HashedLinearClassifierMixture(int n_inputs_, int n_classes_, int n_classifiers, int projection_size); 
     virtual ~HashedLinearClassifierMixture()
     {
     }
