@@ -18,6 +18,15 @@
 #include "Matrix.h"
 
 
+/** A linear classifier.
+
+    This uses a parameter matrix \f$\Theta\f$ and bias vector \f$b\f$
+    so that the output is
+    \f[
+    f(x) = h\left(\Theta x + b\right),
+    \f]
+    where \f$h : R \to [0,1]$\f is the soft-max function with temperature 1.
+ */
 class LinearClassifier
 {
 public:

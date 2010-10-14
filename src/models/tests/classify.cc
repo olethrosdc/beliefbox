@@ -12,6 +12,7 @@
 #ifdef MAKE_MAIN
 
 #include "LinearClassifier.h"
+#include "SparseLinearClassifier.h"
 #include "ClassifierMixture.h"
 #include "KNNClassifier.h"
 #include "MultivariateGaussianClassifier.h"
@@ -86,11 +87,13 @@ enum ClassifierType {
     GAUSSIAN_TREE,
     NEAREST_NEIGHBOUR,
     HASHED_MIXTURE,
-    LINEAR
+    LINEAR,
+    SPARSE_LINEAR
 };
 static const char* const help_text = "Usage: ... \n\
  --train file\n\
  --test file\n\
+ --sparse N\n\
  --tree N\n\
  --mixture N\n\
  --knn N\n\
@@ -118,6 +121,8 @@ int main(int argc, char** argv)
     real step_size = 0.01;
     bool normalise = false;
     bool randomise = false;
+    int projection_size = 4;
+
     ClassifierType classifier_type = LINEAR;
     {
         // options
@@ -135,7 +140,8 @@ int main(int argc, char** argv)
                 {"iterations", required_argument, 0, 0}, //5
                 {"step_size", required_argument, 0, 0}, // 6
                 {"normalise", no_argument, 0, 0}, // 7 
-                {"randomise", no_argument, 0, 0}, // 7 
+                {"randomise", no_argument, 0, 0}, // 8
+                {"sparse", required_argument, 0, 0}, // 9
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -177,6 +183,10 @@ int main(int argc, char** argv)
                     break;
                 case 8:
                     randomise = true;
+                    break;
+                case 9:
+                    projection_size = atoi(optarg);
+                    classifier_type = SPARSE_LINEAR;
                     break;
                 default:
                     fprintf (stderr, "%s", help_text);
@@ -290,6 +300,9 @@ int main(int argc, char** argv)
 
     LinearClassifier linear_classifier(n_inputs, n_classes);
     linear_classifier.setStepSize(step_size);
+    
+    SparseLinearClassifier sparse_linear_classifier(n_inputs, n_classes, projection_size);
+    sparse_linear_classifier.setStepSize(step_size);
     //LinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
     HashedLinearClassifierMixture linear_classifier_mixture(n_inputs, n_classes, n_classifiers);
     linear_classifier_mixture.setStepSize(step_size);
@@ -320,6 +333,9 @@ int main(int argc, char** argv)
         case LINEAR:
             Train(linear_classifier, data, labels, randomise);
             break;
+        case SPARSE_LINEAR:
+            Train(sparse_linear_classifier, data, labels, randomise);
+            break;
         }
     }
 	
@@ -340,6 +356,9 @@ int main(int argc, char** argv)
         case LINEAR:
             Evaluate(linear_classifier, data, labels, "TRAIN");
             break;
+        case SPARSE_LINEAR:
+            Evaluate(sparse_linear_classifier, data, labels, "TRAIN");
+            break;
         }
     }
 
@@ -357,6 +376,9 @@ int main(int argc, char** argv)
             break;
         case LINEAR:
             Evaluate(linear_classifier, test_data, test_labels, "TEST");
+            break;
+        case SPARSE_LINEAR:
+            Evaluate(sparse_linear_classifier, test_data, test_labels, "TEST");
             break;
         }
 

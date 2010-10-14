@@ -15,7 +15,7 @@
 
 #include "Random.h"
 
-static real ConditionalKDGaussianClassifier::FUDGE = 10e-6;
+real ConditionalKDGaussianClassifier::FUDGE = 10e-6;
 
 ConditionalKDGaussianClassifier::Node::Node(ConditionalKDGaussianClassifier& tree_,
 									 Vector& lower_bound_x_,

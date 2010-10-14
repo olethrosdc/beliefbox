@@ -42,9 +42,9 @@ public:
     {
         return method->Output(x);
     }
-    virtual void Observe(InputSet& x)
+    virtual void Observe(InputSet& x, ClassSet& y)
     {
-        method->Observe(x);
+        method->Observe(x, y);
     }
 };
 

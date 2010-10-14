@@ -244,6 +244,18 @@ inline Vector exp (const Vector& rhs)
     return lhs;
 }
 
+/// Exponentiation
+inline Vector tanh (const Vector& rhs)
+{
+    int n = rhs.Size();
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = tanh(rhs[i]);
+    }
+    return lhs;
+}
+
+
 /// Logarithmication
 inline Vector log (const Vector& rhs)
 {
