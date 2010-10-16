@@ -1,6 +1,6 @@
 /* -*- Mode: C++; -*- */
 /* VER: $Id: Policy.h,v 1.8 2006/10/23 08:33:24 olethros Exp cdimitrakakis $*/
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -45,10 +45,11 @@ public:
 		T++;
 		total_reward += reward;
 		discounted_reward += reward * gamma;
-
 	}
 	void Sample(int period)
 	{
+		environment.setState(start_state);
+		running = true;
 		for (int t=0; t<period; ++t) {
 			if (!running) {
 				return;

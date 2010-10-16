@@ -27,10 +27,10 @@ class KDNode
     int a; ///< split dimension
     KDNode* lower; ///< lower child
     KDNode* upper; ///< upper child
-    void* object; ///< easiest way to associate an object
+    const void* object; ///< easiest way to associate an object
 	
 	/// Make a node
-    KDNode(Vector& c_, int a_, Vector& inf, Vector& sup, void* object_) : c(c_), a(a_), lower(NULL), upper(NULL), object(object_)
+    KDNode(const Vector& c_, int a_, Vector& inf, Vector& sup, const void* object_) : c(c_), a(a_), lower(NULL), upper(NULL), object(object_)
     {
         assert(a >= 0 && a < c.Size());
         box_inf = inf;
@@ -38,9 +38,9 @@ class KDNode
         // nothing else to init.
     }
 
-    KDNode* AddVector(Vector& x, Vector& inf, Vector& sup, void* object);
-    void NearestNeighbour(Vector& x, KDNode*& nearest, real& dist);
-    void KNearestNeighbours(Vector& x,OrderedFixedList<KDNode>& knn_list, real& dist);
+    KDNode* AddVector(const Vector& x, Vector& inf,  Vector& sup, const void* object);
+    void NearestNeighbour(const Vector& x, KDNode*& nearest, real& dist);
+    void KNearestNeighbours(const Vector& x,OrderedFixedList<KDNode>& knn_list, real& dist);
 };
 
 /** void_KD Tree
@@ -71,12 +71,12 @@ protected:
 public:	
     void_KDTree(int n); 
     virtual ~void_KDTree();
-    void AddVector(Vector& x, void* object);
+    void AddVector(const Vector& x, const void* object);
     void Show();
-    KDNode* FindNearestNeighbourLinear(Vector& x);
-    KDNode* FindNearestNeighbour(Vector& x);
-    OrderedFixedList<KDNode> FindKNearestNeighboursLinear(Vector& x, int K);
-    OrderedFixedList<KDNode> FindKNearestNeighbours(Vector& x, int K); 
+    KDNode* FindNearestNeighbourLinear(const Vector& x);
+    KDNode* FindNearestNeighbour(const Vector& x);
+    OrderedFixedList<KDNode> FindKNearestNeighboursLinear(const Vector& x, const int K);
+    OrderedFixedList<KDNode> FindKNearestNeighbours(const Vector& x, const int K); 
 	/// Get number of nodes
     int getNumberOfNodes()
     {
@@ -109,48 +109,48 @@ class KDTree : public void_KDTree
     {
     }
 	/// Find the nearest object, in linear time
-    T* FindNearestObjectLinear(Vector& x)
+    T* FindNearestObjectLinear(const Vector& x)
     {
         KDNode* node = void_KDTree::FindNearestNeighbourLinear(x);
         return (T*) node->object;
     }
 	/// Find the nearest object, in logarithmic time.
-    T* FindNearestObject(Vector& x)
+    T* FindNearestObject(const Vector& x)
     {
         KDNode* node = void_KDTree::FindNearestNeighbour(x);
         return (T*) node->object;
     }
 	/// Find the nearest neighbour in linear time.
-    KDNode* FindNearestNeighbourLinear(Vector& x)
+    KDNode* FindNearestNeighbourLinear(const Vector& x)
     {
         return void_KDTree::FindNearestNeighbourLinear(x);
 
     }
 	/// Find the nearest neighbour in logarithmic time.
-    KDNode* FindNearestNeighbour(Vector& x)
+    KDNode* FindNearestNeighbour(const Vector& x)
     {
         return void_KDTree::FindNearestNeighbour(x);
     }
 
     /// Find the K nearest objects in linear time
-    T* FindKNearestObjectsLinear(Vector& x, int K)
+    T* FindKNearestObjectsLinear(const Vector& x, const int K)
     {
         KDNode* node = void_KDTree::FindKNearestNeighboursLinear(x, K);
         return (T*) node->object;
     }
     /// Find the K nearest objects
-    T* FindKNearestObjects(Vector& x, int K)
+    T* FindKNearestObjects(const Vector& x, const int K)
     {
         KDNode* node = void_KDTree::FindKNearestNeighbours(x, K);
         return (T*) node->object;
     }
 	    /// Find the K nearest objects in linear time
-    OrderedFixedList<KDNode> FindKNearestNeighboursLinear(Vector& x, int K)
+    OrderedFixedList<KDNode> FindKNearestNeighboursLinear(const Vector& x, const int K)
     {
         return void_KDTree::FindKNearestNeighboursLinear(x, K);
 
     }
-    OrderedFixedList<KDNode> FindKNearestNeighbours(Vector& x, int K)
+    OrderedFixedList<KDNode> FindKNearestNeighbours(const Vector& x, const int K)
     {
         return void_KDTree::FindKNearestNeighbours(x, K);
     }
@@ -161,7 +161,7 @@ class KDTree : public void_KDTree
         return (T*) node->object;
     }
     
-    void AddVectorObject(Vector& x, T* object)
+    void AddVectorObject(const Vector& x, T* object)
     {
         AddVector(x, (void*) object);
     }

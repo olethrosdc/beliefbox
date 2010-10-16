@@ -26,7 +26,7 @@ public:
     public:
         Vector x; ///< point
         int label; ///< label
-        DataSample(Vector& x_, int label_)
+        DataSample(const Vector& x_, const int label_)
             : x(x_), label(label_)        
         {
         }
@@ -37,20 +37,25 @@ protected:
     int K;
     KDTree<DataSample> kd_tree;
     std::list<DataSample> samples;
-    void AddSample(DataSample sample);
+    void AddSample(const DataSample sample);
 public:	
     Vector output;
-    KNNClassifier(int n_dim_, int n_classes_, int K_);
+    KNNClassifier(const int n_dim_, const int n_classes_, const int K_);
     ~KNNClassifier();
-    int Classify(Vector& x)
+    int Classify(const Vector& x)
     {
         return ArgMax(Output(x));
     }
-    Vector& Output(Vector& x);
-    void Observe(Vector& x, int label)
+    Vector& Output(const Vector& x);
+    real Observe(const Vector& x, const int label)
     {
         AddSample(DataSample(x, label));
+		return Output(x)(label);
     }
+	void Show()
+	{
+		kd_tree.Show();
+	}
 };
 
 
