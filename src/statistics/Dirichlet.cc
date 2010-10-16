@@ -25,7 +25,7 @@ DirichletDistribution::DirichletDistribution(int n, real p)
     this->n = n;
     a.Resize(n);
     for (int i=0; i<n; ++i) {
-        a[i] = p;
+        a(i) = p;
     }
 }
 
@@ -33,7 +33,7 @@ DirichletDistribution::DirichletDistribution(int n, real p)
 DirichletDistribution::DirichletDistribution(Vector& x) : n(x.Size()), a(x)
 {
     for (int i=0; i<n; ++i) {
-        assert(a[i] >= 0);
+        assert(a(i) >= 0);
     }
 }
 
@@ -42,7 +42,7 @@ void DirichletDistribution::resize(int n, real p)
     this->n = n;
     a.Resize(n);
     for (int i=0; i<n; ++i) {
-        a[i] = p;
+        a(i) = p;
     }
 }
 
@@ -62,8 +62,8 @@ void DirichletDistribution::generate(Vector& y)
         //Vector y(n);
     real sum = 0.0;
     for (int i=0; i<n; i++) {
-        y[i] = gengam(1.0, a[i]);
-        sum += y[i];
+        y(i) = gengam(1.0, a(i));
+        sum += y(i);
     }
     real invsum = 1.0 / sum;
      y *= invsum;
@@ -80,13 +80,13 @@ real DirichletDistribution::pdf(const Vector& x) const
     real log_prod = 0.0;
     real sum = 0.0;
     for (int i=0; i<n; i++) {
-        real xi = x[i];
+        real xi = x(i);
         if (xi<0) {
             Swarning ("Got a negative value for x[%d]:%f\n", i, xi);
             return 0.0;
         }
         sum += xi;
-        log_prod += xi * a[i];
+        log_prod += xi * a(i);
     }
     if (fabs(sum-1.0f)>0.001) {
         Swarning ("Vector x not a distribution apparently: sum=%f.  Returning 0.\n", sum);
@@ -98,7 +98,7 @@ real DirichletDistribution::pdf(const Vector& x) const
 
 void DirichletDistribution::Observe(int i)
 {
-    a[i] += 1.0;
+    a(i) += 1.0;
 }
 
 Vector DirichletDistribution::GetParameters() const
@@ -115,7 +115,7 @@ Vector DirichletDistribution::GetMean() const
     } else {
         real invs = 1.0 / (real) p.Size();
         for (int i=0; i<p.Size(); i++) {
-            p[i] = invs;
+            p(i) = invs;
         }
     }
     //printf ("sum: %f\n", p.Sum());

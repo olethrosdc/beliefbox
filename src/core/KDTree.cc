@@ -18,7 +18,7 @@ void_KDTree::~void_KDTree()
 }
 
 /// Add a vector and associated object, creating a node on the fly.
-void void_KDTree::AddVector(Vector& x, void* object)
+void void_KDTree::AddVector(const Vector& x, const void* object)
 {
     if (!root) {
         root = new KDNode(x, 0, box_inf, box_sup, object);
@@ -57,7 +57,7 @@ void void_KDTree::Show()
 }
     
 /// Find the nearest neighbour to x by linear search
-KDNode* void_KDTree::FindNearestNeighbourLinear(Vector& x)
+KDNode* void_KDTree::FindNearestNeighbourLinear(const Vector& x)
 {
     int N = node_list.size();
     real min_dist = EuclideanNorm(&x, &node_list[0]->c);
@@ -73,7 +73,7 @@ KDNode* void_KDTree::FindNearestNeighbourLinear(Vector& x)
 }
 
 /// Find the nearest neighour ro x
-KDNode* void_KDTree::FindNearestNeighbour(Vector& x)
+KDNode* void_KDTree::FindNearestNeighbour(const Vector& x)
 {
     if (!root) {
         // tree is empty
@@ -88,7 +88,7 @@ KDNode* void_KDTree::FindNearestNeighbour(Vector& x)
 
 
 /// Find the first K nearest neigbours to X by linear search through the list.
-OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(Vector& x, int K)
+OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(const Vector& x, const int K)
 {
     int N = node_list.size();
     OrderedFixedList<KDNode> knn_list(K);
@@ -100,7 +100,7 @@ OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(Vector& x, in
 }
 
 /// Find the first K nearest neighbours to x.
-OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighbours(Vector& x, int K)
+OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighbours(const Vector& x, const int K)
 {
     OrderedFixedList<KDNode> knn_list(K);
     if (!root) {
@@ -114,7 +114,7 @@ OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighbours(Vector& x, int K)
 
 
 /// Add a point to the corresponding (upper or lower) half, creating it if necessary.
-KDNode* KDNode::AddVector(Vector& x, Vector& inf, Vector& sup, void* object)
+KDNode* KDNode::AddVector(const Vector& x,  Vector& inf,  Vector& sup, const void* object)
 {
     box_inf = inf;
     box_sup = sup;
@@ -155,7 +155,7 @@ KDNode* KDNode::AddVector(Vector& x, Vector& inf, Vector& sup, void* object)
     \f$y\f$ in that subset will have \f$y_k = x_k\f$ for all 
     \f$k \neq a\f$ and \f$y_a = c_a\f$.
  */
-void KDNode::NearestNeighbour(Vector& x, KDNode*& nearest, real& dist)
+void KDNode::NearestNeighbour(const Vector& x,  KDNode*& nearest, real& dist)
 {
     real c_dist = EuclideanNorm(&x, &c);
     if (c_dist < dist) {
@@ -193,7 +193,7 @@ void KDNode::NearestNeighbour(Vector& x, KDNode*& nearest, real& dist)
     Instead of having a fixed distance bound, we, in addition,
     have a dynamic bound based on the K-th neighbour found so far.
  */
-void KDNode::KNearestNeighbours(Vector& x,
+void KDNode::KNearestNeighbours(const Vector& x,
                                OrderedFixedList<KDNode>& knn_list,
                                real& dist)
 {

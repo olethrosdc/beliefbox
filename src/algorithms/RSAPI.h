@@ -1,6 +1,5 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: Policy.h,v 1.8 2006/10/23 08:33:24 olethros Exp cdimitrakakis $*/
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,25 +12,31 @@
 #ifndef RSAPI_H
 #define RSAPI_H
 
+#include "StateSet.h"
 #include "Rollout.h"
+#include "Vector.h"
 #include <vector>
 
-template<typename R>
-class StateSample
+class RolloutState
 {
-	std::vector<R> 
+public:
+	Vector start_state;
+	real gamma;
+	std::vector<Rollout<Vector, int, AbstractPolicy<Vector, int> >* > rollouts;
 };
 
-template<typename S, typename A>
+template <typename S, typename A, typename P>
 class RSAPI
 {
 public:
-	StateSet<S>
-	A action;
-	S end_state;
-	real total_reward;
-	real discounted_reward;
+	std::vector<RolloutState*> states;
 };
 
+class void_RSAPI
+{
+public:
+	std::vector<void*> states;
+	
+};
 
 #endif

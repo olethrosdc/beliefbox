@@ -17,6 +17,7 @@
 #include "KNNClassifier.h"
 #include "MultivariateGaussianClassifier.h"
 #include "ConditionalKDGaussianClassifier.h"
+#include "ConditionalKDNNClassifier.h"
 #include "MersenneTwister.h"
 #include "ReadFile.h"
 #include "Matrix.h"
@@ -80,7 +81,7 @@ void Train(C& classifier, Matrix& data, std::vector<int>& labels, bool randomise
         //printf ("%f %f #PREQ\n", n_errors / (real) (T), accuracy / (real) (T));
     }
     printf ("%f %f #PREQ\n", n_errors / (real) (T), accuracy / (real) (T));
-
+	//classifier.Show();
 }
 
 enum ClassifierType {
@@ -304,11 +305,19 @@ int main(int argc, char** argv)
     SparseLinearClassifier sparse_linear_classifier(n_inputs, n_classes, projection_size);
     sparse_linear_classifier.setStepSize(step_size);
     //LinearClassifierMixture classifier(n_inputs, n_classes, n_classifiers);
-    HashedLinearClassifierMixture linear_classifier_mixture(n_inputs, n_classes, n_classifiers, projection_size);
-    linear_classifier_mixture.setStepSize(step_size);
+    //HashedLinearClassifierMixture linear_classifier_mixture(n_inputs, n_classes, n_classifiers, projection_size);
+	std::vector<KNNClassifier*> experts(n_classifiers);
+	for (int i=0; i<n_classifiers; ++i) {
+		experts[i] = new KNNClassifier(n_inputs, n_classes, n_neighbours);
+	}
+    HashedClassifierMixture<KNNClassifier> linear_classifier_mixture(n_inputs,
+																	  n_classes,
+																	  experts);
+    //linear_classifier_mixture.setStepSize(step_size);
     //MultivariateGaussianClassifier gaussian_classifier(n_inputs, n_classes);
     KNNClassifier knn_classifier(n_inputs, n_classes, n_neighbours);
-    ConditionalKDGaussianClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
+    //ConditionalKDGaussianClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
+    ConditionalKDNNClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
 
 
     //classifier.setStepSize(alpha);
@@ -383,6 +392,11 @@ int main(int argc, char** argv)
         }
 
     }
+
+	for (int i=0; i<n_classifiers; ++i) {
+		delete experts[i];
+	}
+	return 0;
 }
 
 

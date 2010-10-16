@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2005-2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2005-2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -21,6 +21,7 @@
 
 typedef std::set<int> DiscreteStateSet;
 typedef std::set<int>& DiscreteStateSetRef;
+
 
 template<>
 class MDP<int, int> {

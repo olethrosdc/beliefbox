@@ -59,8 +59,11 @@ class HashedClassifierMixture
 protected:
     const int n_inputs;
     const int n_classes;
+
     std::vector<T*> classifiers;
     unsigned long secret;
+	Vector P;
+	Vector w;
 public:
     Vector output;
     HashedClassifierMixture(int n_inputs_,
@@ -69,8 +72,14 @@ public:
         : n_inputs(n_inputs_),
           n_classes(n_classes_),
           classifiers(classifiers_),
-          output(n_classes)
+		  P(classifiers.size()),
+		  w(classifiers.size()),
+          output(n_classes)		  
     {
+		real w_prior = 1.0 / (real) w.Size();
+		for (int i=0; i<w.Size(); ++i) {
+			w(i) = w_prior;
+		}
         secret = true_random_bits(false);
     }
     ~HashedClassifierMixture()
@@ -81,7 +90,12 @@ public:
     {
         assert(x.Size() == n_inputs);
         assert(label >= 0 && label < n_classes);
-        
+    
+		for (int i=0; i<(int) classifiers.size(); ++i) {
+			P(i) = w(i) * (classifiers[i]->Output(x))(label);
+		}
+		w = P / P.Sum();
+    
         unsigned long hash = secret;
         for (int i=0; i<x.Size(); ++i) {
             void* ptr = (void*) &x[i];
@@ -113,6 +127,17 @@ public:
         output *= w;
         return output;
     }
+    void Show()
+	{
+#if 0
+		for (int i=0; i<(int) classifiers.size(); ++i) {
+			printf ("# %d\n", i);
+			classifiers[i]->Show();
+		}
+#endif
+		printf ("w: ");
+		w.print(stdout);
+	}
 };
 
 

@@ -22,7 +22,7 @@
     
     As a side-effect, initialise the kd_tree list
  */
-KNNClassifier::KNNClassifier(int n_dim_, int n_classes_, int K_)
+KNNClassifier::KNNClassifier(const int n_dim_, const int n_classes_, const int K_)
     : n_classes(n_classes_), n_dim(n_dim_), K(K_),
       kd_tree(n_dim), output(n_classes)
 {
@@ -42,7 +42,7 @@ KNNClassifier::~KNNClassifier()
     using x as a context.
     
  */
-void KNNClassifier::AddSample(DataSample sample)
+void KNNClassifier::AddSample(const DataSample sample)
 {
     samples.push_back(sample);
     kd_tree.AddVectorObject(sample.x, &samples.back());
@@ -54,15 +54,25 @@ void KNNClassifier::AddSample(DataSample sample)
     This is the simplest type of predictor.
     It just predicts the next vector mean, no distribution is used.
     
-    \param x observables
-*/
-Vector& KNNClassifier::Output(Vector& x)
+	However, due to problems with potential instability, we instead do
+	some mild regularisation.  If \f$w_i = \frac{1}{K} \sum_j
+	I\{c_j\in B_K(x)\} \f$ is the total weight given by neighbours to
+	the observed output, then the probability of class i is
+	\f[
+	p_i
+	= (w_i + 1/t) / (N / t + \sum_j w_j)
+	= (t w_i + 1) / (N + t \sum_j w_j)
+	\f]
+
+
+    \param x observables */
+Vector& KNNClassifier::Output(const Vector& x)
 {
     //basis.Evaluate(x);
     assert(n_dim == x.Size());
     assert(n_classes == output.Size());
     for (int i=0; i<n_classes; ++i) {
-        output[i] = 0;
+        output(i) = 1.0 / (1 + samples.size());
     }
 
     real w = 1.0 / (real) K;
@@ -75,6 +85,10 @@ Vector& KNNClassifier::Output(Vector& x)
         DataSample* sample = kd_tree.getObject(node);
         output[sample->label] += w;
     }
+	if (i==0) {
+		output += w;
+	}
+	output /= output.Sum();
     return output;
 }
 
