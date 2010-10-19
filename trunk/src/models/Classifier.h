@@ -13,39 +13,16 @@
 #ifndef CLASSIFIER_H
 #define CLASSIFIER_H
 
-template <typename InputSet, typename ClassSet, typename ClassDistriution>
-class AbstractClassifier
+template <typename InputSet, typename ClassSet, typename ClassDistribution>
+class Classifier
 {
-protected:
 public:
-    virtual ~AbstractClassifier() {}
-    virtual ClassSet Classify(InputSet& x) = 0;
-};
-
-template <typename InputSet, typename ClassSet, typename ClassDistriution, typename Method>
-class Classifier : public AbstractClassifier<InputSet, ClassSet, ClassDistriution>
-{
-protected:
-    Method* method;
-public:
-    Classifier(Method* method_) : method(method_)
+    virtual ~Classifier()
     {
     }
-    virtual ~Classifier
-    {
-    }
-    virtual ClassSet Classify(InputSet& x)
-    {
-        return method->Classify(x);
-    }
-    virtual ClassDistribution& Output(InputSet& x)
-    {
-        return method->Output(x);
-    }
-    virtual void Observe(InputSet& x, ClassSet& y)
-    {
-        method->Observe(x, y);
-    }
+    virtual ClassSet Classify(const InputSet& x) = 0;
+    virtual ClassDistribution& Output(const InputSet& x) = 0;
+    virtual real Observe(const InputSet& x, const ClassSet& y) = 0;
 };
 
 #endif

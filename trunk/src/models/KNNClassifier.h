@@ -9,16 +9,17 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef KNN_Classifier_H
-#define KNN_Classifier_H
+#ifndef KNN_CLASSIFIER_H
+#define KNN_CLASSIFIER_H
 
 #include "Vector.h"
 #include "KDTree.h"
 #include <list>
 #include <vector>
+#include "Classifier.h"
 
 
-class KNNClassifier
+class KNNClassifier : public  Classifier<Vector, int, Vector>
 {
 public:
     class DataSample
@@ -41,13 +42,13 @@ protected:
 public:	
     Vector output;
     KNNClassifier(const int n_dim_, const int n_classes_, const int K_);
-    ~KNNClassifier();
-    int Classify(const Vector& x)
+    virtual ~KNNClassifier();
+    virtual int Classify(const Vector& x)
     {
         return ArgMax(Output(x));
     }
-    Vector& Output(const Vector& x);
-    real Observe(const Vector& x, const int label)
+    virtual Vector& Output(const Vector& x);
+    virtual real Observe(const Vector& x, const int& label)
     {
         AddSample(DataSample(x, label));
 		return Output(x)(label);

@@ -42,7 +42,8 @@ MountainCar::Parameters MountainCar::default_parameters =
         parameters.MCNOISE = (0.5 + rng.uniform()) * default_parameters.MCNOISE;
     }
     state.Resize(n_states);
-   
+	state.Clear();
+
     state_upper_bound.Resize(n_states);
     state_lower_bound.Resize(n_states);
     state_upper_bound[0] = parameters.U_POS;
@@ -83,7 +84,7 @@ void MountainCar::Reset()
     endsim = false;
     reward = -1;
 }
-bool MountainCar::Act(int action)
+bool MountainCar::Act(const int action)
 {
     // make sure we tell the guy we have terminated
     if (endsim) {
@@ -96,7 +97,7 @@ bool MountainCar::Act(int action)
     return true;
 }
 
-void MountainCar::Simulate(int action)
+void MountainCar::Simulate(const int action)
 {
     real input=0.0;
 

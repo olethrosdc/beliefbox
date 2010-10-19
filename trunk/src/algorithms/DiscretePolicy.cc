@@ -32,7 +32,7 @@ FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions)
     }
 }
 
-FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector> p)
+FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
     : DiscretePolicy()
 {
     state = 0;
@@ -61,29 +61,29 @@ int FixedDiscretePolicy::SelectAction()
     return n-1;
 }
 
-void FixedDiscretePolicy::Observe (int previous_state, int action, real r, int next_state)
+void FixedDiscretePolicy::Observe (int& previous_state, int& action, real r, int& next_state)
 {
     state = next_state;
 }
 
-void FixedDiscretePolicy::Observe (real r, int next_state)
+void FixedDiscretePolicy::Observe (real r, int& next_state)
 {
     state = next_state;
 }
 
 
-void FixedDiscretePolicy::Reset(int start_state)
+void FixedDiscretePolicy::Reset(int& start_state)
 {
     state = start_state;
 }
 
-real FixedDiscretePolicy::getActionProbability(int action)
+real FixedDiscretePolicy::getActionProbability(int& action)
 {
 	return p[state][action];
 }
 
 
-real FixedDiscretePolicy::getActionProbability(int state, int action)
+real FixedDiscretePolicy::getActionProbability(int& state, int& action)
 {
 	return p[state][action];
 }

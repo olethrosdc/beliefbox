@@ -49,8 +49,8 @@ public:
              real Dt_ = 0.01);
     virtual ~Pendulum();
     virtual void Reset();
-    virtual bool Act(int action);
-    virtual void Simulate(int action);
+    virtual bool Act(const int action);
+    virtual void Simulate(const int action);
     Vector& StateUpperBound()
     {
         return state_upper_bound;

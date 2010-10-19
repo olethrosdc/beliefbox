@@ -41,7 +41,7 @@ ConditionalKDNNClassifier::Node::Node(ConditionalKDNNClassifier& tree_,
 #else
 	mid_point = 0;//(upper_bound_x[splitting_dimension] + lower_bound_x[splitting_dimension]) / 2.0;
 #endif
-	local_probability = new KNNClassifier(lower_bound_x.Size(), tree.n_classes, 1);
+	local_probability = new KNNClassifier(lower_bound_x.Size(), tree.n_classes, 2);
 }
 
 /// Make a node for K symbols at nominal depth d
@@ -74,7 +74,7 @@ ConditionalKDNNClassifier::Node::Node(ConditionalKDNNClassifier::Node* prev_,
     }
 
 	local_probability = new KNNClassifier(lower_bound_x.Size(),
-										  tree.n_classes,1);
+										  tree.n_classes,2);
 }
 
 /// make sure to kill all

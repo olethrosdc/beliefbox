@@ -15,7 +15,7 @@
 #include "real.h"
 #include <cmath>
 
-/// Maybe this class is a bit useless.
+/// A general random number generator
 class  RandomNumberGenerator {
 public:
     virtual ~RandomNumberGenerator() {}
