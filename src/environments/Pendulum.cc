@@ -82,7 +82,7 @@ void Pendulum::penddot(Vector& xdot, real u, Vector& x)
    
 }
 
-bool Pendulum::Act(int action)
+bool Pendulum::Act(const int action)
 {
     // make sure we tell the guy we have terminated
     if (endsim) {
@@ -95,7 +95,7 @@ bool Pendulum::Act(int action)
     return true;
 }
 
-void Pendulum::Simulate(int action)
+void Pendulum::Simulate(const int action)
 {
     Vector xdot(2);
     real input=0.0, noise, t;

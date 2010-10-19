@@ -1,6 +1,5 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: Policy.h,v 1.8 2006/10/23 08:33:24 olethros Exp cdimitrakakis $*/
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -10,21 +9,23 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ABSTRACT_POLICY_H
-#define ABSTRACT_POLICY_H
+#ifndef CLASSIFIER_POLICY_H
+#define CLASSIFIER_POLICY_H
 
-#include <vector>
-#include "real.h"
-#include "MDPDistribution.h"
+#include "AbstractPolicy.h"
 
-template <typename StateType, typename ActionType>
-class AbstractPolicy
+class ClassifierPolicy  : public AbstractPolicy<Vector, int>
 {
-public:	
-	StateType state;
-	virtual ~AbstractPolicy(){};
-	virtual ActionType SelectAction() = 0;
-	virtual void Observe (StateType& previous_state, ActionType& action, real r, StateType& next_state) = 0;
+protected:
+	Classifier<Vector,int>* classifier;
+public:
+	ClassifierPolicy(Classifier<Vector,int>* classifier_);
+	virtual ~ClassifierPolicy();
+	virtual int SelectAction()
+	{
+		return classifier->Classify(state);
+	}
+	virtual void Observe (Vector& previous_state, ActionType& action, real r, StateType next_state) = 0;
     virtual void Observe (real r, StateType& next_state) = 0;
 	virtual void Reset() = 0;
 	virtual void SetState(StateType& state)
@@ -32,6 +33,4 @@ public:
 		this->state = state;
 	}
 };
-
-
 #endif

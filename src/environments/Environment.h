@@ -53,7 +53,7 @@ public:
     ///
     /// The usual of false is that the environment is in a terminal
     /// absorbing state.
-    virtual bool Act(A action) = 0;
+    virtual bool Act(const A action) = 0;
     
     /// Return a full MDP model of the environment. 
     /// This may not be possible for some environments
@@ -67,7 +67,7 @@ public:
         return state;
     }
 	///  sets the current state
-	void setState(S s_next)
+	void setState(S& s_next)
 	{
 		state = s_next;
 	}

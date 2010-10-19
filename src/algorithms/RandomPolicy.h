@@ -9,40 +9,38 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef RSAPI_H
-#define RSAPI_H
+#ifndef RANDOM_POLICY_H
+#define RANDOM_POLICY_H
 
-#include "Environment.h"
-#include "Rollout.h"
-#include "Vector.h"
 #include "AbstractPolicy.h"
-#include <vector>
+#include "RandomNumberGenerator.h"
 
-
-class RolloutState
+class RandomPolicy  : public AbstractPolicy<Vector, int>
 {
+protected:
+	int n_actions;
+	RandomNumberGenerator& rng;
 public:
-	Environment<Vector, int>& environment;
-	Vector start_state; ///< The starting state
-	real gamma;  ///< The value of gamma used
-	std::vector<Rollout<Vector, int, AbstractPolicy<Vector, int> >* > rollouts; ///< The set of rollouts
-	real V_U; ///< Upper bound on the value
-	real V_L; ///< Lower bound on the value
-	real V; ///< Best guess estimate
-	RolloutState(Environment<Vector, int>& environment_,
-				 Vector& start_state_);
-	~RolloutState();
-	void NewRollout(AbstractPolicy<Vector, int> & policy, int action);
-	void Sample(const int T);
-   
+	RandomPolicy(int n_actions_, RandomNumberGenerator& rng_)
+		: n_actions(n_actions_),
+		  rng(rng_)
+	{
+	}
+	virtual ~RandomPolicy()
+	{
+	}
+	virtual int SelectAction()
+	{
+		return rng.discrete_uniform(n_actions);
+	}
+	virtual void Observe (Vector& previous_state, int& action, real r, Vector& next_state) 
+	{
+	}
+    virtual void Observe (real r, Vector& next_state) 
+	{
+	}
+	virtual void Reset() 
+	{
+	}
 };
-
-class RSAPI
-{
-public:
-	std::vector<RolloutState*> states;
-};
-
-
 #endif
-	
