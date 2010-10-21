@@ -15,20 +15,22 @@
 
 #include "Environment.h"
 
+/** A rollout.
+ */
 template<typename S, typename A, typename P>
 class Rollout
 {
 public:
-	S start_state;
-	A start_action;
-	S end_state;
-	P* policy;
-	Environment<S, A>* environment;
-	real gamma;
-	int T;
-	real total_reward;
-	real discounted_reward;
-	bool running;
+	S start_state; ///< initial state
+	A start_action; ///< initial action
+	S end_state; ///< current final state
+	P* policy; ///< policy to be used for continuation
+	Environment<S, A>* environment; ///< environment model
+	real gamma; ///< discount factor
+	int T; ///< total steps used
+	real total_reward; ///< total reward received
+	real discounted_reward; ///< discounted reward received
+	bool running; ///< whether the rollout needs to be sampled again
 	Rollout(const S& start_state_,
 			const A& start_action_, 
 			P* policy_, 

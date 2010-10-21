@@ -38,11 +38,12 @@ public:
     Vector getRandomTerminalState();
 };
 
+
 class RSAPI
 {
 protected:
     Environment<Vector, int>* environment;
-    AbstractPolicy<Vector, int>* policy;
+    AbstractPolicy<Vector, int >* policy;
     RandomNumberGenerator* rng;
 public:
 	std::vector<RolloutState*> states;
