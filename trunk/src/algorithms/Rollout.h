@@ -22,8 +22,8 @@ public:
 	S start_state;
 	A start_action;
 	S end_state;
-	P& policy;
-	Environment<S, A>& environment;
+	P* policy;
+	Environment<S, A>* environment;
 	real gamma;
 	int T;
 	real total_reward;
@@ -31,8 +31,8 @@ public:
 	bool running;
 	Rollout(const S& start_state_,
 			const A& start_action_, 
-			P& policy_, 
-			Environment<S, A>& environment_,
+			P* policy_, 
+			Environment<S, A>* environment_,
 			real gamma_) :
 		start_state(start_state_),
 		start_action(start_action_),
@@ -47,17 +47,18 @@ public:
 	}
 	void Act(const A& a)
 	{
-		running = environment.Act(a);
-		real reward = environment.getReward();
+		running = environment->Act(a);
+		real reward = environment->getReward();
 		//		printf("A: %d, r: %f ", a, reward);
-		end_state = environment.getState();
+		end_state = environment->getState();
 		T++;
 		total_reward += reward;
 		discounted_reward += reward * gamma;
 	}
 	void Sample(const int period)
-	{
-		environment.setState(start_state);
+    {
+        environment->Reset();
+		environment->setState(start_state);
 		running = true;
 		for (int t=0; t<period; ++t) {
 			if (!running) {
@@ -66,10 +67,10 @@ public:
 			if (t==0) {
 				Act(start_action);
 			} else {
-				Act(policy.SelectAction());
+				Act(policy->SelectAction());
 			}
 		}
-		printf("Total Reward: %f, State: ", total_reward);
+		printf("Length: %d, Total Reward: %f, State: ", T, total_reward);
 		end_state.print(stdout);
 	}
 };

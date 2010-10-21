@@ -35,9 +35,14 @@ public:
     virtual real uniform() = 0;
 
     /// Generates a uniform random number in [0,n)
-    virtual int discrete_uniform(int n)
+    inline virtual int discrete_uniform(int n)
     {
         return (int) floor(uniform()*((real) n));
+    }
+
+    inline virtual real uniform(real lower_bound, real upper_bound)
+    {
+        return lower_bound + (upper_bound - lower_bound) * uniform();
     }
 };
 

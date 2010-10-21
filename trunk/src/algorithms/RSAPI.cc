@@ -10,8 +10,9 @@
  ***************************************************************************/
 
 #include "RSAPI.h"
+#include "RandomNumberGenerator.h"
 
-RolloutState::RolloutState(Environment<Vector, int>& environment_,
+RolloutState::RolloutState(Environment<Vector, int>* environment_,
 						   Vector& start_state_)
 	: environment(environment_),
 	  start_state(start_state_)
@@ -27,7 +28,7 @@ RolloutState::~RolloutState()
 	}
 }
 
-void RolloutState::NewRollout(AbstractPolicy<Vector, int> & policy, int action)
+void RolloutState::NewRollout(AbstractPolicy<Vector, int>* policy, int action)
 {
 	Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout
 		= new Rollout<Vector, int, AbstractPolicy<Vector, int> >(start_state, action, policy, environment, gamma);
@@ -41,4 +42,41 @@ void RolloutState::Sample(const int T)
 		rollouts[i]->Sample(T);
 	}
 
+}
+
+RSAPI::RSAPI(Environment<Vector, int>* environment_,
+             RandomNumberGenerator* rng_)
+    : environment(environment_),
+      policy(NULL),
+      rng(rng_)
+{
+    // nothing to do here.
+}
+
+
+RSAPI::~RSAPI()
+{
+    for (uint i=0; i<states.size(); ++i) {
+        delete states[i];
+    }
+}
+void RSAPI::AddState(Vector& state)
+{
+    states.push_back(new RolloutState(environment, state));
+}
+
+void RSAPI::SampleRandomly(const int T)
+{
+    RolloutState* state = states[rng->discrete_uniform(states.size())];
+    state->Sample(T);
+}
+
+void RSAPI::NewRandomRollouts(const int K, const int T)
+{
+    for (int k=0; k<K; ++k) {
+        RolloutState* state = states[rng->discrete_uniform(states.size())];
+        state->NewRollout(policy,
+                          rng->discrete_uniform(environment->getNActions()));
+        state->Sample(T);
+    }
 }
