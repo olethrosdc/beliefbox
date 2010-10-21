@@ -77,11 +77,17 @@ public:
     /// Generates a uniform random number in [0,1[.
     virtual real uniform();
 
-    /// Generates a uniform random number in {0,1, .., n-1)
-    virtual int discrete_uniform(int n)
+    /// Generates a uniform random number in [0,n)
+    inline virtual int discrete_uniform(int n)
     {
         return (int) floor(uniform()*((real) n));
     }
+
+    inline virtual real uniform(real lower_bound, real upper_bound)
+    {
+        return lower_bound + (upper_bound - lower_bound) * uniform();
+    }
+
 };
 
 #endif

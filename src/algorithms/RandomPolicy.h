@@ -19,9 +19,9 @@ class RandomPolicy  : public AbstractPolicy<Vector, int>
 {
 protected:
 	int n_actions;
-	RandomNumberGenerator& rng;
+	RandomNumberGenerator* rng;
 public:
-	RandomPolicy(int n_actions_, RandomNumberGenerator& rng_)
+	RandomPolicy(int n_actions_, RandomNumberGenerator* rng_)
 		: n_actions(n_actions_),
 		  rng(rng_)
 	{
@@ -31,7 +31,7 @@ public:
 	}
 	virtual int SelectAction()
 	{
-		return rng.discrete_uniform(n_actions);
+		return rng->discrete_uniform(n_actions);
 	}
 	virtual void Observe (Vector& previous_state, int& action, real r, Vector& next_state) 
 	{

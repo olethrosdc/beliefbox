@@ -13,8 +13,10 @@
 #include "RSAPI.h"
 #include "Rollout.h"
 #include "MountainCar.h"
+#include "Pendulum.h"
 #include "RandomPolicy.h"
 #include "MersenneTwister.h"
+#include "RandomNumberGenerator.h"
 
 int main(void)
 {
@@ -23,26 +25,38 @@ int main(void)
 	// Create a new environment
 	Environment<Vector, int>* environment;
 
-	environment = new MountainCar();
+	//environment = new MountainCar();
+	environment = new Pendulum();
 	
 	// Place holder for the policy
 	AbstractPolicy<Vector, int>* policy;
 	
 	// Start with a random policy!
-	policy = new RandomPolicy(environment->getNActions(), rng);
+	policy = new RandomPolicy(environment->getNActions(), &rng);
 	
-	// Test how rollouts work with a single rollout sate
-	RolloutState state(*environment, environment->getState());
-	
-	// Setup one rollout per action
-	for (uint a=0; a<environment->getNActions(); ++a) {
-		state.NewRollout(*policy, a);
-	}
+    RSAPI rsapi(environment, &rng);
 
-	// Sample from this state!
-	state.Sample(100);
+    int n_states = 100;
+    
+    int state_dimension = environment->getNStates();
+    Vector S_L = environment->StateLowerBound();
+    Vector S_U = environment->StateUpperBound();
+    
+    printf("# State dimension: %d\n", state_dimension);
+    printf("# S_L: "); S_L.print(stdout);
+    printf("# S_U: "); S_U.print(stdout);
 
-
+    for (int k=0; k<n_states; ++k) {
+        Vector state(S_L.Size());
+        for (int i=0; i<S_L.Size(); ++i) {
+            state(i) = rng.uniform(S_L(i), S_U(i));
+        }
+        rsapi.AddState(state);
+        //printf("# Adding state: "); state.print(stdout);
+    }
+    
+    rsapi.setPolicy(policy);
+    rsapi.NewRandomRollouts(100, 1000);
 	delete policy;
 	delete environment;
 }

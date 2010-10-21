@@ -34,8 +34,6 @@ protected:
     };
     static Parameters default_parameters;
     Parameters parameters;
-    Vector state_upper_bound;
-    Vector state_lower_bound;
     Vector state_action_upper_bound;
     Vector state_action_lower_bound;
     Vector action_upper_bound;
@@ -48,14 +46,7 @@ public:
     virtual void Reset();
     virtual bool Act(const int action);
     virtual void Simulate(const int action);
-    Vector& StateUpperBound()
-    {
-        return state_upper_bound;
-    }
-    Vector& StateLowerBound()
-    {
-        return state_lower_bound;
-    }
+
     Vector& StateActionUpperBound()
     {
         return state_action_upper_bound;

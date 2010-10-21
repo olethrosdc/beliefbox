@@ -32,14 +32,20 @@ protected:
     real reward; ///< The current reward
     uint n_states; ///< The state dimension
     uint n_actions; ///< The action dimension
+    S state_lower_bound; ///< lower bound on the states
+    S state_upper_bound; ///< upper bound on the states
 public:
     Environment() : n_states(1), n_actions(1)
     {
+        state_lower_bound = 0;
+        state_upper_bound = 0;
     }
 
     Environment(int n_states_, int n_actions_)
   : n_states(n_states_), n_actions(n_actions_)
     {
+        state_lower_bound = 0;
+        state_upper_bound = 0;
     }
 
     virtual ~Environment() 
@@ -94,7 +100,14 @@ public:
     {
         
     }
-
+    const S& StateUpperBound()
+    {
+        return state_upper_bound;
+    }
+    const S& StateLowerBound()
+    {
+        return state_lower_bound;
+    }
 };
 
 /// Default type for discrete environments
