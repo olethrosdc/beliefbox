@@ -50,19 +50,14 @@ Vector::Vector(int N_, enum BoundsCheckingStatus check)
     if (n==0) {
         x = NULL;
     } else {
-#if 0
-        x = (real*) malloc(sizeof(real)*n);
-        for (int i=0; i<n; i++) {
-            x[i] = 0.0;
-        }
-#else
         x = (real*) calloc(n, sizeof(real));
-#endif
     }
     checking_bounds = check;
 }
 
-
+/// Copy from an array.
+///
+/// TODO replace assignment with memcopy
 Vector::Vector (int N_, real* y, enum BoundsCheckingStatus check)
 {
     n = N_;
@@ -79,6 +74,8 @@ Vector::Vector (int N_, real* y, enum BoundsCheckingStatus check)
 }
 
 /// Copy constructor
+///
+/// TODO replace assignment with memcopy
 Vector::Vector (const Vector& rhs)
 {
     n = rhs.n;

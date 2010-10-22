@@ -49,6 +49,8 @@ Pendulum::Pendulum(real pendulum_mass_,
 	
 	state_action_lower_bound.Resize(n_states + n_actions);
 	state_action_upper_bound.Resize(n_states + n_actions);
+    
+    reward = 0;
 
     endsim = false;
 }

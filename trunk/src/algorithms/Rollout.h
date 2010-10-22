@@ -14,6 +14,7 @@
 #define ROLLOUT_H
 
 #include "Environment.h"
+#include "AbstractPolicy.h"
 
 /** A rollout.
  */
@@ -43,6 +44,7 @@ public:
 		gamma(gamma_)
 	{
 		end_state = start_state;
+        T = 0;
 		total_reward = 0;
 		discounted_reward = 0;
 		running = false;
@@ -55,7 +57,7 @@ public:
 		end_state = environment->getState();
 		T++;
 		total_reward += reward;
-		discounted_reward += reward * gamma;
+		discounted_reward += reward * pow(gamma, T);
 	}
 	void Sample(const int period)
     {
@@ -63,6 +65,7 @@ public:
 		environment->setState(start_state);
 		running = true;
 		for (int t=0; t<period; ++t) {
+            policy->setState(environment->getState());
 			if (!running) {
 				break;
 			}
@@ -72,8 +75,8 @@ public:
 				Act(policy->SelectAction());
 			}
 		}
-		printf("Length: %d, Total Reward: %f, State: ", T, total_reward);
-		end_state.print(stdout);
+		//printf("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward);
+		//end_state.print(stdout);
 	}
 };
 

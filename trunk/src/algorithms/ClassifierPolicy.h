@@ -17,18 +17,31 @@
 class ClassifierPolicy  : public AbstractPolicy<Vector, int>
 {
 protected:
-	Classifier<Vector,int>* classifier;
+	Classifier<Vector,int,Vector>* classifier;
 public:
-	ClassifierPolicy(Classifier<Vector,int>* classifier_);
-	virtual ~ClassifierPolicy();
+	ClassifierPolicy(Classifier<Vector,int,Vector>* classifier_) :
+        classifier(classifier_)
+    {
+    }
+	virtual ~ClassifierPolicy()
+    {
+    }
 	virtual int SelectAction()
 	{
 		return classifier->Classify(state);
 	}
-	virtual void Observe (Vector& previous_state, ActionType& action, real r, StateType next_state) = 0;
-    virtual void Observe (real r, StateType& next_state) = 0;
-	virtual void Reset() = 0;
-	virtual void SetState(StateType& state)
+	virtual void Observe (Vector& previous_state, int& action, real r, Vector& next_state)
+    {
+        classifier->Observe(previous_state, action);
+    }
+    virtual void Observe (real r, Vector& next_state) 
+    {
+        return;
+    }
+	virtual void Reset()
+    {
+    }
+	virtual void SetState(Vector& state)
 	{ 
 		this->state = state;
 	}

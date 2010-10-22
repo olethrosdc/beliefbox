@@ -16,6 +16,7 @@
 #include "Rollout.h"
 #include "Vector.h"
 #include "AbstractPolicy.h"
+#include "Classifier.h"
 #include <vector>
 
 class RandomNumberGenerator;
@@ -23,31 +24,37 @@ class RandomNumberGenerator;
 class RolloutState
 {
 public:
-	Environment<Vector, int>* environment;
+	Environment<Vector, int>* environment; ///< the environment
+	AbstractPolicy<Vector, int>* policy; ///< the base policy to compare against
 	Vector start_state; ///< The starting state
 	real gamma;  ///< The value of gamma used
 	std::vector<Rollout<Vector, int, AbstractPolicy<Vector, int> >* > rollouts; ///< The set of rollouts
 	real V_U; ///< Upper bound on the value
 	real V_L; ///< Lower bound on the value
 	real V; ///< Best guess estimate
-	RolloutState(Environment<Vector, int>* environment_,
-				 Vector& start_state_);
+    real U; ///< The utility of sampling from that state
+    RolloutState(Environment<Vector, int>* environment_,
+                 AbstractPolicy<Vector, int>* policy_,
+                 Vector& start_state_,
+                 real gamma_);
 	~RolloutState();
 	void NewRollout(AbstractPolicy<Vector, int>* policy, int action);
-	void Sample(const int T);
+	void ExtendAllRollouts(const int T);
     Vector getRandomTerminalState();
+    int BestEmpiricalAction();
 };
 
 
 class RSAPI
 {
 protected:
-    Environment<Vector, int>* environment;
-    AbstractPolicy<Vector, int >* policy;
-    RandomNumberGenerator* rng;
+    Environment<Vector, int>* environment; ///< The environment
+    AbstractPolicy<Vector, int >* policy; ///< The current policy used
+    RandomNumberGenerator* rng; ///< The random number generator
+    real gamma; ///< Discount factor
 public:
-	std::vector<RolloutState*> states;
-    RSAPI(Environment<Vector, int>* environment_, RandomNumberGenerator* rng_);
+	std::vector<RolloutState*> states; ///< The set of states to sample from
+    RSAPI(Environment<Vector, int>* environment_, RandomNumberGenerator* rng_, real gamma_);
     ~RSAPI();
     void AddState(Vector& state);
     void setPolicy(AbstractPolicy<Vector, int>* policy_) 
@@ -57,7 +64,8 @@ public:
     }
     void SampleRandomly(const int T);
     void NewRandomRollouts(const int K, const int T);
-
+    void SampleUniformly(const int K, const int T);
+    void TrainClassifier(Classifier<Vector, int, Vector>* classifier);
 };
 
 
