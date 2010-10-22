@@ -27,7 +27,7 @@ public:
 	virtual void Observe (StateType& previous_state, ActionType& action, real r, StateType& next_state) = 0;
     virtual void Observe (real r, StateType& next_state) = 0;
 	virtual void Reset() = 0;
-	virtual void SetState(StateType& state)
+	virtual void setState(StateType& state)
 	{ 
 		this->state = state;
 	}
