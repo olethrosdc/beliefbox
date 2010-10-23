@@ -20,6 +20,51 @@
 #include "KNNClassifier.h"
 #include "ClassifierPolicy.h"
 
+struct PerformanceStatistics
+{
+    real total_reward;
+    real discounted_reward;
+    real run_time;
+    PerformanceStatistics()
+        : total_reward(0),
+          discounted_reward(0),
+          run_time(0)
+    {}
+};
+
+struct AveragePerformanceStatistics : PerformanceStatistics
+{
+    int N;
+    AveragePerformanceStatistics()
+        : N(0)
+    {
+    }
+    void Observe(PerformanceStatistics& x)
+    {
+        N++;
+        real rN = (real) N;
+        real irN = 1 / rN;
+        real gamma = (rN - 1) * irN;
+
+        total_reward = gamma * total_reward + (1 - gamma) * x.total_reward;
+        discounted_reward = gamma * discounted_reward + (1 - gamma) * x.discounted_reward;
+        run_time = gamma * run_time + (1 - gamma) * x.run_time;
+
+    }
+    void Show()
+    {
+        printf ("# UR: %f, DR: %f, T: %f\n", 
+                total_reward,
+                discounted_reward,
+                run_time);
+    }
+};
+    
+
+PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
+                               AbstractPolicy<Vector, int>* policy,
+                               real gamma, int T);
+
 int main(void)
 {
 	MersenneTwisterRNG rng;
@@ -27,8 +72,8 @@ int main(void)
 	// Create a new environment
 	Environment<Vector, int>* environment;
 
-	environment = new MountainCar();
-	//environment = new Pendulum();
+	//environment = new MountainCar();
+	environment = new Pendulum();
     
 	// Place holder for the policy
 	AbstractPolicy<Vector, int>* policy;
@@ -48,7 +93,7 @@ int main(void)
     printf("# S_L: "); S_L.print(stdout);
     printf("# S_U: "); S_U.print(stdout);
     KNNClassifier* classifier = NULL;
-    real gamma = 0.95;
+    real gamma = 0.99;
 
     std::vector<Vector> state_vector(n_states);
     for (int k=0; k<n_states; ++k) {
@@ -58,27 +103,17 @@ int main(void)
             state(i) = rng.uniform(S_L(i), S_U(i));
         }
     }
-    int n_iter=100;
+    int n_iter=10;
     for (int iter=0; iter<n_iter; ++iter) {
-        environment->Reset();
-        real total_reward = 0;
-        real discounted_reward = 0;
-        real discount = 1;
-        int run_time = 0;
-        for (int t=0; t < 1000; ++t, ++run_time) {
-            Vector state = environment->getState();
-            real reward = environment->getReward();
-            total_reward += reward;
-            discounted_reward += reward * discount;
-            discount *= gamma;
-            policy->setState(state);
-            int action = policy->SelectAction();
-            bool action_ok = environment->Act(action);
-            if (!action_ok) {
-                break;
-            }
+        AveragePerformanceStatistics statistics;
+        for (int i=0; i<100; ++i) {
+            PerformanceStatistics run_statistics = Evaluate(environment,
+                                                            policy,
+                                                            gamma,
+                                                            1000);
+            statistics.Observe(run_statistics);
         }
-        printf ("%d %f %f\n", run_time, total_reward, discounted_reward);
+        statistics.Show();
         RSAPI rsapi(environment, &rng, gamma);
         rsapi.setPolicy(policy);
         for (int k=0; k<n_states; ++k) {
@@ -101,4 +136,31 @@ int main(void)
 	delete environment;
 }
 
+
+PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
+                               AbstractPolicy<Vector, int>* policy,
+                               real gamma, int T)
+{
+    PerformanceStatistics statistics;
+    statistics.total_reward = 0;
+    statistics.discounted_reward = 0;
+    statistics.run_time = 0;
+
+    real discount = 1;
+    environment->Reset();
+    for (int t=0; t < T; ++t, ++statistics.run_time) {
+        Vector state = environment->getState();
+        real reward = environment->getReward();
+        statistics.total_reward += reward;
+        statistics.discounted_reward += reward * discount;
+        discount *= gamma;
+        policy->setState(state);
+        int action = policy->SelectAction();
+        bool action_ok = environment->Act(action);
+        if (!action_ok) {
+            break;
+        }
+    }
+    return statistics;
+}
 #endif

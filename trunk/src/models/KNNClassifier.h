@@ -26,9 +26,10 @@ public:
     {
     public:
         Vector x; ///< point
-        int label; ///< label
-        DataSample(const Vector& x_, const int label_)
-            : x(x_), label(label_)        
+        ///int label; ///< label
+        Vector Py; ///< class propabilities
+        DataSample(const Vector& x_, const Vector& p)
+            : x(x_), Py(p)        
         {
         }
     };
@@ -50,8 +51,17 @@ public:
     virtual Vector& Output(const Vector& x);
     virtual real Observe(const Vector& x, const int& label)
     {
-        AddSample(DataSample(x, label));
-		return Output(x)(label);
+		real p_y_x = Output(x)(label);
+        Vector P(n_classes);
+        P(label) = 1;
+        AddSample(DataSample(x, P));
+		return p_y_x;
+    }
+    virtual real Observe(const Vector& x, const Vector& p)
+    {
+        Vector p_y_x = Output(x);
+        AddSample(DataSample(x, p));
+		return Product(&p_y_x, &p);
     }
 	void Show()
 	{

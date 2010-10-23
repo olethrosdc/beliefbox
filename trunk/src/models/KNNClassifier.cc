@@ -66,13 +66,14 @@ void KNNClassifier::AddSample(const DataSample sample)
 
 
     \param x observables */
-Vector& KNNClassifier::Output(const Vector& x)
+Vector& KNNClassifier::Output(const Vector& x) 
 {
     //basis.Evaluate(x);
     assert(n_dim == x.Size());
     assert(n_classes == output.Size());
+    real init_value = 1.0 / (1 + samples.size());
     for (int i=0; i<n_classes; ++i) {
-        output(i) = 1.0 / (1 + samples.size());
+        output(i) = init_value;
     }
 
     real w = 1.0 / (real) K;
@@ -83,7 +84,8 @@ Vector& KNNClassifier::Output(const Vector& x)
     for (it = node_list.S.begin(); it != node_list.S.end(); ++it, ++i) {
         KDNode* node = it->second;
         DataSample* sample = kd_tree.getObject(node);
-        output[sample->label] += w;
+        //output[sample->label] += w;
+        output += sample->Py * w;
     }
 	if (i==0) {
 		output += w;

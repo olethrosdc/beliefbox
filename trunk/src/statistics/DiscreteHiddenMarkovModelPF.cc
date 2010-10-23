@@ -418,7 +418,7 @@ real DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichletExact::Observe(int x)
 //----- DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichletExact -----------//
 real DiscreteHiddenMarkovModelPF_BootstrapDirichletExact::Observe(int x)
 {
-    // TODO
+    // TODO Fill in dirichlet bootstrap
 }
 
 
