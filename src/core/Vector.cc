@@ -55,9 +55,9 @@ Vector::Vector(int N_, enum BoundsCheckingStatus check)
     checking_bounds = check;
 }
 
-/// Copy from an array.
-///
-/// TODO replace assignment with memcopy
+/** Copy from an array.
+    TODO replace assignment with memcopy
+*/
 Vector::Vector (int N_, real* y, enum BoundsCheckingStatus check)
 {
     n = N_;
@@ -73,9 +73,9 @@ Vector::Vector (int N_, real* y, enum BoundsCheckingStatus check)
     checking_bounds = check;
 }
 
-/// Copy constructor
-///
-/// TODO replace assignment with memcopy
+/** Copy constructor
+    TODO replace assignment with memcopy
+*/
 Vector::Vector (const Vector& rhs)
 {
     n = rhs.n;
@@ -500,99 +500,4 @@ void Product (const Vector* lhs, const Vector* rhs, Matrix* res)
     }
 }
 
-#if 0
-/// Return \f$\|a-b\|_1\f$, the L1 norm between two vectors.
-real L1Norm (const Vector* lhs, const Vector* rhs)
-{
-    assert (lhs->n==rhs->n);
-    return L1Norm (lhs->x, rhs->x, lhs->n);
-}
 
-/// Return \f$\|a-b\|\f$, the euclidean norm between two vectors.
-real EuclideanNorm (const Vector* lhs, const Vector* rhs)
-{
-    assert (lhs->n==rhs->n);
-    return EuclideanNorm (lhs->x, rhs->x, lhs->n);
-}
-
-/// Return \f$\|a-b\|^2\f$, the square of the euclidean norm between two
-/// vectors.
-real SquareNorm (const Vector* lhs, const Vector* rhs)
-{
-    assert (lhs->n==rhs->n);
-    return SquareNorm (lhs->x, rhs->x, lhs->n);
-}
-
-/// Get maximum element
-real Max(const Vector* v)
-{
-    return Max(v->Size(), v->x);
-}
-
-/// Get minimum element
-real Min(const Vector* v)
-{
-    return Min(v->Size(), v->x);
-}
-
-/// Get maximum element
-int ArgMax(const Vector* v)
-{
-    return ArgMax(v->Size(), v->x);
-}
-
-/// Get minimum element
-int ArgMin(const Vector* v)
-{
-    return ArgMin(v->Size(), v->x);
-}
-
-real Span(const Vector* v)
-{
-    return Max(v) - Min(v);
-}
-
-#if 0
-/// Exponentiation
-Vector exp (const Vector& rhs)
-{
-    int n = rhs.Size();
-    Vector lhs (n);
-    for (int i=0; i<n; i++) {
-        lhs.x[i] = exp(rhs[i]);
-    }
-    return lhs;
-}
-#endif
-
-
-#if 0
-/// Logarithmication
-Vector log (const Vector& rhs)
-{
-    int n = rhs.Size();
-    Vector lhs (n);
-    for (int i=0; i<n; i++) {
-        lhs.x[i] = log(rhs[i]);
-    }
-    return lhs;
-}
-#endif
-
-void exp(const Vector& v, Vector& res)
-{
-    assert(v.Size() == res.Size());
-    for (int i=0; i<v.Size(); ++i) {
-        res[i] = exp(v[i]);
-    }
-}
-
-void log(const Vector& v, Vector& res)
-{
-    assert(v.Size() == res.Size());
-    for (int i=0; i<v.Size(); ++i) {
-        res[i] = log(v[i]);
-    }
-}
-
-#endif

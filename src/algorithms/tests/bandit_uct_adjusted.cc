@@ -19,8 +19,9 @@
 
 /// A toy UCT stopping problem
 
-//void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r);
-/// TODO: implement algorithm
+/* void EvaluateAlgorithm(BeliefExpansionAlgorithm& algorithm, real mean_r);
+   TODO: implement algorithm
+*/
 
 int main (int argc, char** argv)
 {
@@ -690,8 +691,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                     Ua[a] = value_iteration_upper.getValue(s,a);
                 }
                 int a_max = ArgMax(Ua);
-                    // TODO: Choose only ONE node via sampling
-                    // (or multiple nodes?)
+                // TODO: Choose only ONE node via sampling (or multiple nodes?)
                 BeliefTreeNode* node = node_set[s];
                     //printf ("state: %d node_index: %d with %d edges\n", s, node->index, node->outs.size());
                 if (node->outs.size() == 0) {

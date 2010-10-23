@@ -38,18 +38,18 @@ MountainCar3D::MountainCar3D() : Environment<Vector, int>(4, 4)
    
 	action_upper_bound.Resize(n_actions);
 	action_lower_bound.Resize(n_actions);
-	for (int i=0; i<n_actions; ++i) {
+	for (uint i=0; i<n_actions; ++i) {
 		action_lower_bound(i) = 0;
 		action_upper_bound(i) = 1;
 	}
 	
 	state_action_lower_bound.Resize(n_states + n_actions);
 	state_action_upper_bound.Resize(n_states + n_actions);
-	for (int i=0; i<n_states; ++i) {
+	for (uint i=0; i<n_states; ++i) {
 		state_action_lower_bound(i) = state_lower_bound(i);
 		state_action_upper_bound(i) = state_upper_bound(i);
 	}
-	for (int i=0; i<n_actions; ++i) {
+	for (uint i=0; i<n_actions; ++i) {
 		state_action_lower_bound(i + n_states) = action_lower_bound(i);
 		state_action_upper_bound(i + n_states) = action_upper_bound(i);
 	}
@@ -103,7 +103,7 @@ void MountainCar3D::Simulate(int action)
     state[0] += state[2];
     state[1] += state[3];
         
-    for (int i=0; i<n_states; ++i) {
+    for (uint i=0; i<n_states; ++i) {
         if (state[i] > state_upper_bound[i]) {
             state[i] = state_upper_bound[i];
         }

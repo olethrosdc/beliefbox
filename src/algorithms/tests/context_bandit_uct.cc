@@ -552,8 +552,7 @@ int MakeDecision(BeliefTree<ContextBanditBelief>& new_tree,
                     Ua[a] = value_iteration_upper.getValue(s,a);
                 }
                 int a_max = ArgMax(Ua);
-                // TODO: Choose only ONE node via sampling
-                // (or multiple nodes?)
+                // TODO Choose only ONE node via sampling (or multiple nodes?)
                 // Warning: uses STATE value as ID
                 BeliefTreeNode* node = NULL;
                 for (BTNodeSet::iterator i=node_set.begin(); i!=node_set.end(); ++i) {
@@ -616,7 +615,7 @@ int MakeDecision(BeliefTree<ContextBanditBelief>& new_tree,
                     Ua[a] = value_iteration_upper.getValue(s,a);
                 }
                 int a_max = ArgMax(Ua);
-                // TODO: Choose only ONE node via sampling
+                // TODO Choose only ONE node via sampling
                 // (or multiple nodes?)
                 // Warning: uses STATE value as ID
                 BeliefTreeNode* node = NULL;

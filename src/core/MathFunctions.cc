@@ -95,7 +95,7 @@ real SquareNorm (real* a, real* b, int n)
 /// Return \f$\left(\sum_i^n |a_i-b_i|^2\right)^{1/2}\f$
 real EuclideanNorm (real* a, real* b, int n)
 {
-    real sum = 0;
+    register real sum = 0;
     for (int i=0; i<n; i++) {
         register real d = (*a++) - (*b++);
         sum += d*d;

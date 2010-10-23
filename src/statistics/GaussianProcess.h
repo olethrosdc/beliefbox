@@ -17,6 +17,10 @@
 #include "Distribution.h"
 #include <vector>
 
+/** Gaussian process. Not implemented!
+    
+    TODO Implement gaussian process
+ */
 class GaussianProcess : public VectorDistribution
 {
 protected:

@@ -83,6 +83,7 @@ int RolloutState::BestEmpiricalAction()
         return pessimistic_action;
     }  else {
         return normal_action;
+        //return -1;
     }
 }
 
