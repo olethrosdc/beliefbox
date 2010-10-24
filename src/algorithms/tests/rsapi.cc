@@ -19,6 +19,9 @@
 #include "RandomNumberGenerator.h"
 #include "KNNClassifier.h"
 #include "ClassifierPolicy.h"
+#include <cstring>
+#include <getopt.h>
+
 
 struct PerformanceStatistics
 {
@@ -53,7 +56,7 @@ struct AveragePerformanceStatistics : PerformanceStatistics
     }
     void Show()
     {
-        printf ("# UR: %f, DR: %f, T: %f\n", 
+        printf ("%f %f %f\n", 
                 total_reward,
                 discounted_reward,
                 run_time);
@@ -65,25 +68,121 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
                                AbstractPolicy<Vector, int>* policy,
                                real gamma, int T);
 
-int main(void)
-{
-	MersenneTwisterRNG rng;
 
+static const char* const help_text = "Usage: rsapi [options]\n\
+\nOptions:\n\
+    --environment: {MountainCar, Pendulum}\n\
+    --n_states:    number of states\n\
+    --gamma:       reward discounting in [0,1]\n\
+    --n_iter:      maximum number of policy iterations\n\
+    --horizon:     rollout horizon\n\
+    --n_rollouts:  number of rollouts\n\
+\n";
+
+int main(int argc, char* argv[])
+{
+    
 	// Create a new environment
 	Environment<Vector, int>* environment;
 
-	//environment = new MountainCar();
-	environment = new Pendulum();
+	MersenneTwisterRNG rng;
+
+    int n_states = 100;
+    real gamma = 0.99;
+    int n_iter=10;
+    int n_rollouts = 100;
+    int horizon = 1000;
+    char* environment_name = NULL;
+
+    {
+        // options
+        int c;
+        int digit_optind = 0;
+        while (1) {
+            int this_option_optind = optind ? optind : 1;
+            int option_index = 0;
+            static struct option long_options[] = {
+                {"n_states", required_argument, 0, 0}, //0
+                {"gamma", required_argument, 0, 0}, //1
+                {"n_iter", required_argument, 0, 0}, //2
+                {"n_rollouts", required_argument, 0, 0}, //3
+                {"horizon", required_argument, 0, 0}, //4
+                {"environment", required_argument, 0, 0}, //5
+                {0, 0, 0, 0}
+            };
+            c = getopt_long (argc, argv, "",
+                             long_options, &option_index);
+            if (c == -1)
+                break;
+
+            switch (c) {
+            case 0:
+#if 0
+                printf ("option %s (%d)", long_options[option_index].name, option_index);
+                if (optarg)
+                    printf (" with arg %s", optarg);
+                printf ("\n");
+#endif
+                switch (option_index) {
+                case 0: n_states = atoi(optarg); break;
+                case 1: gamma = atof(optarg); break;
+                case 2: n_iter = atoi(optarg); break;
+                case 3: n_rollouts = atoi(optarg); break;
+                case 4: horizon = atoi(optarg); break;
+                case 5: environment_name = optarg; break;
+                default:
+                    fprintf (stderr, "Invalid options\n");
+                    exit(0);
+                    break;
+                }
+                break;
+            case '0':
+            case '1':
+            case '2':
+                if (digit_optind != 0 && digit_optind != this_option_optind)
+                    printf ("digits occur in two different argv-elements.\n");
+            digit_optind = this_option_optind;
+            printf ("option %c\n", c);
+            break;
+            default:
+                std::cout << help_text;
+                exit (-1);
+            }
+        }
+	
+        if (optind < argc) {
+            printf ("non-option ARGV-elements: ");
+            while (optind < argc) {
+                printf ("%s ", argv[optind++]);
+                
+            }
+            printf ("\n");
+        }
+    }
+
     
+    if (!environment_name) {
+        fprintf(stderr, "Must specify environment\n");
+        exit(-1);
+    }
+    if (!strcmp(environment_name, "MountainCar")) {
+        environment = new MountainCar();
+    } else if (!strcmp(environment_name, "Pendulum")) {
+        environment = new Pendulum();    
+    } else {
+        fprintf(stderr, "Invalid environment name %s\n", environment_name);
+        exit(-1);
+    }
+
 	// Place holder for the policy
 	AbstractPolicy<Vector, int>* policy;
 	
 	// Start with a random policy!
 	policy = new RandomPolicy(environment->getNActions(), &rng);
-	
 
 
-    int n_states = 100;
+
+
     
     int state_dimension = environment->getNStates();
     Vector S_L = environment->StateLowerBound();
@@ -93,7 +192,7 @@ int main(void)
     printf("# S_L: "); S_L.print(stdout);
     printf("# S_U: "); S_U.print(stdout);
     KNNClassifier* classifier = NULL;
-    real gamma = 0.99;
+
 
     std::vector<Vector> state_vector(n_states);
     for (int k=0; k<n_states; ++k) {
@@ -103,7 +202,7 @@ int main(void)
             state(i) = rng.uniform(S_L(i), S_U(i));
         }
     }
-    int n_iter=10;
+
     for (int iter=0; iter<n_iter; ++iter) {
         AveragePerformanceStatistics statistics;
         for (int i=0; i<100; ++i) {
@@ -120,7 +219,7 @@ int main(void)
             rsapi.AddState(state_vector[k]);
         }
         
-        rsapi.SampleUniformly(100,1000);
+        rsapi.SampleUniformly(n_rollouts, horizon);
 
         KNNClassifier* new_classifier = new KNNClassifier(state_dimension, environment->getNActions(), 1);
         rsapi.TrainClassifier(new_classifier);
@@ -130,6 +229,7 @@ int main(void)
             delete classifier;
         }        
         classifier = new_classifier;
+        fflush(stdout);
     }
     delete classifier;
     delete policy;
