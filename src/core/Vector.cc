@@ -208,7 +208,7 @@ real Vector::Sum(int start, int end) const
 }
 
 /// Addition
-Vector Vector::operator+ (const Vector& rhs) const
+const Vector Vector::operator+ (const Vector& rhs) const
 {
     assert (rhs.n==n);
     Vector lhs (n);
@@ -230,7 +230,7 @@ Vector& Vector::operator+= (const Vector& rhs)
 
 
 /// Subtraction
-Vector Vector::operator- (const Vector& rhs) const
+const Vector Vector::operator- (const Vector& rhs) const
 {
     assert (rhs.n==n);
     Vector lhs (n);
@@ -252,7 +252,7 @@ Vector& Vector::operator-= (const Vector& rhs)
 
 
 /// Per-element multiplication
-Vector Vector::operator* (const Vector& rhs) const
+const Vector Vector::operator* (const Vector& rhs) const
 {
     assert (rhs.n==n);
     Vector lhs (n);
@@ -273,7 +273,7 @@ Vector& Vector::operator*= (const Vector& rhs)
 }
 
 /// Per-element division
-Vector Vector::operator/ (const Vector& rhs) const
+const Vector Vector::operator/ (const Vector& rhs) const
 {
     assert (rhs.n==n);
     Vector lhs (n);
@@ -296,7 +296,7 @@ Vector& Vector::operator/= (const Vector& rhs)
 
 /* ----------- SCALAR OPERATORS -------------------------*/
 /// Scalar addition
-Vector Vector::operator+ (const real& rhs) const
+const Vector Vector::operator+ (const real& rhs) const
 {
     Vector lhs (n);
     for (int i=0; i<n; i++) {
@@ -305,7 +305,7 @@ Vector Vector::operator+ (const real& rhs) const
     return lhs;
 }
 /// Scalar subtraction
-Vector Vector::operator- (const real& rhs) const
+const Vector Vector::operator- (const real& rhs) const
 {
     Vector lhs (n);
     for (int i=0; i<n; i++) {
@@ -314,7 +314,7 @@ Vector Vector::operator- (const real& rhs) const
     return lhs;
 }
 /// Scalar multiplication
-Vector Vector::operator* (const real& rhs) const
+const Vector Vector::operator* (const real& rhs) const
 {
     Vector lhs (n);
     for (int i=0; i<n; i++) {
@@ -323,7 +323,7 @@ Vector Vector::operator* (const real& rhs) const
     return lhs;
 }
 /// Scalar division
-Vector Vector::operator/ (const real& rhs) const
+const Vector Vector::operator/ (const real& rhs) const
 {
     Vector lhs (n);
     real inv = 1.0 / rhs;
