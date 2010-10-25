@@ -68,18 +68,18 @@ public:
     bool operator< (const Vector& rhs) const;
     bool operator> (const Vector& rhs) const;
     bool operator== (const Vector& rhs) const;
-    Vector operator+ (const Vector& rhs) const;
-    Vector operator- (const Vector& rhs) const;
-    Vector operator* (const Vector& rhs) const;
-    Vector operator/ (const Vector& rhs) const;
+    const Vector operator+ (const Vector& rhs) const;
+    const Vector operator- (const Vector& rhs) const;
+    const Vector operator* (const Vector& rhs) const;
+    const Vector operator/ (const Vector& rhs) const;
     Vector& operator+= (const Vector& rhs);
     Vector& operator-= (const Vector& rhs);
     Vector& operator*= (const Vector& rhs);
     Vector& operator/= (const Vector& rhs);
-    Vector operator+ (const real& rhs) const;
-    Vector operator- (const real& rhs) const;
-    Vector operator* (const real& rhs) const;
-    Vector operator/ (const real& rhs) const;
+    const Vector operator+ (const real& rhs) const;
+    const Vector operator- (const real& rhs) const;
+    const Vector operator* (const real& rhs) const;
+    const Vector operator/ (const real& rhs) const;
     Vector& operator+= (const real& rhs);
     Vector& operator-= (const real& rhs);
     Vector& operator*= (const real& rhs);
@@ -234,7 +234,7 @@ inline real Volume(const Vector& x)
 	return V;
 }
 /// Exponentiation
-inline Vector exp (const Vector& rhs)
+inline const Vector exp (const Vector& rhs)
 {
     int n = rhs.Size();
     Vector lhs (n);
@@ -244,8 +244,20 @@ inline Vector exp (const Vector& rhs)
     return lhs;
 }
 
-/// Exponentiation
-inline Vector tanh (const Vector& rhs)
+/// Power, by element
+inline const Vector pow (const Vector& rhs, const real p)
+{
+    int n = rhs.Size();
+    Vector lhs (n);
+    for (int i=0; i<n; i++) {
+        lhs.x[i] = pow(rhs[i], p);
+    }
+    return lhs;
+}
+
+
+/// Hypertangentification
+inline const Vector tanh (const Vector& rhs)
 {
     int n = rhs.Size();
     Vector lhs (n);
@@ -257,7 +269,7 @@ inline Vector tanh (const Vector& rhs)
 
 
 /// Logarithmication
-inline Vector log (const Vector& rhs)
+inline const Vector log (const Vector& rhs)
 {
     int n = rhs.Size();
     Vector lhs (n);
@@ -268,7 +280,7 @@ inline Vector log (const Vector& rhs)
 }
 
 /// Absolute value
-inline Vector abs (const Vector& rhs)
+inline const Vector abs (const Vector& rhs)
 {
     int n = rhs.Size();
     Vector lhs (n);
@@ -283,17 +295,8 @@ inline Vector abs (const Vector& rhs)
 void exp(const Vector& v, Vector& res);
 
 /// logarthimicate to a target vector
-void lorg(const Vector& v, Vector& res);
+void log(const Vector& v, Vector& res);
 
-#if 0
-real L1Norm (const Vector* lhs, const Vector* rhs);
-//real L1Norm (const Vector* lhs);
-real Max(const Vector* v);
-real Min(const Vector* v);
-int ArgMax(const Vector* v);
-int ArgMin(const Vector* v);
-real Span(const Vector* v);
-#endif
 
 /**@}*/
 

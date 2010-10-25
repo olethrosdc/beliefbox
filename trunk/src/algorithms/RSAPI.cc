@@ -74,12 +74,19 @@ int RolloutState::BestEmpiricalAction()
     }
     Q_U = Q_U / N; // normalise
     Q_L = Q_L / N; // normalise
-    
+    real confidence_interval = 0*sqrt(1 / (real) rollouts.size());
+    Q_U += confidence_interval;
+    Q_L -= confidence_interval;
+
     policy->setState(start_state);
     int normal_action = policy->SelectAction();
     int optimistic_action = ArgMax(Q_U);
     int pessimistic_action = ArgMax(Q_L);
-    if (Q_L(pessimistic_action) > Q_U(normal_action)) {
+    real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
+        printf ("#gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action);
+        start_state.print(stdout);
+    if (gap > 0) {
+
         return pessimistic_action;
     }  else {
         return normal_action;
