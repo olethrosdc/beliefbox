@@ -42,6 +42,7 @@ public:
 	void ExtendAllRollouts(const int T);
     Vector getRandomTerminalState();
     int BestEmpiricalAction();
+    std::pair<Vector, bool> BestGroupAction();
 };
 
 
@@ -65,7 +66,8 @@ public:
     void SampleRandomly(const int T);
     void NewRandomRollouts(const int K, const int T);
     void SampleUniformly(const int K, const int T);
-    void TrainClassifier(Classifier<Vector, int, Vector>* classifier);
+    int TrainClassifier(Classifier<Vector, int, Vector>* classifier);
+    int GroupTrainClassifier(Classifier<Vector, int, Vector>* classifier);
 };
 
 
