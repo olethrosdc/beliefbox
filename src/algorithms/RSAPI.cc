@@ -74,25 +74,98 @@ int RolloutState::BestEmpiricalAction()
     }
     Q_U = Q_U / N; // normalise
     Q_L = Q_L / N; // normalise
-    real confidence_interval = 0*sqrt(1 / (real) rollouts.size());
+    Vector confidence_interval = pow(N, (real) -0.5);
     Q_U += confidence_interval;
     Q_L -= confidence_interval;
+    V_U = Max(Q_U);
+    V_L = Min(Q_L);
+    V = 0.5 * (V_U + V_L);
 
     policy->setState(start_state);
     int normal_action = policy->SelectAction();
     int optimistic_action = ArgMax(Q_U);
     int pessimistic_action = ArgMax(Q_L);
     real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
-        printf ("#gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action);
-        start_state.print(stdout);
     if (gap > 0) {
+        printf ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action);
+        start_state.print(stdout);
 
         return pessimistic_action;
     }  else {
+        //printf ("# gap: %f, CI: ", gap); 
+        //confidence_interval.print(stdout); 
+        //printf("Q_U: "); Q_U.print(stdout); 
+        //printf("Q_L: "); Q_L.print(stdout);
+        //return normal_action;
         return normal_action;
-        //return -1;
     }
 }
+
+
+/// Group best and worst actions together.
+///
+/// Give 0 probability to any completely dominated action.
+/// Other actions get a probability proportional to the number
+/// of other actions they dominate.
+std::pair<Vector, bool> RolloutState::BestGroupAction()
+{
+    Vector Q_U(environment->getNActions()); // Upper bound on Q
+    Vector Q_L(environment->getNActions()); // Lower bound on Q
+    Vector N(environment->getNActions()); // number of times action was played
+    real log_gamma = log(gamma);
+	for (uint i=0; i<rollouts.size(); ++i) {
+        Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];
+        real error_bound = 0;
+        if (rollout->running) {
+            error_bound = exp(rollout->T * log_gamma);
+        }
+        int a = rollout->start_action;
+        N(a)++;
+        Q_U(a) += rollout->discounted_reward + error_bound;
+        Q_L(a) += rollout->discounted_reward - error_bound;
+    }
+    Q_U = Q_U / N; // normalise
+    Q_L = Q_L / N; // normalise
+    Vector confidence_interval = pow(N, (real) -0.5);
+    Q_U += confidence_interval;
+    Q_L -= confidence_interval;
+    V_U = Max(Q_U);
+    V_L = Min(Q_L);
+    V = 0.5 * (V_U + V_L);
+
+    policy->setState(start_state);
+
+    std::pair<Vector, bool> retval;
+    Vector& Pr = retval.first;
+    Pr.Resize(environment->getNActions()); // Action probabilitie
+    bool& domination = retval.second;
+    domination = false;
+    for (uint i=0; i<environment->getNActions(); ++i) {
+        Pr(i) = 0.5;
+        for (uint j=0; j<environment->getNActions(); ++j) {
+            if (i==j) {
+                continue;
+            }
+            if (Q_U(i) <= Q_L(j)) {
+                Pr(i) = 0;
+                domination = true;
+            }
+            if (Q_L(i) >= Q_U(j)) {
+                Pr(i) += 1;
+                domination = true;
+            }
+        }    
+    }
+    Pr /= Pr.Sum();
+#if 0
+    if (domination) {
+        printf("# S: "); start_state.print(stdout);
+        printf("# P: "); Pr.print(stdout);
+    }
+#endif
+    return retval;
+}
+
 
 RSAPI::RSAPI(Environment<Vector, int>* environment_,
              RandomNumberGenerator* rng_,
@@ -153,15 +226,34 @@ void RSAPI::SampleUniformly(const int K, const int T)
 }
 
 /// Simply train the classifier
-void RSAPI::TrainClassifier(Classifier<Vector, int, Vector>* classifier)
+int RSAPI::TrainClassifier(Classifier<Vector, int, Vector>* classifier)
 {
+    int n_improved_actions = 0;
+
     for (uint i=0; i<states.size(); ++i) {
         int best_action = states[i]->BestEmpiricalAction();
         if (best_action >= 0) {
             //printf("# Action: %d state: ", best_action);
-            //states[i]->start_state.print(stdout);
+            //states[i]->start_state.print(stdout)
+            n_improved_actions++;
             classifier->Observe(states[i]->start_state, best_action);
         }
     }        
+    return n_improved_actions;
 }
 
+
+
+/// Simply train the classifier with action groups
+int RSAPI::GroupTrainClassifier(Classifier<Vector, int, Vector>* classifier)
+{
+    int n_improved_actions = 0;
+    for (uint i=0; i<states.size(); ++i) {
+        std::pair<Vector, bool> retval = states[i]->BestGroupAction();
+        if (retval.second) {
+            n_improved_actions++;
+            classifier->Observe(states[i]->start_state, retval.first);
+        }                                
+    }
+    return n_improved_actions;
+}

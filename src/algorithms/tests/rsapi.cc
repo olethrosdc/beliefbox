@@ -77,6 +77,7 @@ static const char* const help_text = "Usage: rsapi [options]\n\
     --n_iter:      maximum number of policy iterations\n\
     --horizon:     rollout horizon\n\
     --n_rollouts:  number of rollouts\n\
+    --knn:         number of nearest neighbours in KNN classifier\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -92,7 +93,9 @@ int main(int argc, char* argv[])
     int n_iter=10;
     int n_rollouts = 100;
     int horizon = 1000;
+    int n_neighbours = 1;
     char* environment_name = NULL;
+    bool group_training = false;
 
     {
         // options
@@ -108,6 +111,8 @@ int main(int argc, char* argv[])
                 {"n_rollouts", required_argument, 0, 0}, //3
                 {"horizon", required_argument, 0, 0}, //4
                 {"environment", required_argument, 0, 0}, //5
+                {"knn", required_argument, 0, 0}, //6
+                {"group", no_argument, 0, 0}, //7
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -130,6 +135,8 @@ int main(int argc, char* argv[])
                 case 3: n_rollouts = atoi(optarg); break;
                 case 4: horizon = atoi(optarg); break;
                 case 5: environment_name = optarg; break;
+                case 6: n_neighbours = atoi(optarg); break;
+                case 7: group_training = true; break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
@@ -195,7 +202,7 @@ int main(int argc, char* argv[])
 
 
     std::vector<Vector> state_vector(n_states);
-    for (int k=0; k<n_states; ++k) {
+    for (uint k=0; k<state_vector.size(); ++k) {
         Vector& state = state_vector[k];
         state.Resize(S_L.Size());
         for (int i=0; i<S_L.Size(); ++i) {
@@ -215,14 +222,27 @@ int main(int argc, char* argv[])
         statistics.Show();
         RSAPI rsapi(environment, &rng, gamma);
         rsapi.setPolicy(policy);
-        for (int k=0; k<n_states; ++k) {
+        for (uint k=0; k<state_vector.size(); ++k) {
             rsapi.AddState(state_vector[k]);
         }
         
         rsapi.SampleUniformly(n_rollouts, horizon);
 
-        KNNClassifier* new_classifier = new KNNClassifier(state_dimension, environment->getNActions(), 1);
-        rsapi.TrainClassifier(new_classifier);
+        KNNClassifier* new_classifier = new KNNClassifier(state_dimension, environment->getNActions(), n_neighbours);
+        int n_improved_actions = 0;
+        if (group_training) {
+            n_improved_actions = rsapi.GroupTrainClassifier(new_classifier);
+        } else {
+            n_improved_actions = rsapi.TrainClassifier(new_classifier);
+        }
+        printf ("# n: %d\n", n_improved_actions);
+        if (1) {
+            Vector new_state(S_L.Size());
+            for (int i=0; i<S_L.Size(); ++i) {
+                new_state(i) = rng.uniform(S_L(i), S_U(i));
+            }
+            state_vector.push_back(new_state);
+        }
         delete policy;
         policy = new ClassifierPolicy(new_classifier);
         if (classifier) {
