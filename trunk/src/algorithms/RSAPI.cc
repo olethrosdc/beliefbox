@@ -166,7 +166,36 @@ std::pair<Vector, bool> RolloutState::BestGroupAction()
     return retval;
 }
 
+void RolloutState::Bootstrap(KDTree<RolloutState>& tree,
+                             real L)
+{
+    Vector Q_U(environment->getNActions()); // Upper bound on Q
+    Vector Q_L(environment->getNActions()); // Lower bound on Q
+    Vector N(environment->getNActions()); // number of times action was played
+    real log_gamma = log(gamma);
+	for (uint i=0; i<rollouts.size(); ++i) {
+        Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];
+        real error_bound = 0;
+        if (rollout->running) {
+            error_bound = exp(rollout->T * log_gamma);
+            //
+        }
+        int a = rollout->start_action;
+        N(a)++;
+        Q_U(a) += rollout->discounted_reward + error_bound;
+        Q_L(a) += rollout->discounted_reward - error_bound;
+    }
+    Q_U = Q_U / N; // normalise
+    Q_L = Q_L / N; // normalise
+    Vector confidence_interval = pow(N, (real) -0.5);
+    Q_U += confidence_interval;
+    Q_L -= confidence_interval;
+    V_U = Max(Q_U);
+    V_L = Min(Q_L);
+    V = 0.5 * (V_U + V_L);
 
+
+}
 RSAPI::RSAPI(Environment<Vector, int>* environment_,
              RandomNumberGenerator* rng_,
              real gamma_)
@@ -217,7 +246,7 @@ void RSAPI::SampleUniformly(const int K, const int T)
         RolloutState* state = states[i];
         for (uint a=0; a<environment->getNActions(); ++a) {
             for (int k=0; k<K; ++k) {
-                state->NewRollout(policy, a); // valgrind
+                state->NewRollout(policy, a); 
             }
         }
         state->ExtendAllRollouts(T);
@@ -242,6 +271,41 @@ int RSAPI::TrainClassifier(Classifier<Vector, int, Vector>* classifier)
     return n_improved_actions;
 }
 
+real RSAPI::LipschitzBound()
+{
+    real L = 0;
+    for (uint i=0; i<states.size(); ++i) {
+        for (uint j=0; j<states.size(); ++j) {
+            if (i==j) {
+                continue;
+            }
+            real D_U = states[i]->V_U - states[j]->V_U;
+            real D_L = states[i]->V_L - states[j]->V_L;
+            real D = std::max(D_U, D_L);
+            real s = EuclideanNorm(&states[i]->start_state,
+                                   &states[j]->start_state);
+            if (s > 0) {
+                L = std::max(L, D / s);
+            }
+        }
+    }
+    return L;
+}
+
+
+void RSAPI::Bootstrap()
+{
+    /// Make a KNN tree.
+    KDTree<RolloutState*> tree;
+    for (uint i=0; i<states.size(); ++i) {
+        tree.AddVectorObject(states[i]->start_state, states[i]);
+    }
+
+    real L = LipschitzBound();
+    for (uint i=0; i<states.size(); ++i) {
+        states[i]->Bootstrap(tree, L);
+    }
+}
 
 
 /// Simply train the classifier with action groups
@@ -257,3 +321,4 @@ int RSAPI::GroupTrainClassifier(Classifier<Vector, int, Vector>* classifier)
     }
     return n_improved_actions;
 }
+

@@ -65,9 +65,9 @@ public:
     real logSum() const;
     real Sum() const;
     real Sum(int start, int end) const;
-    bool operator< (const Vector& rhs) const;
-    bool operator> (const Vector& rhs) const;
-    bool operator== (const Vector& rhs) const;
+    const bool operator< (const Vector& rhs) const;
+    const bool operator> (const Vector& rhs) const;
+    const bool operator== (const Vector& rhs) const;
     const Vector operator+ (const Vector& rhs) const;
     const Vector operator- (const Vector& rhs) const;
     const Vector operator* (const Vector& rhs) const;

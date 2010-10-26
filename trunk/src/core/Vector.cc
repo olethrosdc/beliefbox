@@ -110,7 +110,7 @@ void Vector::print(FILE* f) const
 /// Inequality operator.
 ///
 /// Return true iff this[i] > rhs[i] for all i.
-bool Vector::operator> (const Vector& rhs) const
+const bool Vector::operator> (const Vector& rhs) const
 {
     if (this == &rhs) return false;
 	assert(n == rhs.n);
@@ -125,7 +125,7 @@ bool Vector::operator> (const Vector& rhs) const
 /// Inequality operator.
 ///
 /// Return true iff this[i] < rhs[i] for all i.
-bool Vector::operator< (const Vector& rhs) const
+const bool Vector::operator< (const Vector& rhs) const
 {
     if (this == &rhs) return false;
 	assert(n == rhs.n);
@@ -140,7 +140,7 @@ bool Vector::operator< (const Vector& rhs) const
 /// Equality operator.
 ///
 /// Return true iff this[i] == rhs[i] for all i.
-bool Vector::operator== (const Vector& rhs) const
+const bool Vector::operator== (const Vector& rhs) const
 {
     if (this == &rhs) return true;
 	assert(n == rhs.n);
