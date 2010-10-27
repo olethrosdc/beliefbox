@@ -166,6 +166,11 @@ std::pair<Vector, bool> RolloutState::BestGroupAction()
     return retval;
 }
 
+/** Bootstrap from values of neighbouring states.
+    
+    TODO This does not work at the moment.
+ */
+
 void RolloutState::Bootstrap(KDTree<RolloutState>& tree,
                              real L)
 {
@@ -179,10 +184,14 @@ void RolloutState::Bootstrap(KDTree<RolloutState>& tree,
         if (rollout->running) {
             error_bound = exp(rollout->T * log_gamma);
             Vector s_T = rollout->end_state;
-            //OrderedFixedList<KDNode> knn_list = FindKNearestNeighbours(s_T, 3);
-            
-            
-            //
+            OrderedFixedList<KDNode> knn_list = tree.FindKNearestNeighbours(s_T, 3);
+            std::list<std::pair<real, KDNode*> >::iterator knn_iter;
+            for (knn_iter = knn_list.S.begin();
+                 knn_iter != knn_list.S.end();
+                 ++knn_iter) {
+                KDNode* node = knn_iter->second;
+            }
+
         }
         int a = rollout->start_action;
         N(a)++;
