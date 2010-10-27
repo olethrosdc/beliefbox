@@ -25,12 +25,19 @@ protected:
     real upper_bound;
 public:
     std::list<std::pair<real, T*> > S;
-    OrderedFixedList(uint N_) : N(N_)
+    OrderedFixedList(const uint N_) : N(N_)
     {
         lower_bound = -RAND_MAX;
         upper_bound = RAND_MAX;
     }
-    bool AddPerhaps(real x, T* object)
+    /** Add an (value, object) pair to the list if possible.
+
+        The object is only added if either:
+
+        a) There is enough space in the list.
+        b) The value is smaller than the currently largest value.
+     */
+    const bool AddPerhaps(real x, T* object)
     {
         std::list<real>::iterator it;
         if (S.size() < N) {
@@ -49,13 +56,21 @@ public:
         }
         return false;
     }
-    real UpperBound()
+    const real UpperBound() const
     {
         return upper_bound;
     }
-    real LowerBound()
+    const real LowerBound() const
     {
         return lower_bound;
+    }
+    const int max_size() const
+    {
+        return S.size();
+    }
+    const int size() const
+    {
+        return N;
     }
 
 };

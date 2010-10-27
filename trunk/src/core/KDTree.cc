@@ -198,7 +198,9 @@ void KDNode::KNearestNeighbours(const Vector& x,
                                real& dist)
 {
     real c_dist = EuclideanNorm(&x, &c);
-    if (knn_list.AddPerhaps(c_dist, this)) {
+    if (knn_list.AddPerhaps(c_dist, this)
+        &&
+        knn_list.size() == knn_list.max_size()) {
         dist = std::min(dist, knn_list.UpperBound());
     }
     real delta = x[a] - c[a];

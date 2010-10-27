@@ -17,6 +17,7 @@
 #include "Vector.h"
 #include "AbstractPolicy.h"
 #include "Classifier.h"
+#include "KDTree.h"
 #include <vector>
 
 class RandomNumberGenerator;
@@ -43,6 +44,8 @@ public:
     Vector getRandomTerminalState();
     int BestEmpiricalAction();
     std::pair<Vector, bool> BestGroupAction();
+    void Bootstrap(KDTree<RolloutState>& tree,
+                   real L);
 };
 
 
@@ -68,6 +71,8 @@ public:
     void SampleUniformly(const int K, const int T);
     int TrainClassifier(Classifier<Vector, int, Vector>* classifier);
     int GroupTrainClassifier(Classifier<Vector, int, Vector>* classifier);
+    real LipschitzBound();
+    void Bootstrap();
 };
 
 
