@@ -16,9 +16,9 @@
 #include "Vector.h"
 #include <vector>
 
-bool kd_tree_test(int n_points, int n_dimensions) 
+int kd_tree_test(int n_points, int n_dimensions) 
 {
-    printf ("Testing with %d points and %d dimensions\n", n_points, n_dimensions);
+    printf ("# Testing with %d points and %d dimensions\n", n_points, n_dimensions);
     std::vector<Vector> X(n_points);
 
     for (int i=0; i<n_points; i++) {
@@ -37,6 +37,8 @@ bool kd_tree_test(int n_points, int n_dimensions)
 
     //tree.Show();
     // First find 1 nearest neigbour
+
+    int n_errors = 0;
     for (int i=0; i<n_points; i++) {
         Vector Z = X[i];
         KDNode* node = tree.FindNearestNeighbourLinear(Z);
@@ -50,7 +52,7 @@ bool kd_tree_test(int n_points, int n_dimensions)
         if (node != node2 || node != node3 || node != node4) {
             printf ("MISMATCH ");
             printf ("dist: %f %f\n", L1Norm(&Z, &node->c), L1Norm(&Z, &node2->c));
-            return false;
+            n_errors++;
         }
     }        
 
@@ -70,27 +72,33 @@ bool kd_tree_test(int n_points, int n_dimensions)
         if (node != node2 || node != node3 || node != node4) {
             printf ("MISMATCH ");
             printf ("dist: %f %f\n", L1Norm(&Z, &node->c), L1Norm(&Z, &node2->c));
-            return false;
+            n_errors++;
         }
         
         std::list<std::pair<real, KDNode*> >::iterator s1 = knn_list.S.begin();
-        std::list<std::pair<real, KDNode*> >::iterator s2 = knn_list.S.begin();
+        std::list<std::pair<real, KDNode*> >::iterator s2 = knn_list2.S.begin();
         for (int k=1; k<K; ++k, ++s1, ++s2) {
+            if (s1 == knn_list.S.end() || s2 == knn_list.S.end()) {
+                printf ("# END\n");
+                break;
+            }
             node3 = s1->second;
             node4 = s2->second;
             if (node3 != node4) {
-                printf ("MISMATCH : %f %f",
+                printf ("MISMATCH (%d): %f %f\n",
+                        k,
                         L1Norm(&Z, &node3->c), L1Norm(&Z, &node4->c));
-                return false;
+                n_errors++;
             }
+                
         }
     }        
 
-    printf ("%d/%d\n", tree.getNumberOfLeaves(), tree.getNumberOfNodes());
+    printf ("# Leaves: %d, Nodes: %d\n", tree.getNumberOfLeaves(), tree.getNumberOfNodes());
 
-    return true;
-    
+    return n_errors;
 }
+
 int main(void) 
 {
     int n_errors = 0;
@@ -98,8 +106,8 @@ int main(void)
     for (int i=0; i<n_tests; ++i) {
         int n_dim = (int) ceil(urandom(1,10));
         int n_points = (int) ceil(urandom(1,1000));
-        bool success = kd_tree_test(n_points, n_dim);
-        if (!success) {
+        int error = kd_tree_test(n_points, n_dim);
+        if (error) {
             n_errors ++;
         }
     }
@@ -108,7 +116,7 @@ int main(void)
         fprintf (stderr, "%d / %d tests failed\n", n_errors, n_tests);
         return n_errors;
     }
-    printf ("Test successful\n");
+    printf ("TEST OK\n");
     return 0;
 }
 

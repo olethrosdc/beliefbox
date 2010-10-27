@@ -178,6 +178,10 @@ void RolloutState::Bootstrap(KDTree<RolloutState>& tree,
         real error_bound = 0;
         if (rollout->running) {
             error_bound = exp(rollout->T * log_gamma);
+            Vector s_T = rollout->end_state;
+            //OrderedFixedList<KDNode> knn_list = FindKNearestNeighbours(s_T, 3);
+            
+            
             //
         }
         int a = rollout->start_action;
@@ -296,7 +300,7 @@ real RSAPI::LipschitzBound()
 void RSAPI::Bootstrap()
 {
     /// Make a KNN tree.
-    KDTree<RolloutState*> tree;
+    KDTree<RolloutState> tree(environment->getNStates());
     for (uint i=0; i<states.size(); ++i) {
         tree.AddVectorObject(states[i]->start_state, states[i]);
     }
