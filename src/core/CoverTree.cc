@@ -26,7 +26,7 @@ CoverTree::Node::~Node()
 }
 
 /// Insert a new point at the given level, as a child of this node
-void CoverTree::Node::Insert(const Vector& new_point, const int level)
+const CoverTree::Node* CoverTree::Node::Insert(const Vector& new_point, const int level)
 {
 
 #ifdef DEBUG_COVER_TREE
@@ -42,6 +42,7 @@ void CoverTree::Node::Insert(const Vector& new_point, const int level)
 	if (level < children_level) {
 		children_level = level;
 	}
+    return node;
 }
 
 
@@ -99,9 +100,9 @@ const real CoverTree::metric(const CoverSet& Q, const Vector& p) const
 	The function is such that Q_i only contains points which whose
 	distance to the new point is smaller than 2^level.
 */
-bool CoverTree::Insert(const Vector& new_point,
-					   const CoverSet& Q_i,
-					   const int level)
+const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
+                                         const CoverSet& Q_i,
+                                         const int level)
 {
 	Node* closest_node = NULL;
 	
@@ -125,6 +126,12 @@ bool CoverTree::Insert(const Vector& new_point,
 			} else {
 				node = Q_i.nodes[k];
 			}
+
+            // ignore children which are too deep.
+            if (node->level < level) {
+                continue;
+            }
+
 			real dist_i = metric(new_point, node->point);
                 
 			if (dist_i <= separation) {
@@ -135,114 +142,15 @@ bool CoverTree::Insert(const Vector& new_point,
 	}
 
 	// If no points are 2^d-close then the point was found previously.
-	if (separated) {
-		return true;
-	}
+    if (separated) {
+        return NULL;
+    }
 
 	// Try and see whether the point can be inserted in a subtree
 	// Maintain only the points within 2^level distance.
-	bool found = Insert(new_point, Q_next, level - 1);
+	const Node* found = Insert(new_point, Q_next, level - 1);
 
-	// If the node is not within 2^{level-1} of any child node, but it is within
-	// 2^level of a node, we are fine... ?
-	if (found) {
-		real distance = INF;
-		for (int k=0; k<Q_i.Size(); ++k) {
-			Node* node = Q_i.nodes[k];
-			real dist_k = metric(new_point, node->point);
-			if (dist_k < distance) {
-				distance = dist_k; 
-				closest_node = node;
-				if (distance <= separation) { // assuming only one node can be here. 
-					break;
-				}
-			}
-		}
-		
-		if (distance <= separation) {
-			int new_level = level - 1;
-			closest_node->Insert(new_point, new_level);
-			if (tree_level > new_level) {
-				tree_level = new_level;
-			}
-			return false; // Means stop!
-		}
-	} 
-	return true;
-		
-}
-
-
-/// Insert a new point in the tree
-void CoverTree::Insert(const Vector& new_point)
-{
-	if (!root) {
-#ifdef DEBUG_COVER_TREE
-		printf("Adding root at:");
-		new_point.print(stdout);
-		printf("\n");
-#endif
-		root = new Node(new_point, std::numeric_limits<int>::max());
-		return;
-	}
-	real distance = metric(new_point, root->point);
-	int level = (int) ceil(log(distance) / log(2));
-	CoverSet Q;
-	Q.Insert(root);
-	Insert(new_point, Q, level);
-}
-
-
-/** Find the nearest node.
-   
-	Uses almost the same code as insertion.
-  */
-CoverTree::Node* CoverTree::NearestNeighbour(const Vector& new_point,
-											const CoverSet& Q_i,
-											const int level) const
-{
-	Node* closest_node = NULL;
-	
-	// Check if d(p, Q) > 2^level
-	real log_separation = level * log(2);
-	real separation = exp(log_separation);
-	//Q_i.Show();
-
-	bool separated = true;
-	
-	// The set of nodes 2^d-close to the new point
-	CoverSet Q_next;
-	
-	// go through all the children and only add them if they are close
-	for (int k=0; k<Q_i.Size(); ++k) {
-		int n_children = Q_i.NChildren(k);
-		for (int j=-1; j<n_children; ++j) {
-			Node* node;
-			if (j >= 0) {
-				node = Q_i.nodes[k]->children[j];
-			} else {
-				node = Q_i.nodes[k];
-			}
-			real dist_i = metric(new_point, node->point);
-                
-			if (dist_i <= separation) {
-				separated = false; 
-				Q_next.Insert(node);
-			}
-		}
-	}
-
-	// If no points are 2^d-close then the point was found previously.
-	if (separated) {
-		return NULL;
-	}
-
-	// Try and see whether the point can be inserted in a subtree
-	// Maintain only the points within 2^level distance.
-	Node* found = NearestNeighbour(new_point, Q_next, level - 1);
-
-	// If the node is not within 2^{level-1} of any child node, but it is within
-	// 2^level of a node, we are fine... ?
+    // The new point x is only possible 
 	if (!found) {
 		real distance = INF;
 		for (int k=0; k<Q_i.Size(); ++k) {
@@ -258,30 +166,90 @@ CoverTree::Node* CoverTree::NearestNeighbour(const Vector& new_point,
 		}
 		
 		if (distance <= separation) {
-			return closest_node;
-		} else {
-			fprintf(stderr, "huh1!\n");
-		}
+			int new_level = level - 1;
+			const Node* inserted = closest_node->Insert(new_point, new_level);
+			if (tree_level > new_level) {
+				tree_level = new_level;
+			}
+			return inserted; // Means stop!
+		} 
 	} 
-	return NULL;
+	return found;
+		
+}
+
+
+/// Insert a new point in the tree
+const CoverTree::Node* CoverTree::Insert(const Vector& new_point)
+{
+	if (!root) {
+#ifdef DEBUG_COVER_TREE
+		printf("Adding root at:");
+		new_point.print(stdout);
+		printf("\n");
+#endif
+		root = new Node(new_point, std::numeric_limits<int>::max());
+		return root;
+	}
+	real distance = metric(new_point, root->point);
+	int level = 1 + (int) ceil(log(distance) / log(2));
+	CoverSet Q;
+	Q.Insert(root);
+	return Insert(new_point, Q, level);
+}
+
+
+/** Find the nearest node.
+   
+    If the current node is closest, return that.  
+    
+    Look through all children which are close enough to this point.
+  */
+std::pair<const CoverTree::Node*, real> CoverTree::Node::NearestNeighbour(const Vector& query, const real distance) const
+{
+    std::pair<const CoverTree::Node*, real> retval(this, distance);
+
+	real log_separation = level * log(2);
+	real separation = exp(log_separation);
+
+    real& dist = retval.second;
+    
+    for (int j=0; j<Size(); ++j) {
+        real dist_j = children[j]->distanceTo(query);
+        if (dist_j - separation <= dist) {
+            std::pair<const CoverTree::Node*, real> sub
+                = children[j]->NearestNeighbour(query, dist_j);
+            //printf ("dist: %f\n", dist_j);
+            if (sub.second < dist) {
+                retval = sub;
+            }
+        } else {
+            printf("Sep: %f, Dist: %f, Parent: %f, ignoring node [%d -> %d]: ",
+                   separation, dist_j, dist, level, children[j]->level);
+            children[j]->point.print(stdout);
+        }
+    }
+    //printf("Min dist: %f\n", dist);
+	return retval;
+
 }
 
 
 
 /// FInd the nearest neighbour in the tree
-CoverTree::Node* CoverTree::NearestNeighbour(const Vector& query_point) const
+const CoverTree::Node* CoverTree::NearestNeighbour(const Vector& query_point) const
 {
-	if (!root) {
-		return NULL;
-	}
 #ifdef DEBUG_COVER_TREE_NN
 	printf("Query: "); query_point.print(stdout);
 #endif
-	CoverSet Q;															
-	Q.Insert(root);
-	real distance = metric(root->point, query_point); 
-	int level = (int) ceil(log(distance) / log(2));
-	return NearestNeighbour(query_point, Q, level);
+
+	if (!root) {
+		return NULL;
+	}
+
+	std::pair<const CoverTree::Node*, real> val
+        = root->NearestNeighbour(query_point, root->distanceTo(query_point));
+    return val.first;
 }
 
 /** Check that the tree implements the constraints properly */

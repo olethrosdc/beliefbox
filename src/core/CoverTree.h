@@ -15,7 +15,7 @@
 #include "real.h"
 #include "Vector.h"
 
-#define DEBUG_COVER_TREE
+#undef DEBUG_COVER_TREE
 #undef DEBUG_COVER_TREE_NN
 
 /** A cover tree.
@@ -64,13 +64,16 @@ public:
         ~Node();
 
 		/// Metric
-		const real metric (const Vector& x) const
+		const real distanceTo (const Vector& x) const
 		{
 			return CoverTree::metric(x, point);
 		}
 
 		/// Insert a new point at the given level, as a child of this node
-        void Insert(const Vector& new_point, const int level);
+        const Node* Insert(const Vector& new_point, const int level);
+        
+        /// Find nearest neighbour of the node
+        std::pair<const CoverTree::Node*, real> NearestNeighbour(const Vector& query, const real distance) const;
 
  		/// The number of children
         const int Size() const
@@ -128,13 +131,11 @@ public:
     };
 	
 	const real metric(const CoverSet& Q, const Vector& p) const;
-	bool Insert(const Vector& new_point, const CoverSet& Q_i, const int level);
-	void Insert(const Vector& new_point);
-		/// Search for the nearest neighbour in a node's subtree.
-	Node* NearestNeighbour(const Vector& new_point,
-						   const CoverSet& Q_i,
-						   const int level) const;
-	Node* NearestNeighbour(const Vector& query_point) const;
+	const Node* Insert(const Vector& new_point, const CoverSet& Q_i, const int level);
+	const Node* Insert(const Vector& new_point);
+
+
+	const Node* NearestNeighbour(const Vector& query_point) const;
 	bool Check() const;
 	void Show() const;
     CoverTree();
