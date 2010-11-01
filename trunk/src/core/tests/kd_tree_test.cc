@@ -102,10 +102,10 @@ int kd_tree_test(int n_points, int n_dimensions)
 int main(void) 
 {
     int n_errors = 0;
-    int n_tests = 10;
+    int n_tests = 1;
     for (int i=0; i<n_tests; ++i) {
-        int n_dim = (int) ceil(urandom(1,10));
-        int n_points = (int) ceil(urandom(1,1000));
+        int n_dim = 1;// (int) ceil(urandom(1,10));
+        int n_points = 10000;//(int) ceil(urandom(1,1000));
         int error = kd_tree_test(n_points, n_dim);
         if (error) {
             n_errors ++;

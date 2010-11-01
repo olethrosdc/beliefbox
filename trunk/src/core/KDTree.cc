@@ -1,5 +1,8 @@
 #include "KDTree.h"
 #include "Vector.h"
+
+#define MY_NORM L1Norm
+
 /// Create a tree
 void_KDTree::void_KDTree(int n) : n_dimensions(n), box_sup(n), box_inf(n), root(NULL)
 {
@@ -60,10 +63,10 @@ void void_KDTree::Show()
 KDNode* void_KDTree::FindNearestNeighbourLinear(const Vector& x)
 {
     int N = node_list.size();
-    real min_dist = EuclideanNorm(&x, &node_list[0]->c);
+    real min_dist = MY_NORM(&x, &node_list[0]->c);
     KDNode* arg_min = node_list[0];
     for (int i=1; i<N; ++i) {
-        real dist = EuclideanNorm(&x, &node_list[i]->c);
+        real dist = MY_NORM(&x, &node_list[i]->c);
         if (dist < min_dist) {
             min_dist = dist;
             arg_min = node_list[i];
@@ -93,7 +96,7 @@ OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(const Vector&
     int N = node_list.size();
     OrderedFixedList<KDNode> knn_list(K);
     for (int i=0; i<N; ++i) {
-        real dist = EuclideanNorm(&x, &node_list[i]->c);
+        real dist = MY_NORM(&x, &node_list[i]->c);
         knn_list.AddPerhaps(dist, node_list[i]);
     }
     return knn_list;
@@ -157,7 +160,7 @@ KDNode* KDNode::AddVector(const Vector& x,  Vector& inf,  Vector& sup, const voi
  */
 void KDNode::NearestNeighbour(const Vector& x,  KDNode*& nearest, real& dist)
 {
-    real c_dist = EuclideanNorm(&x, &c);
+    real c_dist = MY_NORM(&x, &c);
     if (c_dist < dist) {
         nearest = this;
         dist = c_dist;
@@ -197,7 +200,7 @@ void KDNode::KNearestNeighbours(const Vector& x,
                                OrderedFixedList<KDNode>& knn_list,
                                real& dist)
 {
-    real c_dist = EuclideanNorm(&x, &c);
+    real c_dist = MY_NORM(&x, &c);
     if (knn_list.AddPerhaps(c_dist, this)
         &&
         knn_list.size() == knn_list.max_size()) {
