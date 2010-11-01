@@ -63,8 +63,9 @@ void SoftMin (int n, real* Q, real* p, real beta)
 /// n_elements is the number of elements. 
 /// As pointers are raw, make sure n_elements is correct.
 /// It is safe for src and dst to point at the same vector.
-void Normalise (real* src, real* dst, int n_elements)
+void Normalise (const real* src, real* dst, const int n_elements)
 {
+	printf ("!");
     real sum = 0;
     for (int i=0; i<n_elements; i++) {
         sum += src[i];
@@ -76,8 +77,9 @@ void Normalise (real* src, real* dst, int n_elements)
         return;
     }
     assert(sum>0);
+	real isum = 1.0 / sum;
     for (int i=0; i<n_elements; i++) {
-        dst[i] = src[i]/sum;
+        dst[i] = src[i] * isum;
     }
 }
 

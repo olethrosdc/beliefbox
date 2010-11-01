@@ -33,22 +33,27 @@ int main(int argc, char** argv)
     for (int i=0; i<n_points; i++) {
         X[i].Resize(n_dimensions);
         for (int j=0; j<n_dimensions; j++) {
-            X[i][j] = urandom();
+            X[i][j] = i;// urandom();
         }
     }
     
 	printf ("# Inserting points\n");
     for (int i=0; i<n_points; i++) {
         tree.Insert(X[i]);
+		if (!tree.Check()) {
+			printf ("Problematic structure: t=%d\n", i);
+		}
     }    
-
+	//	printf("Showing tree\n");
+	//	tree.Show();
+	printf ("# testing\n");
 	int n_errors = 0;
 	for (int i=0; i<n_trials; ++i) {
-		printf ("# test :%d\n", i);
+		//printf ("# test :%d\n", i);
 
 		Vector Q(n_dimensions);
 		for (int j=0; j<n_dimensions; j++) {
-            Q[j] = urandom();
+            Q[j] = 100 * urandom();
 		}
 		CoverTree::Node* node = tree.NearestNeighbour(Q);
 		if (node) {
@@ -81,6 +86,8 @@ int main(int argc, char** argv)
 	}
 	if (!n_errors) {
 		printf("Test OK\n");
+	} else {
+		printf("Test FAILED with %d errors\n", n_errors);
 	}
     return n_errors;
 }

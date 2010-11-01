@@ -184,7 +184,7 @@ real Span (const std::vector<T>& x)
 
 void SoftMax (int n, real* Q, real* p, real beta);
 void SoftMin (int n, real* Q, real* p, real beta);
-void Normalise (real* src, real* dst, int n_elements);
+void Normalise (const real* src, real* dst, const int n_elements);
 real EuclideanNorm (real* a, real* b, int n);
 real SquareNorm (real* a, real* b, int n);
 real LNorm (real* a, real* b, int n, real p);

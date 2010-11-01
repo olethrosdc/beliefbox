@@ -39,6 +39,7 @@ typedef float real;
 
 #define INF std::numeric_limits<real>::infinity()
 #define MIN_PRECISION std::numeric_limits<real>::min()
+#define REAL_RANGE std::numeric_limits<real>::max()
 
 #define LOG_ONE 0.0
 #define LOG_2_PI 1.83787706640934548355
