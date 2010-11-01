@@ -16,71 +16,91 @@
 #include "Vector.h"
 
 #define DEBUG_COVER_TREE
+#undef DEBUG_COVER_TREE_NN
 
 /** A cover tree.
 
     Implements the algorithm "Cover trees for Nearest Neighbor",
     Beygelzimer, Kakade, Langford. Based on the technical report "Fast
     Nearest Neighbors" of Thomas Kollar.
+
+	The tree is constructed from a set \f$S\f$ of points, a metric
+	\f$\rho\f$ and a constant \f$c > 1\f$. We write \f$d_{i,j} =
+	\rho(x_i, x_j)\f$ for the distance between the i-th and j-th
+	points. Let \f$S_n\f$ denote the set of nodes at level \f$n\f$ of
+	the tree and \f$C(i)\f$ the set of children of the i-th node. The
+	tree has the following properties.
+
+	1. If \f$i \in S_n\f$ then \f$i \in S_{n-1}\f$.
+
+	2. \f$S_\infty = \fS$.
+
+	3. For any \f$i, j \in S_k\f$, \f$d_{i,j} > c^d\f$.
+	
+	4. If \f$i \in S_n\f$ and \f$j \in C(i)\f$, 
     
  */
 class CoverTree
 {
 public:
-	int tree_level;
-	real metric(Vector& x, Vector& y)
+	/// The raw metric used between points.
+	static const real metric(const Vector& x, const Vector& y)
 	{
-		return EuclideanNorm(&x, &y);
+		return L1Norm(&x, &y);
 	}
 
     /// This simply is a node
     struct Node
     {
-        Vector point;
-        std::vector<Node*> children;
-        int level;
-		int children_level;
-        Node (Vector& point_, int level_)
-            : point(point_), level(level_), children_level(level_)
-        {
-        }
-        ~Node()
-        {
-            for (uint i=0; i<children.size(); ++i) {
-                delete children[i];
-            }
-        }
-        void Insert(Vector& new_point, int level)
-        {
-#ifdef DEBUG_COVER_TREE
-            printf("New child for: ");
-            point.print(stdout);
-            printf("at: ");
-            new_point.print(stdout);
-#endif            
-            Node* node = new Node(new_point, level);
-            children.push_back(node);
-			if (level < children_level) {
-				children_level = level;
-			}
-        }
+        Vector point; ///< The location of the point.
+        std::vector<Node*> children; ///< Pointer to children
+        int level; ///< Level in the tree
+		int children_level; ///< Level of children
 
-        int Size()
+		/// Constructor needs a point and a level
+        Node (const Vector& point_, const int level_);
+
+		/// Destructor
+        ~Node();
+
+		/// Metric
+		const real metric (const Vector& x) const
+		{
+			return CoverTree::metric(x, point);
+		}
+
+		/// Insert a new point at the given level, as a child of this node
+        void Insert(const Vector& new_point, const int level);
+
+ 		/// The number of children
+        const int Size() const
         {
             return children.size();
         }
-
-		int ChildrenLevel()
+		
+		/// A lower bound on the level of children
+		const int ChildrenLevel() const
 		{
 			return children_level;
 		}
+
+		/// Display the tree in textual format
+		void Show() const;
+
+		/// Display the tree in .dot format
+		void Show(FILE* fout) const;
     };
 
-    /// Cover set
+    /** Cover set.
+		
+		This is primarily a simple encapsulation of a vector of Node*.
+		On the other hand, it also provides some set semantics:
+		a node value may not be duplicated within a set.
+	 */
     struct CoverSet
     {
         std::vector<Node*> nodes;
-        int Size()
+        const int Size() const
         {
             return nodes.size();
         }
@@ -89,217 +109,40 @@ public:
 			int N = Size();
 			for (int i=0; i<N; ++i) {
 				if (nodes[i] == node) {
-					//printf("Weird!\n");
 					return;
 				}
 			}
             nodes.push_back(node);
         }
-        int NChildren(int i)
+        const int NChildren(const int i) const
         {
             return nodes[i]->Size();
         }
+		void Show() const 
+		{
+			for (int i=0; i<Size(); ++i) {
+				printf ("%d : ", i);
+				nodes[i]->Show();
+			}
+		}
     };
-
-	real metric(CoverSet& Q, Vector& p)
-	{
-		real D = INF;
-		for (int i=0; i<Q.Size(); ++i) {
-			real d_i = metric(Q.nodes[i]->point, p);
-			if (d_i < D) {
-				D = d_i;
-			}
-		}
-		return D;
-	}
-
-    /// Insert
-    bool Insert(Vector& new_point, CoverSet& Q_i, int level)
-    {
-        Node* closest_node = NULL;
-		// Check if d(p, Q) > 2^level
-		real log_separation = level * log(2);
-		real separation = exp(log_separation);
-		bool separated = true;
-		CoverSet Q_next = Q_i;
-
-        // go through all the children and only add them if they are close
-        for (int k=0; k<Q_i.Size(); ++k) {
-            int n_children = Q_i.NChildren(k);
-            for (int j= -1; j<n_children; ++j) {
-                Node* node;
-                if (j >= 0) {
-                    node = Q_i.nodes[k]->children[j];
-                    if (node->level != level - 1) {
-                        continue;
-                    }
-                } else {
-                    node = Q_i.nodes[k];
-                }
-                real dist_i = metric(new_point, node->point);
-                
-				if (dist_i <= separation) {
-					separated = false; 
-					Q_next.Insert(node);
-				}
-            }
-        }
-        // if all of the children are furhter away than 2^level, then
-        // parent is found
-        if (separated) {
-            return true;
-        }
-
-        // Try and insert a new point
-        bool found = Insert(new_point, Q_next, level - 1);
-        real distance = INF;
-        for (int k=0; k<Q_i.Size(); ++k) {
-            Node* node = Q_i.nodes[k];
-            real dist_k = metric(new_point, node->point);
-            if (dist_k < distance) {
-                distance = dist_k; 
-                closest_node = node;
-                if (distance <= separation) {
-                    break;
-                }
-            }
-        }
-
-        if (found && distance <= separation) {
-			int new_level = level - 1;
-            closest_node->Insert(new_point, new_level);
-			if (tree_level > new_level) {
-				tree_level = new_level;
-			}
-#ifdef DEBUG_COVER_TREE
-            printf("Inserted at level %d\n", new_level);
-#endif
-            return false;
-        }
-        return found;
-   }
-
-
-	/// Insert a new point in the tree
-    void Insert(Vector& new_point)
-    {
-        if (!root) {
-#ifdef DEBUG_COVER_TREE
-            printf("Adding root at:");
-            new_point.print(stdout);
-            printf("\n");
-#endif
-            root = new Node(new_point, INF);
-            return;
-        }
-#ifdef DEBUG_COVER_TREE
-		printf("Trying to add new point\n");
-#endif
-		real distance = metric(new_point, root->point);
-		int level = (int) ceil(log(distance) / log(2));
-        CoverSet Q;
-        Q.Insert(root);
-        Insert(new_point, Q, level);
-    }
-
-
-    /// Find the nearest node
-    Node* NearestNeighbour(Vector& query_point, CoverSet& Q_i, int level)
-    {
-		CoverSet Q_next;
-		CoverSet Q;
-        // go through all the children and only add them if they are close
-		int next_level = level - 1;
-
-		// Get Q
-		int lowest_level = level;
-        for (int k=0; k<Q_i.Size(); ++k) {
-            int n_children = Q_i.NChildren(k);
-#ifdef DEBUG_COVER_TREE
-			printf("Node: %d with %d children:", k, n_children); Q_i.nodes[k]->point.print(stdout);
-#endif
-            for (int j= -1; j<n_children; ++j) {
-                Node* node;
-                if (j >= 0) {
-                    node = Q_i.nodes[k]->children[j];
-                } else {
-                    node = Q_i.nodes[k];
-                }
-				Q.Insert(node);
-				if (lowest_level > node->level) {
-					lowest_level = node->level;
-				}
-				int child_level = node->ChildrenLevel();
-				if (lowest_level > child_level) {
-					lowest_level = child_level;
-				}
-#ifdef DEBUG_COVER_TREE
-				printf("Q: [l:%d] ", node->level); node->point.print(stdout);
-#endif
-			}
-		}
-
-		real dist_Q_p = metric(Q, query_point);
-		real separation = dist_Q_p + pow(2, next_level);
-		Node* found_node = NULL;
-		real min_dist = separation * 2;
-		for (int i=0; i<Q.Size(); ++i) {
-			Node* node = Q.nodes[i];
-			real dist_i = metric(query_point, node->point);
-			if (dist_i <= separation) {
-				Q_next.Insert(node);
-			} 
-			if (dist_i < min_dist) {
-				min_dist = dist_i;
-				found_node = node;
-			}
-		}
-
-		if (level < tree_level) {
-#ifdef DEBUG_COVER_TREE
-            printf("Found node at level %d, min_dist:%f, sep: %f\n",
-				   level, min_dist, separation);
-#endif
-			return found_node;
-		} else {
-#ifdef DEBUG_COVER_TREE
-			printf("Distance: %f, sep: %f, jumping down to level %d\n",
-				   min_dist, separation, next_level);
-#endif
-			return NearestNeighbour(query_point, Q_next, next_level);
-		}
-   }
-
-	/// FInd the nearest neighbour in the tree
-    Node* NearestNeighbour(Vector& query_point)
-    {
-        if (!root) {
-            return NULL;
-        }
-#ifdef DEBUG_COVER_TREE
-        printf("Query: "); query_point.print(stdout);
-#endif
-		real distance = metric(query_point, root->point);
-		int level = (int) ceil(log(distance) / log(2));
-        CoverSet Q;
-        Q.Insert(root);
-        return NearestNeighbour(query_point, Q, level);
-    }
-
-    void Show()
-    {
-        
-    }
-    CoverTree()
-    {
-        root = NULL;
-		tree_level = INF;
-    }
-
-    ~CoverTree()
-    {
-        delete root;
-    }
+	
+	const real metric(const CoverSet& Q, const Vector& p) const;
+	bool Insert(const Vector& new_point, const CoverSet& Q_i, const int level);
+	void Insert(const Vector& new_point);
+		/// Search for the nearest neighbour in a node's subtree.
+	Node* NearestNeighbour(const Vector& new_point,
+						   const CoverSet& Q_i,
+						   const int level) const;
+	Node* NearestNeighbour(const Vector& query_point) const;
+	bool Check() const;
+	void Show() const;
+    CoverTree();
+    ~CoverTree();
+protected:
+	bool Check(const CoverSet& parents, const int level) const;
+	real Separation(const CoverSet& Q) const;
+	int tree_level;
     Node* root;
 };
 

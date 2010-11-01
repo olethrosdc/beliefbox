@@ -193,7 +193,7 @@ real Vector::Sum() const
 }
 
 /// Sum a range of a vector
-real Vector::Sum(int start, int end) const
+real Vector::Sum(const int start, const int end) const
 {
     if (checking_bounds) {
         if (start < 0 || end >= n) {

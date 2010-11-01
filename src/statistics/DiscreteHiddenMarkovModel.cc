@@ -54,6 +54,12 @@ DiscreteHiddenMarkovModel::~DiscreteHiddenMarkovModel()
 }
 
 
+/** Generate the next state and observation .
+
+	First generate \f$s_t \mid s_{t-1} = i \sim p_i\f$.
+	Then generate \f$x_t \mid s_t = j \sim q_j\f$.
+
+ */
 int DiscreteHiddenMarkovModel::generate()
 {
     current_state = P_S[current_state].generateInt();
