@@ -35,12 +35,13 @@ public:
     
 };
 
+/** A K-Nearest-neighbour model of a controlled process. */
 class KNNModel
 {
 protected:
-    int n_actions;
-    int n_dim;
-    std::vector<KDTree<TrajectorySample>*> kd_tree;
+    int n_actions; ///< The number of actions
+    int n_dim; ///< The number of state dimensions
+    std::vector<KDTree<TrajectorySample>*> kd_tree; ///< One tree per action
     //RBFBasisSet basis;
     std::list<TrajectorySample> samples;
     real gamma;
@@ -60,6 +61,7 @@ public:
     void UpdateValue(TrajectorySample& start_sample, real alpha, int K, real b);
     void ValueIteration(real alpha, int K, real b);
     void Show();
+    /// The maximum number of samples to store
     void SetMaxSamples(int max_samples_)
     {
         max_samples = max_samples_;

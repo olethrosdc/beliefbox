@@ -83,7 +83,7 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
     for (int t=0; t<T; ++t) {
         n_steps++;
         // select an action
-        real epsilon = 1.0 / (1.0 + (real) t);
+        real epsilon = 100.0 / (100.0 + (real) t);
         if (t > 1000) {
             epsilon = 0.01;
         }
@@ -91,19 +91,11 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
         if (t < n_actions) {
             action = t;
         } else {
-            if (urandom() < 0.5) {//epsilon) {
+            if (urandom() < epsilon) {
                 action = rand()%n_actions;
             } else {
                 action = model.GetBestAction(state, n_neighbours, rbf_beta);
-#if 0
-                if (state[0] < -0.1) {
-                    action = 0;
-                } else if (state[1] > 0.1) {
-                    action = 2;
-                } else {
-                    action = 1;
-                }
-#endif
+
             }
 
         }
@@ -121,16 +113,16 @@ bool knn_environment_test(Environment<Vector, int>& environment, real alpha, int
         // predict next state
         model.GetExpectedTransition(alpha, state, action, predicted_reward, predicted_state, n_neighbours, rbf_beta);        
         real err = EuclideanNorm(&next_state, &predicted_state);
-        for (int i=0; i<=10; ++i) {
-            model.ValueIteration(alpha, n_neighbours, rbf_beta);
-        }
+        //for (int i=0; i<=10; ++i) {
+        //model.ValueIteration(alpha, n_neighbours, rbf_beta);
+        //}
         // update value function
         real V = model.GetExpectedValue(state, n_neighbours, rbf_beta);
-        if (n_dim == 2) {
-            printf ("%f %f %d %f %f %f %f #err\n", state[0], state[1], action, epsilon, V, err, reward);
-        } else {
-            printf ("%f %d %f %f %f %f #err\n", state[0], action, epsilon, V, err, reward);
+        printf ("%d %f %f %f %f ", action, epsilon, V, err, reward);
+        for (int i=0; i<n_dim; ++i) {
+            printf ("%f ", state[i]);
         }
+        printf ("# err\n");
 
         // see if we are successful
         if (!action_ok) {

@@ -18,6 +18,13 @@
 #include "Vector.h"
 #include "real.h"
 
+/** A continuous chain.
+    
+    The state space is \f$S = [-1,1]\f$. 
+    There are three actions, each increasing or decreasing the state's value.
+    When the state is +1 or -1, there is a transition back.
+    
+*/
 class ContinuousChain : public Environment<Vector, int>
 {
 protected:

@@ -1,13 +1,13 @@
 #/ bin/bash
 
 gamma=0.9
-T=1000
-samples=1000
-for alpha in 0 0.5 1.0
+T=100000
+samples=10000
+for alpha in 0.5
 do
-    for knn in 3 5 10
+    for knn in 3
     do
-        for rbf in 0.1 1.0 10.0 100.0
+        for rbf in 0.5
         do
             echo "alpha" $alpha "knn" $knn "rbf" $rbf
             nice -n 19 ../bin/knn_test chain $alpha $knn $rbf $gamma $T $samples>out;
