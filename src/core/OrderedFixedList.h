@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef ORDERED_FIXED_LIST
-#define ORDERED_FIXED_LIST
+#ifndef ORDERED_FIXED_LIST_H
+#define ORDERED_FIXED_LIST_H
 
 #include <iostream>
 #include <list>
@@ -25,18 +25,19 @@ protected:
     real upper_bound;
 public:
     std::list<std::pair<real, T*> > S;
+
     OrderedFixedList(const uint N_) : N(N_)
     {
-        lower_bound = -RAND_MAX;
-        upper_bound = RAND_MAX;
+        lower_bound = -REAL_RANGE;
+        upper_bound = REAL_RANGE;
     }
-    /** Add an (value, object) pair to the list if possible.
-
+    /** Add a (value, object) pair to the list if possible.
+        
         The object is only added if either:
-
+        
         a) There is enough space in the list.
         b) The value is smaller than the currently largest value.
-     */
+    */
     const bool AddPerhaps(real x, T* object)
     {
         std::list<real>::iterator it;

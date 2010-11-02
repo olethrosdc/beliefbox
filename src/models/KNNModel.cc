@@ -57,15 +57,16 @@ void KNNModel::AddSample(TrajectorySample sample, int K, real beta)
     if (max_samples < 0 || samples.size() < (uint) max_samples) {
         OrderedFixedList<KDNode> node_list = kd_tree[sample.a]->FindKNearestNeighbours(sample.s, K);
         RBF rbf(sample.s, beta);
-        std::list<std::pair<real, KDNode*> >::iterator it;
-        
+        //std::list<std::pair<real, KDNode*> >::iterator it;
+        KDTree<TrajectorySample>::iterator it;
+
         real w = 0;
         for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
             KDNode* node = it->second;
             TrajectorySample* near_sample = kd_tree[sample.a]->getObject(node);
             w += rbf.Evaluate(near_sample->s);
         }
-        if (w < threshold) {
+        if (w < urandom()*threshold) {
             threshold = 0.01 * w + 0.99 * threshold;
             printf ("%f -> %f #thr\n", w, threshold);
             samples.push_back(sample);
@@ -159,7 +160,7 @@ real KNNModel::GetExpectedActionValue(Vector& x, int action, int K, real b)
     return Q;
 }
 
-// Return the expected value of a state according to our model
+/// Return the expected value of a state according to our model
 real KNNModel::GetExpectedValue(Vector& x, int K, real b)
 {
     Vector Q(n_actions);
@@ -170,7 +171,7 @@ real KNNModel::GetExpectedValue(Vector& x, int K, real b)
     return Max(&Q);
 }
 
-// Return the expected value of a state according to our model
+/// Return the expected value of a state according to our model
 int KNNModel::GetBestAction(Vector& x, int K, real b)
 {
 
@@ -185,8 +186,19 @@ int KNNModel::GetBestAction(Vector& x, int K, real b)
 }
 
 
-/// Update the value of the current state
-void KNNModel::UpdateValue(TrajectorySample& start_sample, real alpha, int K, real b)
+/** Update the value of the current state.
+    
+    \param start_sample the sample from which we start
+    \param alpha mixing parameter
+    \param K number of neighbours
+    \param b RBF width
+
+    For the current's sample state, s, and for all actions.
+ */
+void KNNModel::UpdateValue(TrajectorySample& start_sample,
+                           real alpha,
+                           int K,
+                           real b)
 {
     if (start_sample.terminal) {
         start_sample.V = start_sample.r;
@@ -200,7 +212,7 @@ void KNNModel::UpdateValue(TrajectorySample& start_sample, real alpha, int K, re
     for (int a=0; a<n_actions; ++a) {
         OrderedFixedList<KDNode> node_list = kd_tree[a]->FindKNearestNeighbours(start_sample.s, K);
         
-        std::list<std::pair<real, KDNode*> >::iterator it;
+        KDTree<TrajectorySample>::iterator it;
     
         real sum = 0;
         Q[a] = 0.0;
@@ -236,9 +248,9 @@ void KNNModel::UpdateValue(TrajectorySample& start_sample, real alpha, int K, re
 
 /** Perform value iteration
     
-    Iterate over all states and update their values
- */
+    Iterate over all states and update their values.
 
+*/
 void KNNModel::ValueIteration(real alpha, int K, real b)
 {
     for (std::list<TrajectorySample>::iterator it = samples.begin();
