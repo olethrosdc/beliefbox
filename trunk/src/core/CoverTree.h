@@ -103,11 +103,12 @@ public:
     struct CoverSet
     {
         std::vector<Node*> nodes;
+        std::vector<real> distances;
         const int Size() const
         {
             return nodes.size();
         }
-        void Insert(Node* node)
+        void Insert(Node* node, real distance)
         {
 			int N = Size();
 			for (int i=0; i<N; ++i) {
@@ -116,6 +117,7 @@ public:
 				}
 			}
             nodes.push_back(node);
+            distances.push_back(distance);
         }
         const int NChildren(const int i) const
         {
