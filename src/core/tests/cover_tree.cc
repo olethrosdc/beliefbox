@@ -37,6 +37,7 @@ int test_cover_tree_query(CoverTree& tree, std::vector<Vector>& Q)
         const CoverTree::Node* node = tree.NearestNeighbour(Q[i]);
         if (!node) {
             n_errors++;
+            printf ("Null node!\n");
         }
     }
     return n_errors;
@@ -70,15 +71,16 @@ int check_cover_tree_query(CoverTree& tree,
                            std::vector<Vector>& Q)
 {
     int n_errors = 0;
-    int n_points = Q.size();
-    for (int i=0; i<n_points; ++i) {
+    int n_stored_points = X.size();
+    int n_test_points = Q.size();
+    for (int i=0; i<n_test_points; ++i) {
         const CoverTree::Node* node = tree.NearestNeighbour(Q[i]);
 
         if (node) {
             Vector best_point = node->point;
             real dist = INF;
             int arg_min = -1;
-            for (int k=0; k<n_points; ++k) {
+            for (int k=0; k<n_stored_points; ++k) {
                 real dist_k = tree.metric(X[k], Q[i]);
                 if (dist_k < dist) {
                     dist = dist_k;
@@ -103,7 +105,7 @@ int check_cover_tree_query(CoverTree& tree,
             n_errors++;
         }
     }
-
+    return n_errors;
 }
 
 
@@ -136,7 +138,7 @@ int main(int argc, char** argv)
         }
     }
     
-    
+
     {
         CoverTree cover_tree;
         double cover_start = GetCPU();
@@ -149,6 +151,8 @@ int main(int argc, char** argv)
                 cover_mid - cover_start,
                 cover_end - cover_mid,
                 cover_end - cover_start);
+        //n_cover_tree_failures += check_cover_tree_query(cover_tree, X, Q);
+        printf ("Errors: %d\n", n_cover_tree_failures);
     }
 
 

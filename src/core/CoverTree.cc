@@ -117,26 +117,28 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
 	CoverSet Q_next;
 	
 	// go through all the children and only add them if they are close
+    int max_next_level = -INF;
 	for (int k=0; k<Q_i.Size(); ++k) {
 		int n_children = Q_i.NChildren(k);
 		for (int j=-1; j<n_children; ++j) {
 			Node* node;
+            real dist_i;
 			if (j >= 0) {
 				node = Q_i.nodes[k]->children[j];
+                dist_i = metric(new_point, node->point);
+                // ignore children which are too deep.
+                if (node->level < level) {
+                    max_next_level = std::max(node->level, max_next_level);
+                    continue;
+                }
 			} else {
 				node = Q_i.nodes[k];
-			}
+                dist_i = Q_i.distances[k];
 
-            // ignore children which are too deep.
-            if (node->level < level) {
-                continue;
             }
-
-			real dist_i = metric(new_point, node->point);
-                
 			if (dist_i <= separation) {
 				separated = false; 
-				Q_next.Insert(node);
+				Q_next.Insert(node, dist_i);
 			}
 		}
 	}
@@ -148,14 +150,14 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
 
 	// Try and see whether the point can be inserted in a subtree
 	// Maintain only the points within 2^level distance.
-	const Node* found = Insert(new_point, Q_next, level - 1);
+	const Node* found = Insert(new_point, Q_next, max_next_level);
 
     // The new point x is only possible 
 	if (!found) {
 		real distance = INF;
 		for (int k=0; k<Q_i.Size(); ++k) {
 			Node* node = Q_i.nodes[k];
-			real dist_k = metric(new_point, node->point);
+			real dist_k = Q_i.distances[k];//metric(new_point, node->point);
 			if (dist_k < distance) {
 				distance = dist_k; 
 				closest_node = node;
@@ -194,7 +196,7 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point)
 	real distance = metric(new_point, root->point);
 	int level = 1 + (int) ceil(log(distance) / log(2));
 	CoverSet Q;
-	Q.Insert(root);
+	Q.Insert(root, distance);
 	return Insert(new_point, Q, level);
 }
 
@@ -259,7 +261,7 @@ bool CoverTree::Check() const
 		return true;
 	}
 	CoverSet Q;
-	Q.Insert(root);
+	Q.Insert(root, INF);
 	return Check(Q, std::numeric_limits<int>::max());
 }
 
