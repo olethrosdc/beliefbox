@@ -140,7 +140,7 @@ int main(int argc, char** argv)
     
 
     if (1) {
-        CoverTree cover_tree(2.0);
+        CoverTree cover_tree(1.5);
         double cover_start = GetCPU();
         test_cover_tree_insertion(cover_tree, X);
         double cover_mid = GetCPU();
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
     }
 
     
-    if (0) {
+    if (1) {
         KDTree<void> kd_tree(n_dimensions);
         
         double cover_start = GetCPU();
