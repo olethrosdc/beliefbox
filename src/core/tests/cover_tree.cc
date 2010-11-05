@@ -139,8 +139,8 @@ int main(int argc, char** argv)
     }
     
 
-    {
-        CoverTree cover_tree;
+    if (1) {
+        CoverTree cover_tree(2.0);
         double cover_start = GetCPU();
         test_cover_tree_insertion(cover_tree, X);
         double cover_mid = GetCPU();
@@ -155,8 +155,8 @@ int main(int argc, char** argv)
         printf ("Errors: %d\n", n_cover_tree_failures);
     }
 
-
-    {
+    
+    if (0) {
         KDTree<void> kd_tree(n_dimensions);
         
         double cover_start = GetCPU();

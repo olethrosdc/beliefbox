@@ -52,13 +52,15 @@ public:
     /// This simply is a node
     struct Node
     {
+        const CoverTree& tree;
         Vector point; ///< The location of the point.
         std::vector<Node*> children; ///< Pointer to children
         int level; ///< Level in the tree
 		int children_level; ///< Level of children
 
+
 		/// Constructor needs a point and a level
-        Node (const Vector& point_, const int level_);
+        Node (const CoverTree& tree_, const Vector& point_, const int level_);
 
 		/// Destructor
         ~Node();
@@ -66,7 +68,7 @@ public:
 		/// Metric
 		const real distanceTo (const Vector& x) const
 		{
-			return CoverTree::metric(x, point);
+			return tree.metric(x, point);
 		}
 
 		/// Insert a new point at the given level, as a child of this node
@@ -140,12 +142,13 @@ public:
 	const Node* NearestNeighbour(const Vector& query_point) const;
 	bool Check() const;
 	void Show() const;
-    CoverTree();
+    CoverTree(real c);
     ~CoverTree();
 protected:
 	bool Check(const CoverSet& parents, const int level) const;
 	real Separation(const CoverSet& Q) const;
 	int tree_level;
+    real log_c;
     Node* root;
 };
 
