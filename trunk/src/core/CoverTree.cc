@@ -12,8 +12,13 @@
 #include "CoverTree.h"
 
 /// Constructor needs a point and a level
-CoverTree::Node::Node (const Vector& point_, const int level_)
-	: point(point_), level(level_), children_level(level_)
+CoverTree::Node::Node (const CoverTree& tree_, 
+                       const Vector& point_,
+                       const int level_)
+	:  tree(tree_),
+       point(point_),
+       level(level_), 
+       children_level(level_)
 {
 }
 
@@ -37,7 +42,7 @@ const CoverTree::Node* CoverTree::Node::Insert(const Vector& new_point, const in
 #endif
 
 	assert(level <= this->level); //hm, does this assert make sense?
-	Node* node = new Node(new_point, level);
+	Node* node = new Node(tree, new_point, level);
 	children.push_back(node);
 	if (level < children_level) {
 		children_level = level;
@@ -107,7 +112,7 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
 	Node* closest_node = NULL;
 	
 	// Check if d(p, Q) > 2^level
-	real log_separation = level * log(2);
+	real log_separation = level * log_c;
 	real separation = exp(log_separation);
 	//Q_i.Show();
 
@@ -143,7 +148,7 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
 		}
 	}
 
-	// If no points are 2^d-close then the point was found previously.
+	// If no points are c^d-close then the point was found previously.
     if (separated) {
         return NULL;
     }
@@ -190,11 +195,11 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point)
 		new_point.print(stdout);
 		printf("\n");
 #endif
-		root = new Node(new_point, std::numeric_limits<int>::max());
+		root = new Node(*this, new_point, std::numeric_limits<int>::max());
 		return root;
 	}
 	real distance = metric(new_point, root->point);
-	int level = 1 + (int) ceil(log(distance) / log(2));
+	int level = 1 + (int) ceil(log(distance) / log_c);
 	CoverSet Q;
 	Q.Insert(root, distance);
 	return Insert(new_point, Q, level);
@@ -211,7 +216,7 @@ std::pair<const CoverTree::Node*, real> CoverTree::Node::NearestNeighbour(const 
 {
     std::pair<const CoverTree::Node*, real> retval(this, distance);
 
-	real log_separation = level * log(2);
+	real log_separation = level * tree.log_c;
 	real separation = exp(log_separation);
 
     real& dist = retval.second;
@@ -314,8 +319,10 @@ void CoverTree::Show() const
 }
 
 /** Default constructor */
-CoverTree::CoverTree()
+CoverTree::CoverTree(real c)
 {
+    assert (c > 0);
+    log_c = c;
 	root = NULL;
 	tree_level = std::numeric_limits<int>::max();
 }
