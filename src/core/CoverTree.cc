@@ -104,6 +104,24 @@ const real CoverTree::metric(const CoverSet& Q, const Vector& p) const
 
 	The function is such that Q_i only contains points which whose
 	distance to the new point is smaller than 2^level.
+
+    Officially:
+
+    Insret (p, Q, i)
+    Q = {C(q) : q \in Q_i}
+    if (d(p, Q) > 2^i) {
+       return parent found (true)
+    } else  {
+       Q_{i-1} = {q in Q: d(p, q) \leq 2^i}
+       found = Insert(p, Q_{i-1}, i - 1)
+       if (found and d(p, Q_i) \leq 2^i) {
+          pick a single (any) q in Q_i s.t. d(p,q) \leq 2^i
+          insert p in C(q)
+          return finished (false)
+       } else {
+          return found;
+       }
+   }
 */
 const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
                                          const CoverSet& Q_i,
