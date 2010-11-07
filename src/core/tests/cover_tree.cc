@@ -16,7 +16,9 @@
 #include "KDTree.h"
 #include "Random.h"
 #include "Vector.h"
+#include "NormalDistribution.h"
 #include <vector>
+#include <memory>
 
 void test_cover_tree_insertion(CoverTree& tree, std::vector<Vector>& X)
 {
@@ -112,21 +114,32 @@ int check_cover_tree_query(CoverTree& tree,
 int main(int argc, char** argv)
 {
 
-	if (argc != 4) {
-		fprintf(stderr, "Usage: cover_tree points dimensions n_trials\n");
+	if (argc != 5) {
+		fprintf(stderr, "Usage: cover_tree points dimensions n_trials c\n");
 		exit(-1);
 	}
     int n_points = atoi(argv[1]);
     int n_dimensions = atoi(argv[2]);
     int n_trials = atoi(argv[3]);
+    real c = atof(argv[4]);
     printf ("#  %d dataset points, %d test points, %d dimensions\n",
             n_points, n_trials, n_dimensions);
     printf("# Generating data\n");
+
+    std::auto_ptr<Distribution> distribution(new NormalDistribution);
+    Vector Transform(n_dimensions);
+    for (int j=0; j<n_dimensions; j++) {
+        Transform(j) = distribution->generate();
+        if (j) {
+            Transform(j) = 0;
+        }
+    }
     std::vector<Vector> X(n_points);
     for (int i=0; i<n_points; i++) {
         X[i].Resize(n_dimensions);
         for (int j=0; j<n_dimensions; j++) {
-            X[i][j] = urandom();
+            real Z = distribution->generate();
+            X[i][j] = Z * Transform(j);
         }
     }
 
@@ -134,44 +147,47 @@ int main(int argc, char** argv)
     for (int i=0; i<n_trials; i++) {
         Q[i].Resize(n_dimensions);
         for (int j=0; j<n_dimensions; j++) {
-            Q[i][j] = urandom();
+            real Z = distribution->generate();
+            Q[i][j] = Z * Transform(j);
         }
     }
     
 
     if (1) {
-        CoverTree cover_tree(1.5);
-        double cover_start = GetCPU();
+        printf ("# Testing cover tree\n");
+        CoverTree cover_tree(c);
+        double timer_start = GetCPU();
         test_cover_tree_insertion(cover_tree, X);
-        double cover_mid = GetCPU();
+        double timer_mid = GetCPU();
         //	tree.Show();
         int n_cover_tree_failures = test_cover_tree_query(cover_tree, Q);
-        double cover_end = GetCPU();
+        double timer_end = GetCPU();
         printf ("%f %f %f # COVER TREE\n",
-                cover_mid - cover_start,
-                cover_end - cover_mid,
-                cover_end - cover_start);
+                timer_mid - timer_start,
+                timer_end - timer_mid,
+                timer_end - timer_start);
         //n_cover_tree_failures += check_cover_tree_query(cover_tree, X, Q);
         printf ("Errors: %d\n", n_cover_tree_failures);
     }
 
     
     if (1) {
+        printf ("# Testing KD tree\n");
         KDTree<void> kd_tree(n_dimensions);
         
-        double cover_start = GetCPU();
+        double timer_start = GetCPU();
 
         test_kd_tree_insertion(kd_tree, X);
 
-        double cover_mid = GetCPU();
+        double timer_mid = GetCPU();
         int n_kd_tree_failures = test_kd_tree_query(kd_tree, Q);
         
-        double cover_end = GetCPU();
+        double timer_end = GetCPU();
         
         printf ("%f %f %f # KD TREE\n",
-                cover_mid - cover_start,
-                cover_end - cover_mid,
-                cover_end - cover_start);
+                timer_mid - timer_start,
+                timer_end - timer_mid,
+                timer_end - timer_start);
 
     }
 

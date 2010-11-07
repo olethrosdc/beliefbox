@@ -148,12 +148,12 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
             real dist_i;
 			if (j >= 0) {
 				node = Q_i.nodes[k]->children[j];
-                dist_i = metric(new_point, node->point);
                 // ignore children which are too deep.
                 if (node->level < level) {
                     max_next_level = std::max(node->level, max_next_level);
                     continue;
                 }
+                dist_i = metric(new_point, node->point);
 			} else {
 				node = Q_i.nodes[k];
                 dist_i = Q_i.distances[k];
@@ -241,17 +241,18 @@ std::pair<const CoverTree::Node*, real> CoverTree::Node::NearestNeighbour(const 
     
     for (int j=0; j<Size(); ++j) {
         real dist_j = children[j]->distanceTo(query);
-        if (dist_j - separation <= dist) {
+        //        if (dist_j - separation <= dist) {
+        if (dist_j <= dist + exp(children[j]->level * tree.log_c)) {
             std::pair<const CoverTree::Node*, real> sub
                 = children[j]->NearestNeighbour(query, dist_j);
             //printf ("dist: %f\n", dist_j);
             if (sub.second < dist) {
                 retval = sub;
             }
-        } else {
-            printf("Sep: %f, Dist: %f, Parent: %f, ignoring node [%d -> %d]: ",
-                   separation, dist_j, dist, level, children[j]->level);
-            children[j]->point.print(stdout);
+            //} else {
+            //            printf("Sep: %f, Dist: %f, Parent: %f, ignoring node [%d -> %d]: ",
+            //separation, dist_j, dist, level, children[j]->level);
+            //children[j]->point.print(stdout);
         }
     }
     //printf("Min dist: %f\n", dist);
