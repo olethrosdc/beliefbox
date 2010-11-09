@@ -11,6 +11,7 @@
 
 #include "RSAPI.h"
 #include "RandomNumberGenerator.h"
+#include "GeometricDistribution.h"
 
 RolloutState::RolloutState(Environment<Vector, int>* environment_,
                            AbstractPolicy<Vector, int>* policy_,
@@ -87,8 +88,8 @@ int RolloutState::BestEmpiricalAction()
     int pessimistic_action = ArgMax(Q_L);
     real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
     if (gap > 0) {
-        printf ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action);
-        start_state.print(stdout);
+        //printf ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action);
+        //start_state.print(stdout);
 
         return pessimistic_action;
     }  else {
@@ -101,6 +102,31 @@ int RolloutState::BestEmpiricalAction()
     }
 }
 
+
+/** Sample from the current policy.
+
+    This uses a gamma-discount sample from the current policy.
+    The idea is the following.
+    
+    An infinite horizon problem with discount factor \f$\gamma\f$ is
+    equivalent to a finite horizon problem with a random horizon,
+    geometrically distributed, such that at any time \f$t > 0\f$, the
+    probability that the horizon \f$T = t\f$ is equal to \f$1 - \gamma\f$.
+    
+    We can thus sample from that distribution easily.
+ */
+Vector RolloutState::SampleFromPolicy()
+{
+
+    GeometricDistribution horizon_distribution(1 - gamma);
+    int horizon_sample = horizon_distribution.generate();
+    policy->setState(start_state);
+    int normal_action = policy->SelectAction();
+    Rollout rollout(start_state, normal_action, policy, environment, gamma);
+    rollout.Sample(horizon_sample);
+    return rollout.end_state;
+
+}
 
 /// Group best and worst actions together.
 ///
