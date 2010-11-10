@@ -122,7 +122,7 @@ Vector RolloutState::SampleFromPolicy()
     int horizon_sample = horizon_distribution.generate();
     policy->setState(start_state);
     int normal_action = policy->SelectAction();
-    Rollout rollout(start_state, normal_action, policy, environment, gamma);
+    Rollout<Vector, int, AbstractPolicy<Vector, int> > rollout(start_state, normal_action, policy, environment, gamma);
     rollout.Sample(horizon_sample);
     return rollout.end_state;
 
@@ -257,6 +257,13 @@ RSAPI::~RSAPI()
 void RSAPI::AddState(Vector& state)
 {
     states.push_back(new RolloutState(environment, policy, state, gamma));
+}
+
+/// Sample a new state
+Vector RSAPI::SampleStateFromPolicy() const
+{
+    int k = rng->discrete_uniform(states.size());
+    return states[k]->SampleFromPolicy();
 }
 
 void RSAPI::SampleRandomly(const int T)

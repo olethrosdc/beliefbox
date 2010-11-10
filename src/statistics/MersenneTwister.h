@@ -63,8 +63,9 @@ public:
     MersenneTwisterRNG();
     virtual ~MersenneTwisterRNG();
 
-    /// Initializes the random number generator with the computer clock.
+    /// Seed to time
     virtual void seed();
+
     /// Initializes the random number generator with the given long "the_seed_".
     virtual void manualSeed(unsigned long the_seed_);
 

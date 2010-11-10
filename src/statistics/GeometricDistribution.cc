@@ -8,6 +8,8 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+#include "GeometricDistribution.h"
+#include "Random.h"
 
 real GeometricDistribution::generate()
 {
