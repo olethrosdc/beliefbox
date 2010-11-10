@@ -174,7 +174,9 @@ void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_it
     pV = V;
     do {
         Delta = 0.0;
-        std::vector<int> a_max(n_states);
+
+        // Find the  best average action at the current stage.
+        std::vector<int> a_max(n_states); 
         for (int s=0; s<n_states; s++) {
             real Q_a_max = -RAND_MAX;
             a_max[s] = 0;
@@ -188,6 +190,8 @@ void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_it
             }
             V(s) = Q_a_max;
         }
+
+        // Calculate the value of each MDP for the current best average action
         for (int i=0; i<n_mdps; ++i) {
             Vector tmpV = V_mu[i];
             for (int s=0; s<n_states; s++) {

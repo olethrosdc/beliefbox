@@ -55,7 +55,7 @@ int Grid::getInterval(Vector& x)
 
     Construct a new grid, subdividing each dimension in K parts.
  */
-EvenGrid::EvenGrid(Vector& lower_bound_, Vector& upper_bound_, int K_)
+EvenGrid::EvenGrid(const Vector& lower_bound_, const Vector& upper_bound_, int K_)
     :
     lower_bound(lower_bound_),
     upper_bound(upper_bound_),

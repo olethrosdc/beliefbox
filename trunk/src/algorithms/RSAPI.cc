@@ -21,7 +21,7 @@ RolloutState::RolloutState(Environment<Vector, int>* environment_,
       policy(policy_),
 	  start_state(start_state_),
       gamma(gamma_)
-{
+{ 
 	V_U = 0;
     V_L = 0;
 	V = 0;
@@ -35,11 +35,12 @@ RolloutState::~RolloutState()
 	}
 }
 
-void RolloutState::NewRollout(AbstractPolicy<Vector, int>* policy, int action)
+Rollout<Vector, int, AbstractPolicy<Vector, int> >*  RolloutState::NewRollout(AbstractPolicy<Vector, int>* policy, int action)
 {
 	Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout
 		= new Rollout<Vector, int, AbstractPolicy<Vector, int> >(start_state, action, policy, environment, gamma); //valgrind
 	rollouts.push_back(rollout);
+    return rollout;
 	
 }	
 
@@ -56,7 +57,7 @@ void RolloutState::ExtendAllRollouts(const int T)
 ///
 /// The error bounds used here are totally silly, though!
 /// See OOP (Bubeck et al) for better bounds.
-int RolloutState::BestEmpiricalAction()
+int RolloutState::BestEmpiricalAction(real delta)
 {
     Vector Q_U(environment->getNActions()); // Upper bound on Q
     Vector Q_L(environment->getNActions()); // Lower bound on Q
@@ -75,7 +76,7 @@ int RolloutState::BestEmpiricalAction()
     }
     Q_U = Q_U / N; // normalise
     Q_L = Q_L / N; // normalise
-    Vector confidence_interval = pow(N, (real) -0.5);
+    Vector confidence_interval = pow(N, (real) -0.5) * sqrt(log(1.0 / delta));
     Q_U += confidence_interval;
     Q_L -= confidence_interval;
     V_U = Max(Q_U);
@@ -84,7 +85,7 @@ int RolloutState::BestEmpiricalAction()
 
     policy->setState(start_state);
     int normal_action = policy->SelectAction();
-    int optimistic_action = ArgMax(Q_U);
+    //int optimistic_action = ArgMax(Q_U);
     int pessimistic_action = ArgMax(Q_L);
     real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
     if (gap > 0) {
@@ -101,6 +102,52 @@ int RolloutState::BestEmpiricalAction()
         return normal_action;
     }
 }
+
+/// Get the best empirical action in isolation
+///
+/// The error bounds used here are totally silly, though!
+/// See OOP (Bubeck et al) for better bounds.
+int RolloutState::BestHighProbabilityAction(real delta)
+{
+    Vector Q_U(environment->getNActions()); // Upper bound on Q
+    Vector Q_L(environment->getNActions()); // Lower bound on Q
+    Vector N(environment->getNActions()); // number of times action was played
+    real log_gamma = log(gamma);
+	for (uint i=0; i<rollouts.size(); ++i) {
+        Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];
+        real error_bound = 0;
+        if (rollout->running) {
+            error_bound = exp(rollout->T * log_gamma);
+        }
+        int a = rollout->start_action;
+        N(a)++;
+        Q_U(a) += rollout->discounted_reward + error_bound;
+        Q_L(a) += rollout->discounted_reward - error_bound;
+    }
+    Q_U = Q_U / N; // normalise
+    Q_L = Q_L / N; // normalise
+    Vector confidence_interval = pow(N, (real) -0.5) * sqrt(log(1.0 / delta));
+    Q_U += confidence_interval;
+    Q_L -= confidence_interval;
+    V_U = Max(Q_U);
+    V_L = Min(Q_L);
+    V = 0.5 * (V_U + V_L);
+
+    policy->setState(start_state);
+    int normal_action = policy->SelectAction();
+    //int optimistic_action = ArgMax(Q_U);
+    int pessimistic_action = ArgMax(Q_L);
+    real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
+    if (gap > 0) {
+        //printf ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action);
+        //start_state.print(stdout);
+
+        return pessimistic_action;
+    }  else {
+        return -1;
+    }
+}
+
 
 
 /** Sample from the current policy.
@@ -133,7 +180,7 @@ Vector RolloutState::SampleFromPolicy()
 /// Give 0 probability to any completely dominated action.
 /// Other actions get a probability proportional to the number
 /// of other actions they dominate.
-std::pair<Vector, bool> RolloutState::BestGroupAction()
+std::pair<Vector, bool> RolloutState::BestGroupAction(real delta)
 {
     Vector Q_U(environment->getNActions()); // Upper bound on Q
     Vector Q_L(environment->getNActions()); // Lower bound on Q
@@ -144,6 +191,7 @@ std::pair<Vector, bool> RolloutState::BestGroupAction()
         real error_bound = 0;
         if (rollout->running) {
             error_bound = exp(rollout->T * log_gamma);
+            printf ("error bound not zero: %f\n", error_bound);
         }
         int a = rollout->start_action;
         N(a)++;
@@ -152,7 +200,7 @@ std::pair<Vector, bool> RolloutState::BestGroupAction()
     }
     Q_U = Q_U / N; // normalise
     Q_L = Q_L / N; // normalise
-    Vector confidence_interval = pow(N, (real) -0.5);
+    Vector confidence_interval = pow(N, (real) -0.5) * sqrt(log(1.0 / delta));
     Q_U += confidence_interval;
     Q_L -= confidence_interval;
     V_U = Max(Q_U);
@@ -183,6 +231,8 @@ std::pair<Vector, bool> RolloutState::BestGroupAction()
         }    
     }
     Pr /= Pr.Sum();
+    //printf("U: "); Q_U.print(stdout);
+    //printf("L: "); Q_L.print(stdout);
 #if 0
     if (domination) {
         printf("# S: "); start_state.print(stdout);
@@ -300,13 +350,53 @@ void RSAPI::SampleUniformly(const int K, const int T)
 
 }
 
+/// Sample uniformly from all states till an error bound is met
+///
+/// Take K rollouts from all state-action pairs, of length T
+void RSAPI::SampleToErrorBound(const int K, const int T, const real delta)
+{                                            
+    int total_rollouts = states.size() * K;
+    int k = 0;
+    int n_sampled_states = 1;
+    int total_updates = 0;
+    std::vector<bool> state_ok(states.size());
+    for (uint i=0; i < states.size(); ++i) {
+        state_ok[i] = false;
+    }
+
+    while(k < total_rollouts && n_sampled_states) {
+        n_sampled_states = 0;
+        for (uint i=0; i < states.size(); ++i) {
+            if (state_ok[i]) {
+                continue;
+            }
+            RolloutState* state = states[i];
+            ++n_sampled_states;
+            ++k;
+            for (uint a=0; a<environment->getNActions(); ++a) {
+                Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout
+                    = state->NewRollout(policy, a); 
+                rollout->Sample(T);
+            }
+            int a_max = state->BestHighProbabilityAction(delta);
+            if (a_max >= 0) {
+                state_ok[i] = true;
+                total_updates++;
+            }
+        }
+    }
+    printf ("# n updates: %d\n", total_updates);
+
+}
+
+
 /// Simply train the classifier
-int RSAPI::TrainClassifier(Classifier<Vector, int, Vector>* classifier)
+int RSAPI::TrainClassifier(Classifier<Vector, int, Vector>* classifier, real delta)
 {
     int n_improved_actions = 0;
 
     for (uint i=0; i<states.size(); ++i) {
-        int best_action = states[i]->BestEmpiricalAction();
+        int best_action = states[i]->BestEmpiricalAction(delta);
         if (best_action >= 0) {
             //printf("# Action: %d state: ", best_action);
             //states[i]->start_state.print(stdout)
@@ -355,11 +445,13 @@ void RSAPI::Bootstrap()
 
 
 /// Simply train the classifier with action groups
-int RSAPI::GroupTrainClassifier(Classifier<Vector, int, Vector>* classifier)
+/// 
+/// delta is the error probability that is deemed acceptable
+int RSAPI::GroupTrainClassifier(Classifier<Vector, int, Vector>* classifier, real delta)
 {
     int n_improved_actions = 0;
     for (uint i=0; i<states.size(); ++i) {
-        std::pair<Vector, bool> retval = states[i]->BestGroupAction();
+        std::pair<Vector, bool> retval = states[i]->BestGroupAction(delta);
         if (retval.second) {
             n_improved_actions++;
             classifier->Observe(states[i]->start_state, retval.first);

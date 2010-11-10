@@ -129,6 +129,4 @@ void Pendulum::Simulate(const int action)
         reward = 0.0;
         endsim = false;
     }
-  
-   
 }
