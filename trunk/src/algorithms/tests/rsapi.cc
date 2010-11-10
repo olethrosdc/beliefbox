@@ -210,6 +210,7 @@ int main(int argc, char* argv[])
         }
     }
 
+    //RSAPI rsapi(environment, &rng, gamma);
     for (int iter=0; iter<n_iter; ++iter) {
         AveragePerformanceStatistics statistics;
         for (int i=0; i<100; ++i) {
@@ -220,6 +221,7 @@ int main(int argc, char* argv[])
             statistics.Observe(run_statistics);
         }
         statistics.Show();
+
         RSAPI rsapi(environment, &rng, gamma);
         rsapi.setPolicy(policy);
         for (uint k=0; k<state_vector.size(); ++k) {
@@ -236,12 +238,20 @@ int main(int argc, char* argv[])
             n_improved_actions = rsapi.TrainClassifier(new_classifier);
         }
         printf ("# n: %d\n", n_improved_actions);
-        if (1) {
+        if (0) {
             Vector new_state(S_L.Size());
             for (int i=0; i<S_L.Size(); ++i) {
                 new_state(i) = rng.uniform(S_L(i), S_U(i));
             }
             state_vector.push_back(new_state);
+        } else {
+            for (uint i=0; i<state_vector.size(); ++i) {
+                if (rng.uniform() >= gamma) {
+                    Vector new_state = rsapi.SampleStateFromPolicy();
+                    state_vector[i] =  new_state;
+                }
+                state_vector[i].print(stdout);
+            }
         }
         delete policy;
         policy = new ClassifierPolicy(new_classifier);

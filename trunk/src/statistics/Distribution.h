@@ -18,19 +18,16 @@
 #include "Object.h"
 #include "Vector.h"
 #include "MathFunctions.h"
-
+#include "RandomNumberGenerator.h"
 
 /**
    \defgroup StatisticsGroup Statistics and probability
 */
 /*@{*/
-
-
-
 template <typename T>
 class AbstractDistribution : public Object {
 public:
-	AbstractDistribution() {}
+	AbstractDistribution()  {}
     virtual ~AbstractDistribution() {};
     virtual void generate(T& x) = 0;
     virtual T generate() = 0;

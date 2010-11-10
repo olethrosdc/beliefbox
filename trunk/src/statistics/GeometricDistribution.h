@@ -8,6 +8,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+#include "Distribution.h"
 
 /// Geometric probability distribution
 class GeometricDistribution : public ParametricDistribution {

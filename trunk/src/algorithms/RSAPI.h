@@ -39,6 +39,7 @@ public:
                  Vector& start_state_,
                  real gamma_);
 	~RolloutState();
+    Vector SampleFromPolicy();
 	void NewRollout(AbstractPolicy<Vector, int>* policy, int action);
 	void ExtendAllRollouts(const int T);
     Vector getRandomTerminalState();
@@ -61,6 +62,7 @@ public:
     RSAPI(Environment<Vector, int>* environment_, RandomNumberGenerator* rng_, real gamma_);
     ~RSAPI();
     void AddState(Vector& state);
+    Vector SampleStateFromPolicy() const;
     void setPolicy(AbstractPolicy<Vector, int>* policy_) 
     {
         assert(policy_);
