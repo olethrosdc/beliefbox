@@ -78,6 +78,8 @@ static const char* const help_text = "Usage: rsapi [options]\n\
     --horizon:     rollout horizon\n\
     --n_rollouts:  number of rollouts\n\
     --knn:         number of nearest neighbours in KNN classifier\n\
+    --group:       use grouped action training\n\
+    --resample:    resample states from discounted state distribution\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -96,6 +98,8 @@ int main(int argc, char* argv[])
     int n_neighbours = 1;
     char* environment_name = NULL;
     bool group_training = false;
+    bool resample = false;
+    real delta = 0.1;
 
     {
         // options
@@ -113,6 +117,8 @@ int main(int argc, char* argv[])
                 {"environment", required_argument, 0, 0}, //5
                 {"knn", required_argument, 0, 0}, //6
                 {"group", no_argument, 0, 0}, //7
+                {"resample", no_argument, 0, 0}, //8
+                {"delta", required_argument, 0, 0}, //9
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -137,6 +143,8 @@ int main(int argc, char* argv[])
                 case 5: environment_name = optarg; break;
                 case 6: n_neighbours = atoi(optarg); break;
                 case 7: group_training = true; break;
+                case 8: resample = true; break;
+                case 9: delta = atof(optarg); break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
@@ -228,29 +236,22 @@ int main(int argc, char* argv[])
             rsapi.AddState(state_vector[k]);
         }
         
-        rsapi.SampleUniformly(n_rollouts, horizon);
+        //rsapi.SampleUniformly(n_rollouts, horizon);
+        rsapi.SampleToErrorBound(n_rollouts, horizon, delta);
 
         KNNClassifier* new_classifier = new KNNClassifier(state_dimension, environment->getNActions(), n_neighbours);
         int n_improved_actions = 0;
         if (group_training) {
-            n_improved_actions = rsapi.GroupTrainClassifier(new_classifier);
+            n_improved_actions = rsapi.GroupTrainClassifier(new_classifier, delta);
         } else {
-            n_improved_actions = rsapi.TrainClassifier(new_classifier);
+            n_improved_actions = rsapi.TrainClassifier(new_classifier, delta);
         }
         printf ("# n: %d\n", n_improved_actions);
-        if (0) {
-            Vector new_state(S_L.Size());
-            for (int i=0; i<S_L.Size(); ++i) {
-                new_state(i) = rng.uniform(S_L(i), S_U(i));
-            }
-            state_vector.push_back(new_state);
-        } else {
+        if (resample) {
             for (uint i=0; i<state_vector.size(); ++i) {
                 if (rng.uniform() >= gamma) {
-                    Vector new_state = rsapi.SampleStateFromPolicy();
-                    state_vector[i] =  new_state;
+                    state_vector[i] =  rsapi.SampleStateFromPolicy();
                 }
-                state_vector[i].print(stdout);
             }
         }
         delete policy;

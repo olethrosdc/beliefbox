@@ -43,7 +43,7 @@ public:
              real cart_mass_ = 8.0,
              real pendulum_length_ = 0.5,
              real gravity_ = 9.8,
-             real max_noise_ = 10.0,
+             real max_noise_ = 0,//10.0,
              real Dt_ = 0.01);
     virtual ~Pendulum();
     virtual void Reset();

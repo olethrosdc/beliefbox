@@ -40,11 +40,12 @@ public:
                  real gamma_);
 	~RolloutState();
     Vector SampleFromPolicy();
-	void NewRollout(AbstractPolicy<Vector, int>* policy, int action);
+	Rollout<Vector, int, AbstractPolicy<Vector, int> >*  NewRollout(AbstractPolicy<Vector, int>* policy, int action);
 	void ExtendAllRollouts(const int T);
     Vector getRandomTerminalState();
-    int BestEmpiricalAction();
-    std::pair<Vector, bool> BestGroupAction();
+    int BestHighProbabilityAction(real delta);
+    int BestEmpiricalAction(real delta);
+    std::pair<Vector, bool> BestGroupAction(real delta);
     void Bootstrap(KDTree<RolloutState>& tree,
                    real L);
 };
@@ -71,8 +72,9 @@ public:
     void SampleRandomly(const int T);
     void NewRandomRollouts(const int K, const int T);
     void SampleUniformly(const int K, const int T);
-    int TrainClassifier(Classifier<Vector, int, Vector>* classifier);
-    int GroupTrainClassifier(Classifier<Vector, int, Vector>* classifier);
+    void SampleToErrorBound(const int K, const int T, const real delta);
+    int TrainClassifier(Classifier<Vector, int, Vector>* classifier, real delta);
+    int GroupTrainClassifier(Classifier<Vector, int, Vector>* classifier, real delta);
     real LipschitzBound();
     void Bootstrap();
 };

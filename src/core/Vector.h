@@ -250,7 +250,7 @@ inline const Vector pow (const Vector& rhs, const real p)
     int n = rhs.Size();
     Vector lhs (n);
     for (int i=0; i<n; i++) {
-        lhs.x[i] = pow(rhs[i], p);
+        lhs.x[i] = pow((double) rhs[i], (double) p);
     }
     return lhs;
 }

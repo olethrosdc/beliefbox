@@ -19,6 +19,10 @@
 #include <vector>
 #include "Matrix.h"
 
+/** Multi-MDP value iteration.
+
+
+ */
 class MultiMDPValueIteration
 {
 public:

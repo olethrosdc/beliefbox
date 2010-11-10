@@ -19,9 +19,12 @@
 #include "Classifier.h"
 
 
+/** K Nearest neighbour classifier.
+ */
 class KNNClassifier : public  Classifier<Vector, int, Vector>
 {
 public:
+    /// These are the samples stored in the KNN back-end.
     class DataSample
     {
     public:
@@ -34,14 +37,14 @@ public:
         }
     };
 protected:
-    int n_classes;
-    int n_dim;
-    int K;
-    KDTree<DataSample> kd_tree;
-    std::list<DataSample> samples;
-    void AddSample(const DataSample sample);
+    int n_classes; ///< number of classes
+    int n_dim; ///< number of input dimensions
+    int K; ///< number of neighbours to use
+    KDTree<DataSample> kd_tree; ///< storage backend
+    std::list<DataSample> samples; ///< list of samples
+    void AddSample(const DataSample sample); 
 public:	
-    Vector output;
+    Vector output; ///< temporary storage for the last output of the classifier
     KNNClassifier(const int n_dim_, const int n_classes_, const int K_);
     virtual ~KNNClassifier();
     virtual int Classify(const Vector& x)
