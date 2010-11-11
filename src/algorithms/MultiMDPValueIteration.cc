@@ -70,22 +70,29 @@ MultiMDPValueIteration::~MultiMDPValueIteration()
 {
 }
 
+
+/** Return the state-action value for the next stage.
+
+    The function returns
+    \f[
+    Q_{\mu,t}(s,a) = r_\mu(s,a) + \gamma \sum_{s'} V_{\mu, t+1}(s') {\cal T}_\mu(s' | s, a)
+    \f]
+ */
 real MultiMDPValueIteration::ComputeStateActionValueForSingleMDP(int mu, int s, int a)
 {
     Vector& V_i = V_mu[mu];
     const DiscreteMDP* mdp = mdp_list[mu];
-    real Q_mu_sa = 0.0;
+    real Q_mu_sa = mdp->getExpectedReward(s,a);
     DiscreteStateSet next = mdp->getNextStates(s, a);
     for (DiscreteStateSet::iterator i=next.begin();
          i!=next.end();
          ++i) {
         int s2 = *i;
         real P = mdp->getTransitionProbability(s, a, s2);
-        real R = mdp->getExpectedReward(s, a) + gamma * V_i(s2);
+        real R = gamma * V_i(s2);
         Q_mu_sa += P * R;
     } 
     return Q_mu_sa;
- 
 }
 
 /*** Compute the next state values for the MDPs.
@@ -121,8 +128,6 @@ real MultiMDPValueIteration::ComputeActionValueForMDPs(int s, int a)
      \[f
      a^*_{\xi, t}(s) = \arg\max_a Q_{\xi,t}(s,a)
      \f]
-     
-     
  */
 void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
 {

@@ -25,7 +25,7 @@ SampleBasedRL::SampleBasedRL(int n_states_,
       model(model_),
       max_samples(max_samples_),
       T(0),
-      update_interval(1)
+      update_interval(10)
 {
     state = -1;
 
@@ -88,12 +88,13 @@ int SampleBasedRL::Act(real reward, int next_state)
         for (int i=0; i<max_samples; ++i) {
             delete mdp_list[i];
             mdp_list[i] = model->generate();
+            //model->ShowModel();
         }
     }
     
     // update values
     value_iteration->setMDPList(mdp_list);
-    value_iteration->ComputeStateActionValues(0.00, 1);
+    value_iteration->ComputeStateActionValues(10e-6, 10);
     for (int i=0; i<n_actions; i++) {
         tmpQ[i] = value_iteration->getValue(next_state, i);
         //printf ("Q[%d] = %f ", i, tmpQ[i]);
