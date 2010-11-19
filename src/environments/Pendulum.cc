@@ -64,10 +64,10 @@ void Pendulum::Reset()
 {
 
     // Theta
-    state[0] =  0.0;//urandom(-0.01, 0.01);
+    state[0] =  urandom(-0.01, 0.01);
 
     // dTheta/dt
-    state[1] = 0.0;//urandom(-0.001, 0.001);
+    state[1] = urandom(-0.001, 0.001);
     endsim = false;
 }
 
