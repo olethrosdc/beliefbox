@@ -66,6 +66,14 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
     \f[
     w_0 = c^{1 + (d-1)a}
     \f]
+    Interesting special cases are \f$a =1\f$:
+    \[
+    w_0 = c^d
+    \]
+    and \f$a =0\f$:
+    \[
+    w_0 = c.
+    \]
  */
 ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* prev_,
 									 Vector& lower_bound_x_,
