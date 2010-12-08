@@ -30,12 +30,11 @@ int main (void)
     real pit = -100.0;
     real goal = 0.0;
     real step = -0.1;
-    uint width = 8;
-    uint height = 8;
+
     MersenneTwisterRNG rng;
     InventoryManagement inventory_management (period, max_items, demand);
 
-    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", width, height, 4, random, pit, goal, step);
+    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", random, pit, goal, step);
     RandomMDP random_mdp(2, 8, 0.001, 0.1, 0, 1, &rng, false);
     const DiscreteMDP* mdp = random_mdp.getMDP();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
