@@ -30,20 +30,19 @@ int main (void)
     real pit = -100.0;
     real goal = 0.0;
     real step = -0.1;
-    uint width = 8;
-    uint height = 8;
+
     InventoryManagement inventory_management (period, max_items, demand);
 
-    Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
+    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", random, pit, goal, step);
     RandomMDP random_mdp(1, 4, 0.01, 0.1, 0, 1, false);
     random_mdp.AperiodicityTransform(0.99);
-    const DiscreteMDP* mdp = random_mdp.getMDP();
-    //const DiscreteMDP* mdp = inventory_management.getMDP();
+    //const DiscreteMDP* mdp = random_mdp.getMDP();
+    const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
 
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
-    
+    printf ("# states: %d, actions: %d\n", n_states, n_actions);
     AveragePolicyEvaluation policy_evaluation(NULL, mdp);
     PolicyIteration policy_iteration(&policy_evaluation, mdp, gamma);
     //ValueIteration value_iteration(mdp, gamma);
