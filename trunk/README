@@ -1,3 +1,6 @@
+1. Introduction
+---------------
+
 The project's main aim is to support a Bayesian
 framework for reinforcement learning.
 
@@ -35,4 +38,17 @@ tests/ which is used for one of
        a) regression testing
        b) experimental test benches
        c) prototyping new algorithms.
+
+
+2. Compilation
+--------------
+
+In the top directory do:
+
+I. (optionally) make clean
+
+II. make
+
+III. For example programs named blah.cc do: make blah
+
 
