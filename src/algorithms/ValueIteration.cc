@@ -93,9 +93,10 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
             pV[s] = V[s];
         }
         Delta = L1Norm(dV);
-        max_iter--;
-
-    } while(Delta >= threshold && max_iter > 0);
+        if (max_iter > 0) {
+            max_iter--;
+        }
+    } while(Delta >= threshold && max_iter != 0);
 	
 }
 
@@ -118,6 +119,7 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
             dQ[s][a] = 0.0;
         }
     }
+    int n_iter = 0;
     do {
         Delta = 0.0;
         for (int s0=0; s0<n_states; s0++) {
@@ -137,13 +139,16 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
                 }
                 Q[s][a] = sum;
                 dQ[s][a] = pQ[s][a] - sum;
+                Delta += fabs(dQ[s][a]);
                 pQ[s][a] = sum;
             }
         }
-        
-        Delta = Max(N, &dQ_data[0]) - Min(N, &dQ_data[0]);			
-        max_iter--;
-    } while(Delta >= threshold && max_iter > 0);
+        if (max_iter > 0) {
+            max_iter--;
+        }
+        n_iter++;
+    } while(Delta >= threshold && max_iter != 0);
+    //printf("Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
 FixedDiscretePolicy* ValueIteration::getPolicy()

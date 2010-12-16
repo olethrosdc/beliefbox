@@ -778,6 +778,18 @@ void Matrix::SortColumn(int c)
     }
 }
 
+/// Calculate the entry-wise p-norm of a matrix
+real Matrix::p_norm(real p) const
+{
+    real d = 0;
+    for (int i=0; i<columns; ++i) {
+        for (int j=0; j<rows; ++j) {
+            d += pow((*this)(i,j), p);
+        }
+    }
+    return pow(d, 1.0/p);
+
+}
 /// Quick estimation of \f$d = x'Ayf\f$.
 ///
 /// This is much faster than writing d * x * A *  y explicitly.
@@ -797,3 +809,4 @@ real Mahalanobis2 (const Vector& x, const Matrix& A, const Vector& y)
     }
     return d;
 }
+

@@ -59,6 +59,7 @@ public:
     bool isTriangular();
     bool isUpperTriangular();
     bool isLowerTriangular();
+    real p_norm(real p) const;
     real det();
     real ColumnSum(int c);
     real RowSum(int r);
