@@ -40,21 +40,27 @@ InventoryManagement::InventoryManagement(int period_,
                 order = max_items - s;
             }
             real expected_reward = - order; // add the order costs first
-            for (int s2=0; s2<n_states; s2++) {
-                int d = s + order - s2;
-                if (d < 0) {
-                    d = 0;
-                }
+
+            // Calculate the transition probabilities
+            int current_stock = s + order;
+            real P_empty = 1;
+            for (int d=0; d<current_stock; ++d) {
+                int s2 = current_stock - d;
                 real P =  binomial(period, d)*pow(demand, d)*pow(1-demand, period - d);
+                P_empty -= P;
                 expected_reward += margin * P*d;
                 mdp->setTransitionProbability(s, a, s2, P);
-               
             }
+            // Special case for empty stock due to large demand.
+            expected_reward += margin * P_empty * current_stock;
+            mdp->setTransitionProbability(s, a, 0, P_empty);
 
+            // Add the expected reward.
             dist.push_back(new SingularDistribution(expected_reward));
             mdp->setRewardDistribution(s, a, dist.back());
         }
     }
+    mdp->Check();
 }
 
 InventoryManagement::~InventoryManagement()
