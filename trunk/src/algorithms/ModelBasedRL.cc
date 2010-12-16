@@ -76,7 +76,7 @@ int ModelBasedRL::Act(real reward, int next_state)
         
         // update values
         value_iteration->mdp = mdp;
-        value_iteration->ComputeStateActionValues(0.00, 1);
+        value_iteration->ComputeStateActionValues(0,1);
         for (int i=0; i<n_actions; i++) {
             tmpQ[i] = value_iteration->getValue(next_state, i);
             //printf ("Q[%d] = %f ", i, tmpQ[i]);
