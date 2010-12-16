@@ -94,7 +94,7 @@ int SampleBasedRL::Act(real reward, int next_state)
     
     // update values
     value_iteration->setMDPList(mdp_list);
-    value_iteration->ComputeStateActionValues(10e-6, 10);
+    value_iteration->ComputeStateActionValues(10e-6);
     for (int i=0; i<n_actions; i++) {
         tmpQ[i] = value_iteration->getValue(next_state, i);
         //printf ("Q[%d] = %f ", i, tmpQ[i]);

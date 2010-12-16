@@ -120,7 +120,7 @@ public:
             addRewardDistribution(s, a, distribution);
         }
     }
-    inline DiscreteStateSet getNextStates(int s, int a) const
+    inline const DiscreteStateSet& getNextStates(int s, int a) const
     {
         int ID = getID (s,a);
         return next_states[ID];
