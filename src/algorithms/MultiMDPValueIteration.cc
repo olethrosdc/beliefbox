@@ -87,7 +87,7 @@ real MultiMDPValueIteration::ComputeStateActionValueForSingleMDP(int mu, int s, 
     Vector& V_i = V_mu[mu];
     const DiscreteMDP* mdp = mdp_list[mu];
     real Q_mu_sa = mdp->getExpectedReward(s,a);
-    DiscreteStateSet next = mdp->getNextStates(s, a);
+    const DiscreteStateSet& next = mdp->getNextStates(s, a);
     for (DiscreteStateSet::iterator i=next.begin();
          i!=next.end();
          ++i) {
