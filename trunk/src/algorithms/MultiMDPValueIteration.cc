@@ -17,6 +17,7 @@
 #include <cmath>
 #include <cassert>
 
+/// Setup a value iteration procedure for a list of MDPs with weights w and discount factor gamma
 MultiMDPValueIteration::MultiMDPValueIteration(const Vector& w_,
                                                const std::vector<const DiscreteMDP*> &mdp_list_,
                                                real gamma_) :
@@ -41,6 +42,7 @@ MultiMDPValueIteration::MultiMDPValueIteration(const Vector& w_,
     Reset();
 }
 
+/// Reset
 void MultiMDPValueIteration::Reset()
 {
     V.Resize(n_states);
@@ -66,6 +68,8 @@ void MultiMDPValueIteration::Reset()
     }
 }
 
+
+/// Empty destructor
 MultiMDPValueIteration::~MultiMDPValueIteration()
 {
 }
@@ -156,9 +160,11 @@ void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
             }
             V_mu[i] = tmpV;
         }
-        max_iter--;
-        Delta = Span(V - pV);
-    } while(Delta >= threshold && max_iter > 0);
+        if (max_iter > 0) {
+            max_iter--;
+        }
+        Delta = abs(V - pV).Sum();
+    } while(Delta >= threshold && max_iter != 0);
 	
 }
 
@@ -176,8 +182,9 @@ void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_it
 {
          //Vector pV(V.size());
         //Vector dV(V.size());
-    pV = V;
+    int n_iter = 0;
     do {
+        pV = V;
         Delta = 0.0;
 
         // Find the  best average action at the current stage.
@@ -204,12 +211,16 @@ void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_it
             }
             V_mu[i] = tmpV;
         }
-        max_iter--;
-        Delta = Span(V - pV);
-    } while(Delta >= threshold && max_iter > 0);
-	
+        if (max_iter > 0) {
+            max_iter--;
+        }
+        Delta = abs(V - pV).Sum();
+        n_iter++;
+    } while(Delta >= threshold && max_iter != 0);
+    //printf("Exiting at d:%f, n:%d\n", Delta, n_iter);	
 }
 
+/// Get the policy that is optimal for the mixed MDP.
 FixedDiscretePolicy* MultiMDPValueIteration::getPolicy()
 {
     FixedDiscretePolicy* policy = new FixedDiscretePolicy(n_states, n_actions);
