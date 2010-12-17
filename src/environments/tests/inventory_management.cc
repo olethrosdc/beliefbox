@@ -2,6 +2,7 @@
 #include "ValueIteration.h"
 #include "MultiMDPValueIteration.h"
 #include "Matrix.h"
+#include "MatrixNorm.h"
 #include "Gridworld.h"
 #include "DiscreteMDP.h"
 #include <vector>
@@ -56,8 +57,8 @@ int main(void)
         w(1) = 1 - weight;
         Matrix Qw = GetQValues(mdp_list, w, gamma);
         printf ("%f %f\n", 
-                (Qw - Q[0]).p_norm(2.0),
-                (Qw - Q[1]).p_norm(2.0));
+                FrobeniusNorm(Qw - Q[0]),
+                FrobeniusNorm(Qw - Q[1]));
     }
     return 0;
 }
