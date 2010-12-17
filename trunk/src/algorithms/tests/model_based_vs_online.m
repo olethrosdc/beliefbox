@@ -12,8 +12,8 @@ K=10;
 plot(moving_average(Sarsa(:,c), K), ";Sarsa;",
      moving_average(QLearning(:,c), K), ";Q-learning;",
      moving_average(Model(:,c), K), ";Model;",
-     moving_average(Sampling1(:,c), K), ";Sampling1;",
-     moving_average(Sampling2(:,c), K), ";Sampling2;",
+     moving_average(Sampling1(:,c), K), ";Sampling1;"
+,     moving_average(Sampling2(:,c), K), ";Sampling2;");
      moving_average(Sampling4(:,c), K), ";Sampling4;",
      moving_average(Sampling8(:,c), K), ";Sampling8;")
 xlabel("Episode");
