@@ -32,7 +32,8 @@ SampleBasedRL::SampleBasedRL(int n_states_,
     Vector w(max_samples);
     real w_i = 1.0 / (real) max_samples;
     mdp_list.resize(max_samples);
-    for (int i=0; i<max_samples; ++i) {
+    mdp_list[0] = model->getMeanMDP();
+    for (int i=1; i<max_samples; ++i) {
         mdp_list[i] = model->generate();
         w[i] = w_i;
     }
@@ -42,7 +43,7 @@ SampleBasedRL::SampleBasedRL(int n_states_,
 }
 SampleBasedRL::~SampleBasedRL()
 {
-    for (int i=0; i<max_samples; ++i) {
+    for (int i=1; i<max_samples; ++i) {
         delete mdp_list[i];
     }
     delete value_iteration;
@@ -82,10 +83,13 @@ int SampleBasedRL::Act(real reward, int next_state)
         model->AddTransition(state, action, reward, next_state);
     }
     state = next_state;
-    
+
+    // Update MDPs
+    mdp_list[0] = model->getMeanMDP();
+    // Do note waste much time generating MDPs
     if (T >= update_interval) {    
         update_interval = 2*T;
-        for (int i=0; i<max_samples; ++i) {
+        for (int i=1; i<max_samples; ++i) {
             delete mdp_list[i];
             mdp_list[i] = model->generate();
             //model->ShowModel();

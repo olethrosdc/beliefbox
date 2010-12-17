@@ -80,6 +80,7 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --n_steps:     maximum number of steps in each episode\n\
     --grid_size:   number of grid intervals for discretised environments\n\
     --maze_name:   (Gridworld) file name for the maze\n\
+    --epsilon:     use epsilon-greedy with randomness in [0,1]\n\
 \n";
 
 
@@ -99,7 +100,6 @@ int main (int argc, char** argv)
     uint n_episodes = 1000;
     uint n_steps = 100;
     uint grid_size = 4;
-    uint maze_height = 4;
     uint maze_width = 4;
     const char * algorithm_name = "QLearning";
     const char * environment_name = "Gridworld";
@@ -125,7 +125,7 @@ int main (int argc, char** argv)
                 {"max_samples", required_argument, 0, 0}, //7
                 {"multi-sample", no_argument, 0, 0}, //8
                 {"maze_name", required_argument, 0, 0}, //9
-                {"maze_height", required_argument, 0, 0}, //10 - deprecataed
+                {"epsilon", required_argument, 0, 0}, //10
                 {"maze_width", required_argument, 0, 0}, //11 - deprecated
                 {"algorithm", required_argument, 0, 0}, //12
                 {"environment", required_argument, 0, 0}, //13
@@ -157,7 +157,7 @@ int main (int argc, char** argv)
                 case 7: max_samples = atoi(optarg); break;
                 case 8: printf("multi-sample not implented; ignored\n"); break;
                 case 9: maze_name = optarg; break;
-                case 10: maze_height = atoi(optarg); break; // deprecated
+                case 10: epsilon = atof(optarg); break; 
                 case 11: maze_width = atoi(optarg); break; // deprecated
                 case 12: algorithm_name = optarg; break;
                 case 13: environment_name = optarg; break;
