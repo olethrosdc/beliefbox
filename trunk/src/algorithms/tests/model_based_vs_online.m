@@ -1,9 +1,29 @@
-figure(1); load model.reward; load sarsa.reward; load qlear.reward;
+figure(1);
+load Model.reward;
+load Sarsa.reward;
+load QLearning.reward; 
+load Sampling.reward;
 
 c=2;
-plot(cumsum(sarsa(:,c)), ';sarsa;',cumsum(qlear(:,c)), ';qlear;', cumsum(model(:,c)), ';model;');
+plot((Sarsa(:,c)), ";Sarsa;",
+     (QLearning(:,c)), ";Q-learning;",
+     (Model(:,c)), ";Model;",
+     (Sampling(:,c)), ";Sampling;");
+xlabel("Episode");
+ylabel("U");
 
 
-figure(2); load model.mse; load sarsa.mse; load qlear.mse;
+# figure(2);
 
-plot(sarsa(:,1), cumsum(sarsa(:,2)), ';sarsa;',qlear(:,1), cumsum(qlear(:,2)), ';qlear;', model(:,1), cumsum(model(:,2)), ';model;'); 
+# load Model.payoff;
+# load Sarsa.payoff;
+# load QLearning.payoff; 
+# load Sampling.payoff;
+
+# c=1;
+# plot(cumsum(Sarsa(:,c)), ";Sarsa;",
+#      cumsum(QLearning(:,c)), ";Q-learning;",
+#      cumsum(Model(:,c)), ";Model;",
+#      cumsum(Sampling(:,c)), ";Sampling;");
+# xlabel("T");
+# ylabel("R");
