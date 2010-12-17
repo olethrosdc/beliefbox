@@ -166,7 +166,9 @@ DiscreteMDP* DiscreteMDPCounts::generate()
             real expected_reward = getExpectedReward(s,a);
             mdp->addFixedReward(s, a, expected_reward);
             for (int s2=0; s2<n_states; s2++) {
-                mdp->setTransitionProbability(s, a, s2, C[s2]);
+                if (C[s2]) {
+                    mdp->setTransitionProbability(s, a, s2, C[s2]);
+                }
             }
         }
     }
