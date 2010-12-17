@@ -15,8 +15,8 @@
 
 #include "Matrix.h"
 
-real MaxNorm(Matrix& X);
-real FrobeniusNorm(Matrix& X);
-real PNorm(Matrix& X);
+real MaxNorm(const Matrix& X);
+real FrobeniusNorm(const Matrix& X);
+real PNorm(const Matrix& X, const real p);
 
 #endif

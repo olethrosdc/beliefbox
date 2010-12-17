@@ -12,7 +12,7 @@
 #include "MatrixNorm.h"
 #include "MathFunctions.h"
 
-real MaxNorm(Matrix& X)
+real MaxNorm(const Matrix& X)
 {
     real max = 0;
     for (int i=0; i<X.Rows(); ++i) {
@@ -26,7 +26,7 @@ real MaxNorm(Matrix& X)
     return max;
 }
 
-real FrobeniusNorm(Matrix& X)
+real FrobeniusNorm(const Matrix& X)
 {
     real norm = 0;
     for (int i=0; i<X.Rows(); ++i) {
@@ -38,11 +38,10 @@ real FrobeniusNorm(Matrix& X)
     return sqrt(norm);
 }
 
-real PNorm(Matrix& X, real p)
+real PNorm(const Matrix& X, const real p)
 {
-    real norm = 0;
     real log_norm = LOG_ZERO;
-    real log_p = log(p);
+    const real log_p = log(p);
     for (int i=0; i<X.Rows(); ++i) {
         for (int j=0; j<X.Columns(); ++j) {
             real f = fabs(X(i,j));
