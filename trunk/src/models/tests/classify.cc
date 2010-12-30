@@ -92,16 +92,16 @@ enum ClassifierType {
     SPARSE_LINEAR
 };
 static const char* const help_text = "Usage: ... \n\
- --train file\n\
- --test file\n\
- --sparse N\n\
- --tree N\n\
- --mixture N\n\
- --knn N\n\
- --iterations N\n\
- --step_size [0,1]\n\
- --normalise\n\
- --randomise\n";
+ --train file        File to use for training\n\
+ --test file         File to use for evaluation\n\
+ --sparse N          Sparse linear classifier with projection size N\n\
+ --tree N            Tree Gaussian classifier\n\
+ --mixture N         Hashed mixture of N classifiers (default 1-NN)\n\
+ --knn K             K-nearest neighbour classifier\n\
+ --iterations N      Number of iterations N on the training set\n\
+ --step_size u       Step size u in [0,1] to use for some methods\n\
+ --normalise         Make the data zero mean, unit variance\n\
+ --randomise         Shuffle the data before presentation\n";
 
 int main(int argc, char** argv)
 {
@@ -310,9 +310,7 @@ int main(int argc, char** argv)
 	for (int i=0; i<n_classifiers; ++i) {
 		experts[i] = new KNNClassifier(n_inputs, n_classes, n_neighbours);
 	}
-    HashedClassifierMixture<KNNClassifier> linear_classifier_mixture(n_inputs,
-																	  n_classes,
-																	  experts);
+    HashedClassifierMixture<KNNClassifier> hashed_classifier_mixture(n_inputs, n_classes, experts);
     //linear_classifier_mixture.setStepSize(step_size);
     //MultivariateGaussianClassifier gaussian_classifier(n_inputs, n_classes);
     KNNClassifier knn_classifier(n_inputs, n_classes, n_neighbours);
@@ -337,7 +335,7 @@ int main(int argc, char** argv)
             Train(knn_classifier, data, labels, randomise);
             break;
         case HASHED_MIXTURE:
-            Train(linear_classifier_mixture, data, labels, randomise);
+            Train(hashed_classifier_mixture, data, labels, randomise);
             break;
         case LINEAR:
             Train(linear_classifier, data, labels, randomise);
@@ -360,7 +358,7 @@ int main(int argc, char** argv)
             Evaluate(knn_classifier, data, labels, "TRAIN");
             break;
         case HASHED_MIXTURE:
-            Evaluate(linear_classifier_mixture, data, labels, "TRAIN");
+            Evaluate(hashed_classifier_mixture, data, labels, "TRAIN");
             break;
         case LINEAR:
             Evaluate(linear_classifier, data, labels, "TRAIN");
@@ -381,7 +379,7 @@ int main(int argc, char** argv)
             Evaluate(knn_classifier, test_data, test_labels, "TEST");
             break;
         case HASHED_MIXTURE:
-            Evaluate(linear_classifier_mixture, test_data, test_labels, "TEST");
+            Evaluate(hashed_classifier_mixture, test_data, test_labels, "TEST");
             break;
         case LINEAR:
             Evaluate(linear_classifier, test_data, test_labels, "TEST");
