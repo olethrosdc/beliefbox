@@ -27,11 +27,19 @@ echo $model
 time ./bin/online_algorithms --gamma $gamma --lambda $lambda --n_runs $n_runs --n_episodes $n_episodes --n_steps $T --maze_name=$maze --algorithm $model --environment $Environment --epsilon $epsilon  > $model.out
 
 
-for i in 1 2 3 4 5 6 7 8; do
+for i in 1 2 3 4; do
     model=Sampling
     echo $model${i}
     time ./bin/online_algorithms --gamma $gamma --lambda $lambda --n_runs $n_runs --n_episodes $n_episodes --n_steps $T --maze_name=$maze --algorithm $model --max_samples ${i} --environment $Environment --epsilon $epsilon  > ${model}${i}.out
 done    
+wait;
+
+for i in 5 6 7 8; do
+    model=Sampling
+    echo $model${i}
+    time ./bin/online_algorithms --gamma $gamma --lambda $lambda --n_runs $n_runs --n_episodes $n_episodes --n_steps $T --maze_name=$maze --algorithm $model --max_samples ${i} --environment $Environment --epsilon 0.0  > ${model}${i}.out &
+done    
+wait;
 
 for model in QLearning Sarsa Model Sampling
 do
