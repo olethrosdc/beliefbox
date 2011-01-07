@@ -152,7 +152,8 @@ int main(int argc, char** argv)
         }
     }
     
-
+    
+    printf ("# insertion_time, query time, total time\n");
     if (1) {
         printf ("# Testing cover tree\n");
         CoverTree cover_tree(c);
