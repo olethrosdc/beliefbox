@@ -1,5 +1,5 @@
 /* -*- Mode: C++; -*- */
-// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2010-2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,134 +17,251 @@
 #include "EasyClock.h"
 #include "NormalDistribution.h"
 #include "BetaDistribution.h"
+#include "ReadFile.h"
+#include <cstring>
+#include <getopt.h>
+
+
+static const char* const help_text = "Usage: conditional_density_estimation [options]\n\
+\nOptions:\n\
+    --T:              number of examples to load\n\
+    --max_depth:      maximum depth of the local density estimator tree\n\
+    --max_depth_cond: maximum depth of the conditional tree\n\
+    --joint:          perform simple density estimation\n\
+    --data:           filename\n\
+    --n_inputs:       number of columns to condition on\n\
+\n";
 
 
 int main (int argc, char** argv)
 {
-    if (argc != 7) {
-        Serror ("Usage: density_estimation T D D_c Alpha Beta 0/1\n");
-        exit(-1);
+    int T = 0;
+    int max_depth = 8;
+    int max_depth_cond = 8;
+    bool joint = false;
+    char* filename = NULL;
+    int n_inputs = 1;
+    {
+        // options
+        int c;
+        int digit_optind = 0;
+        while (1) {
+            int this_option_optind = optind ? optind : 1;
+            int option_index = 0;
+            static struct option long_options[] = {
+                {"T", required_argument, 0, 0}, //0
+                {"max_depth", required_argument, 0, 0}, //1
+                {"max_depth_cond", required_argument, 0, 0}, //2
+                {"joint", no_argument, 0, 0}, //3
+                {"data", required_argument, 0, 0}, // 4
+                {"n_inputs", required_argument, 0, 0}, // 5
+                {0, 0, 0, 0}
+            };
+            c = getopt_long (argc, argv, "",
+                             long_options, &option_index);
+            if (c == -1)
+                break;
+
+            switch (c) {
+            case 0:
+#if 0
+                printf ("option %s (%d)", long_options[option_index].name, option_index);
+                if (optarg)
+                    printf (" with arg %s", optarg);
+                printf ("\n");
+#endif
+                switch (option_index) {
+                case 0: T = atoi(optarg); break;
+                case 1: max_depth = atoi(optarg); break;
+                case 2: max_depth_cond = atoi(optarg); break;
+                case 3: joint = true; break;
+                case 4: filename = optarg; break;
+                case 5: n_inputs = atoi(optarg); break;
+                default:
+                    fprintf (stderr, "%s", help_text);
+                    exit(0);
+                    break;
+                }
+                break;
+            case '0':
+            case '1':
+            case '2':
+                if (digit_optind != 0 && digit_optind != this_option_optind)
+                    printf ("digits occur in two different argv-elements.\n");
+            digit_optind = this_option_optind;
+            printf ("option %c\n", c);
+            break;
+            default:
+                std::cout << help_text;
+                exit (-1);
+            }
+        }
+	
+        if (optind < argc) {
+            printf ("non-option ARGV-elements: ");
+            while (optind < argc) {
+                printf ("%s ", argv[optind++]);
+                
+            }
+            printf ("\n");
+        }
     }
-    int T = atoi(argv[1]);
+
+    Matrix data;
+    int n_records = ReadFloatDataASCII(data, filename);
+    assert(n_records == data.Rows());
+    if (T > 0) {
+        T = std::min<int>(T, n_records);
+    } else {
+        T = n_records;
+    }
+    int data_dimension = data.Columns();
+
     if (T < 0) {
         Serror("T should be >= 0\n");
         exit(-1);
     }
 
-    int max_depth = atoi(argv[2]);
+
     if (max_depth <= 0) {
         Serror("max_depth should be >= 0\n");
         exit(-1);
     }
 
-    int max_depth_cond = atoi(argv[3]);
-    if (max_depth <= 0) {
-        Serror("max_depth should be >= 0\n");
+
+    if (max_depth_cond <= 0) {
+        Serror("max_depth_cond should be >= 0\n");
         exit(-1);
     }
 
-    real Alpha = atof(argv[4]);
-    if (Alpha < 0) {
-        Serror("Alpha should be >= 0\n");
-        exit(-1);
+    
+	Vector lower_bound(data_dimension);
+	Vector upper_bound(data_dimension);
+	Vector lower_bound_x(n_inputs);
+	Vector upper_bound_x(n_inputs);
+    int n_outputs = data_dimension - n_inputs;
+	Vector lower_bound_y(n_outputs);
+	Vector upper_bound_y(n_outputs);
+	for (int t=0; t<T; ++t) {
+        for (int i=0; i<data_dimension; ++i) {
+            real x = data(t, i);
+            //printf ("%f ", x);
+            lower_bound(i) = std::min<real>(x, lower_bound(i));
+            upper_bound(i) = std::max<real>(x, upper_bound(i));
+        }
+        //printf ("\n");
     }
-
-    real Beta = atof(argv[5]);
-    if (Beta < 0) {
-        Serror("Beta should be >= 0\n");
-        exit(-1);
-    }
-
-    bool joint = atoi(argv[6]);
-    printf ("Joint: %d\n", joint);
-
-    //BetaDistribution distribution(Alpha,Beta);
-    //BetaDistribution distribution2(2*Beta,Alpha);
-    NormalDistribution distribution(0,Alpha);
-    NormalDistribution distribution2(0,Beta);
-
-	Vector lower_bound(2);
-	Vector upper_bound(2);
-	Vector lower_bound_x(1);
-	Vector upper_bound_x(1);
-	for (int i=0; i<2; ++i) {
-		lower_bound(i) = -100;
-		upper_bound(i) = 100;
+    lower_bound -=100;
+    upper_bound +=100;
+    
+    for (int i=0; i<n_inputs; ++i) {
+        lower_bound_x(i) = lower_bound(i);
+        upper_bound_x(i) = upper_bound(i);
 	}
-	lower_bound_x(0) = -100;
-	upper_bound_x(0) = 100;
-    ContextTreeKDTree pdf(2, max_depth, lower_bound, upper_bound);
-    ConditionalKDContextTree cpdf(2, max_depth, max_depth_cond,
-								  lower_bound_x, upper_bound_x,
-								  lower_bound_x, upper_bound_x);
-    //NormalUnknownMeanPrecision pdf;
+    for (int i=0; i<n_outputs; ++i) {
+        lower_bound_y(i) = lower_bound(i + n_inputs);
+        upper_bound_y(i) = upper_bound(i + n_inputs);
+	}
 
-    int randomise = urandom()*100;
-    for (int i=0; i<randomise; i++) {
-        distribution.generate();
+    printf ("# T: %d\n", T);
+    printf ("# Joint: %d\n", joint);
+    printf ("# L: "); lower_bound.print(stdout);
+    printf ("# U: "); upper_bound.print(stdout);
+    printf ("# LX: "); lower_bound_x.print(stdout);
+    printf ("# LY: "); lower_bound_y.print(stdout);
+    printf ("# UX: "); upper_bound_x.print(stdout);
+    printf ("# UY: "); upper_bound_y.print(stdout);
+
+
+    ContextTreeKDTree* pdf = NULL;
+    ConditionalKDContextTree* cpdf = NULL;
+    
+    if (joint) {
+        pdf = new ContextTreeKDTree (2, max_depth, lower_bound, upper_bound);
+    } else {
+        cpdf = new ConditionalKDContextTree(2,
+                                            max_depth, max_depth_cond,
+                                            lower_bound_x, upper_bound_x,
+                                            lower_bound_y, upper_bound_y);
     }
-
-	Vector z(2);
-	z(0) = 0;
-	z(1) = 1;
+	Vector z(data_dimension);
 
     for (int t=0; t<T; ++t) {
-		real a = distribution.generate();
-		real b = distribution2.generate();
-
-#if 0
-          if (urandom() < 0.99) {
-			z(0) = a + 0.1*b;
-			z(1) = b - 0.1*a ;
-		} else {
-			z(0) = a + 2;
-			z(1) = b + 3;
-		}
-#else
-          z(0) = 5*sin(0.1*t) + a + 0.5*b;
-          z(1) = 5*cos(0.1*t) + b  - 0.2*a;
-#endif
-          if (joint) {
-              real p = pdf.Observe(z);
-          } else {
-              Vector x(1);
-              Vector y(1);
-              x(0) = z(0);
-              y(0) = z(1);
-              real p2 = cpdf.Observe(x, y);
-          }
-          //printf ("%f %f %f %f #Pr \n", z(0), z(1), p, p2);
+        z = data.getRow(t);
+        if (pdf) {
+            real p = pdf->Observe(z);
+        } 
+        if (cpdf) {
+            Vector x(n_inputs);
+            for (int i=0; i<n_inputs; ++i) {
+                x(i) = z(i);
+            }
+            Vector y(n_outputs);
+            for (int i=0; i<n_outputs; ++i) {
+                y(i) = z(i + n_inputs);
+            }
+            real p2 = cpdf->Observe(x, y);
+        }
+        //printf ("%f %f %f %f #Pr \n", z(0), z(1), p, p2);
     }
-#if 1
+#if 0
+    real min_axis = 0;
+    real max_axis = 50;
 	real step = 0.1;
     if (joint) {
-        for (real y=-100; y<100; y+=step) {
-            for (real x=-100; x<100; x+=step) {
+        for (real y=min_axis; y<max_axis; y+=step) {
+            for (real x=min_axis; x<max_axis; x+=step) {
                 Vector v(2);
                 v[0] = x;
                 v[1] = y;
-                printf ("%f ", pdf.pdf(v));// distribution.pdf(x)*distribution2.pdf(y));
+                printf ("%f ", pdf->pdf(v));// distribution.pdf(x)*distribution2.pdf(y));
             }
 		printf(" # P_XY\n");
         }
     } else {
-        for (real y=-100; y<100; y+=step) {
-            for (real x=-100; x<100; x+=step) {
+        for (real y=min_axis; y<max_axis; y+=step) {
+            for (real x=min_axis; x<max_axis; x+=step) {
                 Vector X(1);
                 Vector Y(1);
                 X(0) = x;
                 Y(0) = y;
-                printf (" %f ", cpdf.pdf(X, Y));// distribution.pdf(x)*distribution2.pdf(y));
+                printf (" %f ", cpdf->pdf(X, Y));// distribution.pdf(x)*distribution2.pdf(y));
             }
             printf(" # P_Y_X\n");
         }
     }
-	printf ("PDF model\n");
-    pdf.Show();
-	printf ("CPDF model\n");
-	cpdf.Show();
+    if (pdf) {
+        printf ("PDF model\n");
+        pdf->Show();
+    }
+    if (cpdf) {
+        printf ("CPDF model\n");
+        cpdf->Show();
+    }
+#else
+    real min_axis = 0;
+    real max_axis = 50;
+	real step = 0.1;
+    for (real x=min_axis; x<max_axis; x+=step) {
+                Vector v(1);
+                v[0] = x;
+                printf ("%f ", pdf->pdf(v));// distribution.pdf(x)*distribution2.pdf(y));
+    }
+    printf(" # P_XY\n");
+    if (pdf) {
+        printf ("PDF model\n");
+        pdf->Show();
+    }
+    if (cpdf) {
+        printf ("CPDF model\n");
+        cpdf->Show();
+    }
 
 #endif
+
+
+    delete cpdf;
+    delete pdf;
     return 0;
 }
 
