@@ -218,6 +218,8 @@ int ContextTreeKDTree::Node::NChildren()
     return my_children;
 }
 
+
+/// n_branches is a bit of a silly thing, deprecated
 ContextTreeKDTree::ContextTreeKDTree(int n_branches_,
                                          int max_depth_,
                                          Vector& lower_bound,

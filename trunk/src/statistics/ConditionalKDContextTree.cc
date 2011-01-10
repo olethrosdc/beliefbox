@@ -15,6 +15,8 @@
 
 #include "Random.h"
 
+#define DEFAULT_PRIOR_NORMAL 0.999
+
 ConditionalKDContextTree::Node::Node(ConditionalKDContextTree& tree_,
 									 Vector& lower_bound_x_,
 									 Vector& upper_bound_x_)
@@ -43,11 +45,15 @@ ConditionalKDContextTree::Node::Node(ConditionalKDContextTree& tree_,
 	local_density = new ContextTreeKDTree(tree.n_branches, tree.max_depth_cond, tree.lower_bound_y, tree.upper_bound_y);
     int y_dim = tree.upper_bound_y.Size();
 	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_y + tree.lower_bound_y)*0.5 , 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
-    log_prior_normal = log(0.5);
-    prior_normal = 0.5;
+    prior_normal = DEFAULT_PRIOR_NORMAL;
+    log_prior_normal = log(prior_normal);
 }
 
-/// Make a node for K symbols at nominal depth d
+/** Make a node for density estimation at nominal depth d.
+
+    We are employing a multi-variate normal, with a fixed prior.
+    
+ */
 ConditionalKDContextTree::Node::Node(ConditionalKDContextTree::Node* prev_,
 									 Vector& lower_bound_x_,
 									 Vector& upper_bound_x_)
@@ -81,8 +87,8 @@ ConditionalKDContextTree::Node::Node(ConditionalKDContextTree::Node* prev_,
 										  tree.upper_bound_y);
     int y_dim = tree.upper_bound_y.Size();
 	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_y + tree.lower_bound_y)*0.5 , 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
-    log_prior_normal = log(0.5);
-    prior_normal = 0.5;
+    prior_normal = DEFAULT_PRIOR_NORMAL;
+    log_prior_normal = log(prior_normal);
 }
 
 /// make sure to kill all
@@ -114,13 +120,17 @@ real ConditionalKDContextTree::Node::Observe(Vector& x, Vector& y, real probabil
     //printf ("%f %f = %f -> %f\n", P_tree, P_normal, P_local, prior_normal);
 	// Mixture with the previous ones
 
+
     w = exp(log_w); 
     assert (w >= 0 && w <= 1);
-    
+
 	total_probability = P_local * w + (1 - w) * probability;
 
     // adapt parameters
     log_w += log(P_local) - log(total_probability);
+    if (log_w > 0) { // This is required due to loss of precision when w ~ 1
+        log_w = 0;
+    }
 
     // Which interval is the x lying at
     int k;

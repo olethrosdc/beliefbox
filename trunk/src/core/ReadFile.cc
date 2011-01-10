@@ -93,3 +93,45 @@ int ReadClassData(Matrix& data, std::vector<int>& labels, const char* fname)
     }
 	return T;
 }
+
+/** Read a matrix of data
+
+	Format:
+	number_of_lines number_of_colums
+	<data>
+    
+    returns:
+    number of lines read
+ */
+int ReadFloatDataASCII(Matrix& data, const char* fname) 
+{
+    FILE* file = fopen(fname, "r");
+    if (!file) {
+        fprintf (stderr, "Error: Could not open file %s\n", fname);
+        exit(-1);
+    }
+
+	int T = 0;
+    int columns;
+    int success = fscanf(file, "%d %d", &T, &columns);
+	if (success <= 0) {
+            Serror("Could not scan file %s - T =%d - retval: %d - errno %d\n", fname, T, success, errno);
+            exit(-1);
+	}
+    
+    printf("# horizon: %d, columns: %d\n", T, columns);
+    data.Resize(T, columns);
+
+
+    for (int t=0; t<T; ++t) {
+        for (int i=0; i<columns; ++i) {
+            int success = fscanf(file, "%lf ", &data(t,i));
+            //printf ("%f ", data(t,i));
+            if (success <=0) {
+                Serror("Could not scan file, line %d, column %d, suc: %d, errno: %d\n", t, i, success, errno);
+                exit(-1);
+            }
+        }
+    }
+	return T;
+}
