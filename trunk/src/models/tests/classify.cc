@@ -314,8 +314,8 @@ int main(int argc, char** argv)
     //linear_classifier_mixture.setStepSize(step_size);
     //MultivariateGaussianClassifier gaussian_classifier(n_inputs, n_classes);
     KNNClassifier knn_classifier(n_inputs, n_classes, n_neighbours);
-    //ConditionalKDGaussianClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
-    ConditionalKDNNClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
+    ConditionalKDGaussianClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
+    //ConditionalKDNNClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
 
 
     //classifier.setStepSize(alpha);

@@ -35,14 +35,14 @@ do
 		grep TEST $fname.out >${fname}_test.res
 	done
 
-	fname=$outdir/sparse${ktreenn}
-	for sparse in 1 2 4 8 16 32 64 128
-	do
-		fname=$outdir/sparse${sparse}
-		/usr/bin/time --verbose --output $fname.time ./bin/classify --train $train --test $test --randomise --sparse $sparse >$fname.out
-		grep TRAIN $fname.out >${fname}_train.res
-		grep TEST $fname.out >${fname}_test.res
-	done
+# fname=$outdir/sparse${ktreenn}
+#	for sparse in 1 2 4 8 16 32 64 128
+#	do
+#		fname=$outdir/sparse${sparse}
+#		/usr/bin/time --verbose --output $fname.time ./bin/classify --train $train --test $test --randomise --sparse $sparse >$fname.out
+#		grep TRAIN $fname.out >${fname}_train.res
+#		grep TEST $fname.out >${fname}_test.res
+#	done
 
     echo "---------------------------------------------------------------------"
 done
