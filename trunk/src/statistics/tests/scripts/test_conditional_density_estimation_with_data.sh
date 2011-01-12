@@ -6,7 +6,7 @@ done;
 
 
 
-for i in 1 #1 2 4 8 16 32;
+for i in 1 2 4 8 16 32;
 do 
     for j in 1 2 4 8 16 32;
     do 
@@ -15,9 +15,6 @@ do
     done;
 done
 
-for i in 1 2 4 8 16 32 64 128 256 512 1024;
-do 
-    echo $i $j
-    time ./bin/conditional_density_estimation --joint --max_depth $i --data ~/data/regression/maxtemp.dat >maxtemp_de_${i}.out; grep P_XY maxtemp_de_${i}.out >results/maxtemp_de_${i}.dat;
-done;
+
+
 

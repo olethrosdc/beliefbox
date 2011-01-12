@@ -78,7 +78,8 @@ public:
     };
     
     // public methods
-    ConditionalKDContextTree(int n_branches_, int max_depth_,
+    ConditionalKDContextTree(int n_branches_, 
+                             int max_depth_,
                              int max_depth_cond_,
 							 Vector& lower_bound_x, Vector& upper_bound_x,
 							 Vector& lower_bound_y, Vector& upper_bound_y);

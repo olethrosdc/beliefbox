@@ -15,7 +15,7 @@
 
 #include "Random.h"
 
-#define DEFAULT_PRIOR_NORMAL 0.999
+#define DEFAULT_PRIOR_NORMAL 0.5
 
 ConditionalKDContextTree::Node::Node(ConditionalKDContextTree& tree_,
 									 Vector& lower_bound_x_,
