@@ -14,6 +14,7 @@
 #include <cmath>
 #include  "Random.h"
 
+/** Create the root node of the tree */
 ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
 							  Vector& lower_bound_,
 							  Vector& upper_bound_)
@@ -38,7 +39,11 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
 #endif
 }
 
-/// Make a node for K symbols at nominal depth d
+/** Make a new leaf node.
+    
+    In order to avoid overfitting, the initial weights are
+    exponentially decaying with depth.
+ */
 ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
                                 Vector& lower_bound_,
                                 Vector& upper_bound_)
@@ -50,9 +55,8 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
       next(tree.n_branches),
       alpha(tree.n_branches),
       log_w(0),
-      log_w_prior(-log(2)),
+      log_w_prior(-(real) depth * log(2)),
       S(0)
-      //log_w_prior( - log(10))
 {
     assert(lower_bound < upper_bound);
 	splitting_dimension = ArgMax(upper_bound - lower_bound);    
@@ -153,7 +157,9 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
 
     // posterior weight
     log_w = log(w * P_uniform / total_probability) - log_w_prior;
-
+    //w *= P_uniform / total_probability;
+    assert (w >= 0 && w <= 1);
+    
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P
               << ", P(h_k|B_k)=" << w 

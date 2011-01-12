@@ -151,8 +151,8 @@ int main (int argc, char** argv)
         }
         //printf ("\n");
     }
-    lower_bound -=100;
-    upper_bound +=100;
+    lower_bound -=1;
+    upper_bound +=1;
     
     for (int i=0; i<n_inputs; ++i) {
         lower_bound_x(i) = lower_bound(i);
@@ -190,6 +190,7 @@ int main (int argc, char** argv)
         z = data.getRow(t);
         if (pdf) {
             real p = pdf->Observe(z);
+            //printf ("%f\n", p);
         } 
         if (cpdf) {
             Vector x(n_inputs);
@@ -202,11 +203,11 @@ int main (int argc, char** argv)
             }
             real p2 = cpdf->Observe(x, y);
         }
-        //printf ("%f %f %f %f #Pr \n", z(0), z(1), p, p2);
+
     }
-#if 0
-    real min_axis = 0;
-    real max_axis = 50;
+#if 1
+    real min_axis = Min(lower_bound);
+    real max_axis = Max(upper_bound);
 	real step = 0.1;
     if (joint) {
         for (real y=min_axis; y<max_axis; y+=step) {
@@ -214,7 +215,7 @@ int main (int argc, char** argv)
                 Vector v(2);
                 v[0] = x;
                 v[1] = y;
-                printf ("%f ", pdf->pdf(v));// distribution.pdf(x)*distribution2.pdf(y));
+                printf ("%f ", pdf->pdf(v));
             }
 		printf(" # P_XY\n");
         }
@@ -239,8 +240,8 @@ int main (int argc, char** argv)
         cpdf->Show();
     }
 #else
-    real min_axis = 0;
-    real max_axis = 50;
+    real min_axis = -5;
+    real max_axis = 5;
 	real step = 0.1;
     for (real x=min_axis; x<max_axis; x+=step) {
                 Vector v(1);
