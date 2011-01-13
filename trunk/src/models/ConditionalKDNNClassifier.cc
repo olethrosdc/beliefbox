@@ -18,8 +18,8 @@
 real ConditionalKDNNClassifier::FUDGE = 10e-6;
 
 ConditionalKDNNClassifier::Node::Node(ConditionalKDNNClassifier& tree_,
-									 Vector& lower_bound_x_,
-									 Vector& upper_bound_x_)
+                                      const Vector& lower_bound_x_,
+                                      const Vector& upper_bound_x_)
     : tree(tree_),
 	  lower_bound_x(lower_bound_x_),
       upper_bound_x(upper_bound_x_),
@@ -46,8 +46,8 @@ ConditionalKDNNClassifier::Node::Node(ConditionalKDNNClassifier& tree_,
 
 /// Make a node for K symbols at nominal depth d
 ConditionalKDNNClassifier::Node::Node(ConditionalKDNNClassifier::Node* prev_,
-									 Vector& lower_bound_x_,
-									 Vector& upper_bound_x_)
+                                      const Vector& lower_bound_x_,
+                                      const Vector& upper_bound_x_)
     : tree(prev_->tree),
 	  lower_bound_x(lower_bound_x_),
       upper_bound_x(upper_bound_x_),
@@ -55,7 +55,8 @@ ConditionalKDNNClassifier::Node::Node(ConditionalKDNNClassifier::Node* prev_,
       prev(prev_),
       next(tree.n_branches),
       log_w(- depth * log(2)),
-	  prior(tree.n_classes),
+	  //prior(tree.n_classes),
+	  prior(prev_->prior),
       S(0)
 {
     assert(lower_bound_x < upper_bound_x);
@@ -289,10 +290,10 @@ int ConditionalKDNNClassifier::Node::NChildren()
 }
 
 ConditionalKDNNClassifier::ConditionalKDNNClassifier(int n_branches_,
-                                                                 int max_depth_,
-                                                                 Vector& lower_bound_x,
-                                                                 Vector& upper_bound_x,
-                                                                 int n_classes_)
+                                                     int max_depth_,
+                                                     const Vector& lower_bound_x,
+                                                     const Vector& upper_bound_x,
+                                                     const int n_classes_)
     : n_branches(n_branches_),
       max_depth(max_depth_),
       n_classes(n_classes_),

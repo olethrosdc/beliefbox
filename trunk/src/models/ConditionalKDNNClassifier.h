@@ -54,10 +54,11 @@ public:
         real log_w; ///< log of w
 		DirichletDistribution prior;
         Node(ConditionalKDNNClassifier& tree_,
-			 Vector& lower_bound_x_,
-			 Vector& upper_bound_x_);
+			 const Vector& lower_bound_x_,
+			 const Vector& upper_bound_x_);
         Node(Node* prev_, 
-			 Vector& lower_bound_x, Vector& upper_bound_x);
+			 const Vector& lower_bound_x,
+             const Vector& upper_bound_x);
         ~Node();
         real Observe(const Vector& x, const int y, real probability);
         real pdf(const Vector& x, const int y, real probability);
@@ -69,8 +70,9 @@ public:
     
     // public methods
     ConditionalKDNNClassifier(int n_branches_, int max_depth_,
-                                    Vector& lower_bound_x, Vector& upper_bound_x,
-                                    int n_classes_);
+                              const Vector& lower_bound_x, 
+                              const Vector& upper_bound_x,
+                              const int n_classes_);
     ~ConditionalKDNNClassifier();
     real Observe(const Vector& x, const int y);
     int Classify(const Vector& x) 
