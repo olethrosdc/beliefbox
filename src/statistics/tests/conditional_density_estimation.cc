@@ -41,6 +41,7 @@ int main (int argc, char** argv)
     bool joint = false;
     char* filename = NULL;
     int n_inputs = 1;
+    int grid_size = 256;
     {
         // options
         int c;
@@ -55,6 +56,7 @@ int main (int argc, char** argv)
                 {"joint", no_argument, 0, 0}, //3
                 {"data", required_argument, 0, 0}, // 4
                 {"n_inputs", required_argument, 0, 0}, // 5
+                {"grid_size", required_argument, 0, 0}, // 6
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -77,6 +79,7 @@ int main (int argc, char** argv)
                 case 3: joint = true; break;
                 case 4: filename = optarg; break;
                 case 5: n_inputs = atoi(optarg); break;
+                case 6: grid_size = atoi(optarg); assert(grid_size > 0); break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -203,23 +206,51 @@ int main (int argc, char** argv)
             }
             real p2 = cpdf->Observe(x, y);
         }
-
     }
-#if 1
-    real min_axis = Min(lower_bound);
-    real max_axis = Max(upper_bound);
-	real step = 0.1;
+
     if (joint) {
-        for (real y=min_axis; y<max_axis; y+=step) {
-            for (real x=min_axis; x<max_axis; x+=step) {
-                Vector v(2);
-                v[0] = x;
-                v[1] = y;
-                printf ("%f ", pdf->pdf(v));
+        Vector v(data_dimension);
+        if (data_dimension==1) {
+            real min_axis = Min(lower_bound);
+            real max_axis = Max(upper_bound);
+            real step = (max_axis - min_axis) / (real) grid_size;
+            for (real z=min_axis; z<max_axis; z+=step) {
+                v(0) = z;
+                printf ("%f %f # P_XY\n", z, pdf->pdf(v));
             }
-		printf(" # P_XY\n");
+        } else {
+            Vector step = (upper_bound - lower_bound) / (real) grid_size;
+            Vector v = lower_bound;
+            bool running = true;
+            while (running) {
+                for (int i=0; i<data_dimension; ++i) {
+                    printf ("%f ", v(i));
+                }
+                printf ("%f # P_XY\n", pdf->pdf(v));
+
+                int i = 0;
+                bool carry = true;
+
+                while (carry) {
+                    v(i) += step(i);
+                    if (v(i) > upper_bound(i)) {
+                        v(i) = lower_bound(i);
+                        carry = true;
+                        ++i;
+                    } else {
+                        carry = false;
+                    }
+                    if (i == data_dimension) {
+                        carry = false;
+                        running = false;
+                    }
+                }
+            }
         }
     } else {
+        real min_axis = Min(lower_bound);
+        real max_axis = Max(upper_bound);
+        real step = (max_axis - min_axis) / (real) grid_size;
         for (real y=min_axis; y<max_axis; y+=step) {
             for (real x=min_axis; x<max_axis; x+=step) {
                 Vector X(1);
@@ -239,26 +270,6 @@ int main (int argc, char** argv)
         printf ("CPDF model\n");
         cpdf->Show();
     }
-#else
-    real min_axis = -5;
-    real max_axis = 5;
-	real step = 0.1;
-    for (real x=min_axis; x<max_axis; x+=step) {
-                Vector v(1);
-                v[0] = x;
-                printf ("%f ", pdf->pdf(v));// distribution.pdf(x)*distribution2.pdf(y));
-    }
-    printf(" # P_XY\n");
-    if (pdf) {
-        printf ("PDF model\n");
-        pdf->Show();
-    }
-    if (cpdf) {
-        printf ("CPDF model\n");
-        cpdf->Show();
-    }
-
-#endif
 
 
     delete cpdf;
