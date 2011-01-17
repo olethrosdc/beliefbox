@@ -129,6 +129,16 @@ int ReadFloatDataASCII(Matrix& data, const char* fname)
             //printf ("%f ", data(t,i));
             if (success <=0) {
                 Serror("Could not scan file, line %d, column %d, suc: %d, errno: %d\n", t, i, success, errno);
+				if (t > 0) {
+					fprintf (stderr, "Previous line:\n");
+					for (int j=0; j<columns; ++j) {
+						fprintf(stderr, "%f ", data(t - 1, j));
+					}
+				}
+				fprintf (stderr, "Line read so far:\n");
+				for (int j=0; j<i; ++j) {
+					fprintf(stderr, "%f ", data(t, j));
+				}
                 exit(-1);
             }
         }

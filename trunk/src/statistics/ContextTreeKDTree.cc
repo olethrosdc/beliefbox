@@ -55,7 +55,8 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
       next(tree.n_branches),
       alpha(tree.n_branches),
       log_w(0),
-      log_w_prior(-(real) depth * log(2)),
+      //log_w_prior(-(real) depth * log(2)),
+      log_w_prior(- log(2)),
       S(0)
 {
     assert(lower_bound < upper_bound);
