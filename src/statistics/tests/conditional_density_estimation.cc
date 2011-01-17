@@ -188,12 +188,12 @@ int main (int argc, char** argv)
                                             lower_bound_y, upper_bound_y);
     }
 	Vector z(data_dimension);
-
+	real log_loss = 0;
     for (int t=0; t<T; ++t) {
         z = data.getRow(t);
+		real p = 0;
         if (pdf) {
-            real p = pdf->Observe(z);
-            //printf ("%f\n", p);
+			p = pdf->Observe(z);
         } 
         if (cpdf) {
             Vector x(n_inputs);
@@ -204,10 +204,11 @@ int main (int argc, char** argv)
             for (int i=0; i<n_outputs; ++i) {
                 y(i) = z(i + n_inputs);
             }
-            real p2 = cpdf->Observe(x, y);
+            p = cpdf->Observe(x, y);
         }
+		log_loss -= log(p);
     }
-
+	printf ("%f # AVERAGE LOG LOSS\n", log_loss / (real) T);
     if (joint) {
         Vector v(data_dimension);
         if (data_dimension==1) {
@@ -223,19 +224,24 @@ int main (int argc, char** argv)
             Vector v = lower_bound;
             bool running = true;
             while (running) {
-                for (int i=0; i<data_dimension; ++i) {
-                    printf ("%f ", v(i));
-                }
-                printf ("%f # P_XY\n", pdf->pdf(v));
+				if (data_dimension != 2) {
+					for (int i=0; i<data_dimension; ++i) {
+						printf ("%f ", v(i));
+					}
+					printf ("%f # P_XY\n", pdf->pdf(v));
+				} else {
+					printf ("%f ", pdf->pdf(v));
+				}
 
                 int i = 0;
                 bool carry = true;
-
+				bool end_of_line = false;
                 while (carry) {
                     v(i) += step(i);
                     if (v(i) > upper_bound(i)) {
                         v(i) = lower_bound(i);
                         carry = true;
+						end_of_line = true;
                         ++i;
                     } else {
                         carry = false;
@@ -245,7 +251,12 @@ int main (int argc, char** argv)
                         running = false;
                     }
                 }
+				
+				if (data_dimension == 2 && end_of_line) {
+					printf ("# P_XY\n");
+				}
             }
+
         }
     } else {
         real min_axis = Min(lower_bound);
