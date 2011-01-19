@@ -9,14 +9,14 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "BoundedLogNormal.h"
+#include "BoundedLogNormalDistribution.h"
 
 BoundedLogNormal::BoundedLogNormal(const Vector& lower_bound, const Vector& upper_bound)
     : n_dim(lower_bound.Size()),
       a(lower_bound),
       b(upper_bound),
       c(0.5*(a+b)),
-      d(0.5*(b-a))
+      d(pow(b-a, -2.0))
 {
     assert(a.Size() == b.Size());
     for (int i=0; i<n_dim; ++i) {
@@ -58,10 +58,20 @@ real BoundedLogNormal::logPdf(const Vector& x) const
 }
 const Vector& BoundedLogNormal::getMean() const
 {
-    return inverse_transform(normal_density->getMean());
+    Serror("Fix me!\n");
+    return normal_density->getMean();
 }
 
 void BoundedLogNormal::calculatePosterior(const Vector& x)
 {
     normal_density->calculatePosterior(x);
+}
+Vector BoundedLogNormal::transform(const Vector& x) const
+{
+    return (c - x) * log (d * (x - a) * (b - x));
+}
+Vector BoundedLogNormal::inverse_transform(const Vector& x)
+{
+    Serror("Fix me!\n");
+    return x;
 }
