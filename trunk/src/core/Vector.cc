@@ -10,6 +10,16 @@
 #include <cstdlib>
 #include <cstring>
 
+Vector Vector::Unity(int N_, enum BoundsCheckingStatus check)
+{
+    real* y = (real*) malloc(N_, sizeof(real));
+    for (int i=0; i<K; ++i) {
+        y[i] = 1.0;
+    }
+    return Vector(N_, y);
+}
+
+
 Vector* NewVector (int n)
 {
     Vector* v;

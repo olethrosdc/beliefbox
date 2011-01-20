@@ -9,43 +9,27 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef BOUNDED_LOGNORMAL_DISTRIBUTION_H
-#define BOUNDED_LOGNORMAL_DISTRIBUTION_H
+#ifndef MOMENT_MATCHING_BETA_ESTIMATE_H
+#define MOMENT_MATCHING_BETA_ESTIMATE_H
 
-#include "NormalDistribution.h"
-#include "Matrix.h"
-#include "Vector.h"
-#include "Student.h"
+#include "BetaDistribution.h"
 
-
-/** A multivariate lognormal distribution with unknown mean and precision.
-    
-    We define the transform:
-    \f[
-    g_i(y) = (c_i - y_i)
-    \ln \left[
-    (d_i)^{-2} (y_i - a_i)(b_i - x_i)
-    \right]
-    \f] 
-    where \f$c = \frac{a+b}{2}\f$ and \f$d = \frac{b-a}{2}\f$.
-    Then \f$x_t = g(y_t)\f$, are normally distributed with unknown
-    mean \f$m\f$ and precision matrix \f$r\f$. 
- */
-class BoundedLogNormal
+/** A multivariate beta-product distribution with moment matching
+     */
+class MomentMatchingBetaEstimate
 {
 protected:
-    MultivariateNormalUnknownMeanPrecision* normal_density;
+    std::vector<BetaDistribution*> beta;
     int n_dim;
 public:
+    int T;
     Vector a; ///< lower bound
     Vector b; ///< upper bound
-    Vector c; ///< center
-    Vector d; ///< diff
-    // auxilliary parameters
-        
-    BoundedLogNormal(const Vector& lower_bound, const Vector& upper_bound);
+    Vector d; ///< difference
+    Vector c; ///< inverse difference
+    MomentMatchingBetaEstimate(const Vector& lower_bound, const Vector& upper_bound);
     void Reset();
-    virtual ~BoundedLogNormal();
+    virtual ~MomentMatchingBetaEstimate();
     virtual Vector generate();
     virtual Vector generate() const;
     /// Note that this the marginal likelihood!
@@ -53,14 +37,11 @@ public:
     /// The marginal log-likelihood
     virtual real logPdf(const Vector& x) const;
     virtual const Vector& getMean() const;
-    virtual void calculatePosterior(const Vector& x);
     real Observe(const Vector& x);
     void Show();
     Vector transform(const Vector& x) const;
     Vector inverse_transform(const Vector& x) const;
-
 };
-
 
 
 #endif

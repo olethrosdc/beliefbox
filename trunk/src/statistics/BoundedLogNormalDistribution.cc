@@ -15,14 +15,18 @@ BoundedLogNormal::BoundedLogNormal(const Vector& lower_bound, const Vector& uppe
     : n_dim(lower_bound.Size()),
       a(lower_bound),
       b(upper_bound),
-      c(0.5*(a+b)),
+      c((a+b) * 0.5),
       d(pow(b-a, -2.0))
 {
     assert(a.Size() == b.Size());
     for (int i=0; i<n_dim; ++i) {
         assert(a(i) < b(i));
     }
-    normal_density = new MultivariateNormalUnknownMeanPrecision(Vector(n_dim), 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
+    normal_density =
+        new MultivariateNormalUnknownMeanPrecision(Vector(n_dim), 
+                                                   1.0, 
+                                                   1.0,
+                                                   Matrix::Unity(n_dim, n_dim));
         
 }
 
@@ -46,15 +50,22 @@ Vector BoundedLogNormal::generate() const
     Serror("Fix me!\n");
     return c;
 }
+
+real BoundedLogNormal::Observe(const Vector& x)
+{
+    return normal_density->Observe(transform(x));
+}
+
+
 /// Note that this the marginal likelihood!
 real BoundedLogNormal::pdf(const Vector& x) const
 {
-    return normal_density->pdf(trasform(x));
+    return normal_density->pdf(transform(x));
 }
 /// The marginal log-likelihood
 real BoundedLogNormal::logPdf(const Vector& x) const
 {
-    return normal_density->logPdf(trasform(x));
+    return normal_density->logPdf(transform(x));
 }
 const Vector& BoundedLogNormal::getMean() const
 {
@@ -70,7 +81,7 @@ Vector BoundedLogNormal::transform(const Vector& x) const
 {
     return (c - x) * log (d * (x - a) * (b - x));
 }
-Vector BoundedLogNormal::inverse_transform(const Vector& x)
+Vector BoundedLogNormal::inverse_transform(const Vector& x) const
 {
     Serror("Fix me!\n");
     return x;
