@@ -35,10 +35,14 @@ public:
 #ifdef NDEBUG
     Vector (int N_, real* y, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     Vector (int N_, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
+    static Vetor Unity(int N_, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
 #else
     Vector (int N_, real* y, enum BoundsCheckingStatus check = CHECK_BOUNDS);
     Vector (int N_, enum BoundsCheckingStatus check = CHECK_BOUNDS);
+    static Vector Unity(int N_, enum BoundsCheckingStatus check = CHECK_BOUNDS);
 #endif
+
+
     Vector (const Vector& rhs);
     ~Vector ();
     Vector& operator= (const real& rhs);
