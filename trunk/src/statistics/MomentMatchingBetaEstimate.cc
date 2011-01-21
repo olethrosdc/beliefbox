@@ -9,7 +9,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "MomentMatchingBetaEstimateDistribution.h"
+#include "MomentMatchingBetaEstimate.h"
 
 MomentMatchingBetaEstimate::MomentMatchingBetaEstimate(const Vector& lower_bound, const Vector& upper_bound)
     : n_dim(lower_bound.Size()),
@@ -17,7 +17,7 @@ MomentMatchingBetaEstimate::MomentMatchingBetaEstimate(const Vector& lower_bound
       a(lower_bound),
       b(upper_bound),
       d(b - a),
-      c(Vector::Unity(n_dim) / d),
+      c(Vector::Unity(n_dim) / d)
 {
     assert(a.Size() == b.Size());
     for (int i=0; i<n_dim; ++i) {
@@ -30,7 +30,8 @@ MomentMatchingBetaEstimate::MomentMatchingBetaEstimate(const Vector& lower_bound
 void MomentMatchingBetaEstimate::Reset()
 {
     for (int i=0; i<n_dim; ++i) {
-        beta[i]->Reset();
+        beta[i]->alpha = 0.5;
+        beta[i]->beta = 0.5;
     }
 
 }
@@ -61,8 +62,8 @@ real MomentMatchingBetaEstimate::Observe(const Vector& x)
     for (int i=0; i<n_dim; ++i) {
         p *= beta[i]->pdf(y(i));
         
-        real& a = beta[i].alpha;
-        real& b = beta[i].beta;
+        real& a = beta[i]->alpha;
+        real& b = beta[i]->beta;
         
     }
     return p;
@@ -81,12 +82,12 @@ real MomentMatchingBetaEstimate::pdf(const Vector& x) const
 }
 
 /// The marginal log-likelihood
-real MomentMatchingBetaEstimate::logPdf(const Vector& x) const
+real MomentMatchingBetaEstimate::log_pdf(const Vector& x) const
 {
     real log_p = 0;
     Vector y = transform(x);
     for (int i=0; i<n_dim; ++i) {
-        log_p += beta[i]->logPdf(y(i));
+        log_p += beta[i]->log_pdf(y(i));
     }
     return log_p;
 

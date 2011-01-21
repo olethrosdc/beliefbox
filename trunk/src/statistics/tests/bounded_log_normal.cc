@@ -13,6 +13,7 @@
 #ifdef MAKE_MAIN
 
 #include "BoundedLogNormalDistribution.h"
+#include "MomentMathingBetaEstimate.h"
 #include "BetaDistribution.h"
 int main()
 {
@@ -25,28 +26,29 @@ int main()
     Vector L(1);
     L(0) = 0;
     U(0) = 1;
-    BoundedLogNormal bounded_log_normal(L, U);
+    //BoundedLogNormal estimate(L, U);
+    MomentMatchingBetaEstimate estimate(L, U);
 
     Vector x(1);
     
     // print out the transform
     for (real z = 0; z<=1; z+=0.01) {
         x(0) = z;
-        Vector y = bounded_log_normal.transform(x);
+        Vector y = estimate.transform(x);
         printf ("%f %f # z_y\n", z, y(0));
     }
 
     // print the prpobabilities
     for (int t=0; t<T; ++t) {
         x(0) = beta.generate();    
-        real p = bounded_log_normal.Observe(x);
+        real p = estimate.Observe(x);
         printf ("%f # p_t\n", p);
     }
 
     // print out the transform
     for (real z = 0; z<=1; z+=0.01) {
         x(0) = z;
-        real p = bounded_log_normal.pdf(x);
+        real p = estimate.pdf(x);
         printf ("%f %f # p_x\n", z, p);
     }
 

@@ -63,9 +63,9 @@ real BoundedLogNormal::pdf(const Vector& x) const
     return normal_density->pdf(transform(x));
 }
 /// The marginal log-likelihood
-real BoundedLogNormal::logPdf(const Vector& x) const
+real BoundedLogNormal::log_pdf(const Vector& x) const
 {
-    return normal_density->logPdf(transform(x));
+    return normal_density->log_pdf(transform(x));
 }
 const Vector& BoundedLogNormal::getMean() const
 {
