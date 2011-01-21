@@ -13,6 +13,7 @@
 #define MOMENT_MATCHING_BETA_ESTIMATE_H
 
 #include "BetaDistribution.h"
+#include "Matrix.h"
 
 /** A multivariate beta-product distribution with moment matching
      */
@@ -27,6 +28,8 @@ public:
     Vector b; ///< upper bound
     Vector d; ///< difference
     Vector c; ///< inverse difference
+    Vector mu; ///< empirical mean
+    Vector C; ///< diagonal covariance (not normalised)
     MomentMatchingBetaEstimate(const Vector& lower_bound, const Vector& upper_bound);
     void Reset();
     virtual ~MomentMatchingBetaEstimate();

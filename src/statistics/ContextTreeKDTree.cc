@@ -19,6 +19,7 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
 							  Vector& lower_bound_,
 							  Vector& upper_bound_)
     : tree(tree_),
+      beta_product(lower_bound_, upper_bound_),
 	  lower_bound(lower_bound_),
       upper_bound(upper_bound_),
       depth(0),
@@ -48,6 +49,7 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
                                 Vector& lower_bound_,
                                 Vector& upper_bound_)
     : tree(prev_->tree), 
+      beta_product(lower_bound_, upper_bound_),
 	  lower_bound(lower_bound_),
       upper_bound(upper_bound_),
       depth(prev_->depth + 1),
@@ -122,9 +124,10 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
         k = 1;
     }
     
-    // the local distribution
+    // replace the local distribution with a beta estimate ?
     real P_uniform = 1.0 / Volume (upper_bound - lower_bound);
-
+    P_uniform *= beta_product.Observe(x);
+    
 	//printf ("P_u = %f\n", P_uniform);
     // probability of recursion
     P =  (1.0 + alpha[k]) / (2.0 + S);
@@ -183,7 +186,7 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
 
 */
 real ContextTreeKDTree::Node::pdf(Vector& x,
-                                    real probability)
+                                  real probability)
 {
     int k;
     if ( x[splitting_dimension] < mid_point) {
@@ -192,6 +195,7 @@ real ContextTreeKDTree::Node::pdf(Vector& x,
         k = 1;
     }
     real P_uniform = 1.0 / Volume(upper_bound - lower_bound);
+    P_uniform *= beta_product.pdf(x);
 
     P =  (1.0 + alpha[k]) / (2.0 + S);
 

@@ -510,4 +510,33 @@ void Product (const Vector* lhs, const Vector* rhs, Matrix* res)
     }
 }
 
+/// \brief Return the inner product of two vectors.
+/// If all vectors are column vectors, this is \f$x=a' b\f$.
+real Product (const Vector& lhs, const Vector& rhs)
+{
+    int n=lhs.n;
+    SMART_ASSERT(n==rhs.n);
+    real res = 0.0;
+    for (int i=0; i<n; i++) {
+        res += lhs.x[i] * rhs.x[i];
+    }
+    return res;
+}
+
+
+/// \brief Save product of two vectors onto a matrix.
+/// If all vectors are column vectors, this is \f$x=a b'\f$.
+void Product (const Vector& lhs, const Vector& rhs, Matrix& res)
+{
+    int n=lhs.n;
+    SMART_ASSERT((n==rhs.n)&&(n==res.Columns()))(n)(rhs.n)(res.Columns());
+    SMART_ASSERT (n==res.Rows())(n)(res.Rows());
+    for (int i=0; i<n; i++) { // columns
+        for (int j=0; j<n; j++) { //rows
+            res(i,j) = lhs.x[j] * rhs.x[i];
+        }
+    }
+}
+
+
 
