@@ -259,7 +259,7 @@ Vector MultivariateNormal::generate()
     f(x \mid \mu, T) = (2\pi)^{-k/2} |T|^{1/2} 
     \f]
  */
-real MultivariateNormal::logPdf(const Vector& x) const
+real MultivariateNormal::log_pdf(const Vector& x) const
 {
 	assert (x.Size()==mean.Size());
 	real n = (real) x.Size();
@@ -358,9 +358,9 @@ real MultivariateNormalUnknownMeanPrecision::pdf(const Vector& x) const
 
 
 }
-real MultivariateNormalUnknownMeanPrecision::logPdf(const Vector& x) const
+real MultivariateNormalUnknownMeanPrecision::log_pdf(const Vector& x) const
 {
-    real log_p = p_x_mr.logPdf(x);
+    real log_p = p_x_mr.log_pdf(x);
     if (isnan(log_p)) {
         p_x_mr.Show();
     }

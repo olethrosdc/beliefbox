@@ -234,8 +234,8 @@ std::pair<const CoverTree::Node*, real> CoverTree::Node::NearestNeighbour(const 
 {
     std::pair<const CoverTree::Node*, real> retval(this, distance);
 
-	real log_separation = level * tree.log_c;
-	real separation = exp(log_separation);
+	//real log_separation = level * tree.log_c;
+	//real separation = exp(log_separation);
 
     real& dist = retval.second;
     

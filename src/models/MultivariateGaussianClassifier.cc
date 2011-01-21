@@ -42,7 +42,7 @@ MultivariateGaussianClassifier::~MultivariateGaussianClassifier()
 Vector& MultivariateGaussianClassifier::Output(const Vector& x)
 {
     for (int i=0; i<n_classes; ++i) {
-        output(i) = class_distribution[i]->logPdf(x);
+        output(i) = class_distribution[i]->log_pdf(x);
         if (isnan(output(i))) {
             Serror("Output %d is nan", i);
             output.print(stdout);
