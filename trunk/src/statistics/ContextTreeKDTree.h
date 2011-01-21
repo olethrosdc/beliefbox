@@ -16,6 +16,7 @@
 #include "real.h"
 #include "Vector.h"
 #include "Ring.h"
+#include "MomentMatchingBetaEstimate.h"
 
 #undef RANDOM_SPLITS
 
@@ -42,9 +43,12 @@ public:
     // public classes
     struct Node
     {
-		ContextTreeKDTree& tree;
+		ContextTreeKDTree& tree; ///< a tree estimator
+        MomentMatchingBetaEstimate beta_product; ///< beta product estimator
+
         Vector lower_bound; ///< looks at x > lower_bound
         Vector upper_bound; ///< looks at x < upper_bound
+        
         real mid_point; ///< how to split
 		int splitting_dimension; ///< dimension on which to do the split.
         const int depth; ///< depth of the node
@@ -59,7 +63,7 @@ public:
         real w; ///< backoff weight
         real log_w; ///< log of w
         real log_w_prior; ///< initial value
-
+        
         Node(ContextTreeKDTree& tree_,
 			 Vector& lower_bound_,
              Vector& upper_bound_);

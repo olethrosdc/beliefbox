@@ -24,7 +24,18 @@ real BetaDistribution::pdf(real x) const
     if (x<0.0 || x>1.0) {
         return 0.0;
     }
-    real log_pdf = log(x)*(alpha - 1.0) + log(1-x)*(beta - 1.0)- logBeta(alpha, beta);
+    if (alpha == 1 && beta == 1) {
+        return 1.0;
+    }
+    
+    real log_pdf = 0;
+    if (x == 0 && alpha == 1 && beta > 0) {
+        log_pdf = -logBeta(alpha, beta);
+    } else if (x == 1 && beta == 1 && alpha > 0) {
+        log_pdf = -logBeta(alpha, beta);
+    } else {
+        log_pdf = log(x)*(alpha - 1.0) + log(1-x)*(beta - 1.0)- logBeta(alpha, beta);    
+    }
     return exp(log_pdf);
 }
 
@@ -32,6 +43,9 @@ real BetaDistribution::log_pdf(real x) const
 {
     if (x<0.0 || x>1.0) {
         return log(0.0);
+    }
+    if (alpha == 1 && beta == 1) {
+        return 0.0;
     }
     return log(x)*(alpha - 1.0) + log(1-x)*(beta - 1.0)- logBeta(alpha, beta);
 }

@@ -13,13 +13,18 @@
 #ifdef MAKE_MAIN
 
 #include "BoundedLogNormalDistribution.h"
-#include "MomentMathingBetaEstimate.h"
+#include "MomentMatchingBetaEstimate.h"
 #include "BetaDistribution.h"
-int main()
+
+int main(int argc, char** argv)
 {
-    int T = 1000;
-    real a = 2;
-    real b= 2;
+    if (argc != 4) {
+        fprintf (stderr, "Usage: bounded_log_normal T alpha beta\n");
+        exit(-1);
+    }
+    int T = atoi(argv[1]);
+    real a = atof(argv[2]);
+    real b= atof(argv[3]);
     BetaDistribution beta(a, b);
 
     Vector U(1);
@@ -40,13 +45,14 @@ int main()
 
     // print the prpobabilities
     for (int t=0; t<T; ++t) {
-        x(0) = beta.generate();    
+        real z = beta.generate();    
+        x(0) = L(0) * (1 - z) + U(0) * z;
         real p = estimate.Observe(x);
         printf ("%f # p_t\n", p);
     }
 
     // print out the transform
-    for (real z = 0; z<=1; z+=0.01) {
+    for (real z = 0; z<=1; z+=0.001) {
         x(0) = z;
         real p = estimate.pdf(x);
         printf ("%f %f # p_x\n", z, p);
