@@ -17,6 +17,7 @@
 #include "Vector.h"
 #include "Ring.h"
 #include "MomentMatchingBetaEstimate.h"
+#include "NormalDistribution.h"
 
 #undef RANDOM_SPLITS
 
@@ -44,8 +45,9 @@ public:
     struct Node
     {
 		ContextTreeKDTree& tree; ///< a tree estimator
-        MomentMatchingBetaEstimate beta_product; ///< beta product estimator
-
+        //MomentMatchingBetaEstimate beta_product; ///< beta product estimator
+        MultivariateNormalUnknownMeanPrecision gaussian; ///< gaussian estimator
+        real w_gaussian;
         Vector lower_bound; ///< looks at x > lower_bound
         Vector upper_bound; ///< looks at x < upper_bound
         

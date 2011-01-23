@@ -19,7 +19,11 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
 							  Vector& lower_bound_,
 							  Vector& upper_bound_)
     : tree(tree_),
-      beta_product(lower_bound_, upper_bound_),
+      gaussian((upper_bound_ + lower_bound_) * 0.5,
+               1.0, 1.0,
+               Matrix::Unity(upper_bound_.Size(), upper_bound_.Size())),
+      w_gaussian(0.5),
+      //beta_product(lower_bound_, upper_bound_),
 	  lower_bound(lower_bound_),
       upper_bound(upper_bound_),
       depth(0),
@@ -49,7 +53,12 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
                                 Vector& lower_bound_,
                                 Vector& upper_bound_)
     : tree(prev_->tree), 
-      beta_product(lower_bound_, upper_bound_),
+      gaussian((upper_bound_ + lower_bound_) * 0.5,
+               1.0, 1.0,
+               prev_->gaussian.T_n),
+      //Matrix::Unity(upper_bound_.Size(), upper_bound_.Size())),
+      w_gaussian(0.5),
+      //beta_product(lower_bound_, upper_bound_),
 	  lower_bound(lower_bound_),
       upper_bound(upper_bound_),
       depth(prev_->depth + 1),
@@ -57,8 +66,8 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
       next(tree.n_branches),
       alpha(tree.n_branches),
       log_w(0),
-      //log_w_prior(-(real) depth * log(2)),
-      log_w_prior(- log(2)),
+      log_w_prior(-(real) depth * log(2)),
+      //log_w_prior(- log(2)),
       S(0)
 {
     assert(lower_bound < upper_bound);
@@ -124,10 +133,13 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
         k = 1;
     }
     
-    // replace the local distribution with a beta estimate ?
+    // Calculate the local distribution
     real P_uniform = 1.0 / Volume (upper_bound - lower_bound);
-    P_uniform *= beta_product.Observe(x);
-    
+    //P_uniform *= beta_product.Observe(x);
+    real P_gaussian = gaussian.Observe(x);
+    real P_local = w_gaussian * P_gaussian + (1 - w_gaussian) * P_uniform;
+    w_gaussian *= P_gaussian / P_local;
+
 	//printf ("P_u = %f\n", P_uniform);
     // probability of recursion
     P =  (1.0 + alpha[k]) / (2.0 + S);
@@ -151,16 +163,16 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
         }
         P *= next[k]->Observe(x, P);
     } else {
-        P *= 2 * P_uniform;
+        P *= 2 * P_local; // P_uniform;
     }
 
     w = exp(log_w_prior + log_w); 
 
 
-    real total_probability = P_uniform * w + (1 - w) * P;
+    real total_probability = P_local * w + (1 - w) * P;
 
     // posterior weight
-    log_w = log(w * P_uniform / total_probability) - log_w_prior;
+    log_w = log(w * P_local / total_probability) - log_w_prior;
     //w *= P_uniform / total_probability;
     assert (w >= 0 && w <= 1);
     
@@ -195,7 +207,10 @@ real ContextTreeKDTree::Node::pdf(Vector& x,
         k = 1;
     }
     real P_uniform = 1.0 / Volume(upper_bound - lower_bound);
-    P_uniform *= beta_product.pdf(x);
+    //P_uniform *= beta_product.pdf(x);
+    real P_gaussian = gaussian.pdf(x);
+    real P_local = w_gaussian * P_gaussian + (1 - w_gaussian) * P_uniform;
+    //w_gaussian *= P_gaussian / P_local;
 
     P =  (1.0 + alpha[k]) / (2.0 + S);
 
@@ -203,11 +218,11 @@ real ContextTreeKDTree::Node::pdf(Vector& x,
     if (S >  threshold && next[k]) {
         P *= next[k]->pdf(x, P);
     } else {
-        P *= 2 * P_uniform;
+        P *= 2 * P_local;
     }
 
     w = exp(log_w_prior + log_w); 
-    real total_probability = P_uniform * w + (1 - w) * P;
+    real total_probability = P_local * w + (1 - w) * P;
 	return total_probability;
 }
 
