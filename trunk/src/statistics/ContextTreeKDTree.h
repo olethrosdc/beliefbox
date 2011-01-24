@@ -20,6 +20,7 @@
 #include "NormalDistribution.h"
 
 #undef RANDOM_SPLITS
+#undef USE_GAUSSIAN_MIX
 
 /** Context tree non-parametric density estimation on \f$R^n\f$.
 
@@ -46,8 +47,10 @@ public:
     {
 		ContextTreeKDTree& tree; ///< a tree estimator
         //MomentMatchingBetaEstimate beta_product; ///< beta product estimator
+#ifdef USE_GAUSSIAN_MIX
         MultivariateNormalUnknownMeanPrecision gaussian; ///< gaussian estimator
         real w_gaussian;
+#endif
         Vector lower_bound; ///< looks at x > lower_bound
         Vector upper_bound; ///< looks at x < upper_bound
         
