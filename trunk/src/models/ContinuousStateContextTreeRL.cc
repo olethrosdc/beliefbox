@@ -19,6 +19,7 @@
 #include "Random.h"
 #define INITIAL_Q_VALUE 0.0
 #define NORMAL_PRIOR  0.5
+#define PREDICT_REWARDS
 
 /** Construction of the root node */
 ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
@@ -91,7 +92,7 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
       Q(prev_->Q),
       S(0)
 {
-    printf("Making new node at depth %d\n", depth);
+    //printf("Making new node at depth %d\n", depth);
     assert(lower_bound_x < upper_bound_x);
 	splitting_dimension = ArgMax(upper_bound_x - lower_bound_x);    
 #ifdef RANDOM_SPLITS
@@ -154,10 +155,11 @@ real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real rewa
     }
     //printf ("%f %f = %f -> %f\n", P_tree, P_normal, P_local, prior_normal);
 
-	real p_reward = reward_prior.Observe(reward);
     //real mean_reward = reward_prior.getMean();
-	P_local *= p_reward;
-
+	real p_reward = reward_prior.Observe(reward);
+#ifdef PREDICT_REWARDS	
+    P_local *= p_reward;
+#endif
     if (P_local < fudge) {
         P_local = fudge;
     }
@@ -204,7 +206,7 @@ real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real rewa
 	// Do a forward mixture if there is another node available.
     if ((tree.max_depth==-1 || depth < tree.max_depth) && S >  threshold) {
         if (!next[k]) {
-            printf ("Making new node from depth %d, max: %d\n", depth, tree.max_depth);
+            //printf ("Making new node from depth %d, max: %d\n", depth, tree.max_depth);
             if (k == 0) {
 				Vector new_bound_x = upper_bound_x;
 				new_bound_x(splitting_dimension) = mid_point;

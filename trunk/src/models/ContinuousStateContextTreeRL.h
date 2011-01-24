@@ -27,7 +27,12 @@
     partition is done in the state-space.
 
 	There is a different tree for each action.
-*/
+
+    In addition, rewards are modelled with a normal distribution.
+    This possibly will have to change to a mixture of normal, beta and
+    delta.
+
+  */
 class ContinuousStateContextTreeRL
 {
 public:
