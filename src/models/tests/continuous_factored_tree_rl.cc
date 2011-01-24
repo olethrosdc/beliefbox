@@ -332,8 +332,8 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
         real reward = environment.getReward();
         //printf ("r:%f a:%d x:", reward, action); observation.print(stdout);
         real p = factored_predictor->Observe(action, observation, reward);
-        real td_error = factored_predictor->QLearning(0.1, discount_factor);
-        //real td_error = factored_predictor->Sarsa(0.1, 0.95, action_randomness);
+        //real td_error = factored_predictor->QLearning(0.1, discount_factor);
+        real td_error = factored_predictor->Sarsa(0.1, 0.95, action_randomness);
         //assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
         statistics.reward[t] += reward;

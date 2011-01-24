@@ -19,10 +19,12 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
 							  Vector& lower_bound_,
 							  Vector& upper_bound_)
     : tree(tree_),
+#ifdef USE_GAUSSIAN_MIX
       gaussian((upper_bound_ + lower_bound_) * 0.5,
                1.0, 1.0,
                Matrix::Unity(upper_bound_.Size(), upper_bound_.Size())),
       w_gaussian(0.5),
+#endif
       //beta_product(lower_bound_, upper_bound_),
 	  lower_bound(lower_bound_),
       upper_bound(upper_bound_),
@@ -53,11 +55,13 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
                                 Vector& lower_bound_,
                                 Vector& upper_bound_)
     : tree(prev_->tree), 
+#ifdef USE_GAUSSIAN_MIX
       gaussian((upper_bound_ + lower_bound_) * 0.5,
                1.0, 1.0,
                prev_->gaussian.T_n),
       //Matrix::Unity(upper_bound_.Size(), upper_bound_.Size())),
       w_gaussian(0.5),
+#endif
       //beta_product(lower_bound_, upper_bound_),
 	  lower_bound(lower_bound_),
       upper_bound(upper_bound_),
@@ -136,10 +140,13 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
     // Calculate the local distribution
     real P_uniform = 1.0 / Volume (upper_bound - lower_bound);
     //P_uniform *= beta_product.Observe(x);
+#ifdef USE_GAUSSIAN_MIX
     real P_gaussian = gaussian.Observe(x);
     real P_local = w_gaussian * P_gaussian + (1 - w_gaussian) * P_uniform;
     w_gaussian *= P_gaussian / P_local;
-
+#else
+    real P_local = P_uniform;
+#endif
 	//printf ("P_u = %f\n", P_uniform);
     // probability of recursion
     P =  (1.0 + alpha[k]) / (2.0 + S);
@@ -207,10 +214,13 @@ real ContextTreeKDTree::Node::pdf(Vector& x,
         k = 1;
     }
     real P_uniform = 1.0 / Volume(upper_bound - lower_bound);
-    //P_uniform *= beta_product.pdf(x);
+
+#ifdef USE_GAUSSIAN_MIX
     real P_gaussian = gaussian.pdf(x);
     real P_local = w_gaussian * P_gaussian + (1 - w_gaussian) * P_uniform;
-    //w_gaussian *= P_gaussian / P_local;
+#else
+    real P_local = P_uniform;
+#endif
 
     P =  (1.0 + alpha[k]) / (2.0 + S);
 
