@@ -207,6 +207,7 @@ int main (int argc, char** argv)
             p = cpdf->Observe(x, y);
         }
 		log_loss -= log(p);
+        printf ("%f # p_t\n", p);
     }
 	printf ("%f # AVERAGE LOG LOSS\n", log_loss / (real) T);
     if (joint) {

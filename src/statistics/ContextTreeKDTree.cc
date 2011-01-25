@@ -14,6 +14,8 @@
 #include <cmath>
 #include  "Random.h"
 
+#undef LOG_CALCULATIONS
+
 /** Create the root node of the tree */
 ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
 							  Vector& lower_bound_,
@@ -28,11 +30,12 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
       //beta_product(lower_bound_, upper_bound_),
 	  lower_bound(lower_bound_),
       upper_bound(upper_bound_),
+      volume(Volume(upper_bound - lower_bound)),
       depth(0),
       prev(NULL),
       next(tree.n_branches),
       alpha(tree.n_branches),
-      w(1), log_w(0), log_w_prior(-log(2)),
+      w(0.5), log_w(0), log_w_prior(-log(2)),
       S(0)
 {
     assert(lower_bound < upper_bound);
@@ -48,8 +51,8 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
 
 /** Make a new leaf node.
     
-    In order to avoid overfitting, the initial weights are
-    exponentially decaying with depth.
+    In order to avoid overfitting, the weights are fixed.
+    That way, the contribution of the leaf nodes is small.
  */
 ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
                                 Vector& lower_bound_,
@@ -65,13 +68,14 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
       //beta_product(lower_bound_, upper_bound_),
 	  lower_bound(lower_bound_),
       upper_bound(upper_bound_),
+      volume(Volume(upper_bound - lower_bound)),
       depth(prev_->depth + 1),
       prev(prev_),
       next(tree.n_branches),
       alpha(tree.n_branches),
       log_w(0),
-      log_w_prior(-(real) depth * log(2)),
-      //log_w_prior(- log(2)),
+      //log_w_prior(-(real) depth * log(2)),
+      log_w_prior(- log(2)),
       S(0)
 {
     assert(lower_bound < upper_bound);
@@ -138,7 +142,7 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
     }
     
     // Calculate the local distribution
-    real P_uniform = 1.0 / Volume (upper_bound - lower_bound);
+    real P_uniform = 1.0 / volume; //Volume (upper_bound - lower_bound);
     //P_uniform *= beta_product.Observe(x);
 #ifdef USE_GAUSSIAN_MIX
     real P_gaussian = gaussian.Observe(x);
@@ -149,6 +153,7 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
 #endif
 	//printf ("P_u = %f\n", P_uniform);
     // probability of recursion
+    // P is the probability in the remainder of the chain.
     P =  (1.0 + alpha[k]) / (2.0 + S);
 
     // adapt parameters
@@ -170,17 +175,35 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
         }
         P *= next[k]->Observe(x, P);
     } else {
-        P *= 2 * P_local; // P_uniform;
+        // There are four options when there are no further
+        // children. 
+
+        // The first is to assume a uniform distribution on the k-th
+        // interval. Since there are two intervals, multiple by two.
+        //P *= 2 * P_local;
+
+        // The second is to just stop.
+         P  = P_local; 
+
+        // The third is to use the interval probability
+        //P = P;
+        
+        // The final is to set the next probability to zero.
+        //P  = 0;
     }
 
+#ifdef LOG_CALCULATIONS
     w = exp(log_w_prior + log_w); 
-
+#endif
 
     real total_probability = P_local * w + (1 - w) * P;
 
     // posterior weight
+#ifdef LOG_CALCULATIONS
     log_w = log(w * P_local / total_probability) - log_w_prior;
-    //w *= P_uniform / total_probability;
+#else
+    w *= P_uniform / total_probability;
+#endif
     assert (w >= 0 && w <= 1);
     
 #if 0
@@ -213,7 +236,7 @@ real ContextTreeKDTree::Node::pdf(Vector& x,
     } else {
         k = 1;
     }
-    real P_uniform = 1.0 / Volume(upper_bound - lower_bound);
+    real P_uniform = 1.0 / volume; //Volume(upper_bound - lower_bound);
 
 #ifdef USE_GAUSSIAN_MIX
     real P_gaussian = gaussian.pdf(x);
@@ -231,7 +254,9 @@ real ContextTreeKDTree::Node::pdf(Vector& x,
         P *= 2 * P_local;
     }
 
+#ifdef LOG_CALCULATIONS
     w = exp(log_w_prior + log_w); 
+#endif
     real total_probability = P_local * w + (1 - w) * P;
 	return total_probability;
 }
@@ -239,6 +264,12 @@ real ContextTreeKDTree::Node::pdf(Vector& x,
 
 void ContextTreeKDTree::Node::Show()
 {
+    printf ("%d %f %f\n", depth, w, volume);
+    for (int k=0; k<tree.n_branches; ++k) {
+        if (next[k]) {
+            next[k]->Show();
+        }
+    }
 	return;
 }
 
