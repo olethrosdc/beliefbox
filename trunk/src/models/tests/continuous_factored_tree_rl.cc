@@ -174,7 +174,7 @@ int main(int argc, char** argv)
         
         FactoredPredictorRL<Vector, int>* factored_predictor; 
         if (!model_name.compare("BVMM")) {
-            factored_predictor = new ContinuousStateTFactoredPredictorRL<ContinuousStateContextTreeRL>(n_actions, L_S, U_S, max_depth , 8, depth_factor, weight_factor);
+            factored_predictor = new ContinuousStateTFactoredPredictorRL<ContinuousStateContextTreeRL>(n_actions, L_S, U_S, max_depth, 1, depth_factor, weight_factor);
         } else {
             fprintf(stderr, "Unrecognised model name %s\n", model_name.c_str());
             exit(-1);
@@ -250,12 +250,36 @@ int main(int argc, char** argv)
         max_episodes = std::max(max_episodes, episode_statistics[iter].n_episodes);
     }
 
+    FILE* reward_f = fopen("runs_reward.out", "w");
+    FILE* utility_f = fopen("runs_utility.out", "w");
+    FILE* steps_f = fopen("runs_steps.out", "w");
+    
+    for (int iter=0; iter<n_iter; ++iter) {
+        fprintf (reward_f, "%d ", iter);
+        fprintf (utility_f, "%d ", iter);
+        fprintf (steps_f, "%d ", iter);
+
+        for (int k=0; k<episode_statistics[iter].n_episodes; ++k) {
+            fprintf (reward_f, "%f ", episode_statistics[iter].total_reward[k]);
+            fprintf (utility_f, "%f ", episode_statistics[iter].utility[k]);
+            fprintf (steps_f, "%f ", episode_statistics[iter].steps[k]);
+        }
+        fprintf (reward_f, "\n");
+        fprintf (utility_f, "\n");
+        fprintf (steps_f, "\n");
+
+    }
+    fclose (reward_f);
+    fclose (utility_f);
+    fclose (steps_f);
+
     for (int k=0; k<max_episodes; ++k) {
         int cnt = 0;
         real steps = 0;
         real total_reward = 0;
         real utility = 0;
         for (int iter=0; iter<n_iter; ++iter) {
+
             if (episode_statistics[iter].n_episodes > k){
                 total_reward +=  episode_statistics[iter].total_reward[k];
                 utility +=  episode_statistics[iter].utility[k];
@@ -270,6 +294,8 @@ int main(int argc, char** argv)
                 steps * icnt,
                 cnt);
     }
+
+
 
     return 0;
 }

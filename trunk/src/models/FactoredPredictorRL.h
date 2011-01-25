@@ -41,6 +41,7 @@ public:
     
 }; 
 
+/// Abstract class for prediction with actions
 template <class T>
 class TFactoredPredictorRL : public FactoredPredictorRL<int, int>
 {
@@ -226,6 +227,7 @@ public:
 };
 
 
+/** A factored predictor RL wrapper for continuous state problems */
 template <class T>
 class ContinuousStateTFactoredPredictorRL : public FactoredPredictorRL<Vector, int>
 {
@@ -238,6 +240,15 @@ protected:
 	int current_action; ///< the current action
     real current_reward; ///< the current reward
 public:
+    /**  Construct a predictor.
+
+         n_actions_ the number of actions in the problem
+         context_depth: the depth of the conditional context tree
+         prediction_depth: the depth of the density esimation tree
+         depth_factor: a prior on how the weights should depend on depth
+         weight_factor: a prior on the initial value of weights
+     */
+    
     ContinuousStateTFactoredPredictorRL(int n_actions_,
 								   Vector& lower_bound_state,
 								   Vector& upper_bound_state,
@@ -258,11 +269,14 @@ public:
 		printf (" obs: %d, actions: %d\n", n_obs, n_actions);
     }
 
-
+    /// Destructor
     virtual ~ContinuousStateTFactoredPredictorRL()
     {
     }
-    /* Training and generation */
+
+
+    /* --- Training and generation --- */
+
     /// Observe the (first?) observation.
     virtual real Observe (Vector& obs) 
     {
@@ -308,18 +322,22 @@ public:
         return tree.Sarsa(epsilon, step_size, gamma, current_obs, current_reward);
     }
 
+    /// Get the probability of a particular observation
     virtual real ObservationProbability (int& act, Vector& x) 
     {
         Serror("Not implemented\n");
         return -1;
     }
 
+    /// Reset the model's state, without changing its parameters
     virtual void Reset()
     {
         current_obs.Clear();
 		current_action = -1;
 		tree.Reset();
     }
+
+    /// Print some statistics about the model to stdout
     virtual void Show()
     {
         tree.Show();

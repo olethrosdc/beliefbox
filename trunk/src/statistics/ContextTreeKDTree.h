@@ -53,7 +53,7 @@ public:
 #endif
         Vector lower_bound; ///< looks at x > lower_bound
         Vector upper_bound; ///< looks at x < upper_bound
-        
+        real volume; ///< volume of area in this node
         real mid_point; ///< how to split
 		int splitting_dimension; ///< dimension on which to do the split.
         const int depth; ///< depth of the node
@@ -84,7 +84,9 @@ public:
     };
     
     // public methods
-    ContextTreeKDTree(int n_branches_, int max_depth_, Vector& lower_bound, Vector& upper_bound);
+    ContextTreeKDTree(int n_branches_,
+                      int max_depth_,
+                      Vector& lower_bound, Vector& upper_bound);
     ~ContextTreeKDTree();
     real Observe(Vector& x);
     real pdf(Vector& x);
