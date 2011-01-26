@@ -34,7 +34,10 @@ RandomSourceRNG::~RandomSourceRNG()
 unsigned long RandomSourceRNG::random()
 {
  	unsigned long x;
-    fread(&x, sizeof(unsigned long), 1, rand_device);
+    size_t t = fread(&x, sizeof(unsigned long), 1, rand_device);
+    if (t != 1) {
+        Serror("Could not read item\n");
+    }
     return x;
 }
 
@@ -44,7 +47,10 @@ real RandomSourceRNG::uniform()
     real x;
 	do {
         unsigned int i;
-        fread(&i, sizeof(unsigned int), 1, rand_device);
+        size_t t = fread(&i, sizeof(unsigned int), 1, rand_device);
+        if (t != 1) {
+            Serror("Could not read item\n");
+        }
         x = ((double) i / (double) std::numeric_limits<int>::max());
     } while (x>=1.0);
     return x;
