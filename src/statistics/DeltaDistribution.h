@@ -24,11 +24,11 @@ public:
     real pdf(const Vector& x) const;
     real Observe(const Vector& x);
 protected:
-    int n_dim;
-    Vector lower_bound;
-    Vector upper_bound;
-    Vector mean;
-    int T;
+    int n_dim; ///< the number of dimensions
+    Vector lower_bound; ///< lower bound on where it may lie
+    Vector upper_bound; ///< upper bound on where it may lie
+    Vector mean; ///< mean
+    int T; ///< number of observations
 
     
 };
