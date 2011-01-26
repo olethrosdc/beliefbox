@@ -18,6 +18,7 @@
 #include "Ring.h"
 #include "MomentMatchingBetaEstimate.h"
 #include "NormalDistribution.h"
+#include "DeltaDistribution.h"
 
 #undef RANDOM_SPLITS
 #undef USE_GAUSSIAN_MIX
@@ -35,7 +36,7 @@
 	P(x_{t+1} \mid x^t) = \sum_w P_w(x_t) P(w \mid x^t).
 	\f]
 	The distribution \f$P^t(w)\f$ is simply a product distribution.
-
+    
 	The model can also be used for estimating conditional densities, directly.
 	However, this is perhaps not a good idea. 
  */
@@ -49,6 +50,7 @@ public:
         //MomentMatchingBetaEstimate beta_product; ///< beta product estimator
 #ifdef USE_GAUSSIAN_MIX
         MultivariateNormalUnknownMeanPrecision gaussian; ///< gaussian estimator
+        //DeltaUniformDistribution gaussian; ///< discrete estimator
         real w_gaussian;
 #endif
         Vector lower_bound; ///< looks at x > lower_bound

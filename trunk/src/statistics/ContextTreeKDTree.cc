@@ -25,6 +25,7 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
       gaussian((upper_bound_ + lower_bound_) * 0.5,
                1.0, 1.0,
                Matrix::Unity(upper_bound_.Size(), upper_bound_.Size())),
+      //gaussian(lower_bound_, upper_bound_),
       w_gaussian(0.5),
 #endif
       //beta_product(lower_bound_, upper_bound_),
@@ -60,9 +61,10 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
     : tree(prev_->tree), 
 #ifdef USE_GAUSSIAN_MIX
       gaussian((upper_bound_ + lower_bound_) * 0.5,
-               1.0, 1.0,
-               prev_->gaussian.T_n),
+                     1.0, 1.0,
+      prev_->gaussian.T_n),
       //Matrix::Unity(upper_bound_.Size(), upper_bound_.Size())),
+      //gaussian(lower_bound_, upper_bound_),
       w_gaussian(0.5),
 #endif
       //beta_product(lower_bound_, upper_bound_),
@@ -75,7 +77,7 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
       alpha(tree.n_branches),
       log_w(0),
       //log_w_prior(-(real) depth * log(2)),
-      log_w_prior(- log(2)),
+      log_w_prior(-log(2)),
       S(0)
 {
     assert(lower_bound < upper_bound);
@@ -251,7 +253,8 @@ real ContextTreeKDTree::Node::pdf(Vector& x,
     if (S >  threshold && next[k]) {
         P *= next[k]->pdf(x, P);
     } else {
-        P *= 2 * P_local;
+        //     P *= 2 * P_local;
+        P = P_local;
     }
 
 #ifdef LOG_CALCULATIONS

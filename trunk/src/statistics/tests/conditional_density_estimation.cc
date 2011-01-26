@@ -191,6 +191,9 @@ int main (int argc, char** argv)
 	real log_loss = 0;
     for (int t=0; t<T; ++t) {
         z = data.getRow(t);
+        for (int i=0; i<z.Size(); ++i) {
+            z(i) += urandom()*0.1;
+        }
 		real p = 0;
         if (pdf) {
 			p = pdf->Observe(z);
