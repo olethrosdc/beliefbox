@@ -1,8 +1,7 @@
 #! /bin/bash
 
-exe=./bin/continuous_factored_tree_rl
+exe=$HOME/bin/continuous_factored_tree_rl
 
-environment=Pendulum
 model=BVMM
 T=1000000
 iter=10

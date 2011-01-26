@@ -61,7 +61,7 @@ void LinearContextBandit::GenerateContext()
 {
     Vector y(n_states);
     for (uint j=0; j<n_states; ++j) {
-        y(j) = normal.generate();
+        y(j) = urandom(-1,1);
     }
     const Matrix& rG = G;
     const Vector& ry = y;
@@ -82,7 +82,7 @@ bool LinearContextBandit::Act(int action)
     normal.setMean(Product(&mean[action], &state));
     
     reward = normal.generate();
-    //printf("reward: %f\n", reward);
+    //printf("reward: %f %f\n", reward, Product(&mean[action], &state));
     GenerateContext();
     
     return true;  // we continue

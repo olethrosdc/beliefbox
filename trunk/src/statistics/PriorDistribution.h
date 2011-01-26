@@ -17,7 +17,7 @@
 
  */
 template <typename X, typename Q>
-class PriorDistribution
+class AbstractPriorDistribution
 {
 public:
     /// Update the parameter distribution, return the marginal probability
@@ -32,5 +32,42 @@ public:
     virtual X generate_observations() = 0;
 };
 
+
+/** A wrapper for prior distributions
+ */
+template <typename X, typename Q, typename B>
+class PriorDistribution : public AbstractPriorDistribution<X, Q>
+{
+public:
+    Q& q; ///< the distribution
+    /// Constructor just copies the distribution
+    PriorDistribution(Q& q_) : q(q_)
+    {  }
+    /// Call the distribution's observe function
+    virtual real Observe(const X& x) 
+    {
+        return q.Observe(x);
+    }
+    /// Return the marginal probability
+    virtual real marginal(const X& x) const 
+    {
+        return q.marginal(x);
+    }
+    /// Return the probability of the particular family member
+    virtual real pdf(const Q& q) const 
+    {
+        return q.pdf(x);
+    }
+    /// generate a member (or parameters) of the family
+    virtual Q generate() 
+    {
+        return q.generate();
+    }
+    /// generate observations
+    virtual X generate_observations()
+    {
+        return q.generate_observations();
+    }
+};
 
 

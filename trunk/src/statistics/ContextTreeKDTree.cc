@@ -61,8 +61,8 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
     : tree(prev_->tree), 
 #ifdef USE_GAUSSIAN_MIX
       gaussian((upper_bound_ + lower_bound_) * 0.5,
-                     1.0, 1.0,
-      prev_->gaussian.T_n),
+               1.0, 1.0,
+               prev_->gaussian.T_n),
       //Matrix::Unity(upper_bound_.Size(), upper_bound_.Size())),
       //gaussian(lower_bound_, upper_bound_),
       w_gaussian(0.5),
@@ -148,7 +148,9 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
     //P_uniform *= beta_product.Observe(x);
 #ifdef USE_GAUSSIAN_MIX
     real P_gaussian = gaussian.Observe(x);
+    assert(P_gaussian >= 0);
     real P_local = w_gaussian * P_gaussian + (1 - w_gaussian) * P_uniform;
+    assert(P_local >= 0);
     w_gaussian *= P_gaussian / P_local;
 #else
     real P_local = P_uniform;
@@ -204,7 +206,7 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
 #ifdef LOG_CALCULATIONS
     log_w = log(w * P_local / total_probability) - log_w_prior;
 #else
-    w *= P_uniform / total_probability;
+    w *= P_local / total_probability;
 #endif
     assert (w >= 0 && w <= 1);
     

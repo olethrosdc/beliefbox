@@ -33,7 +33,7 @@ Pendulum::Pendulum(real pendulum_mass_,
     assert(cart_mass > 0);
     assert(pendulum_length > 0);
     assert(gravity > 0);
-    assert(max_noise > 0);
+    assert(max_noise >= 0);
     assert(Dt > 0);
     state.Resize(2);
     state_upper_bound.Resize(2);
