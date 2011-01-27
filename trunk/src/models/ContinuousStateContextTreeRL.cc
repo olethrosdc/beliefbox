@@ -367,7 +367,7 @@ real ContinuousStateContextTreeRL::ValueIteration()
 
 void ContinuousStateContextTreeRL::Node::Show()
 {
-#if 1
+#if 0
 	printf("%d %f #w\n", depth, w);
 	for (int k=0; k<tree.n_branches; ++k) {
 		if (next[k]) {
