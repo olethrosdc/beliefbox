@@ -230,7 +230,7 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
 	// Auxilliary calculation for context
     context_probability = w * w_prod;
     w_prod *= (1 - w);
-	printf("P(c_%d)= %f\n", depth, context_probability);
+	//printf("P(c_%d)= %f\n", depth, context_probability);
     assert(!isnan(w_prod));
     assert(!isnan(context_probability));
 
@@ -361,6 +361,7 @@ real ContinuousStateContextTreeRL::Sarsa(real epsilon,
         real p_i = (*i)->context_probability;
         p += p_i;
 		real delta = p_i * dQ_i; 
+        //real delta = reward + gamma * EQ - (*i)->Q; // Alternative approach.
         (*i)->Q += step_size * delta;
     }
     td_err = fabs(dQ_i);
