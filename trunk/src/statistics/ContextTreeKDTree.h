@@ -72,13 +72,13 @@ public:
         real log_w_prior; ///< initial value
         
         Node(ContextTreeKDTree& tree_,
-			 Vector& lower_bound_,
-             Vector& upper_bound_);
-        Node(Node* prev_, Vector& lower_bound_, Vector& upper_bound_);
+			 const Vector& lower_bound_,
+             const Vector& upper_bound_);
+        Node(Node* prev_, const Vector& lower_bound_, const Vector& upper_bound_);
         ~Node();
-        real Observe(Vector& x,
+        real Observe(const Vector& x,
                      real probability);
-        real pdf(Vector& x,
+        real pdf(const Vector& x,
                  real probability);
         void Show();
         int NChildren();    
@@ -88,10 +88,10 @@ public:
     // public methods
     ContextTreeKDTree(int n_branches_,
                       int max_depth_,
-                      Vector& lower_bound, Vector& upper_bound);
+                      const Vector& lower_bound, const Vector& upper_bound);
     ~ContextTreeKDTree();
-    real Observe(Vector& x);
-    real pdf(Vector& x);
+    real Observe(const Vector& x);
+    real pdf(const Vector& x);
     void Show();
     int NChildren();
 protected: 

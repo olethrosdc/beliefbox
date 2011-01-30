@@ -15,9 +15,8 @@
     via a projection \f$D : S \to X\f$. Then the problem becomes a POMDP
     with state space \f$S\f$ and observation space \f$X\f$.
 
-    It then uses a context-tree-based POMDP model to perform
-    predictions and q-value-function approximation.
-*/
+    It then uses a context-tree-based model to perform predictions and
+    q-value-function approximation.  */
 #ifdef MAKE_MAIN
 
 #include "FactoredPredictorRL.h"
@@ -56,6 +55,8 @@ struct EpisodeStatistics
     std::vector<real> utility;
     std::vector<real> steps;
     int n_episodes;
+	EpisodeStatistics() : n_episodes(0)
+	{}
     void AddEpisode(real total_reward_, real utility_, real steps_)
     {
         n_episodes++;
@@ -260,6 +261,7 @@ int main(int argc, char** argv)
         fprintf (steps_f, "%d ", iter);
 
         for (int k=0; k<episode_statistics[iter].n_episodes; ++k) {
+			printf ("k: %d, iter:%d, ep:%d\n", k, iter, episode_statistics[iter].n_episodes);
             fprintf (reward_f, "%f ", episode_statistics[iter].total_reward[k]);
             fprintf (utility_f, "%f ", episode_statistics[iter].utility[k]);
             fprintf (steps_f, "%f ", episode_statistics[iter].steps[k]);
@@ -309,6 +311,7 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
                      EpisodeStatistics& episode_statistics,
                      Statistics& statistics)
 {
+	episode_statistics.n_episodes = 0;
     int n_obs = environment.getNStates();
     int n_actions = environment.getNActions();
     environment.Reset();
@@ -351,12 +354,12 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
 			}
 			action = ArgMax(Q);
 		} 
-
+        //Vector previous_observation = environment.getState();
         running = environment.Act(action);
 
         Vector observation = environment.getState();
         real reward = environment.getReward();
-        //printf ("r:%f a:%d x:", reward, action); observation.print(stdout);
+        //printf ("a:%d -> r:%f x:", action, reward); observation.print(stdout);
         real p = factored_predictor->Observe(action, observation, reward);
         //real td_error = factored_predictor->QLearning(0.1, discount_factor);
         real td_error = factored_predictor->Sarsa(0.1, discount_factor, action_randomness);

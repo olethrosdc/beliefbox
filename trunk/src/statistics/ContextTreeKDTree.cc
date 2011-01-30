@@ -18,8 +18,8 @@
 
 /** Create the root node of the tree */
 ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
-							  Vector& lower_bound_,
-							  Vector& upper_bound_)
+							  const Vector& lower_bound_,
+							  const Vector& upper_bound_)
     : tree(tree_),
 #ifdef USE_GAUSSIAN_MIX
       gaussian((upper_bound_ + lower_bound_) * 0.5,
@@ -56,8 +56,8 @@ ContextTreeKDTree::Node::Node(ContextTreeKDTree& tree_,
     That way, the contribution of the leaf nodes is small.
  */
 ContextTreeKDTree::Node::Node(ContextTreeKDTree::Node* prev_,
-                                Vector& lower_bound_,
-                                Vector& upper_bound_)
+							  const Vector& lower_bound_,
+							  const Vector& upper_bound_)
     : tree(prev_->tree), 
 #ifdef USE_GAUSSIAN_MIX
       gaussian((upper_bound_ + lower_bound_) * 0.5,
@@ -132,8 +132,8 @@ ContextTreeKDTree::Node::~Node()
     However, it is significantly simplified by using an explicit
     online posterior recursion.
 */
-real ContextTreeKDTree::Node::Observe(Vector& x,
-                                        real probability)
+real ContextTreeKDTree::Node::Observe(const Vector& x,
+									  real probability)
 {
     // Which interval is the x lying at
     int k;
@@ -231,7 +231,7 @@ real ContextTreeKDTree::Node::Observe(Vector& x,
     the current model posits a mixture of two uniform distributions.
 
 */
-real ContextTreeKDTree::Node::pdf(Vector& x,
+real ContextTreeKDTree::Node::pdf(const Vector& x,
                                   real probability)
 {
     int k;
@@ -294,8 +294,8 @@ int ContextTreeKDTree::Node::NChildren()
 /// n_branches is a bit of a silly thing, deprecated
 ContextTreeKDTree::ContextTreeKDTree(int n_branches_,
                                          int max_depth_,
-                                         Vector& lower_bound,
-                                         Vector& upper_bound)
+									 const Vector& lower_bound,
+									 const Vector& upper_bound)
     : n_branches(n_branches_),
       max_depth(max_depth_)
 {
@@ -307,13 +307,13 @@ ContextTreeKDTree::~ContextTreeKDTree()
     delete root;
 }
 
-real ContextTreeKDTree::Observe(Vector& x)
+real ContextTreeKDTree::Observe(const Vector& x)
 {
     return root->Observe(x, 1);
 }
 
 
-real ContextTreeKDTree::pdf(Vector& x)
+real ContextTreeKDTree::pdf(const Vector& x)
 {
     return root->pdf(x, 1);
 }

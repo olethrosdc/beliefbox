@@ -62,13 +62,17 @@ public:
         real context_probability; ///< last probability of the context
 
         Node(ContinuousStateContextTreeRL& tree_,
-			 Vector& lower_bound_x_,
-			 Vector& upper_bound_x_);
+			 const Vector& lower_bound_x_,
+			 const Vector& upper_bound_x_);
         Node(Node* prev_, 
-			 Vector& lower_bound_x, Vector& upper_bound_x);
+			 const Vector& lower_bound_x, const Vector& upper_bound_x);
         ~Node();
-        real Observe(Vector& x, Vector& y, real reward, real probability, ContextList& active_contexts);
-		real QValue(Vector& state, real Q_prev);
+        real Observe(const Vector& x,
+					 const Vector& y,
+					 real reward,
+					 real probability,
+					 ContextList& active_contexts);
+		real QValue(const Vector& state, real Q_prev);
         virtual void Show();
         int NChildren();    
         int S;
@@ -78,17 +82,18 @@ public:
     ContinuousStateContextTreeRL(int n_actions_,
 								 int max_depth_,
 								 int max_depth_cond_,
-								 Vector& lower_bound_x, Vector& upper_bound_x,
+								 const Vector& lower_bound_x,
+								 const Vector& upper_bound_x,
                                  real depth_factor_,
                                  real weight_factor_);
     ~ContinuousStateContextTreeRL();
-    real Observe(Vector& x, int a, Vector& y, real r);
+    real Observe(const Vector& x, const int a, const Vector& y, real r);
     //real pdf(Vector& x, Vector& y);
-	real QValue(Vector& x);
-	real QValue(Vector& x, int a);
-	real QLearning(real step_size, real gamma, Vector& y, real reward);
+	real QValue(const Vector& x);
+	real QValue(const Vector& x, int a);
+	real QLearning(real step_size, real gamma, const Vector& y, real reward);
 	real ValueIteration();
-	real Sarsa(real epsilon, real step_size, real gamma, Vector& y, real reward);
+	real Sarsa(real epsilon, real step_size, real gamma, const Vector& y, real reward);
 	void Reset()
 	{
 		current_action = -1;

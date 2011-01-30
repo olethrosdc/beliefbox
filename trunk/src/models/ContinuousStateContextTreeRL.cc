@@ -23,8 +23,8 @@
 
 /** Construction of the root node */
 ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
-									 Vector& lower_bound_x_,
-									 Vector& upper_bound_x_)
+										 const Vector& lower_bound_x_,
+										 const Vector& upper_bound_x_)
     : tree(tree_),
 	  lower_bound_x(lower_bound_x_),
       upper_bound_x(upper_bound_x_),
@@ -62,10 +62,10 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
 
 /** Make a node for K symbols at nominal depth d
     
-    If the depth factor is a and the weight factor is c, then the
-    prior weight of the expert is simply:
+    If the depth factor is \f$a\f$ and the weight factor is \f$c\f$,
+    then the prior weight of the expert is simply:
     \f[
-    w_0 = c^{1 + (d-1)a}
+    w_0 = c^{1 + (d-1)a}.
     \f]
     Interesting special cases are \f$a =1\f$:
     \[
@@ -77,8 +77,8 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
     \]
  */
 ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* prev_,
-									 Vector& lower_bound_x_,
-									 Vector& upper_bound_x_)
+									 const Vector& lower_bound_x_,
+										 const Vector& upper_bound_x_)
     : tree(prev_->tree),
 	  lower_bound_x(lower_bound_x_),
       upper_bound_x(upper_bound_x_),
@@ -137,7 +137,10 @@ ContinuousStateContextTreeRL::Node::~Node()
 	y is the next observation
 	r is the next reward
 */
-real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real reward, real probability, ContextList& active_contexts)
+real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
+												 const Vector& y,
+												 real reward, real probability,
+												 ContextList& active_contexts)
 {
 	active_contexts.push_back(this);
 	real total_probability;
@@ -227,15 +230,20 @@ real ContinuousStateContextTreeRL::Node::Observe(Vector& x, Vector& y, real rewa
 	// Auxilliary calculation for context
     context_probability = w * w_prod;
     w_prod *= (1 - w);
-
+	printf("P(c_%d)= %f\n", depth, context_probability);
     assert(!isnan(w_prod));
     assert(!isnan(context_probability));
 
     return total_probability;
 }
 
-real ContinuousStateContextTreeRL::Node::QValue(Vector& x,
-										   real Q_prev)
+/** Calculate the Q-value.
+	
+	This is quite simple. Maintain local Q-values at each node, then
+	mix the q-values by propagation.
+ */
+real ContinuousStateContextTreeRL::Node::QValue(const Vector& x,
+												real Q_prev)
 {
 	
     //w = exp(log_w); 
@@ -276,7 +284,8 @@ real ContinuousStateContextTreeRL::Node::QValue(Vector& x,
 
 	The function returns the TD-error.
  */
-real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma, Vector& y, real reward)
+real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma, 
+											 const Vector& y, real reward)
 {
 	if (current_action == -1) {
 		return 0;
@@ -305,12 +314,24 @@ real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma, Vector&
     return td_err;
 }
 
-/// Sarsa
-real ContinuousStateContextTreeRL::Sarsa(real epsilon, real step_size, real gamma, Vector& y, real reward)
+/** Sarsa implementation.
+	
+	\c y is the current, next observation
+ */
+real ContinuousStateContextTreeRL::Sarsa(real epsilon,
+										 real step_size,
+										 real gamma,
+										 const Vector& y,
+										 real reward)
 {
 	if (current_action == -1) {
 		return 0;
 	}
+#if 0
+	printf("x_t: "); current_state.print(stdout);
+	printf("a_t: %d\n", current_action);
+	printf("x_{t+1}: "); y.print(stdout);
+#endif
 	real Q_max = -INF;
 	int a_max = -1;
     Vector Qa(n_actions);
@@ -326,9 +347,9 @@ real ContinuousStateContextTreeRL::Sarsa(real epsilon, real step_size, real gamm
 	for (int i=0; i<n_actions; ++i) { 
         EQ += p_a * Qa(i);
     }
-
+	
 	real Q_prev = QValue(current_state, current_action);
-
+	// printf ("Q_prev: %f, max Q: %f, E Q: %f\n", Q_prev, EQ, Q_max);
     assert (!isnan(Q_prev));
 
     real td_err = 0;
@@ -339,7 +360,7 @@ real ContinuousStateContextTreeRL::Sarsa(real epsilon, real step_size, real gamm
          ++i) {
         real p_i = (*i)->context_probability;
         p += p_i;
-        real delta = p_i * dQ_i; 
+		real delta = p_i * dQ_i; 
         (*i)->Q += step_size * delta;
     }
     td_err = fabs(dQ_i);
@@ -393,8 +414,8 @@ int ContinuousStateContextTreeRL::Node::NChildren()
 ContinuousStateContextTreeRL::ContinuousStateContextTreeRL(int n_actions_,
 														   int max_depth_,
 														   int max_depth_cond_,
-														   Vector& lower_bound_x_,
-														   Vector& upper_bound_x_,
+														   const Vector& lower_bound_x_,
+														   const Vector& upper_bound_x_,
                                                            real depth_factor_,
                                                            real weight_factor_
                                                            )
@@ -429,12 +450,17 @@ ContinuousStateContextTreeRL::~ContinuousStateContextTreeRL()
 
 /** Observe a transition and update the model and active contexts.
 
-	x is the current state
-	a is the current action
-	y is the next state
-	r is the next reward
+	\c x the current observation
+	\c a the current action
+	\c y next observation
+	\c r the next reward
+
+	Return
+	\f[
+	P_c(s_{t+1} = y, r_{t+1} = r \mid s_t = x, a_t = a)
+	\f]
  */
-real ContinuousStateContextTreeRL::Observe(Vector& x, int a, Vector& y, real r)
+real ContinuousStateContextTreeRL::Observe(const Vector& x, const int a, const Vector& y, real r)
 {
 	assert(a >= 0 && a < n_actions);
 	active_contexts.clear();
@@ -445,14 +471,14 @@ real ContinuousStateContextTreeRL::Observe(Vector& x, int a, Vector& y, real r)
 
 /** Calculate \f$Q(x,a)\f$
  */
-real ContinuousStateContextTreeRL::QValue(Vector& x, int a)
+real ContinuousStateContextTreeRL::QValue(const Vector& x, int a)
 {
     return root[a]->QValue(x, -9999);
 }
 
 /** Calculate \f$\max_a Q(x,a)\f$
  */
-real ContinuousStateContextTreeRL::QValue(Vector& x)
+real ContinuousStateContextTreeRL::QValue(const Vector& x)
 {
 	real Q_max = -INF;
 	int a_max = -1;
