@@ -88,8 +88,8 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
       next(tree.n_branches),
 	  log_w((1 + (depth - 1)*tree.depth_factor) * log(tree.weight_factor)),
       w(exp(log_w)),
-      //Q(INITIAL_Q_VALUE),
-      Q(prev_->Q),
+      Q(INITIAL_Q_VALUE),
+      //Q(prev_->Q),
       S(0)
 {
     //printf("Making new node at depth %d\n", depth);
@@ -197,7 +197,7 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
         k = 1;
     }
 
-    real threshold = 1;//sqrt((real) depth);
+    real threshold = sqrt((real) depth);
     S++;
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P_local
@@ -304,8 +304,8 @@ real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma,
          ++i) {
         real p_i = (*i)->context_probability;
         p += p_i;
-        //real delta = p_i * dQ_i; 
-        real delta = reward + gamma * max_Q - (*i)->Q; // Alternative approach.
+        real delta = p_i * dQ_i; 
+        //real delta = reward + gamma * max_Q - (*i)->Q; // Alternative approach.
         (*i)->Q += step_size * delta;
     }
     td_err = fabs(dQ_i);
@@ -361,7 +361,6 @@ real ContinuousStateContextTreeRL::Sarsa(real epsilon,
         real p_i = (*i)->context_probability;
         p += p_i;
 		real delta = p_i * dQ_i; 
-        //real delta = reward + gamma * EQ - (*i)->Q; // Alternative approach.
         (*i)->Q += step_size * delta;
     }
     td_err = fabs(dQ_i);
