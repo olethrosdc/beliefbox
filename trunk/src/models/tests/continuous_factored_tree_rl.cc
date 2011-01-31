@@ -68,12 +68,16 @@ struct EpisodeStatistics
 };
 
 
+enum LearningAlgorithm {
+	SARSA, QLEARNING
+};
 bool EvaluateGeneral(Environment<Vector, int>& environment,
                      real action_randomness,
                      FactoredPredictorRL<Vector, int>* factored_predictor, 
                      real discount_factor,
                      EpisodeStatistics& episode_statistics,
-                     Statistics& statistics);
+                     Statistics& statistics,
+					 enum LearningAlgorithm learning_algorithm);
 
 enum EnvironmentType {
     MOUNTAIN_CAR,
@@ -94,7 +98,7 @@ int main(int argc, char** argv)
   - env_rand environment randomness in [0,1]\n\
   - weight_factor in (0,1] -- default 0.5\n\
   - depth_factor in [0,1] -- default 1\n\
-  - model_name in {BVMM}\n\
+  - learning_algorithm in {QLearning Sarsa}\n\
   - environment parameters:\n");
         return -argc;
     }
@@ -113,6 +117,7 @@ int main(int argc, char** argv)
     real weight_factor = atof(argv[8]);
     real depth_factor = atof(argv[9]);
     real discount_factor = 0.95;
+	enum LearningAlgorithm learning_algorithm = SARSA;
 
     EnvironmentType environment_type;
     
@@ -174,8 +179,12 @@ int main(int argc, char** argv)
 		printf("U_S: "); U_S.print(stdout);
         
         FactoredPredictorRL<Vector, int>* factored_predictor; 
-        if (!model_name.compare("BVMM")) {
-            factored_predictor = new ContinuousStateTFactoredPredictorRL<ContinuousStateContextTreeRL>(n_actions, L_S, U_S, max_depth, 1, depth_factor, weight_factor);
+
+		factored_predictor = new ContinuousStateTFactoredPredictorRL<ContinuousStateContextTreeRL>(n_actions, L_S, U_S, max_depth, max_depth, depth_factor, weight_factor);
+        if (!model_name.compare("QLearning")) {
+			learning_algorithm = QLEARNING;
+		} else if (!model_name.compare("Sarsa")) {
+			learning_algorithm = SARSA;
         } else {
             fprintf(stderr, "Unrecognised model name %s\n", model_name.c_str());
             exit(-1);
@@ -189,7 +198,8 @@ int main(int argc, char** argv)
                                           factored_predictor,
                                           discount_factor,
                                           episode_statistics[iter],
-                                          statistics);
+                                          statistics,
+										  learning_algorithm);
             }
             break;
         case MOUNTAIN_CAR_3D:
@@ -200,7 +210,8 @@ int main(int argc, char** argv)
                                           factored_predictor,
                                           discount_factor,
                                           episode_statistics[iter],
-                                          statistics);
+                                          statistics,
+										  learning_algorithm);
             }
             break;
         case PENDULUM:
@@ -211,7 +222,8 @@ int main(int argc, char** argv)
                                           factored_predictor,
                                           discount_factor,
                                           episode_statistics[iter],
-                                          statistics);
+                                          statistics,
+										  learning_algorithm);
             }
             break;
         case LINEAR_BANDIT:
@@ -222,7 +234,8 @@ int main(int argc, char** argv)
                                           factored_predictor,
                                           discount_factor,
                                           episode_statistics[iter],
-                                          statistics);
+                                          statistics,
+										  learning_algorithm);
             }
             break;
         default:
@@ -309,7 +322,8 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
                      FactoredPredictorRL<Vector, int>* factored_predictor,
                      real discount_factor,
                      EpisodeStatistics& episode_statistics,
-                     Statistics& statistics)
+                     Statistics& statistics,
+					 enum LearningAlgorithm learning_algorithm)
 {
 	episode_statistics.n_episodes = 0;
     int n_obs = environment.getNStates();
@@ -361,8 +375,16 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
         real reward = environment.getReward();
         //printf ("a:%d -> r:%f x:", action, reward); observation.print(stdout);
         real p = factored_predictor->Observe(action, observation, reward);
-        //real td_error = factored_predictor->QLearning(0.1, discount_factor);
-        real td_error = factored_predictor->Sarsa(0.1, discount_factor, action_randomness);
+		real td_error = 0.0;
+		switch (learning_algorithm) {
+		case QLEARNING:
+			td_error = factored_predictor->QLearning(0.1, discount_factor);
+			break;
+		case SARSA:
+			td_error = factored_predictor->Sarsa(0.1, discount_factor, epsilon);
+			break;
+		}
+        
         //assert(p==obs_probs[observation]);
         statistics.probability[t] += p;
         statistics.reward[t] += reward;
