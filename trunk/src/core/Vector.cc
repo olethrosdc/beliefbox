@@ -202,6 +202,17 @@ real Vector::Sum() const
     return sum;
 }
 
+/// P-norm of a vector
+real Vector::Norm(real p) const
+{
+    assert(p > 0);
+    real log_sum = LOG_ZERO;
+    for (int i=0; i<n; ++i) {
+        log_sum = logAdd(log_sum, fabs(x[i]) * p);
+    }
+    return exp(log_sum / p);
+}
+
 /// Sum a range of a vector
 real Vector::Sum(const int start, const int end) const
 {

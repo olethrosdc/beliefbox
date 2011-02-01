@@ -69,6 +69,7 @@ public:
     real logSum() const;
     real Sum() const;
     real Sum(int start, int end) const;
+    real Norm(real p) const;
     const bool operator< (const Vector& rhs) const;
     const bool operator> (const Vector& rhs) const;
     const bool operator== (const Vector& rhs) const;
@@ -163,6 +164,22 @@ inline real EuclideanNorm (const Vector* lhs, const Vector* rhs)
     assert (lhs->n==rhs->n);
     return EuclideanNorm (lhs->x, rhs->x, lhs->n);
 }
+
+
+inline real L1Norm (const Vector& lhs, const Vector& rhs)
+{
+    assert (lhs.n==rhs.n);
+    return L1Norm (lhs.x, rhs.x, lhs.n);
+}
+
+/// Return \f$\|a-b\|\f$, the euclidean norm between two vectors.
+inline real EuclideanNorm (const Vector& lhs, const Vector& rhs)
+{
+    assert (lhs.n==rhs.n);
+    return EuclideanNorm (lhs.x, rhs.x, lhs.n);
+}
+
+
 
 
 /// Return \f$\|a-b\|^2\f$, the square of the euclidean norm between two
