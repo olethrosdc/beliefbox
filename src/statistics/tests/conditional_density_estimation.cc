@@ -11,6 +11,7 @@
 
 #ifdef MAKE_MAIN
 #include "ContextTreeKDTree.h"
+#include "KernelDensityEstimator.h"
 #include "ConditionalKDContextTree.h"
 #include "Random.h"
 #include <vector>
@@ -30,6 +31,9 @@ static const char* const help_text = "Usage: conditional_density_estimation [opt
     --joint:          perform simple density estimation\n\
     --data:           filename\n\
     --n_inputs:       number of columns to condition on\n\
+    --grid_size:      grid size for plot\n\
+    --bandwidth:      bandwidth for kernel estimator\n\
+    --kernel:         use a kernel estimator instead\n\
 \n";
 
 
@@ -42,6 +46,8 @@ int main (int argc, char** argv)
     char* filename = NULL;
     int n_inputs = 1;
     int grid_size = 256;
+    real bandwidth = 0.01;
+    bool tune_bandwidth = false;
     {
         // options
         int c;
@@ -57,6 +63,8 @@ int main (int argc, char** argv)
                 {"data", required_argument, 0, 0}, // 4
                 {"n_inputs", required_argument, 0, 0}, // 5
                 {"grid_size", required_argument, 0, 0}, // 6
+                {"bandwidth", required_argument, 0, 0}, // 7
+                {"tune_bandwidth", no_argument, 0, 0}, // 8
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -80,6 +88,8 @@ int main (int argc, char** argv)
                 case 4: filename = optarg; break;
                 case 5: n_inputs = atoi(optarg); break;
                 case 6: grid_size = atoi(optarg); assert(grid_size > 0); break;
+                case 7: bandwidth = atof(optarg); assert(bandwidth > 0); break;
+                case 8: tune_bandwidth = true; break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -176,11 +186,13 @@ int main (int argc, char** argv)
     printf ("# UY: "); upper_bound_y.print(stdout);
 
 
-    ContextTreeKDTree* pdf = NULL;
+    //ContextTreeKDTree* pdf = NULL;
+    KernelDensityEstimator* pdf = NULL;
     ConditionalKDContextTree* cpdf = NULL;
     
     if (joint) {
-        pdf = new ContextTreeKDTree (2, max_depth, lower_bound, upper_bound);
+        //pdf = new ContextTreeKDTree (2, max_depth, lower_bound, upper_bound);
+        pdf = new KernelDensityEstimator(lower_bound.Size(), bandwidth);
     } else {
         cpdf = new ConditionalKDContextTree(2,
                                             max_depth, max_depth_cond,
@@ -192,7 +204,7 @@ int main (int argc, char** argv)
     for (int t=0; t<T; ++t) {
         z = data.getRow(t);
         for (int i=0; i<z.Size(); ++i) {
-            z(i) += urandom()*0.1;
+            z(i) += urandom()*0.01;
         }
 		real p = 0;
         if (pdf) {
@@ -211,6 +223,10 @@ int main (int argc, char** argv)
         }
 		log_loss -= log(p);
         printf ("%f # p_t\n", p);
+    }
+
+    if (tune_bandwidth && pdf) {
+        pdf->BootstrapBandwidth();
     }
 	printf ("%f # AVERAGE LOG LOSS\n", log_loss / (real) T);
     if (joint) {

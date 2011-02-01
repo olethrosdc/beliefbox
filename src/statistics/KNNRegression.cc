@@ -11,16 +11,20 @@
 
 #include "KNNRegression.h"
 
+/// Constructor
 KNNRegression::KNNRegression(int m, int n) : M(m), N(n), kd_tree(m) 
 {
 }
-void KNNRegression::AddElement(PointPair p)
+
+/// Add an element
+void KNNRegression::AddElement(const PointPair& p)
 {
     pairs.push_back(p);
     kd_tree.AddVectorObject(p.x, &pairs.back());
     //basis.AddCenter(p.x, 1.0);
 }
 
+/// Obtain a K-nearest neighbour estimate of E[y | x].
 void KNNRegression::Evaluate(Vector& x, Vector& y, int K)
 {
 

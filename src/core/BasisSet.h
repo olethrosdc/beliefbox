@@ -16,21 +16,25 @@
 #include <cassert>
 #include "Vector.h"
 
+/** A simple radial basis function */
 class RBF
 {
 public:
-    Vector& center;
-    real beta;
+    Vector& center; ///< The centroid
+    real beta; ///< the variance
+    /// Constructor
     RBF(Vector& c, real b) : center(c), beta(b)
     {
         assert(b > 0);
     }
-    real Evaluate(Vector& x)
+    /// Get the density at point x
+    real Evaluate(const Vector& x)
     {
         real d = EuclideanNorm(&x, &center);
         return exp(-beta*d);
     }
-    real logEvaluate(Vector& x)
+    /// Evaluate the log density
+    real logEvaluate(const Vector& x)
     {
         return - beta * EuclideanNorm(&x, &center);
     }
