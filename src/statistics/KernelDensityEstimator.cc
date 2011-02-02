@@ -16,7 +16,8 @@ KernelDensityEstimator::KernelDensityEstimator(int n_dimensions,
                                                real initial_bandwidth)
     : n(n_dimensions),
       b(initial_bandwidth),
-      change_b(true)
+      change_b(true),
+      kd_tree(n_dimensions)
 {
     
 }
@@ -34,6 +35,7 @@ real KernelDensityEstimator::Observe(const Vector& x)
 void KernelDensityEstimator::AddPoint(const Vector& x,  real w)
 {
     points.push_back(WeightedPoint(x, w));
+    kd_tree.AddVectorObject(x, &points.back());
 }
 
 real KernelDensityEstimator::log_pdf(const Vector& x)
@@ -43,13 +45,16 @@ real KernelDensityEstimator::log_pdf(const Vector& x)
     // If no points are stored, use a standard normal density
     if (!points.size()) {
         real d = x.Norm(2.0);
-        return C - 0.5 * d * d;
+        real r = C - 0.5 * d * d;
+        printf ("! %f %f\n", r, exp(r));
+        return r;
         
     }
 
     // otherwise, do the kernel estimate
     real ib2 = 1.0 / (b * b);
     real log_P = LOG_ZERO;
+#if 0
     for (std::list<WeightedPoint>::iterator it = points.begin();
          it != points.end();
          ++it) {
@@ -58,6 +63,24 @@ real KernelDensityEstimator::log_pdf(const Vector& x)
         log_P = logAdd(log_P, log_p_i);
     }
     real N = (real) points.size();
+#else
+    int K = points.size();
+    if (K > 100) {
+        K = 100;
+    }
+    OrderedFixedList<KDNode> node_list = kd_tree.FindKNearestNeighbours(x, K);
+    
+    for (std::list<std::pair<real, KDNode*> >::iterator it = node_list.S.begin();
+         it != node_list.S.end();
+         ++it) {
+        KDNode* node = it->second;
+        WeightedPoint* p = kd_tree.getObject(node);
+        real d = SquareNorm(&x, &(p->x));
+        real log_p_i = C - 0.5 * d * ib2;
+        log_P = logAdd(log_P, log_p_i);
+    }
+    real N = (real) K;
+#endif
     return log_P - log(b) - log(N);
 }
 
@@ -76,7 +99,7 @@ void KernelDensityEstimator::BootstrapBandwidth()
     for (std::list<WeightedPoint>::iterator it = points.begin();
          it != points.end();
          ++it) {
-        if (urandom() < 1.0/3.0) {
+        if (urandom() < 0.3) {
             test_data.push_back(*it);
         } else {
             kde.AddPoint(it->x);
@@ -87,7 +110,6 @@ void KernelDensityEstimator::BootstrapBandwidth()
     real log_p = LOG_ZERO;
     while (1) {
         kde.b = current_b;
-
         // Get log-likelihood of b.
         real current_log_p = 0;
         for (std::list<WeightedPoint>::iterator p = test_data.begin();
@@ -114,3 +136,5 @@ void KernelDensityEstimator::BootstrapBandwidth()
 
     }
 }
+
+
