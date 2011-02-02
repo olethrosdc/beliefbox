@@ -139,7 +139,7 @@ real ConditionalKDContextTree::Node::Observe(Vector& x, Vector& y, real probabil
     } else {
         k = 1;
     }
-    real threshold = depth; //sqrt((real) depth);
+    real threshold = sqrt((real) depth);
     S++;
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P_local
