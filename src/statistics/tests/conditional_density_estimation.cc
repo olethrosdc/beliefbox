@@ -31,6 +31,7 @@ static const char* const help_text = "Usage: conditional_density_estimation [opt
     --data:           filename\n\
     --n_inputs:       number of columns to condition on\n\
     --grid_size:      grid size for plot\n\
+    --test:           test file for pdf\n\
 \n";
 
 
@@ -41,6 +42,7 @@ int main (int argc, char** argv)
     int max_depth_cond = 8;
     bool joint = false;
     char* filename = NULL;
+    char* test_filename = NULL;
     int n_inputs = 1;
     int grid_size = 256;
 
@@ -59,6 +61,7 @@ int main (int argc, char** argv)
                 {"data", required_argument, 0, 0}, // 4
                 {"n_inputs", required_argument, 0, 0}, // 5
                 {"grid_size", required_argument, 0, 0}, // 6
+                {"test", required_argument, 0, 0}, // 7
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -82,6 +85,7 @@ int main (int argc, char** argv)
                 case 4: filename = optarg; break;
                 case 5: n_inputs = atoi(optarg); break;
                 case 6: grid_size = atoi(optarg); assert(grid_size > 0); break;
+                case 7: test_filename = optarg; break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -193,9 +197,11 @@ int main (int argc, char** argv)
 	real log_loss = 0;
     for (int t=0; t<T; ++t) {
         z = data.getRow(t);
+#if 0
         for (int i=0; i<z.Size(); ++i) {
             z(i) += urandom()*0.01;
         }
+#endif
 		real p = 0;
         if (pdf) {
 			p = pdf->Observe(z);
@@ -211,7 +217,12 @@ int main (int argc, char** argv)
             }
             p = cpdf->Observe(x, y);
         }
-		log_loss -= log(p);
+
+        real log_p = log(p);
+        if (log_p < -40) {
+            log_p = -40;
+        }
+		log_loss -= log_p;
         //printf ("%f # p_t\n", p);
     }
     
@@ -223,12 +234,21 @@ int main (int argc, char** argv)
             real min_axis = Min(lower_bound);
             real max_axis = Max(upper_bound);
             real step = (max_axis - min_axis) / (real) grid_size;
+            printf ("# MIN AXIS: %f\n", min_axis);
+            printf ("# MAX AXIS: %f\n", max_axis);
+            printf ("# STEP: %f\n", step);
+
             for (real z=min_axis; z<max_axis; z+=step) {
                 v(0) = z;
                 printf ("%f %f # P_XY\n", z, pdf->pdf(v));
             }
         } else {
             Vector step = (upper_bound - lower_bound) / (real) grid_size;
+
+            printf ("# MIN AXIS:"); lower_bound.print(stdout);
+            printf ("# MAX AXIS:"); upper_bound.print(stdout);
+            printf ("# STEP"); step.print(stdout);
+
             Vector v = lower_bound;
             bool running = true;
             while (running) {
@@ -270,6 +290,11 @@ int main (int argc, char** argv)
         real min_axis = Min(lower_bound);
         real max_axis = Max(upper_bound);
         real step = (max_axis - min_axis) / (real) grid_size;
+
+        printf ("# MIN AXIS: %f\n", min_axis);
+        printf ("# MAX AXIS: %f\n", max_axis);
+        printf ("# STEP: %f\n", step);
+
         for (real y=min_axis; y<max_axis; y+=step) {
             for (real x=min_axis; x<max_axis; x+=step) {
                 Vector X(1);
@@ -290,6 +315,28 @@ int main (int argc, char** argv)
         cpdf->Show();
     }
 
+    if (test_filename) {
+        Matrix test_data;
+        int n_test = ReadFloatDataASCII(test_data, test_filename);
+        real mse = 0;
+        real abs = 0;
+        if (pdf) {
+            Vector x(data_dimension);
+            for (int t=0; t<n_test; ++t) {
+                Vector z = test_data.getRow(t);
+                for (int i=0; i<data_dimension; ++i) {
+                    x(i) = z(i);
+                }
+                real p = pdf->pdf(x);
+                real p_test = z(data_dimension);
+                mse += (p - p_test)*(p - p_test);
+                abs += fabs(p - p_test);
+            }
+        }
+        real Z = 1.0 / (real) n_test;
+        printf ("%f %f # mismatch\n", Z * mse, Z * abs);
+    }
+    
 
     delete cpdf;
     delete pdf;
