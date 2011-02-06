@@ -39,23 +39,28 @@ public:
         { }
     };
     KernelDensityEstimator(int n_dimensions,
-                           real initial_bandwidth);
+                           real initial_bandwidth,
+                           int knn);
     int n; ///< The number of dimensions
     real b; ///< The bandwidth
     bool change_b; ///< Whether be should be able to change
     std::list<WeightedPoint> points; ///< A list of weighted points
     real Observe(const Vector& x); 
     void AddPoint(const Vector& x, real w = 1);
-    real pdf(const Vector& x);
+    /// Return the pdf at x
+    real pdf(const Vector& x)
+    {
+        return exp(log_pdf(x));
+    }
     real log_pdf(const Vector& x);
-    real cpdf(const Vector& z, const Vector& y);
-    real log_cpdf(const Vector& z, const Vector& y);
     void BootstrapBandwidth();
     void Show()
     {
     }
 protected:
+    int nearest_neighbour_size; ///< what size to use for the nearest neighbour
     KDTree<WeightedPoint> kd_tree; ///< The tree, for faster access
+    
     
 };
 

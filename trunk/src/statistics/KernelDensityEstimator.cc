@@ -13,10 +13,12 @@
 
 /// Constructor
 KernelDensityEstimator::KernelDensityEstimator(int n_dimensions,
-                                               real initial_bandwidth)
+                                               real initial_bandwidth,
+                                               int knn)
     : n(n_dimensions),
       b(initial_bandwidth),
       change_b(true),
+      nearest_neighbour_size(knn),
       kd_tree(n_dimensions)
 {
     
@@ -35,7 +37,9 @@ real KernelDensityEstimator::Observe(const Vector& x)
 void KernelDensityEstimator::AddPoint(const Vector& x,  real w)
 {
     points.push_back(WeightedPoint(x, w));
-    kd_tree.AddVectorObject(x, &points.back());
+    if (nearest_neighbour_size > 0) {
+        kd_tree.AddVectorObject(x, &points.back());
+    }
 }
 
 real KernelDensityEstimator::log_pdf(const Vector& x)
@@ -54,48 +58,42 @@ real KernelDensityEstimator::log_pdf(const Vector& x)
     // otherwise, do the kernel estimate
     real ib2 = 1.0 / (b * b);
     real log_P = LOG_ZERO;
-#if 0
-    for (std::list<WeightedPoint>::iterator it = points.begin();
-         it != points.end();
-         ++it) {
-        real d = SquareNorm(&x, &(it->x));
-        real log_p_i = C - 0.5 * d * ib2;
-        log_P = logAdd(log_P, log_p_i);
+    if (nearest_neighbour_size == 0) {
+        for (std::list<WeightedPoint>::iterator it = points.begin();
+             it != points.end();
+             ++it) {
+            real d = SquareNorm(&x, &(it->x));
+            real log_p_i = C - 0.5 * d * ib2;
+            log_P = logAdd(log_P, log_p_i);
+        }
+    } else {
+        int K = points.size();
+        if (K > nearest_neighbour_size) {
+            K = 1000;
+        }
+        OrderedFixedList<KDNode> node_list = kd_tree.FindKNearestNeighbours(x, K);
+        
+        for (std::list<std::pair<real, KDNode*> >::iterator it = node_list.S.begin();
+             it != node_list.S.end();
+             ++it) {
+            KDNode* node = it->second;
+            WeightedPoint* p = kd_tree.getObject(node);
+            real d = SquareNorm(&x, &(p->x));
+            real log_p_i = C - 0.5 * d * ib2;
+            log_P = logAdd(log_P, log_p_i);
+        }
     }
-    real N = (real) points.size();
-#else
-    int K = points.size();
-    if (K > 100) {
-        K = 100;
-    }
-    OrderedFixedList<KDNode> node_list = kd_tree.FindKNearestNeighbours(x, K);
-    
-    for (std::list<std::pair<real, KDNode*> >::iterator it = node_list.S.begin();
-         it != node_list.S.end();
-         ++it) {
-        KDNode* node = it->second;
-        WeightedPoint* p = kd_tree.getObject(node);
-        real d = SquareNorm(&x, &(p->x));
-        real log_p_i = C - 0.5 * d * ib2;
-        log_P = logAdd(log_P, log_p_i);
-    }
-    real N = (real) K;
-#endif
-    return log_P - log(b) - log(N);
-}
 
-/// Return the log pdf at x
-real KernelDensityEstimator::pdf(const Vector& x)
-{
-    //printf ("%f %f\n", b, log_pdf(x));
-    return exp(log_pdf(x));
+    real N = (real) points.size(); 
+    return log_P - log(b) - log(N);
 }
 
 /// Use bootstrapping to estimate the bandwidth
 void KernelDensityEstimator::BootstrapBandwidth()
 {
-    KernelDensityEstimator kde(n, b);
+    KernelDensityEstimator kde(n, b, nearest_neighbour_size);
     std::list<WeightedPoint> test_data;
+    fprintf(stderr, "Boostrapping bandiwdth\n");
     for (std::list<WeightedPoint>::iterator it = points.begin();
          it != points.end();
          ++it) {
@@ -120,13 +118,13 @@ void KernelDensityEstimator::BootstrapBandwidth()
         }        
 
         if (current_log_p > log_p) {
-            fprintf (stderr, "b: %f -> %f (%f %f)\n",
+            fprintf (stderr, "b: %f -> %f (%f %f) # bandwidth reduced\n",
                      b, current_b,
                      log_p, current_log_p);
             b = current_b;
             log_p = current_log_p;
         } else {
-            fprintf (stderr, "b: %f = %f (%f %f)\n",
+            fprintf (stderr, "b: %f = %f (%f %f) # bandwidth found\n",
                      b, current_b,
                      log_p, current_log_p);
             break;

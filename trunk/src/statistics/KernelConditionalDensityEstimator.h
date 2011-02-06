@@ -25,6 +25,7 @@
     \f]
     via separate estimation of \f$P(y, x)\f$ and \f$P(x)\f$.
     
+    This is a simple wrapper over KernelDensityEstimator.
  */
 class KernelConditionalDensityEstimator
 {
@@ -36,7 +37,8 @@ protected:
 public:
     KernelConditionalDensityEstimator(int n_x_dimensions,
                                       int n_y_dimensions,
-                                      real initial_bandwidth);
+                                      real initial_bandwidth,
+                                      int knn);
     Vector Concatenate(const Vector& x, const Vector& y)
     {
         Vector z(x.Size() + y.Size());

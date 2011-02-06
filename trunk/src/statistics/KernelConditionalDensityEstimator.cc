@@ -14,11 +14,12 @@
 KernelConditionalDensityEstimator::KernelConditionalDensityEstimator(int n_x_dimensions,
                                                                      int n_y_dimensions,
                                                                      
-                                                                     real initial_bandwidth)
+                                                                     real initial_bandwidth,
+                                                                     int knn)
     : n_x(n_x_dimensions),
       n_y(n_y_dimensions),
-      p_xy(n_x + n_y, initial_bandwidth),
-      p_x(n_x, initial_bandwidth)
+      p_xy(n_x + n_y, initial_bandwidth, knn),
+      p_x(n_x, initial_bandwidth, knn)
 {
 }
 
