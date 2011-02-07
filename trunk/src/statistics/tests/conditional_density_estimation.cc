@@ -31,7 +31,8 @@ static const char* const help_text = "Usage: conditional_density_estimation [opt
     --data:           filename\n\
     --n_inputs:       number of columns to condition on\n\
     --grid_size:      grid size for plot\n\
-    --test:           test file for pdf\n\
+    --pdf_test:       test against the actual pdf at given locations\n\
+    --test:           test log loss on additional data\n\
 \n";
 
 
@@ -43,6 +44,7 @@ int main (int argc, char** argv)
     bool joint = false;
     char* filename = NULL;
     char* test_filename = NULL;
+    char* pdf_test_filename = NULL;
     int n_inputs = 1;
     int grid_size = 256;
 
@@ -62,6 +64,7 @@ int main (int argc, char** argv)
                 {"n_inputs", required_argument, 0, 0}, // 5
                 {"grid_size", required_argument, 0, 0}, // 6
                 {"test", required_argument, 0, 0}, // 7
+                {"pdf_test", required_argument, 0, 0}, // 8
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -86,6 +89,7 @@ int main (int argc, char** argv)
                 case 5: n_inputs = atoi(optarg); break;
                 case 6: grid_size = atoi(optarg); assert(grid_size > 0); break;
                 case 7: test_filename = optarg; break;
+                case 8: pdf_test_filename = optarg; break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -315,7 +319,10 @@ int main (int argc, char** argv)
         cpdf->Show();
     }
 
-    if (test_filename) {
+    // ------------------ tests --------------------- //
+    
+    // Test against a PDF
+    if (pdf_test_filename) {
         Matrix test_data;
         int n_test = ReadFloatDataASCII(test_data, test_filename);
         real mse = 0;
@@ -334,9 +341,34 @@ int main (int argc, char** argv)
             }
         }
         real Z = 1.0 / (real) n_test;
-        printf ("%f %f # mismatch\n", Z * mse, Z * abs);
+        printf ("%f %f # mismatch (MSE, L1)\n", Z * mse, Z * abs);
     }
     
+    // Test against prediction.
+    if (test_filename) {
+        Matrix test_data;
+        int n_test = ReadFloatDataASCII(test_data, test_filename);
+        real log_loss = 0;
+        for (int t=0; t<n_test; ++t) {
+            Vector z = test_data.getRow(t);
+            if (pdf) {
+                log_loss -= log(pdf->pdf(z));
+            }
+            
+            if (cpdf) {
+                Vector x(n_inputs);
+                for (int i=0; i<n_inputs; ++i) {
+                    x(i) = z(i);
+                }
+                Vector y(n_outputs);
+                for (int i=0; i<n_outputs; ++i) {
+                    y(i) = z(i + n_inputs);
+                }
+                log_loss -= log(cpdf->pdf(x, y));
+            }
+        }
+        printf ("%f # log loss test\n", log_loss / (real) n_test);
+    }
 
     delete cpdf;
     delete pdf;

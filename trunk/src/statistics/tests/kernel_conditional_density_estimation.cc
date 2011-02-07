@@ -33,7 +33,8 @@ static const char* const help_text = "Usage: conditional_density_estimation [opt
     --grid_size:      grid size for plot\n\
     --bandwidth:      bandwidth for kernel estimator\n\
     --tune_bandwidth: tune the bandwidth using a random hold out sample\n\
-    --test:           test filename\n\
+    --pdf_test:       test against the actual pdf at given locations\n\
+    --test:           test log loss on additional data\n\
     --knn K:          evaluate using use K nearest neighbours.\n\
 \n";
 
@@ -46,10 +47,12 @@ int main (int argc, char** argv)
     bool joint = false;
     char* filename = NULL;
     char* test_filename = NULL;
+    char* pdf_test_filename = NULL;
     int n_inputs = 1;
     int grid_size = 256;
-    real bandwidth = 0.01;
+    real bandwidth = 1.0;
     bool tune_bandwidth = false;
+    
     int knn = 0;
     {
         // options
@@ -70,6 +73,7 @@ int main (int argc, char** argv)
                 {"tune_bandwidth", no_argument, 0, 0}, // 8
                 {"test", required_argument, 0, 0}, // 9
                 {"knn", required_argument, 0, 0}, // 10
+                {"pdf_test", required_argument, 0, 0}, // 11
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -97,6 +101,7 @@ int main (int argc, char** argv)
                 case 8: tune_bandwidth = true; break;
                 case 9: test_filename = optarg; break;
                 case 10: knn = atoi(optarg); break;
+                case 11: pdf_test_filename = optarg; break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -336,8 +341,10 @@ int main (int argc, char** argv)
         cpdf->Show();
     }
 
-    
-    if (test_filename) {
+    // ------------------ tests --------------------- //
+
+    // Test against a PDF
+    if (pdf_test_filename) {
         Matrix test_data;
         int n_test = ReadFloatDataASCII(test_data, test_filename);
         real mse = 0;
@@ -356,8 +363,37 @@ int main (int argc, char** argv)
             }
         }
         real Z = 1.0 / (real) n_test;
-        printf ("%f %f # mismatch\n", Z * mse, Z * abs);
+        printf ("%f %f # mismatch (MSE, L1)\n", Z * mse, Z * abs);
     }
+    
+    // Test against prediction.
+    if (test_filename) {
+        Matrix test_data;
+        int n_test = ReadFloatDataASCII(test_data, test_filename);
+        real log_loss = 0;
+        for (int t=0; t<n_test; ++t) {
+            Vector z = test_data.getRow(t);
+            if (pdf) {
+                log_loss -= pdf->log_pdf(z);
+            }
+            
+            if (cpdf) {
+                Vector x(n_inputs);
+                for (int i=0; i<n_inputs; ++i) {
+                    x(i) = z(i);
+                }
+                Vector y(n_outputs);
+                for (int i=0; i<n_outputs; ++i) {
+                    y(i) = z(i + n_inputs);
+                }
+                log_loss -= cpdf->log_pdf(x, y);
+            }
+        }
+
+        
+        printf ("%f # log loss test\n", log_loss / (real) n_test);
+    }
+
 
     delete cpdf;
     delete pdf;

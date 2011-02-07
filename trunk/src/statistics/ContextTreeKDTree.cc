@@ -164,7 +164,7 @@ real ContextTreeKDTree::Node::Observe(const Vector& x,
     alpha[k] ++;
     S++;
 
-    real threshold = log(depth);
+    real threshold = 1; //log(depth);
     if ((tree.max_depth==0 || depth < tree.max_depth) && S >  threshold) {
         if (!next[k]) {
             if (k == 0) {
