@@ -69,7 +69,7 @@ real KernelDensityEstimator::log_pdf(const Vector& x)
     } else {
         int K = points.size();
         if (K > nearest_neighbour_size) {
-            K = 1000;
+            K = nearest_neighbour_size;
         }
         OrderedFixedList<KDNode> node_list = kd_tree.FindKNearestNeighbours(x, K);
         
