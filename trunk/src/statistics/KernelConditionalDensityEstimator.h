@@ -57,6 +57,8 @@ public:
     {
         p_xy.BootstrapBandwidth();
         p_x.b = p_xy.b;
+        //p_x.BootstrapBandwidth();
+
     }
     void Show()
     {
