@@ -1,5 +1,5 @@
 /* -*- Mode: C++; -*- */
-// copyright (c) 2010-2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -35,7 +35,6 @@ static const char* const help_text = "Usage: conditional_density_estimation [opt
     --tune_bandwidth: tune the bandwidth using a random hold out sample\n\
     --pdf_test:       test against the actual pdf at given locations\n\
     --test:           test log loss on additional data\n\
-    --knn K:          evaluate using use K nearest neighbours.\n\
 \n";
 
 
@@ -72,8 +71,7 @@ int main (int argc, char** argv)
                 {"bandwidth", required_argument, 0, 0}, // 7
                 {"tune_bandwidth", no_argument, 0, 0}, // 8
                 {"test", required_argument, 0, 0}, // 9
-                {"knn", required_argument, 0, 0}, // 10
-                {"pdf_test", required_argument, 0, 0}, // 11
+                {"pdf_test", required_argument, 0, 0}, // 10
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -100,8 +98,7 @@ int main (int argc, char** argv)
                 case 7: bandwidth = atof(optarg); assert(bandwidth > 0); break;
                 case 8: tune_bandwidth = true; break;
                 case 9: test_filename = optarg; break;
-                case 10: knn = atoi(optarg); break;
-                case 11: pdf_test_filename = optarg; break;
+                case 10: pdf_test_filename = optarg; break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
