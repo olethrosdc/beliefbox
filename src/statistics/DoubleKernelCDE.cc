@@ -36,6 +36,13 @@ real DoubleKernelCDE::pdf(const Vector& x, const Vector& y)
     return exp(log_pdf(x, y));
 }
 
+/**  Compute the log pdf.
+
+     For the i-th point, calculate
+     K_y(y - y_i) = K_
+
+     
+ */
 real DoubleKernelCDE::log_pdf(const Vector& x, const Vector& y)
 {
     real C = - 0.5 * ((real) n_y) * log(2.0 * M_PI);
@@ -57,7 +64,7 @@ real DoubleKernelCDE::log_pdf(const Vector& x, const Vector& y)
         real d_x = SquareNorm(&x, &(it->x));
         real d_y = SquareNorm(&y, &(it->y));
         real log_p_i = C - 0.5 * d_y * ib2;
-        real log_p_c = d_x;
+        real log_p_c = -d_x;
         log_P = logAdd(log_P, log_p_c + log_p_i);
         log_Z = logAdd(log_Z, log_p_c);
     }
