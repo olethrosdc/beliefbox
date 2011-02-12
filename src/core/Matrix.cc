@@ -367,6 +367,44 @@ Matrix Matrix::operator* (const real& rhs)
     return lhs;
 }
 
+/// Divide a matrix by a scalar, creating a new matrix
+Matrix Matrix::operator/ (const real& rhs)
+{
+	real inv = 1.0 / rhs;
+	return (*this) * inv;
+}
+
+/// Add a matrix to a scalar, creating a new matrix
+Matrix Matrix::operator+ (const real& rhs)
+{
+    Matrix lhs(rows, columns);
+    if (transposed) {
+        lhs.Transpose();
+    }
+    real* y = x;
+    real* z = lhs.x;
+    int N = rows * columns;
+    for (int n=0; n<N; ++n) {
+        (*z++) = (*y++) + rhs;
+    }
+    return lhs;
+}
+
+/// Subtract a scalar from a matrix, creating a new matrix
+Matrix Matrix::operator- (const real& rhs)
+{
+    Matrix lhs(rows, columns);
+    if (transposed) {
+        lhs.Transpose();
+    }
+    real* y = x;
+    real* z = lhs.x;
+    int N = rows * columns;
+    for (int n=0; n<N; ++n) {
+        (*z++) = (*y++) - rhs;
+    }
+    return lhs;
+}
 
 void Matrix::print(FILE* f) const
 {

@@ -55,6 +55,9 @@ public:
     Matrix& operator*= (const real& rhs);
     Matrix operator* (const Matrix& rhs);
     Matrix operator* (const real& rhs);
+    Matrix operator+ (const real& rhs);
+    Matrix operator- (const real& rhs);
+    Matrix operator/ (const real& rhs);
     Matrix Inverse(real epsilon = 10e-6);
     bool isTriangular();
     bool isUpperTriangular();
