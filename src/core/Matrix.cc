@@ -757,28 +757,13 @@ real Matrix::RowSum(int r)
     return sum;
 }
 
-/// Return a column vector that is the column-wise maximum
-Vector Matrix::ColumnMax()
-{
-	Vector C(rows);
-    for (int j=0; j<Columns(); ++j) {
-		C(j) = (*this)(0,j);
-		for (int i=1; i<Rows(); ++i) {
-			real x = (*this)(i, j);
-			if (x > C(j)) {
-				C(j) = x;
-			}
-		}
-	}
-    return sum;
-}
 
 /// Return a column vector that is the column-wise maximum
-Vector Matrix::ColumnMax()
+Vector Matrix::ColumnMax() const
 {
 	Vector C(Rows());
 	for (int i=0; i<Rows(); ++i) {
-		C(j) = (*this)(i, 0);
+		C(i) = (*this)(i, 0);
 		for (int j=1; j<Columns(); ++j) {
 			real x = (*this)(i, j);
 			if (x > C(j)) {
@@ -790,7 +775,7 @@ Vector Matrix::ColumnMax()
 }
 
 /// Return a row vector that is the row-wise maximum
-Vector Matrix::RowMax()
+Vector Matrix::RowMax() const
 {
 	Vector R(Columns());
     for (int j=0; j<Columns(); ++j) {
