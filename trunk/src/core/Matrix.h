@@ -78,6 +78,8 @@ public:
     void SortColumn(int r);
     int Rows() const;
     int Columns() const;
+	Vector RowMax() const;
+	Vector ColumnMax() const;
     real& operator() (int i, int j);
     const real& operator() (int i, int j) const;
     void print(FILE* f) const;

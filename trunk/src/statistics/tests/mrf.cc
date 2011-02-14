@@ -38,31 +38,44 @@ public:
 			}
 		}
 	}
+	
+	void StepGibbs(int x, int y)
+	{
+		Point p(x, y);
+		int n= 4;
+		std::vector<Point> neighbours(n);
+		neighbours[0] = Point((x-1) % W, y);
+		neighbours[1] = Point((x+1) % W, y);
+		neighbours[2] = Point(x, (y - 1) % H);
+		neighbours[3] = Point(x, (y+1) % H);
+		Vector v(n_classes);
+		std::vector<int> c(n);
+		for (int i=0; i<n; ++i) {
+			c[i] = (int) S(neighbours[i].x, neighbours[i].y);
+		}
+		for (int z=0; z<n_classes; ++z) {
+			v(z) = 0;
+			for (int i=0; i<n; ++i) {
+				v(z) += K(z, c[i]);
+			}
+		}
+		Vector P = exp(v*beta);
+		P /= P.Sum();
+		S(x, y) = DiscreteDistribution::generate(P);
+	}
+
+	void SampleGibbs() 
+	{
+		int x = rng.discrete_uniform(W);
+		int y = rng.discrete_uniform(H);
+		StepGibbs(x, y);
+	}
+
 	void SweepGibbs()
 	{
-		int n = 4;
-		std::vector<Point> neighbours(n);
 		for (int x=0; x<W; ++x) {
 			for (int y=0; y<H; ++y) {
-				Point p(x, y);
-				neighbours[0] = Point((x-1) % W, y);
-				neighbours[1] = Point((x+1) % W, y);
-				neighbours[2] = Point(x, (y - 1) % H);
-				neighbours[3] = Point(x, (y+1) % H);
-				Vector v(n_classes);
-				std::vector<int> c(n);
-				for (int i=0; i<n; ++i) {
-					c[i] = (int) S(neighbours[i].x, neighbours[i].y);
-				}
-				for (int z=0; z<n_classes; ++z) {
-					v(z) = 0;
-					for (int i=0; i<n; ++i) {
-						v(z) += K(z, c[i]);
-					}
-				}
-				Vector P = exp(v*beta);
-				P /= P.Sum();
-				S(x, y) = DiscreteDistribution::generate(P);
+				StepGibbs(x, y);
 			}
 		}
 	}
@@ -109,12 +122,10 @@ public:
 
 int main(void)
 {
-
-	
-	real beta = 0.85;
-	int h = 128;
-	int w = 128;
-	int n_classes = 4;
+	real beta = 0.45;
+	int h = 16;
+	int w = 16;
+	int n_classes = 2;
 
 	Matrix K(Matrix::Unity(n_classes, n_classes));
 	K = K * 2 - 1;
@@ -125,8 +136,49 @@ int main(void)
 						  h, w,
 						  n_classes);
 	//mrf.S.print(stdout);
-	for (int i=0; i<1000; ++i) {
-		mrf.SweepGibbs();
+	Matrix ML(w, h);
+	for (int x=0; x<w; ++x) {
+		for (int y=0; y<h; ++y) {
+			ML(x, y) = 0.5; //- exp(-(x));
+		}
+	}
+	
+	ML(0, 0) = 0.99;
+	ML(0, 1) = 0.99;
+	ML(1, 0) = 0.99;
+	ML(1, 1) = 0.99;
+	
+	for (int y=0; y<h; ++y) {
+		ML(12, y) = 0.1;
+		ML(13, y) = 0.1;
+		ML(14, y) = 0.1;
+	}
+
+	
+	real log_P = LOG_ZERO;
+	Matrix X = mrf.S;
+	for (int i=0; i<100000; ++i) {
+		//mrf.SweepGibbs();
+		mrf.SampleGibbs();
+		real log_P_new = 0;
+		for (int x=0; x<w; ++x) {
+			for (int y=0; y<h; ++y) {
+				real p_xy = ML(x, y);
+				if (mrf.S(x,y)==0) {
+					p_xy = 1 - p_xy;
+				}
+				log_P_new += log(p_xy);
+			}
+		}
+		real log_ratio = log_P_new - log_P;
+		real ratio = exp(log_ratio);
+		if (urandom() < ratio) {
+			X = mrf.S;
+			log_P = log_P_new;
+			fprintf(stderr, "# New P: %f\n", log_P);
+		} else {
+			mrf.S = X;
+		}
 	}
 	mrf.S.print(stdout);
 }

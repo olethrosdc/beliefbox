@@ -737,6 +737,7 @@ Matrix Matrix::Inverse(real epsilon)
     return X;
 }
 
+/// Get the sum of column c
 real Matrix::ColumnSum(int c)
 {
     real sum = 0.0;
@@ -745,6 +746,8 @@ real Matrix::ColumnSum(int c)
     }
     return sum;
 }
+
+/// Get the sum of column r
 real Matrix::RowSum(int r)
 {
     real sum = 0.0;
@@ -753,6 +756,56 @@ real Matrix::RowSum(int r)
     }
     return sum;
 }
+
+/// Return a column vector that is the column-wise maximum
+Vector Matrix::ColumnMax()
+{
+	Vector C(rows);
+    for (int j=0; j<Columns(); ++j) {
+		C(j) = (*this)(0,j);
+		for (int i=1; i<Rows(); ++i) {
+			real x = (*this)(i, j);
+			if (x > C(j)) {
+				C(j) = x;
+			}
+		}
+	}
+    return sum;
+}
+
+/// Return a column vector that is the column-wise maximum
+Vector Matrix::ColumnMax()
+{
+	Vector C(Rows());
+	for (int i=0; i<Rows(); ++i) {
+		C(j) = (*this)(i, 0);
+		for (int j=1; j<Columns(); ++j) {
+			real x = (*this)(i, j);
+			if (x > C(j)) {
+				C(j) = x;
+			}
+		}
+	}
+    return C;
+}
+
+/// Return a row vector that is the row-wise maximum
+Vector Matrix::RowMax()
+{
+	Vector R(Columns());
+    for (int j=0; j<Columns(); ++j) {
+		R(j) = (*this)(0,j);
+		for (int i=1; i<Rows(); ++i) {
+			real x = (*this)(i, j);
+			if (x > R(j)) {
+				R(j) = x;
+			}
+		}
+	}
+    return R;
+}
+
+
 Vector Matrix::getColumn(int c)
 {
     Vector column(rows);
