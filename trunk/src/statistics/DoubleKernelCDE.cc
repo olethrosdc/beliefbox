@@ -39,7 +39,7 @@ real DoubleKernelCDE::pdf(const Vector& x, const Vector& y)
 /**  Compute the log pdf.
 
      For the i-th point, calculate
-     K_y(y - y_i) = K_
+     K_y(y - y_i)
 
      
  */
@@ -68,7 +68,7 @@ real DoubleKernelCDE::log_pdf(const Vector& x, const Vector& y)
         log_P = logAdd(log_P, log_p_c + log_p_i);
         log_Z = logAdd(log_Z, log_p_c);
     }
-    return log_P - log_Z;
+    return log_P - log_Z - log(b_y);
 }
 
 void DoubleKernelCDE::BootstrapBandwidth()
@@ -89,7 +89,7 @@ void DoubleKernelCDE::BootstrapBandwidth()
     real current_b = b_x;
     real log_p = LOG_ZERO;
     while (1) {
-        //kde.b_x = current_b;
+        kde.b_x = current_b;
         kde.b_y = current_b;
         // Get log-likelihood of b.
         real current_log_p = 0;
@@ -103,7 +103,7 @@ void DoubleKernelCDE::BootstrapBandwidth()
             fprintf (stderr, "b: %f -> %f (%f %f) # bandwidth reduced\n",
                      b_x, current_b,
                      log_p, current_log_p);
-            //b_x = current_b;
+            b_x = current_b;
             b_y = current_b;
             log_p = current_log_p;
         } else {

@@ -21,7 +21,7 @@
 #include "DeltaDistribution.h"
 
 #undef RANDOM_SPLITS
-#define USE_GAUSSIAN_MIX
+#undef USE_GAUSSIAN_MIX
 
 /** Context tree non-parametric density estimation on \f$R^n\f$.
 
