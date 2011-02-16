@@ -47,7 +47,9 @@ protected:
 
 public:
 
-    MDP<int, int>(int n_states, int n_actions, real** initial_transitions, Distribution** initial_rewards);
+    MDP<int, int>(int n_states, int n_actions,
+                  real** initial_transitions = NULL,
+                  Distribution** initial_rewards = NULL);
     MDP<int,int> (const MDP<int,int>& mdp);
 
     inline int GetNStates() const
@@ -118,6 +120,7 @@ public:
         } else {
             SingularDistribution* distribution = new SingularDistribution(reward);
             addRewardDistribution(s, a, distribution);
+            ER[ID] = reward;
         }
     }
     inline const DiscreteStateSet& getNextStates(int s, int a) const

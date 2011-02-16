@@ -16,6 +16,7 @@
 #include "ValueIteration.h"
 #include "RandomMDP.h"
 #include "Gridworld.h"
+#include "DiscreteChain.h"
 #include "OneDMaze.h"
 #include "InventoryManagement.h"
 #include "DiscretePolicy.h"
@@ -240,6 +241,7 @@ int main (int argc, char** argv)
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
+        DiscreteChain* chain = new DiscreteChain (n_states);
         RandomMDP* random_mdp = new RandomMDP (n_actions,
                                                n_states,
                                                randomness,
@@ -266,6 +268,8 @@ int main (int argc, char** argv)
             environment = one_d_maze;
         } else if (!strcmp(environment_name, "MountainCar")) { 
             environment = mountain_car;
+        } else if (!strcmp(environment_name, "Chain")) { 
+            environment = chain;
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
@@ -301,7 +305,8 @@ int main (int argc, char** argv)
                                       gamma,
                                       lambda,
                                       alpha,
-                                      exploration_policy);
+                                      exploration_policy,
+                                      100.0);
         } else if (!strcmp(algorithm_name, "HQLearning")) { 
             algorithm = new HQLearning(
 									   4,
@@ -551,7 +556,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
     for (uint step = 0; step < n_steps; ++step) {
 		if (!action_ok) {
-            if (episode) {
+            if (episode > 0) {
                 demonstrations.NewEpisode();
             }
 			episode++;
@@ -574,15 +579,16 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		
 		int state = environment->getState();
 		real reward = environment->getReward();
+
 		statistics.reward.resize(step + 1);
 		statistics.reward[step] = reward;
         statistics.ep_stats[episode].steps++;
 		statistics.ep_stats[episode].total_reward += reward;
 		statistics.ep_stats[episode].discounted_reward += discount * reward;
 		discount *= gamma;
-		//std::cout << "Acting!\n";
+
 		int action = algorithm->Act(reward, state);
-		//std::cout << "t:" << current_time << "s:" << state << " r:" << reward << " a:" << action << std::endl;
+		//std::cout << "t:" << current_time << " s:" << state << " r:" << reward << " a:" << action << std::endl;
 		action_ok = environment->Act(action);
 		current_time++;
         demonstrations.Observe(state, action);
@@ -606,7 +612,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         int n_actions = mdp->GetNActions();
         MWAL mwal(n_states, n_actions, gamma);
         mwal.CalculateFeatureCounts(demonstrations);
-        mwal.Compute(*mdp, gamma, 0.01, 10);
+        mwal.Compute(*mdp, gamma, 0.01, 100);
         
     }
     

@@ -60,6 +60,7 @@ public:
     {
         return &p[state];
     }
+    void Show();    
 };
 
 #endif

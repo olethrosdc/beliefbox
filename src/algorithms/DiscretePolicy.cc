@@ -43,8 +43,14 @@ FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
 }
 
 
-FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions, Matrix& Q)
+FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions, Matrix& Q) : DiscretePolicy()
 {
+    p.resize(n_states);
+    for (uint i=0; i<p.size(); i++) {
+        p[i].Resize(n_actions);
+    }
+
+    
     for (int s=0; s<n_states; s++) {
         real max_Qa = Q(s, 0);
         int argmax_Qa = 0;
@@ -107,6 +113,17 @@ real FixedDiscretePolicy::getActionProbability(int& action)
 real FixedDiscretePolicy::getActionProbability(int& state, int& action)
 {
 	return p[state][action];
+}
+
+void FixedDiscretePolicy::Show()
+{
+    for (int i=0; i != p.size(); ++i) {
+        printf ("%d ", i);
+        for (int j=0; j<p[i].Size(); ++j) {
+            printf ("%f ", getActionProbability(i, j));
+        }
+        printf("\n");
+    }
 }
 
 
