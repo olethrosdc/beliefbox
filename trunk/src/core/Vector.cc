@@ -226,7 +226,6 @@ real Vector::L1Norm() const
 /// L2norm of a vector
 real Vector::L2Norm() const
 {
-    assert(p > 0);
     real sum = 0.0;
     for (int i=0; i<n; ++i) {
         sum += x[i] * x[i];

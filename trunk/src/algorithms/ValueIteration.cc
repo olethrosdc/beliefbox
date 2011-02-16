@@ -112,11 +112,6 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 {
     int N = n_states * n_actions;
 
-    for (int s=0; s<n_states; s++) {
-        for (int a=0; a<n_actions; a++) {
-            dQ(s, a) = 0.0;
-        }
-    }
     int n_iter = 0;
     do {
         Delta = 0.0;
@@ -136,8 +131,7 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
                     sum += P*(R + gamma*Q_a_max);
                 }
                 Q(s, a) = sum;
-                dQ(s, a) = pQ(s, a) - sum;
-                Delta += fabs(dQ(s, a));
+                Delta += fabs(pQ(s, a) - sum);
                 pQ(s, a) = sum;
             }
         }

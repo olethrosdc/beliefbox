@@ -39,7 +39,7 @@ QLearning::QLearning(int n_states_,
 {
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
-            Q(s, a) = 0.0;//initial_value;
+            Q(s, a) = initial_value;
         }
     }
     exploration_policy->setValueMatrix(&Q);
