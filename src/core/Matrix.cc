@@ -758,6 +758,8 @@ real Matrix::RowSum(int r)
 }
 
 
+
+
 /// Return a column vector that is the column-wise maximum
 Vector Matrix::ColumnMax() const
 {

@@ -42,6 +42,27 @@ FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
     }
 }
 
+
+FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions, Matrix& Q)
+{
+    for (int s=0; s<n_states; s++) {
+        real max_Qa = Q(s, 0);
+        int argmax_Qa = 0;
+        for (int a=1; a<n_actions; a++) {
+            real Qa = Q(s, a);
+            if (Qa > max_Qa) {
+                max_Qa = Qa;
+                argmax_Qa = a;
+            }
+        }
+        Vector* p = getActionProbabilitiesPtr(s);
+        for (int a=0; a<n_actions; a++) { 
+            (*p)(a) = 0.0;
+        }
+        (*p)(argmax_Qa) = 1.0;
+    }
+ }
+
 FixedDiscretePolicy::~FixedDiscretePolicy()
 {
 }

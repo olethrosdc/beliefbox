@@ -13,7 +13,7 @@
 #define DISCRETE_POLICY_H
 
 #include "AbstractPolicy.h"
-
+#include "Matrix.h"
 
 class DiscretePolicy : public AbstractPolicy<int, int>
 {
@@ -39,6 +39,7 @@ public:
     std::vector<Vector> p;
     FixedDiscretePolicy(int n_states, int n_actions);
     FixedDiscretePolicy (std::vector<Vector>& p);
+    FixedDiscretePolicy (int n_states, int n_actions, Matrix& Q);
     virtual ~FixedDiscretePolicy();
     virtual int SelectAction();
     virtual void Observe (int& previous_state, int& action, real r, int& next_state);
@@ -51,7 +52,7 @@ public:
     virtual void Reset(int& start_state);
     virtual real getActionProbability(int& action);
     virtual real getActionProbability(int& state, int& action);
-    inline Vector getActionProbabilities(int& state)
+    inline Vector getActionProbabilities(int& state) const
     {
         return p[state];
     }

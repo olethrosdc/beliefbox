@@ -213,6 +213,27 @@ real Vector::Norm(real p) const
     return exp(log_sum / p);
 }
 
+/// L1norm of a vector
+real Vector::L1Norm() const
+{
+    real sum = 0.0;
+    for (int i=0; i<n; ++i) {
+        sum += fabs(x[i]);
+    }
+    return sum;
+}
+
+/// L2norm of a vector
+real Vector::L2Norm() const
+{
+    assert(p > 0);
+    real sum = 0.0;
+    for (int i=0; i<n; ++i) {
+        sum += x[i] * x[i];
+    }
+    return sqrt(sum);
+}
+
 /// Sum a range of a vector
 real Vector::Sum(const int start, const int end) const
 {
