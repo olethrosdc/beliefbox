@@ -15,6 +15,8 @@
 
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
+#include "Matrix.h"
+#include "Vector.h"
 #include "real.h"
 #include <vector>
 
@@ -25,15 +27,12 @@ public:
     real gamma;
     int n_states;
     int n_actions;
-    std::vector<real> V;
-    std::vector<real> dV;
-    std::vector<real> pV;
-    std::vector<real*> Q;
-    std::vector<real> Q_data;
-    std::vector<real*> dQ;
-    std::vector<real> dQ_data;
-    std::vector<real*> pQ;
-    std::vector<real> pQ_data;
+    Vector V;
+    Vector dV;
+    Vector pV;
+    Matrix Q;
+    Matrix dQ;
+    Matrix pQ;
     real Delta;
     real baseline;
     ValueIteration(const DiscreteMDP* mdp, real gamma, real baseline=0.0);
@@ -43,14 +42,11 @@ public:
     void ComputeStateActionValues(real threshold, int max_iter=-1);
     inline real getValue (int state, int action)
     {
-        assert(state>=0 && state < n_states);
-        assert(action>=0 && action < n_actions);
-        return Q[state][action];
+        return Q(state, action);
     }
     inline real getValue (int state)
     {
-        assert(state>=0 && state < n_states);
-        return V[state];
+        return V(state);
     }
     FixedDiscretePolicy* getPolicy();
 };

@@ -31,27 +31,25 @@ ValueIteration::ValueIteration(const DiscreteMDP* mdp, real gamma, real baseline
 
 void ValueIteration::Reset()
 {
-    int N = n_states * n_actions;
-    V.resize(n_states);
-    dV.resize(n_states);
-    pV.resize(n_states);
-    Q.resize(n_states);
-    Q_data.resize(N);
-    dQ.resize(n_states);
-    dQ_data.resize(N);
-    pQ.resize(n_states);
-    pQ_data.resize(N);
+    //int N = n_states * n_actions;
+
+    V.Resize(n_states);
+    dV.Resize(n_states);
+    pV.Resize(n_states);
+
+    Q.Resize(n_states, n_actions);
+    dQ.Resize(n_states, n_actions);
+    pQ.Resize(n_states, n_actions);
+
+    
     for (int s=0; s<n_states; s++) {
-        V[s] = 0.0;
-        dV[s] = 0.0;
-        pV[s] = 0.0;
-        Q[s] = &Q_data[s*n_actions];
-        dQ[s] = &dQ_data[s*n_actions];
-        pQ[s] = &pQ_data[s*n_actions];
+        V(s) = 0.0;
+        dV(s) = 0.0;
+        pV(s) = 0.0;
         for (int a=0; a<n_actions; a++) {
-            Q[s][a] = 0.0;
-            dQ[s][a] = 0.0;
-            pQ[s][a] = 0.0;
+            Q(s, a) = 0.0;
+            dQ(s, a) = 0.0;
+            pQ(s, a) = 0.0;
         }
     }
 }
@@ -68,7 +66,7 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
     do {
         Delta = 0.0;
         for (int s=0; s<n_states; s++) {
-                //real v = V[s];
+                //real v = V(s);
             real Q_a_max = -RAND_MAX;
             int a_max = 0;
             for (int a=0; a<n_actions; a++) {
@@ -79,20 +77,20 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
                      ++i) {
                     int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
-                    real R = mdp->getExpectedReward(s, a) + gamma * V[s2] - baseline;
+                    real R = mdp->getExpectedReward(s, a) + gamma * V(s2) - baseline;
                     Q_sa += P * R;
                 }
-                Q[s][a] = Q_sa;
+                Q(s, a) = Q_sa;
                 if (a==0 || Q_a_max < Q_sa) {
                     a_max = a;
                     Q_a_max = Q_sa;
                 }
             }
-            V[s] = Q_a_max;
-            dV[s] = fabs(pV[s] - V[s]);
-            pV[s] = V[s];
+            V(s) = Q_a_max;
+            dV(s) = fabs(pV(s) - V(s));
+            pV(s) = V(s);
         }
-        Delta = L1Norm(dV);
+        Delta = dV.Norm(1.0);
         if (max_iter > 0) {
             max_iter--;
         }
@@ -116,7 +114,7 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
-            dQ[s][a] = 0.0;
+            dQ(s, a) = 0.0;
         }
     }
     int n_iter = 0;
@@ -134,13 +132,13 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
                     int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
                     real R = mdp->getExpectedReward(s, a) - baseline;
-                    real Q_a_max = Max(n_actions, Q[s2]);
+                    real Q_a_max = Max(Q.getRow(s2));
                     sum += P*(R + gamma*Q_a_max);
                 }
-                Q[s][a] = sum;
-                dQ[s][a] = pQ[s][a] - sum;
-                Delta += fabs(dQ[s][a]);
-                pQ[s][a] = sum;
+                Q(s, a) = sum;
+                dQ(s, a) = pQ(s, a) - sum;
+                Delta += fabs(dQ(s, a));
+                pQ(s, a) = sum;
             }
         }
         if (max_iter > 0) {
@@ -151,24 +149,4 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
     //printf("Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
-FixedDiscretePolicy* ValueIteration::getPolicy()
-{
-    FixedDiscretePolicy* policy = new FixedDiscretePolicy(n_states, n_actions);
-    for (int s=0; s<n_states; s++) {
-        real max_Qa = getValue(s, 0);
-        int argmax_Qa = 0;
-        for (int a=1; a<n_actions; a++) {
-            real Qa = getValue(s, a);
-            if (Qa > max_Qa) {
-                max_Qa = Qa;
-                argmax_Qa = a;
-            }
-        }
-        Vector* p = policy->getActionProbabilitiesPtr(s);
-        for (int a=0; a<n_actions; a++) { 
-            (*p)[a] = 0.0;
-        }
-        (*p)[argmax_Qa] = 1.0;
-    }
-    return policy;
-}
+

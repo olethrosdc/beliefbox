@@ -70,6 +70,8 @@ public:
     real Sum() const;
     real Sum(int start, int end) const;
     real Norm(real p) const;
+    real L1Norm() const;
+    real L2Norm() const;
     const bool operator< (const Vector& rhs) const;
     const bool operator> (const Vector& rhs) const;
     const bool operator== (const Vector& rhs) const;
