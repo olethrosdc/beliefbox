@@ -26,7 +26,7 @@ public:
     real gamma;
     int n_states;
     int n_actions;
-    std::vector<real> V;
+    Vector V;
     real Delta;
     real baseline;
     PolicyEvaluation(DiscretePolicy* policy_,
