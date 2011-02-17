@@ -14,6 +14,7 @@
 
 #include "AbstractPolicy.h"
 #include "Matrix.h"
+#include "Demonstrations.h"
 
 class DiscretePolicy : public AbstractPolicy<int, int>
 {
@@ -40,6 +41,7 @@ public:
     FixedDiscretePolicy(int n_states, int n_actions);
     FixedDiscretePolicy (std::vector<Vector>& p);
     FixedDiscretePolicy (int n_states, int n_actions, Matrix& Q);
+    FixedDiscretePolicy (int n_states, int n_actions, Demonstrations<int, int>& D);
     virtual ~FixedDiscretePolicy();
     virtual int SelectAction();
     virtual void Observe (int& previous_state, int& action, real r, int& next_state);
@@ -61,6 +63,7 @@ public:
         return &p[state];
     }
     virtual void Show();    
+
 };
 
 class FixedSoftmaxPolicy : public FixedDiscretePolicy

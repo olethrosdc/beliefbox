@@ -9,7 +9,7 @@ template <class S, class A>
 class Trajectory
 {
 public:
-    std::vector<S> x;
+    std::vector<std::pair<S, A> > x;
     
     Trajectory()
     {
@@ -18,7 +18,7 @@ public:
     void Observe(S s, A a)
     {
         //std::cerr << "Adding: " << s << ", " << a << std::endl;
-        x.push_back(s);//std::pair<S, A>(s, a));
+        x.push_back(std::pair<S, A>(s, a));
     }
     
 };

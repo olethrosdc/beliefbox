@@ -310,7 +310,7 @@ int main (int argc, char** argv)
                                       lambda,
                                       alpha,
                                       exploration_policy,
-                                      100.0);
+                                      1.0);
         } else if (!strcmp(algorithm_name, "HQLearning")) { 
             algorithm = new HQLearning(
 									   4,
@@ -591,7 +591,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		//std::cout << "t:" << current_time << " s:" << state << " r:" << reward << " a:" << action << std::endl;
 		action_ok = environment->Act(action);
 		current_time++;
-        demonstrations.Observe(state, action);
+        if (step > n_steps / 2) {
+            demonstrations.Observe(state, action);
+        }
 
     }
 
@@ -618,8 +620,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         MWAL mwal(n_states, n_actions, gamma);
         mwal.CalculateFeatureCounts(demonstrations);
         mwal.Compute(*mdp, gamma, 0.001, 100);
-        printf ("MWAL policy:\n------------\n");
-        mwal.mean_policy.Show();
+
         delete mdp;
         
         mdp = environment->getMDP();
@@ -637,7 +638,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_OPT\n");
 
-        FixedSoftmaxPolicy softmax_policy(VI.Q, 100.0);
+        FixedSoftmaxPolicy softmax_policy(VI.Q, 0.00001);
         printf ("Softmax policy:\n---------------\n");
         softmax_policy.Show();
         PolicyEvaluation smax_evaluator(&softmax_policy, mdp, gamma);
@@ -647,12 +648,26 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_SMAX\n");
 
+
+        printf ("MWAL policy:\n------------\n");
+        mwal.mean_policy.Show();
         PolicyEvaluation evaluator(&mwal.mean_policy, mdp, gamma);
         evaluator.ComputeStateValues(0.01);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", evaluator.getValue(i));
         }
         printf ("# V_MWAL\n");
+
+        FixedDiscretePolicy imitating_policy(n_states, n_actions,
+                                             demonstrations);
+        printf ("imitator policy:\n------------\n");
+        imitating_policy.Show();
+        PolicyEvaluation imitating_evaluator(&imitating_policy, mdp, gamma);
+        imitating_evaluator.ComputeStateValues(0.01);
+        for (int i=0; i<n_states; ++i) {
+            printf ("%f ", imitating_evaluator.getValue(i));
+        }
+        printf ("# V_IMIT\n");
 
 
         delete mdp;
