@@ -18,7 +18,7 @@ void MWAL::CalculateFeatureCounts(Demonstrations<int, int>& D)
     for (int k=0; k<K; ++k) {
         real discount = 1;
         for (uint t=0; t<D.trajectories[k].x.size(); ++t) {
-            mu_E(D.trajectories[k].x[t]) += discount;
+            mu_E(D.trajectories[k].x[t].first) += discount;
             discount *= gamma;
         }
     }

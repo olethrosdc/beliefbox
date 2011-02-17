@@ -166,7 +166,6 @@ const bool Vector::operator== (const Vector& rhs) const
 Vector& Vector::operator= (const Vector& rhs)
 {
     if (this == &rhs) return *this;
-
     Resize(rhs.n);
     for (int i=0; i<n; i++) {
         x[i] = rhs[i];

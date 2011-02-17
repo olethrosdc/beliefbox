@@ -32,6 +32,39 @@ FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions)
     }
 }
 
+FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions, Demonstrations<int, int>& D)
+  : DiscretePolicy()
+{
+
+    p.resize(n_states);
+    for (uint i=0; i<p.size(); i++) {
+        p[i].Resize(n_actions); /////!!!!?????
+    }
+
+    for (int s=0; s<n_states; ++s) {
+        p[s].Resize(n_actions);
+        for (int a=0; a<n_actions; ++a) {
+            p[s](a) = 1.0 / n_actions;
+        }
+    }
+    for (uint k=0; k<D.trajectories.size(); ++k) {
+        for (uint t=0; t<D.trajectories[k].x.size(); ++t) {
+            int s = D.trajectories[k].x[t].first;
+            int a = D.trajectories[k].x[t].second;
+            assert(s >= 0 && s < n_states);
+            assert(a >= 0 && a < n_actions);
+            p[s](a) += 1.0;
+        }
+    }
+
+    for (int s=0; s<n_states; ++s) {
+        p[s] /= p[s].Sum();
+    }
+
+}
+
+
+
 FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
     : DiscretePolicy()
 {
@@ -130,7 +163,6 @@ void FixedDiscretePolicy::Show()
         printf("\n");
     }
 }
-
 
 
 FixedSoftmaxPolicy::FixedSoftmaxPolicy (Matrix& Q, real beta)
