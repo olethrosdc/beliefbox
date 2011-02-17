@@ -19,49 +19,48 @@
 
 RandomMDP::RandomMDP(uint n_actions_,
                      uint n_states_,
-                     real randomness,
-                     real step_value,
-                     real pit_value,
-                     real goal_value,
+                     real randomness_,
+                     real step_value_,
+                     real pit_value_,
+                     real goal_value_,
                      RandomNumberGenerator* rng,
-                     bool termination) : n_states(n_states_),
-                                         n_actions(n_actions_)
+                     bool termination_)
+    : DiscreteEnvironment(n_states_, n_actions_),
+      randomness(randomness_),
+      step_value(step_value_),
+      pit_value(pit_value_),
+      goal_value(goal_value_),
+    termination(termination_)
 {
     
     this->rng = rng;
-
-    // set up the mdp
-    std::cout << "Making the MPD\n";
-    mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
-    
-    // set up rewards	
-    std::cout << "Setting up rewards\n";
-        
-    SingularDistribution* step_reward = new SingularDistribution(step_value);
-    SingularDistribution* pit_reward = new SingularDistribution(pit_value);
-    SingularDistribution* zero_reward = new SingularDistribution(0.0);
-    SingularDistribution* goal_reward = new SingularDistribution(goal_value);
-    
-    rewards.push_back(step_reward);
-    rewards.push_back(pit_reward);
-    rewards.push_back(zero_reward);
-    rewards.push_back(goal_reward);
-    
-    std::cout << "Assigning rewards\n";
-    // first the terminal state rewards
-    if (termination) {
-        for (uint a=0; a<n_actions; ++a) {
-            mdp->setRewardDistribution(n_states - 1, a, zero_reward);
-        }
-    }
-
     terminal_state = n_states;
     if (termination) {
         terminal_state = n_states - 1;
     }
+
+    // set up the mdp
+    std::cout << "Making the MPD\n";
+    mdp = getMDP();
+    mdp->Check();
+    Reset();
+    printf ("state: %d/%d\n", state, n_states);
+}
+	
+DiscreteMDP* RandomMDP::getMDP() const
+{
+    DiscreteMDP* mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
+    
+    // first the terminal state rewards
+    if (termination) {
+        for (uint a=0; a<n_actions; ++a) {
+            mdp-> setFixedReward(n_states - 1, a, 0.0);
+        }
+    }
+
     for (uint s=0; s<terminal_state; ++s) { 
         for (uint a=0; a<n_actions; ++a) {
-            mdp->setRewardDistribution(s, a, step_reward);
+            mdp->setFixedReward(s, a, step_value);
         }
     }
 
@@ -73,8 +72,8 @@ RandomMDP::RandomMDP(uint n_actions_,
         goal_state = (int) floor(((real) n_states - 1) * rng->uniform());
     }
     for (uint a=0; a<n_actions; ++a) {
-        mdp->setRewardDistribution(goal_state, a, goal_reward);
-        mdp->setRewardDistribution(pit_state, a, pit_reward);
+        mdp->setFixedReward(goal_state, a, goal_value);
+        mdp->setFixedReward(pit_state, a, pit_value);
         if (termination) {
             mdp->setTransitionProbability (goal_state, a, terminal_state, 1.0);
             mdp->setTransitionProbability (pit_state, a, terminal_state, 1.0);
@@ -115,14 +114,11 @@ RandomMDP::RandomMDP(uint n_actions_,
             }
         }
     }
-    fflush(stdout);
-    mdp->Check();
+
+    return mdp;
 }
-	
+
 RandomMDP::~RandomMDP() {
-    for (uint i=0; i<rewards.size(); ++i) {
-        delete rewards[i];
-    }
     delete mdp;
 }
 

@@ -45,7 +45,7 @@ public:
   : n_states(n_states_), n_actions(n_actions_)
     {
         state_lower_bound = 0;
-        state_upper_bound = 0;
+        state_upper_bound = n_states - 1;
     }
 
     virtual ~Environment() 
@@ -63,6 +63,7 @@ public:
     
     /// Return a full MDP model of the environment. 
     /// This may not be possible for some environments
+    /// The MDP is required to be freed by the user!
     virtual MDP<S, A>* getMDP() const
     {
         return NULL;

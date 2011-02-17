@@ -68,7 +68,7 @@ void MWAL::Compute(DiscreteMDP& original_mdp, real gamma, real epsilon, int T)
     DiscreteMDP& mdp(original_mdp); // make a copy
     // Setup
     real beta = 1.0 / (1.0 + sqrt(2.0 * log((real) n_states) / (real) T));
-    Vector W(Vector::Unity(n_states));
+    Vector W = Vector::Unity(n_states);
     std::vector<Distribution*> rewards(n_states);
     
 

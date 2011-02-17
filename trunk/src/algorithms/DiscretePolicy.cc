@@ -48,7 +48,7 @@ FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions,
   : DiscretePolicy()
 {
     assert(Q.Rows() == n_states);
-    assert(Q.Actions() == n_actions);
+    assert(Q.Columns() == n_actions);
 
     p.resize(n_states);
     for (uint i=0; i<p.size(); i++) {
@@ -132,4 +132,19 @@ void FixedDiscretePolicy::Show()
 }
 
 
+
+FixedSoftmaxPolicy::FixedSoftmaxPolicy (Matrix& Q, real beta)
+    : FixedDiscretePolicy(Q.Rows(), Q.Columns())
+{
+    
+    for (int s=0; s<Q.Rows(); s++) {
+        Vector* p = getActionProbabilitiesPtr(s);
+        Vector Qs = Q.getRow(s);
+        SoftMax(Qs, *p, beta);
+    }
+ }
+
+FixedSoftmaxPolicy::~FixedSoftmaxPolicy()
+{
+}
 

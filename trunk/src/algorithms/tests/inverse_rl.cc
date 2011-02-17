@@ -16,7 +16,7 @@
 #include "ValueIteration.h"
 #include "RandomMDP.h"
 #include "Gridworld.h"
-#include "DiscreteChain.h"
+//#include "DiscreteChain.h"
 #include "OneDMaze.h"
 #include "InventoryManagement.h"
 #include "DiscretePolicy.h"
@@ -72,6 +72,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
                              OnlineAlgorithm<int,int>* algorithm,
                              DiscreteEnvironment* environment,
                              real gamma);
+static const char* const environment_names_list = "{MountainCar, ContextBandit, RandomMDP, Gridworld}";
+
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
     --algorithm:   {QLearning, Model, Sarsa, Sampling}\n\
@@ -110,7 +112,7 @@ int main (int argc, char** argv)
     uint grid_size = 4;
     uint maze_width = 4;
     const char * algorithm_name = "QLearning";
-    const char * environment_name = "Gridworld";
+    const char * environment_name = NULL;
 
 
     int max_samples = 4;
@@ -226,6 +228,11 @@ int main (int argc, char** argv)
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
 
+    if (!environment_name) {
+        std::cerr << "Please choose an environment from "
+                  << environment_names_list << std::endl;
+        exit(-1);
+    }
     std::cout << "Starting test program" << std::endl;
     
     std::cout << "Starting evaluation" << std::endl;
@@ -241,35 +248,32 @@ int main (int argc, char** argv)
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
-        DiscreteChain* chain = new DiscreteChain (n_states);
-        RandomMDP* random_mdp = new RandomMDP (n_actions,
-                                               n_states,
-                                               randomness,
-                                               step_value,
-                                               pit_value,
-                                               goal_value,
-                                               rng,
-                                               false);
-        OneDMaze* one_d_maze = new OneDMaze(n_states, rng);
-        Gridworld* gridworld= new Gridworld(maze_name, randomness);
-        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
-        MountainCar continuous_mountain_car;
-		continuous_mountain_car.setRandomness(randomness);
-        DiscretisedEnvironment<MountainCar>* mountain_car
-            = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,
-                                                       grid_size);
+        //DiscreteChain* chain = new DiscreteChain (n_states);
+
+        Gridworld* gridworld = NULL;
+        
+
         if (!strcmp(environment_name, "RandomMDP")) { 
-            environment = random_mdp;
+            environment = new RandomMDP (n_actions,
+                                         n_states,
+                                         randomness,
+                                         step_value,
+                                         pit_value,
+                                         goal_value,
+                                         rng,
+                                         false);
         } else if (!strcmp(environment_name, "Gridworld")) { 
-            environment = gridworld;
+            environment = new Gridworld(maze_name, randomness);
         } else if (!strcmp(environment_name, "ContextBandit")) { 
-            environment = context_bandit;
+            environment = new ContextBandit(n_actions, 3, 4, rng);
         } else if (!strcmp(environment_name, "OneDMaze")) { 
-            environment = one_d_maze;
+            environment = new OneDMaze(n_states, rng);
         } else if (!strcmp(environment_name, "MountainCar")) { 
-            environment = mountain_car;
-        } else if (!strcmp(environment_name, "Chain")) { 
-            environment = chain;
+            MountainCar continuous_mountain_car;
+            continuous_mountain_car.setRandomness(randomness);
+            environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,  grid_size);
+            //        } else if (!strcmp(environment_name, "Chain")) { 
+            //environment = chain;
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
@@ -473,12 +477,8 @@ int main (int argc, char** argv)
             delete model;
             model = NULL;
         }
-        //delete environment;
-        delete gridworld;
-        delete one_d_maze;
-        delete mountain_car;
-        delete random_mdp;
-        delete context_bandit;
+        
+        delete environment;
         delete algorithm;
         delete exploration_policy;
     }
@@ -606,23 +606,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 			 statistics.reward.size());
     
     {
-        fprintf(stderr, "Estimating optimal value function\n");
 
-        DiscreteMDP* mdp = environment->getMDP(); 
-        int n_states = mdp->GetNStates();
-        int n_actions = mdp->GetNActions();
-
-        ValueIteration VI(mdp, gamma);
-        VI.ComputeStateValues(0.001);
-        
-        for (int i=0; i<n_states; ++i) {
-            printf ("%f ", VI.getValue(i));
-        }
-        printf ("# V_OPT\n");
-        
-        FixedDiscretePolicy optimal_policy(n_states, n_actions, VI.Q);
-        printf ("Optimal policy:\n---------------\n");
-        optimal_policy.Show();
     }
 
     {
@@ -636,6 +620,33 @@ Statistics EvaluateAlgorithm (int episode_steps,
         mwal.Compute(*mdp, gamma, 0.001, 100);
         printf ("MWAL policy:\n------------\n");
         mwal.mean_policy.Show();
+        delete mdp;
+        
+        mdp = environment->getMDP();
+        fprintf(stderr, "Estimating optimal value function\n");
+        ValueIteration VI(mdp, gamma);
+        VI.ComputeStateValues(0.001);
+        printf ("Optimal Q function:\n---------------\n");
+        VI.Q.print(stdout);
+
+        FixedDiscretePolicy optimal_policy(n_states, n_actions, VI.Q);
+        printf ("Optimal policy:\n---------------\n");
+        optimal_policy.Show();
+        for (int i=0; i<n_states; ++i) {
+            printf ("%f ", VI.getValue(i));
+        }
+        printf ("# V_OPT\n");
+
+        FixedSoftmaxPolicy softmax_policy(VI.Q, 100.0);
+        printf ("Softmax policy:\n---------------\n");
+        softmax_policy.Show();
+        PolicyEvaluation smax_evaluator(&softmax_policy, mdp, gamma);
+        smax_evaluator.ComputeStateValues(0.01);
+        for (int i=0; i<n_states; ++i) {
+            printf ("%f ", smax_evaluator.getValue(i));
+        }
+        printf ("# V_SMAX\n");
+
         PolicyEvaluation evaluator(&mwal.mean_policy, mdp, gamma);
         evaluator.ComputeStateValues(0.01);
         for (int i=0; i<n_states; ++i) {
@@ -644,6 +655,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("# V_MWAL\n");
 
 
+        delete mdp;
+        
     }
     
     return statistics;
