@@ -43,8 +43,13 @@ FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
 }
 
 
-FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions, Matrix& Q) : DiscretePolicy()
+FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions,
+                                          Matrix& Q)
+  : DiscretePolicy()
 {
+    assert(Q.Rows() == n_states);
+    assert(Q.Actions() == n_actions);
+
     p.resize(n_states);
     for (uint i=0; i<p.size(); i++) {
         p[i].Resize(n_actions);
@@ -118,7 +123,7 @@ real FixedDiscretePolicy::getActionProbability(int& state, int& action)
 void FixedDiscretePolicy::Show()
 {
     for (int i=0; i != p.size(); ++i) {
-        printf ("%d ", i);
+        //printf ("%d ", i);
         for (int j=0; j<p[i].Size(); ++j) {
             printf ("%f ", getActionProbability(i, j));
         }

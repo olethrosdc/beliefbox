@@ -49,16 +49,17 @@ public:
     int n_actions;
     real gamma;
     Vector mu_E; ///< discounted feature counts
+    FixedDiscretePolicy mean_policy; ///< The policy
     MWAL(int n_states_, int n_actions_, real discount) 
         : n_states(n_states_), n_actions(n_actions_), gamma(discount),
-          mu_E(n_states)
+          mu_E(n_states), mean_policy(n_states, n_actions)
     {}
 
     void CalculateFeatureCounts(Demonstrations<int, int>& D);
     Vector CalculateFeatureExpectation(DiscreteMDP& mdp, 
                                        FixedDiscretePolicy& policy, 
                                        real gamma, real epsilon);
-    void Compute(DiscreteMDP& mdp, real gamma, real epsilon, int T);
+    void Compute(DiscreteMDP& mdp_copy, real gamma, real epsilon, int T);
 };
 
 #endif

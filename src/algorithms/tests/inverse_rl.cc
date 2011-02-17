@@ -604,16 +604,46 @@ Statistics EvaluateAlgorithm (int episode_steps,
 			 episode, n_steps,
 			 statistics.ep_stats.size(),
 			 statistics.reward.size());
+    
     {
-        fprintf (stderr, "Trying to guess policy!\n");
+        fprintf(stderr, "Estimating optimal value function\n");
 
         DiscreteMDP* mdp = environment->getMDP(); 
         int n_states = mdp->GetNStates();
         int n_actions = mdp->GetNActions();
+
+        ValueIteration VI(mdp, gamma);
+        VI.ComputeStateValues(0.001);
+        
+        for (int i=0; i<n_states; ++i) {
+            printf ("%f ", VI.getValue(i));
+        }
+        printf ("# V_OPT\n");
+        
+        FixedDiscretePolicy optimal_policy(n_states, n_actions, VI.Q);
+        printf ("Optimal policy:\n---------------\n");
+        optimal_policy.Show();
+    }
+
+    {
+        fprintf (stderr, "Trying to guess policy!\n");
+
+        DiscreteMDP* mdp = environment->getMDP();
+        int n_states = mdp->GetNStates();
+        int n_actions = mdp->GetNActions();
         MWAL mwal(n_states, n_actions, gamma);
         mwal.CalculateFeatureCounts(demonstrations);
-        mwal.Compute(*mdp, gamma, 0.01, 100);
-        
+        mwal.Compute(*mdp, gamma, 0.001, 100);
+        printf ("MWAL policy:\n------------\n");
+        mwal.mean_policy.Show();
+        PolicyEvaluation evaluator(&mwal.mean_policy, mdp, gamma);
+        evaluator.ComputeStateValues(0.01);
+        for (int i=0; i<n_states; ++i) {
+            printf ("%f ", evaluator.getValue(i));
+        }
+        printf ("# V_MWAL\n");
+
+
     }
     
     return statistics;
