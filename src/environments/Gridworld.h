@@ -41,12 +41,9 @@ public:
 
     static void GetMazeDimensions(const char* fname);
     
-    virtual DiscreteMDP* getMDP() const
-    {
-        return mdp;
-    }
+    virtual DiscreteMDP* getMDP() const;
 
-    MapElement whatIs(int x, int y)
+    MapElement whatIs(int x, int y) const
     {
         if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
             return grid[x][y];
@@ -57,7 +54,7 @@ public:
     virtual void Reset();
     virtual bool Act(int action);
     void Show();
-    int getState(int x, int y)
+    int getState(int x, int y) const
     {
         if (x>=0 && y >=0 && x< (int) width && y < (int) height) {
             return x + y*width;

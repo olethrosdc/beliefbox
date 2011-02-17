@@ -12,11 +12,11 @@
 
 Vector Vector::Unity(int N_, enum BoundsCheckingStatus check)
 {
-    real* y = (real*) calloc(N_, sizeof(real));
+    Vector v(N_);
     for (int i=0; i<N_; ++i) {
-        y[i] = 1.0;
+        v(i) = 1.0;
     }
-    return Vector(N_, y);
+    return v;
 }
 
 

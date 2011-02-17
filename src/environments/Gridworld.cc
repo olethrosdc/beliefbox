@@ -71,10 +71,17 @@ Gridworld::Gridworld(const char* fname,
     }
     
     // set up the mdp
+    
+    mdp = getMDP();
+    Reset();
+}
 
-    mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
+DiscreteMDP* Gridworld::getMDP()  const
+{
+    DiscreteMDP* mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
 
     // set up rewards		
+#if 0
     SingularDistribution* step_reward = new SingularDistribution(step_value);
     SingularDistribution* pit_reward = new SingularDistribution(pit_value);
     SingularDistribution* zero_reward = new SingularDistribution(0.0);
@@ -90,11 +97,11 @@ Gridworld::Gridworld(const char* fname,
     rewards.push_back(pit_reward);
     rewards.push_back(zero_reward);
     rewards.push_back(goal_reward);
-    
+#endif
 
     // first the terminal state rewards
     for (uint a=0; a<n_actions; ++a) {
-        mdp->setRewardDistribution(terminal_state, a, zero_reward);
+        mdp->setFixedReward(terminal_state, a, 0.0);
     }
     // then the others.
     for (uint x=0; x<width; ++x) {
@@ -103,16 +110,16 @@ Gridworld::Gridworld(const char* fname,
                 int s = getState(x,y);
                 switch(whatIs(x,y)) {
                 case GRID:
-                    mdp->setRewardDistribution(s, a, step_reward);
+                    mdp->setFixedReward(s, a, step_value);
                     break;
                 case WALL:
-                    mdp->setRewardDistribution(s, a, zero_reward);
+                    mdp->setFixedReward(s, a, 0.0);
                     break;
                 case GOAL:
-                    mdp->setRewardDistribution(s, a, goal_reward);
+                    mdp->setFixedReward(s, a, goal_value);
                     break;
                 case PIT:
-                    mdp->setRewardDistribution(s, a, pit_reward);
+                    mdp->setFixedReward(s, a, pit_value);
                     break;
                 default:
                     std::cerr << "Unknown grid point type\n";
@@ -260,8 +267,7 @@ Gridworld::Gridworld(const char* fname,
     }
 
     mdp->Check();
-    Reset();
-    //mdp->ShowModel();
+    return mdp;
 }
 
 Gridworld::~Gridworld() {

@@ -24,10 +24,14 @@
 class RandomMDP : public DiscreteEnvironment
 {
 protected:
-    uint n_states;
-    uint n_actions;
-    uint terminal_state;
+    real randomness;
+    real step_value;
+    real pit_value;
+    real goal_value;
     RandomNumberGenerator* rng;
+    bool termination;
+    uint terminal_state;
+
 public:
     RandomMDP(uint n_actions,
               uint n_states,
@@ -40,10 +44,7 @@ public:
 
     virtual ~RandomMDP();
 
-    virtual DiscreteMDP* getMDP() const
-    {
-        return mdp;
-    }
+    virtual DiscreteMDP* getMDP() const;
 
     /// put the environment in its natural state
     virtual void Reset();
@@ -58,9 +59,6 @@ public:
     }
 protected:
     DiscreteMDP* mdp;
-    real** transitions;
-    real* P_data;
-    std::vector<Distribution*> rewards;
 };
 
 #endif

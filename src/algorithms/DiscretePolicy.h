@@ -52,15 +52,24 @@ public:
     virtual void Reset(int& start_state);
     virtual real getActionProbability(int& action);
     virtual real getActionProbability(int& state, int& action);
-    inline Vector getActionProbabilities(int& state) const
+    inline virtual Vector getActionProbabilities(int& state) const
     {
         return p[state];
     }
-    inline Vector* getActionProbabilitiesPtr(int& state)
+    inline virtual Vector* getActionProbabilitiesPtr(int& state)
     {
         return &p[state];
     }
-    void Show();    
+    virtual void Show();    
 };
+
+class FixedSoftmaxPolicy : public FixedDiscretePolicy
+{
+public:
+    std::vector<Vector> p;
+    FixedSoftmaxPolicy (Matrix& Q, real beta);
+    virtual ~FixedSoftmaxPolicy();
+};
+
 
 #endif
