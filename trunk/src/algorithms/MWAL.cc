@@ -63,14 +63,15 @@ Vector MWAL::CalculateFeatureExpectation(DiscreteMDP& mdp,
 }
 
 
-void MWAL::Compute(DiscreteMDP& mdp, real gamma, real epsilon, int T)
+void MWAL::Compute(DiscreteMDP& original_mdp, real gamma, real epsilon, int T)
 {
+    DiscreteMDP& mdp(original_mdp); // make a copy
     // Setup
     real beta = 1.0 / (1.0 + sqrt(2.0 * log((real) n_states) / (real) T));
     Vector W(Vector::Unity(n_states));
     std::vector<Distribution*> rewards(n_states);
     
-    FixedDiscretePolicy mean_policy(n_states, n_actions);
+
     for (int s=0; s<n_states; ++s) {
         for (int a=0; a<n_actions; ++a) {
             mean_policy.p[s](a) = 0;
@@ -78,7 +79,7 @@ void MWAL::Compute(DiscreteMDP& mdp, real gamma, real epsilon, int T)
     }
 
     
-    printf ("MU_E: "); mu_E.print(stdout);
+    //printf ("MU_E: "); mu_E.print(stdout);
     // main loop
     for (int t=0; t<T; ++t) {
         Vector w = W / W.Sum();
@@ -112,7 +113,7 @@ void MWAL::Compute(DiscreteMDP& mdp, real gamma, real epsilon, int T)
         }
     }
     
-    mean_policy.Show();
+    //mean_policy.Show();
     for (int s=0; s<n_states; ++s) {
         delete rewards[s];
     }

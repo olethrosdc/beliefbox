@@ -71,18 +71,23 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
     }
 }
 
+/** Partially copies an MDP.
+    
+    Since there is no way to clone the distribution pointers,
+    we actually create new, singular distributions instead.
+*/
 DiscreteMDP::MDP(const MDP<int,int>& mdp)
     : n_states(mdp.n_states),
       n_actions(mdp.n_actions)
 {
- N = n_states * n_actions;
-    
-    P.resize(N);//= new real* [N];
+    N = n_states * n_actions;
+
+    // Setup transitions
+    P.resize(N);
     P_data.resize(N*n_states);
     state = 0;
     
     next_states.resize(N);
-    
     for (int i=0; i<N; i++) {
         P[i] = &P_data[i*n_states];
         for (int j=0; j<n_states; j++) {
@@ -90,12 +95,16 @@ DiscreteMDP::MDP(const MDP<int,int>& mdp)
         }
     }
     
+    // Setup rewards
     ER.resize(N);
     R.resize(N);
-    for (int i=0; i<N; i++) {
-        R[i] = mdp.R[i];
-        ER[i] = mdp.ER[i];
+    for (int s=0; s<n_states; ++s) {
+        for (int a=0; a<n_actions; a++) {
+            real r = mdp.getExpectedReward(s, a);
+            addFixedReward(s, a, r);
+        }
     }
+
 }
 
 DiscreteMDP::~MDP()
@@ -142,7 +151,7 @@ void DiscreteMDP::ShowModel() const
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             int i = getID(s,a);
-            std::cout << "(" << s << "," << a << ") :";
+            std::cout << "(" << s << "," << a << ") -> ";
             for (int j=0; j<n_states; j++) {
                 real p = P[i][j];
                 if (p>0.01) {

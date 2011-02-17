@@ -60,15 +60,10 @@ ValueIteration::~ValueIteration()
 
 void ValueIteration::ComputeStateValues(real threshold, int max_iter)
 {
-        //Vector pV(V.size());
-        //Vector dV(V.size());
-    
+    int n_iter = 0;
     do {
         Delta = 0.0;
         for (int s=0; s<n_states; s++) {
-                //real v = V(s);
-            real Q_a_max = -RAND_MAX;
-            int a_max = 0;
             for (int a=0; a<n_actions; a++) {
                 real Q_sa = 0.0;
                 const DiscreteStateSet& next = mdp->getNextStates(s, a);
@@ -77,25 +72,23 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
                      ++i) {
                     int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
-                    real R = mdp->getExpectedReward(s, a) + gamma * V(s2) - baseline;
-                    Q_sa += P * R;
+                    real R = mdp->getExpectedReward(s, a) - baseline;
+                    Q_sa += P * (R + gamma * V(s2));
                 }
                 Q(s, a) = Q_sa;
-                if (a==0 || Q_a_max < Q_sa) {
-                    a_max = a;
-                    Q_a_max = Q_sa;
-                }
             }
-            V(s) = Q_a_max;
-            dV(s) = fabs(pV(s) - V(s));
+            V(s) = Max(Q.getRow(s));
+            Delta += fabs(V(s) - pV(s));
             pV(s) = V(s);
         }
-        Delta = dV.Norm(1.0);
+
         if (max_iter > 0) {
             max_iter--;
         }
+        n_iter++;
     } while(Delta >= threshold && max_iter != 0);
-	
+    printf("Exiting at d:%f, n:%d\n", Delta, n_iter);
+
 }
 
 
@@ -110,13 +103,12 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
 
 void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 {
-    int N = n_states * n_actions;
-
     int n_iter = 0;
     do {
         Delta = 0.0;
-        for (int s0=0; s0<n_states; s0++) {
-            int s = s0;
+        //for (int s0=0; s0<n_states; s0++) {
+        //int s = s0;
+        for (int s=0; s<n_states; s++) {
             for (int a=0; a<n_actions; a++) {
                 real sum = 0.0;
 
@@ -127,13 +119,15 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
                     int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
                     real R = mdp->getExpectedReward(s, a) - baseline;
-                    real Q_a_max = Max(Q.getRow(s2));
-                    sum += P*(R + gamma*Q_a_max);
+                    sum += P*(R + gamma*V(s2));
+                    //real Q_a_max = Max(Q.getRow(s2));
+                    //sum += P*(R + gamma*Q_a_max);
                 }
                 Q(s, a) = sum;
                 Delta += fabs(pQ(s, a) - sum);
                 pQ(s, a) = sum;
             }
+            V(s) = Max(Q.getRow(s));
         }
         if (max_iter > 0) {
             max_iter--;

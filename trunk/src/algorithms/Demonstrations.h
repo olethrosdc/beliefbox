@@ -24,7 +24,7 @@ public:
     }
     void NewEpisode()
     {
-        fprintf(stderr, "Adding Episode in Trajectories\n");
+        //fprintf(stderr, "Adding Episode in Trajectories\n");
         trajectories.push_back(Trajectory<S, A>());
         current_trajectory = &trajectories[trajectories.size() - 1];
     }

@@ -74,6 +74,10 @@ public:
     {
         return Q(s, a);
     }
+    Matrix getQMatrix()
+    {
+        return Q;
+    }
 };
 
 #endif
