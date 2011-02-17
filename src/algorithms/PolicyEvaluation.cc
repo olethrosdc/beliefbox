@@ -55,66 +55,30 @@ PolicyEvaluation::~PolicyEvaluation()
 */
 void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
 {
-    std::vector<real> dV(n_states);
-    std::vector<real> pV(n_states);
-
     
-    for (int s=0; s<n_states; s++) {
-        dV[s] = 0.0;
-    }
+    int n_iter = 0;
     do {
         Delta = 0.0;
         for (int s=0; s<n_states; s++) {
-            pV[s] =0.0;
+            real pV =0.0;
             //printf ("S: %d ", s);
             for (int a=0; a<n_actions; a++) {
                 real p_sa = policy->getActionProbability(s, a);
                 real V_sa = getValue(s, a);
                 //printf ("+ %f*%f \n", p_sa, V_sa);
-                pV[s] += p_sa * V_sa;
+                pV += p_sa * V_sa;
             }
             //printf (" =  %f\n", pV[s]);
-            dV[s] = fabs(V[s] - pV[s]);
-            V[s] = pV[s];
+            Delta += fabs(V[s] - pV);
+            V[s] = pV;
         }
-	
-        Delta = L1Norm(dV);
-			
+        
         if (max_iter > 0) {
             max_iter--;
         }
-    } while((Delta >= threshold)  && max_iter);
-    
-    /*
-      do {
-        Delta = 0.0;
-        for (int s=0; s<n_states; s++) {
-            real Vs = 0.0;
-            for (int a=0; a<n_actions; a++) {
-                real Q_sa = 0.0;
-                real p_sa = policy->getActionProbability(s, a);
-
-                DiscreteStateSet next = mdp->getNextStates(s, a);
-                for (DiscreteStateSet::iterator i=next.begin();
-                     i!=next.end();
-                     ++i) {
-                    int s2 = *i;
-                    real P = mdp->getTransitionProbability(s, a, s2);
-                    real R = mdp->getExpectedReward(s, a) + gamma * V[s2] - baseline;
-                    Q_sa += P * R;
-                }
-                Vs += p_sa * Q_sa;
-            }
-            V[s] = Vs;//Q_a_max;
-            dV[s] = pV[s] - V[s];
-            pV[s] = V[s];
-        }
-        Delta = Max(dV) - Min(dV);
-        max_iter--;
-
-    } while(Delta >= threshold && max_iter > 0);
-    */
-
+        n_iter++;
+    } while((Delta >= threshold)  && max_iter != 0);
+    //printf ("Exiting at delta = %f, after %d iter\n", Delta, n_iter);
 }
 
 real PolicyEvaluation::getValue (int state, int action) const

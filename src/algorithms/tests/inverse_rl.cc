@@ -16,7 +16,7 @@
 #include "ValueIteration.h"
 #include "RandomMDP.h"
 #include "Gridworld.h"
-//#include "DiscreteChain.h"
+#include "DiscreteChain.h"
 #include "OneDMaze.h"
 #include "InventoryManagement.h"
 #include "DiscretePolicy.h"
@@ -272,8 +272,8 @@ int main (int argc, char** argv)
             MountainCar continuous_mountain_car;
             continuous_mountain_car.setRandomness(randomness);
             environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,  grid_size);
-            //        } else if (!strcmp(environment_name, "Chain")) { 
-            //environment = chain;
+        } else if (!strcmp(environment_name, "Chain")) { 
+            environment = new DiscreteChain (n_states);
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
@@ -591,7 +591,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		//std::cout << "t:" << current_time << " s:" << state << " r:" << reward << " a:" << action << std::endl;
 		action_ok = environment->Act(action);
 		current_time++;
-        if (step > n_steps / 2) {
+        if (step > n_steps / 2 || episode > n_episodes / 2) {
             demonstrations.Observe(state, action);
         }
 
@@ -604,8 +604,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
 	}
 	fprintf (stderr, "Exiting after %d episodes, %d steps (%d %d)\n",
 			 episode, n_steps,
-			 statistics.ep_stats.size(),
-			 statistics.reward.size());
+			 (int) statistics.ep_stats.size(),
+			 (int) statistics.reward.size());
     
     {
 
@@ -614,16 +614,16 @@ Statistics EvaluateAlgorithm (int episode_steps,
     {
         fprintf (stderr, "Trying to guess policy!\n");
 
-        DiscreteMDP* mdp = environment->getMDP();
-        int n_states = mdp->GetNStates();
-        int n_actions = mdp->GetNActions();
+        DiscreteMDP* computation_mdp = environment->getMDP();
+        int n_states = computation_mdp->GetNStates();
+        int n_actions = computation_mdp->GetNActions();
         MWAL mwal(n_states, n_actions, gamma);
         mwal.CalculateFeatureCounts(demonstrations);
-        mwal.Compute(*mdp, gamma, 0.001, 100);
+        mwal.Compute(*computation_mdp, gamma, 0.001, 100);
 
-        delete mdp;
+        delete computation_mdp;
         
-        mdp = environment->getMDP();
+        DiscreteMDP* mdp = environment->getMDP();
         fprintf(stderr, "Estimating optimal value function\n");
         ValueIteration VI(mdp, gamma);
         VI.ComputeStateValues(0.001);
@@ -638,11 +638,11 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_OPT\n");
 
-        FixedSoftmaxPolicy softmax_policy(VI.Q, 0.00001);
+        FixedSoftmaxPolicy softmax_policy(VI.Q, 1.0);
         printf ("Softmax policy:\n---------------\n");
         softmax_policy.Show();
         PolicyEvaluation smax_evaluator(&softmax_policy, mdp, gamma);
-        smax_evaluator.ComputeStateValues(0.01);
+        smax_evaluator.ComputeStateValues(0.001);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", smax_evaluator.getValue(i));
         }
@@ -651,10 +651,10 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
         printf ("MWAL policy:\n------------\n");
         mwal.mean_policy.Show();
-        PolicyEvaluation evaluator(&mwal.mean_policy, mdp, gamma);
-        evaluator.ComputeStateValues(0.01);
+        PolicyEvaluation mwal_evaluator(&mwal.mean_policy, mdp, gamma);
+        mwal_evaluator.ComputeStateValues(0.001);
         for (int i=0; i<n_states; ++i) {
-            printf ("%f ", evaluator.getValue(i));
+            printf ("%f ", mwal_evaluator.getValue(i));
         }
         printf ("# V_MWAL\n");
 
@@ -669,7 +669,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_IMIT\n");
 
-
+        
         delete mdp;
         
     }
