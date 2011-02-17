@@ -218,9 +218,7 @@ real Vector::L1Norm() const
     real sum = 0.0;
     for (int i=0; i<n; ++i) {
         sum += fabs(x[i]);
-        printf ("%f ", sum);
     }
-    printf ("# SUM\n");
     return sum;
 }
 

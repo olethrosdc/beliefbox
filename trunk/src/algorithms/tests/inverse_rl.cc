@@ -669,7 +669,10 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_IMIT\n");
 
-        
+        printf ("%f %f %f\n", 
+                (VI.V - smax_evaluator.V).L1Norm(),
+                (VI.V - imitating_evaluator.V).L1Norm(),
+                (VI.V - mwal_evaluator.V).L1Norm());
         delete mdp;
         
     }
