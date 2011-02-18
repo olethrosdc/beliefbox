@@ -64,6 +64,8 @@ struct Statistics
     std::vector<EpisodeStatistics> ep_stats;
     std::vector<real> reward;
 	std::vector<int> n_runs;
+    Vector DV;
+    Matrix DV_total;
 };
 
 Statistics EvaluateAlgorithm (int episode_steps,
@@ -245,6 +247,8 @@ int main (int argc, char** argv)
 		statistics.reward[i] = 0;
 		statistics.n_runs[i] = 0;
 	}
+    statistics.DV.Resize(3);
+    statistics.DV_total.Resize(n_runs, 3);
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
@@ -425,6 +429,9 @@ int main (int argc, char** argv)
             statistics.reward[i] += run_statistics.reward[i];
 			statistics.n_runs[i]++;
         }
+        statistics.DV += run_statistics.DV;
+        statistics.DV_total.setRow(run, run_statistics.DV);
+        
         if (model) {
 #if 0
             if (discrete_mdp) {
@@ -504,7 +511,16 @@ int main (int argc, char** argv)
 				  << statistics.reward[i] << " # INST_PAYOFF"
                   << std::endl;
     }
-
+    
+    statistics.DV /= (real) n_runs;
+    statistics.DV.print(stdout);
+    Vector DV_var(3);
+    for (uint i=0; i<n_runs; ++i) {
+        Vector x = (statistics.DV_total.getRow(i) - statistics.DV);
+        DV_var += x * x;
+    }
+    DV_var /= (real) n_runs;
+    DV_var.print(stdout);
     std::cout << "Done" << std::endl;
 
 
@@ -614,16 +630,18 @@ Statistics EvaluateAlgorithm (int episode_steps,
     {
         fprintf (stderr, "Trying to guess policy!\n");
 
+
+        
+        DiscreteMDP* mdp = environment->getMDP();
+        int n_states = mdp->GetNStates();
+        int n_actions = mdp->GetNActions();
+
         DiscreteMDP* computation_mdp = environment->getMDP();
-        int n_states = computation_mdp->GetNStates();
-        int n_actions = computation_mdp->GetNActions();
         MWAL mwal(n_states, n_actions, gamma);
         mwal.CalculateFeatureCounts(demonstrations);
         mwal.Compute(*computation_mdp, gamma, 0.001, 100);
-
         delete computation_mdp;
-        
-        DiscreteMDP* mdp = environment->getMDP();
+
         fprintf(stderr, "Estimating optimal value function\n");
         ValueIteration VI(mdp, gamma);
         VI.ComputeStateValues(0.001);
@@ -649,6 +667,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("# V_SMAX\n");
 
 
+
         printf ("MWAL policy:\n------------\n");
         mwal.mean_policy.Show();
         PolicyEvaluation mwal_evaluator(&mwal.mean_policy, mdp, gamma);
@@ -669,10 +688,15 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_IMIT\n");
 
-        printf ("%f %f %f\n", 
-                (VI.V - smax_evaluator.V).L1Norm(),
-                (VI.V - imitating_evaluator.V).L1Norm(),
-                (VI.V - mwal_evaluator.V).L1Norm());
+        statistics.DV.Resize(3);
+        statistics.DV(0) = (VI.V - smax_evaluator.V).L1Norm();
+        statistics.DV(1) = (VI.V - imitating_evaluator.V).L1Norm();
+        statistics.DV(2) = (VI.V - mwal_evaluator.V).L1Norm();
+        printf ("%f %f %f # DV run\n", 
+                statistics.DV(0),
+                statistics.DV(1),
+                statistics.DV(2));
+        
         delete mdp;
         
     }
