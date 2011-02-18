@@ -17,6 +17,7 @@
 #include "RandomMDP.h"
 #include "Gridworld.h"
 #include "DiscreteChain.h"
+#include "OptimisticTask.h"
 #include "OneDMaze.h"
 #include "InventoryManagement.h"
 #include "DiscretePolicy.h"
@@ -252,7 +253,6 @@ int main (int argc, char** argv)
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
-        //DiscreteChain* chain = new DiscreteChain (n_states);
 
         Gridworld* gridworld = NULL;
         
@@ -278,6 +278,8 @@ int main (int argc, char** argv)
             environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,  grid_size);
         } else if (!strcmp(environment_name, "Chain")) { 
             environment = new DiscreteChain (n_states);
+        } else if (!strcmp(environment_name, "Optimistic")) { 
+            environment = new OptimisticTask (0.1, 0.01);
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
