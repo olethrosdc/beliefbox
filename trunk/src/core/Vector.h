@@ -92,6 +92,7 @@ public:
     Vector& operator*= (const real& rhs);
     Vector& operator/= (const real& rhs);
     void print(FILE* f) const;
+    void printf(FILE* f) const;
 private:
     int maxN;
     enum BoundsCheckingStatus checking_bounds;

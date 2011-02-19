@@ -111,6 +111,19 @@ FixedDiscretePolicy::~FixedDiscretePolicy()
 {
 }
 
+
+FixedDiscretePolicy FixedDiscretePolicy::MakeGreedyPolicy()
+{
+    int n_states = p.size();
+    int n_actions = p[0].Size();
+    Matrix Q(n_states, n_actions);
+    for (int s=0; s<n_states; s++) {
+        for (int a=0; a<n_actions; a++) {
+            Q(s,a) =getActionProbability(s,a);
+        }
+    }
+    return FixedDiscretePolicy(n_states, n_actions, Q);
+}
 int FixedDiscretePolicy::SelectAction()
 {
     
@@ -155,7 +168,7 @@ real FixedDiscretePolicy::getActionProbability(int& state, int& action)
 
 void FixedDiscretePolicy::Show()
 {
-    for (int i=0; i != p.size(); ++i) {
+    for (int i=0; i != (int) p.size(); ++i) {
         //printf ("%d ", i);
         for (int j=0; j<p[i].Size(); ++j) {
             printf ("%f ", getActionProbability(i, j));

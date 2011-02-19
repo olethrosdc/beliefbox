@@ -81,6 +81,9 @@ void MWAL::Compute(DiscreteMDP& original_mdp, real gamma, real epsilon, int T)
     
     //printf ("MU_E: "); mu_E.print(stdout);
     // main loop
+    if (T < 0) {
+        T = (int) (1.0 / epsilon);
+    }
     for (int t=0; t<T; ++t) {
         Vector w = W / W.Sum();
         for (int s=0; s<n_states; ++s) {
