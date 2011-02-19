@@ -60,6 +60,8 @@ struct EpisodeStatistics
     }
 };
 
+#define N_COMPARISONS 4
+
 struct Statistics
 {
     std::vector<EpisodeStatistics> ep_stats;
@@ -72,19 +74,21 @@ struct Statistics
 Statistics EvaluateAlgorithm (int episode_steps,
 							  int n_episodes,
 							  uint n_steps,
-                             OnlineAlgorithm<int,int>* algorithm,
-                             DiscreteEnvironment* environment,
-                             real gamma);
-static const char* const environment_names_list = "{MountainCar, ContextBandit, RandomMDP, Gridworld}";
+                              OnlineAlgorithm<int,int>* algorithm,
+                              DiscreteEnvironment* environment,
+                              real gamma,
+                              int iterations);
+static const char* const environment_names_list = "{MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}";
 
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
     --algorithm:   {QLearning, Model, Sarsa, Sampling}\n\
-    --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld}\n\
+    --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}\n\
     --n_states:    number of states (usually there is no need to specify it)\n\
     --n_actions:   number of actions (usually there is no need to specify it)\n\
     --gamma:       reward discounting in [0,1]\n\
     --lambda:      eligibility trace parameter (for some algorithms)\n\
+    --iterations:  number of iterations (for some algorithms)\n\
     --randomness:  environment randomness\n\
     --n_runs:      maximum number of runs\n\
     --n_episodes:  maximum number of episodes (ignored if < 0)\n\
@@ -102,6 +106,7 @@ int main (int argc, char** argv)
     int n_states = 4;
     real gamma = 0.9;
     real lambda = 0.9;
+    int iterations = 1000;
     real alpha = 0.1;
     real randomness = 0.01;
     real pit_value = -1.0;
@@ -145,6 +150,7 @@ int main (int argc, char** argv)
                 {"grid_size", required_argument, 0, 0}, //14
                 {"randomness", required_argument, 0, 0}, //15
                 {"episode_steps", required_argument, 0, 0}, //16
+                {"iterations", required_argument, 0, 0}, //17
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -178,6 +184,7 @@ int main (int argc, char** argv)
                 case 14: grid_size = atoi(optarg); break;
                 case 15: randomness = atof(optarg); break;
                 case 16: episode_steps = atoi(optarg); break;
+                case 17: iterations = atoi(optarg); break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -248,8 +255,8 @@ int main (int argc, char** argv)
 		statistics.reward[i] = 0;
 		statistics.n_runs[i] = 0;
 	}
-    statistics.DV.Resize(3);
-    statistics.DV_total.Resize(n_runs, 3);
+    statistics.DV.Resize(N_COMPARISONS);
+    statistics.DV_total.Resize(n_runs, N_COMPARISONS);
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
@@ -419,7 +426,8 @@ int main (int argc, char** argv)
 													  n_steps,
 													  algorithm,
 													  environment,
-													  gamma);
+													  gamma,
+                                                      iterations);
         for (uint i=0; i<run_statistics.ep_stats.size(); ++i) {
             statistics.ep_stats[i].total_reward += run_statistics.ep_stats[i].total_reward;
             statistics.ep_stats[i].discounted_reward += run_statistics.ep_stats[i].discounted_reward;
@@ -474,7 +482,7 @@ int main (int argc, char** argv)
                     hV[s] *= inv_n;
                     hU[s] *= inv_n;
                     printf ("V[%d] = %f %f %f | %f %f\n",
-                    s, MPI.getValue(s), MPE.getValue(s), MVI.getValue(s), hV[s], hU[s]);
+                            s, MPI.getValue(s), MPE.getValue(s), MVI.getValue(s), hV[s], hU[s]);
                     //printf ("%f %f #hV\n", MVI.getValue(s) hU[s]);
 
                 }
@@ -515,14 +523,14 @@ int main (int argc, char** argv)
     }
     
     statistics.DV /= (real) n_runs;
-    statistics.DV.print(stdout);
-    Vector DV_var(3);
+    statistics.DV.printf(stdout); printf("# DV_MEAN\n");
+    Vector DV_var(N_COMPARISONS);
     for (uint i=0; i<n_runs; ++i) {
         Vector x = (statistics.DV_total.getRow(i) - statistics.DV);
         DV_var += x * x;
     }
     DV_var /= (real) n_runs;
-    DV_var.print(stdout);
+    DV_var.printf(stdout); printf("# DV_VAR\n");
     std::cout << "Done" << std::endl;
 
 
@@ -542,7 +550,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
 							  uint n_steps,
 							  OnlineAlgorithm<int, int>* algorithm,
 							  DiscreteEnvironment* environment,
-							  real gamma)
+							  real gamma,
+                              int iterations)
 {
     std:: cout << "evaluating..." << environment->Name() << std::endl;
     
@@ -579,8 +588,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
             }
 			episode++;
 			if (n_episodes >= 0 && episode >= n_episodes) {
-				fprintf (stderr, "Breaking after %d episodes,  %d steps\n",
-						 episode, step);
+				//fprintf (stderr, "Breaking after %d episodes,  %d steps\n",
+                //episode, step);
 				break;
 			} else {
 				statistics.ep_stats.resize(episode + 1);
@@ -620,17 +629,17 @@ Statistics EvaluateAlgorithm (int episode_steps,
 	if ((int) statistics.ep_stats.size() != n_episodes) {
 		statistics.ep_stats.resize(statistics.ep_stats.size() - 1);
 	}
-	fprintf (stderr, "Exiting after %d episodes, %d steps (%d %d)\n",
-			 episode, n_steps,
-			 (int) statistics.ep_stats.size(),
-			 (int) statistics.reward.size());
+	//fprintf (stderr, "Exiting after %d episodes, %d steps (%d %d)\n",
+    //episode, n_steps,
+	//		 (int) statistics.ep_stats.size(),
+    //(int) statistics.reward.size());
     
     {
 
     }
 
     {
-        fprintf (stderr, "Trying to guess policy!\n");
+        //fprintf (stderr, "Trying to guess policy!\n");
 
 
         
@@ -641,10 +650,10 @@ Statistics EvaluateAlgorithm (int episode_steps,
         DiscreteMDP* computation_mdp = environment->getMDP();
         MWAL mwal(n_states, n_actions, gamma);
         mwal.CalculateFeatureCounts(demonstrations);
-        mwal.Compute(*computation_mdp, gamma, 0.001, 100);
+        mwal.Compute(*computation_mdp, gamma, 0.001, iterations);
         delete computation_mdp;
 
-        fprintf(stderr, "Estimating optimal value function\n");
+        //fprintf(stderr, "Estimating optimal value function\n");
         ValueIteration VI(mdp, gamma);
         VI.ComputeStateValues(0.001);
         printf ("Optimal Q function:\n---------------\n");
@@ -679,6 +688,14 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_MWAL\n");
 
+        FixedDiscretePolicy mwal_greedy = mwal.mean_policy.MakeGreedyPolicy();
+        PolicyEvaluation mwal_greedy_evaluator(&mwal_greedy, mdp, gamma);
+        mwal_greedy_evaluator.ComputeStateValues(0.001);
+        for (int i=0; i<n_states; ++i) {
+            printf ("%f ", mwal_greedy_evaluator.getValue(i));
+        }
+        printf ("# V_MWGR\n");
+
         FixedDiscretePolicy imitating_policy(n_states, n_actions,
                                              demonstrations);
         printf ("imitator policy:\n------------\n");
@@ -690,14 +707,16 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_IMIT\n");
 
-        statistics.DV.Resize(3);
+        statistics.DV.Resize(N_COMPARISONS);
         statistics.DV(0) = (VI.V - smax_evaluator.V).L1Norm();
         statistics.DV(1) = (VI.V - imitating_evaluator.V).L1Norm();
         statistics.DV(2) = (VI.V - mwal_evaluator.V).L1Norm();
-        printf ("%f %f %f # DV run\n", 
+        statistics.DV(3) = (VI.V - mwal_greedy_evaluator.V).L1Norm();
+        printf ("%f %f %f %f # DV run\n", 
                 statistics.DV(0),
                 statistics.DV(1),
-                statistics.DV(2));
+                statistics.DV(2),
+                statistics.DV(3));
         
         delete mdp;
         

@@ -63,7 +63,7 @@ public:
         return &p[state];
     }
     virtual void Show();    
-
+    FixedDiscretePolicy MakeGreedyPolicy();
 };
 
 class FixedSoftmaxPolicy : public FixedDiscretePolicy

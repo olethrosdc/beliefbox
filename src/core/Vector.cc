@@ -101,6 +101,7 @@ Vector::Vector (const Vector& rhs)
     checking_bounds = rhs.checking_bounds;
 }
 
+/// Destructor
 Vector::~Vector()
 {
     if (x) {
@@ -108,12 +109,19 @@ Vector::~Vector()
     }
 }
 
+/// Print vector out at file f, make a new line
 void Vector::print(FILE* f) const
+{
+    printf(f);
+    fprintf(f, "\n");
+}
+
+/// Print a vector out without newline.
+void Vector::printf(FILE* f) const
 {
     for (int i=0; i<n; ++i) {
         fprintf (f, "%f ", x[i]);
     }
-    fprintf(f, "\n");
 }
 
 

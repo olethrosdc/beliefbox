@@ -14,7 +14,7 @@ public:
     Demonstrations() 
         : current_trajectory(NULL)
     {
-        fprintf(stderr, "Creating Demonstrators\n");
+        //fprintf(stderr, "Creating Demonstrators\n");
         NewEpisode();
     }
     void Observe(S s, A a)
