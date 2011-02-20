@@ -59,7 +59,7 @@ public:
     Vector CalculateFeatureExpectation(DiscreteMDP& mdp, 
                                        FixedDiscretePolicy& policy, 
                                        real gamma, real epsilon);
-    void Compute(DiscreteMDP& mdp_copy, real gamma, real epsilon, int T);
+    void Compute(DiscreteMDP& mdp_copy, real gamma, real epsilon, int T = -1);
 };
 
 #endif

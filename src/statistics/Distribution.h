@@ -45,6 +45,7 @@ public:
     virtual real pdf(Object& x) const =0;
 };
 
+/// Vector distribtuions
 typedef AbstractDistribution<Vector> VectorDistribution;
 
 /// Probability distribution
@@ -85,8 +86,8 @@ public:
     virtual void calculatePosterior(real x) = 0; ///< calculate posterior from an observation
 };
 
-/// \brief Parametric distribution.
-/// For distribution simply defined via moments-related parameters.
+/// \brief Singular distribution.
+/// Special case.
 class SingularDistribution : public ParametricDistribution
 {
 public:

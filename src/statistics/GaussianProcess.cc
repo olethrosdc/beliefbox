@@ -1,6 +1,5 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,17 +12,16 @@
 #include "GaussianProcess.h"
 
 /// Create a new GP with observations in R^d
-GaussianProcess::GaussianProcess(int d_) : N(0), d(d_)
+GaussianProcess::GaussianProcess(Matrix& Sigma_p_,
+                                 real noise_variance_)
+    : Sigma_p(Sigma_p_),
+      noise_variance(noise_variance_),
+      X2(Matrix::Null(Sigma_p.Rows(), Sigma_p.Columns()))
 {
+    Accuracy = Sigma_p.Inverse();
+    A = Accuracy;
 }
-
-/// Create a new GP with a set of initial kernels k
-GaussianProcess::GaussianProcess(std::vector<Vector> k) : kernels(k)
-{
-    d = k[0].Size();
-    N = k.size();
-}
-
+         
 GaussianProcess::~GaussianProcess()
 {
 }
@@ -32,12 +30,20 @@ Vector GaussianProcess::generate()
 {
     //return Vector();
 }    
-
-real GaussianProcess::pdf(Vector x)
+         
+real GaussianProcess::pdf(Vector& x, real y)
 {
     return 0.0;
 }
 
-void GaussianProcess::update(Vector* x)
+void GaussianProcess::Observe(Vector& x, real y)
 {
+    // Update total covariance
+    Matrix V;
+    Product(&x, &x, &V);
+    X2 += V;
+
+    A = X2 / noise_variance + Accuracy;
+    Matrix inv_A = A.Inverse();
+    //mean = inv_A * X;
 }
