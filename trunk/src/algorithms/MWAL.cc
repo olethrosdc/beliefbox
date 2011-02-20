@@ -82,7 +82,8 @@ void MWAL::Compute(DiscreteMDP& original_mdp, real gamma, real epsilon, int T)
     //printf ("MU_E: "); mu_E.print(stdout);
     // main loop
     if (T < 0) {
-        T = (int) (1.0 / epsilon);
+        T = (int) (1.0 / (epsilon * (1.0 - gamma)));
+        T *= T;
     }
     for (int t=0; t<T; ++t) {
         Vector w = W / W.Sum();
@@ -99,12 +100,20 @@ void MWAL::Compute(DiscreteMDP& original_mdp, real gamma, real epsilon, int T)
         Vector mu_t = CalculateFeatureExpectation(mdp, policy, gamma, epsilon);
         Vector G = ((mu_t - mu_E) * (1.0 - gamma) + 2.0) / 4;
         W *= exp(G * log(beta));
-        
+
+        real delta = 0;
         for (int s=0; s<n_states; ++s) {
             for (int a=0; a<n_actions; ++a) {
-                mean_policy.p[s](a) += policy.getActionProbability(s, a);
+                real p_sa = policy.getActionProbability(s, a);
+                delta += fabs(mean_policy.p[s](a) / (real) (1 + t) - p_sa);
+                mean_policy.p[s](a) += p_sa;
             }
         }
+        if (delta < epsilon) {
+            printf ("Breaking at %d instead of %d\n", t, T);
+            T = t;
+        }
+        //printf ("delta: %f\n", delta);
         //printf ("MU_t: "); mu_t.print(stdout);
         //policy.Show();
     }

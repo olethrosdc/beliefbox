@@ -14,26 +14,31 @@
 #define GAUSSIAN_PROCESS_H
 
 #include "Vector.h"
+#include "Matrix.h"
 #include "Distribution.h"
 #include <vector>
 
-/** Gaussian process. Not implemented!
+/** Gaussian process. 
     
-    TODO Implement gaussian process
+    This is a {\em conditional} distribution.
  */
-class GaussianProcess : public VectorDistribution
+class GaussianProcess
 {
 protected:
-    std::vector<Vector> kernels; ///< list of kernels
-    int N; ///< number of kernels
-    int d; ///< number of dimensions
+    Matrix Sigma_p;
+    Matrix Accuracy;
+    Matrix A;
+    real noise_variance;
+    Matrix X2; ///< observation co-variance.
+    Vector mean;
+    Matrix covariance;
 public:
-    GaussianProcess(int d_);
-    GaussianProcess(std::vector<Vector> k);
+    GaussianProcess(Matrix& Sigma_p_,
+                    real noise_variance_);
     virtual ~GaussianProcess();
     virtual Vector generate();
-    virtual real pdf(Vector x);
-    virtual void update(Vector* x);
+    virtual real pdf(Vector& x, real y);
+    virtual void Observe(Vector& x, real y);
 };
 
 #endif
