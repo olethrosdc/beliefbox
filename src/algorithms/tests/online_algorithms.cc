@@ -22,6 +22,7 @@
 #include "Environment.h"
 #include "ExplorationPolicy.h"
 #include "Sarsa.h"
+#include "SarsaDirichlet.h"
 #include "QLearning.h"
 #include "QLearningDirichlet.h"
 #include "ModelBasedRL.h"
@@ -239,32 +240,27 @@ int main (int argc, char** argv)
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
         DiscreteEnvironment* environment = NULL;
-        RandomMDP* random_mdp = new RandomMDP (n_actions,
-                                               n_states,
-                                               randomness,
-                                               step_value,
-                                               pit_value,
-                                               goal_value,
-                                               rng,
-                                               false);
-        OneDMaze* one_d_maze = new OneDMaze(n_states, rng);
-        Gridworld* gridworld= new Gridworld(maze_name, randomness);
-        ContextBandit* context_bandit = new ContextBandit(n_actions, 3, 4, rng);
-        MountainCar continuous_mountain_car;
-		continuous_mountain_car.setRandomness(randomness);
-        DiscretisedEnvironment<MountainCar>* mountain_car
-            = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,
-                                                       grid_size);
         if (!strcmp(environment_name, "RandomMDP")) { 
-            environment = random_mdp;
+            environment = new RandomMDP (n_actions,
+                                         n_states,
+                                         randomness,
+                                         step_value,
+                                         pit_value,
+                                         goal_value,
+                                         rng,
+                                         false);
         } else if (!strcmp(environment_name, "Gridworld")) { 
-            environment = gridworld;
+            environment = new Gridworld(maze_name, randomness);
         } else if (!strcmp(environment_name, "ContextBandit")) { 
-            environment = context_bandit;
+            environment = new ContextBandit(n_actions, 3, 4, rng);
         } else if (!strcmp(environment_name, "OneDMaze")) { 
-            environment = one_d_maze;
+            environment = new OneDMaze(n_states, rng);
         } else if (!strcmp(environment_name, "MountainCar")) { 
-            environment = mountain_car;
+            MountainCar continuous_mountain_car;
+            continuous_mountain_car.setRandomness(randomness);
+            environment = 
+                new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,
+                                                         grid_size);
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
@@ -318,6 +314,13 @@ int main (int argc, char** argv)
                                                lambda,
                                                alpha,
                                                exploration_policy);
+        } else if (!strcmp(algorithm_name, "SarsaDirichlet")) { 
+            algorithm = new SarsaDirichlet(n_states,
+                                               n_actions,
+                                               gamma,
+                                               lambda,
+                                               alpha,
+                                               exploration_policy);
         } else if (!strcmp(algorithm_name, "Model")) {
             discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states);
             model= (MDPModel*) discrete_mdp;
@@ -360,16 +363,9 @@ int main (int argc, char** argv)
                                          false);
         } else if (!strcmp(algorithm_name, "Collection")) {
             DiscreteMDPCollection* collection = NULL;
-            if (environment == gridworld) {
-                collection = new DiscreteMDPCollection(*gridworld, 
-                                                       4,
-                                                       n_states,
-                                                       n_actions);
-            } else {
-                collection =  new DiscreteMDPCollection(2,
-                                                        n_states,
-                                                        n_actions);
-            }
+            collection =  new DiscreteMDPCollection(2,
+                                                    n_states,
+                                                    n_actions);
             model= (MDPModel*) collection;
             
             algorithm = new ModelCollectionRL(n_states,
@@ -467,12 +463,7 @@ int main (int argc, char** argv)
             delete model;
             model = NULL;
         }
-        //delete environment;
-        delete gridworld;
-        delete one_d_maze;
-        delete mountain_car;
-        delete random_mdp;
-        delete context_bandit;
+        delete environment;
         delete algorithm;
         delete exploration_policy;
     }
