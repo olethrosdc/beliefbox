@@ -760,7 +760,7 @@ Matrix Matrix::Inverse(Matrix& L, Matrix& U)
     Matrix B = Unity(n,n);
 
 
-    // Forward substitution
+    // Forward substitution - find Y : LY=B;
     Matrix Y(n, n);
     for (int c=0; c<n; ++c) {
         Y(0,c) = B(0, c) / L(0,0);
@@ -774,7 +774,6 @@ Matrix Matrix::Inverse(Matrix& L, Matrix& U)
     }
 
     // Backward substitution
-    // Forward substitution
     Matrix X(n, n);
     for (int c=0; c<n; ++c) {
         X(n - 1, c) = Y(n - 1, c) / U(n - 1, n - 1);
@@ -790,7 +789,25 @@ Matrix Matrix::Inverse(Matrix& L, Matrix& U)
     return X;
 }
 
+/// Forward substitution - find Y : LY=B;
+/// 
+/// Implementation for square matrices only.
+Matrix forward_substitution(const Matrix& L, const Matrix& B)
+{
+    int n = L.Rows();
 
+    Matrix Y(n, n);
+    for (int c=0; c<n; ++c) {
+        Y(0,c) = B(0, c) / L(0,0);
+        for (int i=1; i<n; ++i) {
+            real s = 0;
+            for (int j=0; j<i; ++j) {
+                s += Y(j,c) * L(i,j);
+            }
+            Y(i,c) = (B(i, c) - s) / L(i,i);
+        }
+    }
+}
 
 /// Get the sum of column c
 real Matrix::ColumnSum(int c)
