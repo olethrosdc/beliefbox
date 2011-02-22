@@ -39,6 +39,7 @@ public:
     virtual Vector generate();
     virtual real pdf(Vector& x, real y);
     virtual void Observe(Vector& x, real y);
+    virtual void Observe(Matrix& x, Vector& y);
 };
 
 #endif

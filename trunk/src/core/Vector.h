@@ -72,6 +72,7 @@ public:
     real Norm(real p) const;
     real L1Norm() const;
     real L2Norm() const;
+    real SquareNorm() const;
     const bool operator< (const Vector& rhs) const;
     const bool operator> (const Vector& rhs) const;
     const bool operator== (const Vector& rhs) const;

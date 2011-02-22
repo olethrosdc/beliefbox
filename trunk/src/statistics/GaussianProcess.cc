@@ -36,6 +36,7 @@ real GaussianProcess::pdf(Vector& x, real y)
     return 0.0;
 }
 
+/// This implements weight space view of a  GP
 void GaussianProcess::Observe(Vector& x, real y)
 {
     // Update total covariance
@@ -46,4 +47,28 @@ void GaussianProcess::Observe(Vector& x, real y)
     A = X2 / noise_variance + Accuracy;
     Matrix inv_A = A.Inverse();
     //mean = inv_A * X;
+}
+
+
+/// This implements functon space view of a GP
+///
+/// X has a number of columns equal to the amount of data.
+void GaussianProcess::Observe(Matrix& X, Vector& y)
+{
+    int N = X.Columns();
+    Matrix K(N, N);
+    for (int i=0; i<N; ++i) {
+        Vector S = K.getColumn(i);
+        for (int j=0; j<N; ++j) {
+            real delta = (S - K.getColumn(j)).SquareNorm();
+            K(i,j) = exp(-0.5 * delta);
+            if (i==j) {
+                K(i,j) += noise_variance;
+            }
+        }
+    }
+    
+    Matrix L = K.Cholesky();
+    
+
 }
