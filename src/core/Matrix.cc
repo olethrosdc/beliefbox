@@ -696,7 +696,7 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
 Matrix Matrix::Cholesky(real epsilon)
 {
     int n = Rows();
-    assert (n == Columns);
+    assert (n == Columns());
     Matrix chol(n, n);
     Cholesky(chol, epsilon);
     return chol;
@@ -715,7 +715,7 @@ Matrix Matrix::Cholesky(real epsilon)
 void Matrix::Cholesky(Matrix& chol, real epsilon)
 {
     int n = Rows();
-    assert (n == Columns);
+    assert (n == Columns());
     for (int i=0; i<n; i++) {
         // do diagonal first
         chol(i,i) = (*this)(i,i) + epsilon;
@@ -739,24 +739,23 @@ void Matrix::Cholesky(Matrix& chol, real epsilon)
     }
 }
 
-/** Matrix inversion using the LU decomposition.
+/** Matrix inversion using a factorised matrix A = LU.
     
-    First call LUDecomposition with accuracy epsilon to obtain $\fL,
-    U\f$ such that \f$A = LU\f$.  Then solve for \f$X = A^{-1}\f$:
+    Here L is lower triangluar and U is an upper triangular matrix.
+
+    Given \f$A = LU\f$,  solve for \f$X = A^{-1}\f$: 
     \f[
     LUX = I,
     \f]
     by dynamic programming.
  */
-Matrix Matrix::Inverse(real epsilon)
+Matrix Matrix::Inverse(Matrix& L, Matrix& U)
 {
-    real determinant;
-    std::vector<Matrix> LU = LUDecomposition(determinant, epsilon);
-    Matrix&L = LU[0];
-    Matrix&U = LU[1];
-    int n = Rows();
-
-
+    int n = L.Rows();
+    assert(L.Columns() == n);
+    assert(U.Rows() == n);
+    assert(U.Columns() == n);
+    
     // Build this column by column
     Matrix B = Unity(n,n);
 
@@ -790,6 +789,8 @@ Matrix Matrix::Inverse(real epsilon)
     
     return X;
 }
+
+
 
 /// Get the sum of column c
 real Matrix::ColumnSum(int c)

@@ -13,6 +13,7 @@
 #ifdef MAKE_MAIN
 
 #include "Matrix.h"
+#include "MatrixNorm.h"
 #include "Distribution.h"
 #include "NormalDistribution.h"
 #include "EasyClock.h"
@@ -27,7 +28,7 @@ void SpeedTest();
 
 int main()
 {
-    int N = 8;
+    int N = 4;
     int n_errors = 0;
     Matrix I = Matrix::Unity(N,N);
     Matrix W(N,N);
@@ -215,21 +216,38 @@ int main()
     printf("Inverse of W:\n");
     Matrix invW = W.Inverse();
     invW.print(stdout);
+    
     printf("Inverse of Inverse of W:\n");
     Matrix reinvW = invW.Inverse();
+    Matrix inv_LU = W.Inverse_LU();
+    Matrix inv_Ch = W.Inverse_Cholesky();
+    
+    real inv_delta = FrobeniusNorm(inv_LU - inv_Ch);
+    if (inv_delta > 1e-6) {
+        fprintf (stderr, "LU differs from Cholesky inverse by %f over F-Norm of LU inverse\n",
+                 inv_delta);
+        (inv_LU - inv_Ch).print(stderr);
+        fprintf(stderr, "---------\n");
+        n_errors++;
+    }
+
     reinvW.print(stdout);
     Matrix ShouldBeUnity = W * invW;
     printf("Should be Unity:\n");
     ShouldBeUnity.print(stdout);
 
-    printf ("All tests OK\n");
+    if (n_errors) {
+        printf ("# %d ERRORS found\n", n_errors);
+    } else {
+        printf ("# All tests OK\n");
+    }
     printf ("Performance testing:\n");
-    double start_time = GetCPU();
-    SpeedTest();
-    double end_time = GetCPU();
-
-    printf ("Total time: %f\n", end_time - start_time);
-    
+    {
+        double start_time = GetCPU();
+        SpeedTest();
+        double end_time = GetCPU();
+        printf ("Total time: %f\n", end_time - start_time);
+    }
     return n_errors;
 }
 

@@ -21,6 +21,8 @@
 
 #undef REFERENCE_ACCESS
 
+#define ACCURACY_LIMIT 1e-12
+
 /** \brief An n-by-m dimensional matrix.
 
     TODO: Use the BLAS interface for some / most routines.
@@ -61,7 +63,45 @@ public:
     Matrix operator+ (const real& rhs);
     Matrix operator- (const real& rhs);
     Matrix operator/ (const real& rhs);
-    Matrix Inverse(real epsilon = 10e-6);
+    /// Matrix inversion (defaults to Cholesky)
+    Matrix Inverse(real epsilon = ACCURACY_LIMIT)
+    {
+        return Inverse_Cholesky(epsilon);
+        //return Inverse_LU(epsilon);
+    }
+    /** Matrix inversion using the Cholesky decomposition.
+        
+        First call Cholesky with accuracy epsilon to obtain $\fL,
+        L'\f$ such that \f$A = LL'\f$.  Then solve for \f$X = A^{-1}\f$:
+        \f[
+        LL'X = I,
+        \f]
+        by dynamic programming.
+    */
+    Matrix Inverse_Cholesky(real epsilon = ACCURACY_LIMIT)
+    {
+        Matrix U = Cholesky(epsilon);
+        Matrix L(U, false);
+        L.Transpose();
+        return Inverse(L, U);
+    }
+    /** Matrix inversion using the LU decomposition.
+        
+        First call LUDecomposition with accuracy epsilon to obtain $\fL,
+        U\f$ such that \f$A = LU\f$.  Then solve for \f$X = A^{-1}\f$:
+        \f[
+        LUX = I,
+        \f]
+        by dynamic programming.
+    */
+    Matrix Inverse_LU(real epsilon = ACCURACY_LIMIT)
+    {
+        real det;
+        std::vector<Matrix> A = LUDecomposition(det, epsilon);
+        return Inverse(A[0], A[1]);
+    }
+    
+    Matrix Inverse(Matrix& L, Matrix& U);
     bool isTriangular();
     bool isUpperTriangular();
     bool isLowerTriangular();
@@ -69,10 +109,10 @@ public:
     real ColumnSum(int c);
     real RowSum(int r);
     real compute_det_triangular();
-    real gaussian_elimination_forward(real epsilon = 10e-6);
-    std::vector<Matrix> LUDecomposition(real& determinant, real epsilon = 10e-6);
-    Matrix Cholesky(real epsilon = 10e-6);
-    void Cholesky(Matrix& chol, real epsilon = 10e-6);
+    real gaussian_elimination_forward(real epsilon = ACCURACY_LIMIT);
+    std::vector<Matrix> LUDecomposition(real& determinant, real epsilon = ACCURACY_LIMIT);
+    Matrix Cholesky(real epsilon = ACCURACY_LIMIT);
+    void Cholesky(Matrix& chol, real epsilon = ACCURACY_LIMIT);
     void Clear();
     void Transpose();
     Vector getColumn(int c);
@@ -186,6 +226,7 @@ const real& Matrix::operator() (int i, int j) const
 #endif
 }
 
+#if 0
 inline
 const real& Matrix::qGet(int i, int j)
 {
@@ -205,6 +246,7 @@ void Matrix::qSet(int i, int j, real v)
     x[i*columns + j] = v;
 #endif
 }
+#endif
 
 #endif
 
