@@ -38,6 +38,7 @@ Matrix Matrix::Null(int rows, int columns, enum BoundsCheckingStatus check)
     return Matrix(rows, columns, check);
 }
 
+/// Return a matrix that is the transpose of rhs.
 Matrix Transpose(const Matrix& rhs)
 {
     Matrix tmp = Matrix(rhs, false);

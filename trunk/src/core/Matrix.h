@@ -113,6 +113,7 @@ real Mahalanobis2 (const Vector& x, const Matrix& A, const Vector& y);
 
 Matrix Transpose (const Matrix& rhs);
 
+/// In-place transpose matrix
 inline
 void Matrix::Transpose()
 {

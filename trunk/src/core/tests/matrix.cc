@@ -27,17 +27,21 @@ void SpeedTest();
 
 int main()
 {
+    int N = 8;
     int n_errors = 0;
-    Matrix I = Matrix::Unity(2,2);
-    Matrix W(2,2);
-    Matrix x(2,2);
-    Vector u(2);
-    Matrix D(2,1);
-    u[0] = 1;
-    u[1] = 2;
-    Matrix three_by_four(3,4);
-    for (int i=0; i<2; ++i) {
-        for (int j=0; j<2; ++j) {
+    Matrix I = Matrix::Unity(N,N);
+    Matrix W(N,N);
+    Matrix x(N,N);
+    Vector u(N);
+    Matrix D(N,1);
+
+    for (int i=0; i<N; ++i) {
+        u[i] = i + 1;
+    }
+
+    Matrix three_by_four(N + 1, N + 2);
+    for (int i=0; i<N; ++i) {
+        for (int j=0; j<N; ++j) {
             W(i,j) = true_random(false);
             printf ("%f ", W(i,j));
         }
@@ -46,9 +50,9 @@ int main()
     }
     
     
-    Matrix X(2,2);
-    for (int i=0; i<2; ++i) {
-        for (int j=0; j<2; ++j) {
+    Matrix X(N,N);
+    for (int i=0; i<N; ++i) {
+        for (int j=0; j<N; ++j) {
             X(i,j) = true_random(false);
         }
     }
@@ -77,14 +81,14 @@ int main()
         n_errors++; printf("FAILED\n");
     }
 
-    for (int i=0; i<2; ++i) {
-        for (int j=0; j<2; ++j) {
+    for (int i=0; i<N; ++i) {
+        for (int j=0; j<N; ++j) {
             X(i,j) = true_random(false);
         }
     }
 
     printf ("# I = 0 ");
-    if (Matrix::Null(2,2)!=I) {
+    if (Matrix::Null(N,N)!=I) {
         printf ("OK"); 
     } else {
         n_errors++; printf ("FAILED"); 
@@ -183,7 +187,7 @@ int main()
     printf ("# 2W - Q\n");
     //(W - Q*2).print(stdout);
     fflush(stdout);
-    if (W-Q*2 != Matrix::Null(2,2)) {
+    if (W-Q*2 != Matrix::Null(N,N)) {
         fprintf (stderr, "Difference not NULL\n");
         n_errors++;
     }
@@ -195,6 +199,7 @@ int main()
     }
     
     printf("Testing Decomposition of matrix:\n");
+    W = Q * Transpose(Q);
     W.print(stdout);
     printf("Cholesky:\n");
     W.Cholesky().print(stdout);
@@ -217,9 +222,12 @@ int main()
     printf("Should be Unity:\n");
     ShouldBeUnity.print(stdout);
 
+    printf ("All tests OK\n");
+    printf ("Performance testing:\n");
     double start_time = GetCPU();
     SpeedTest();
     double end_time = GetCPU();
+
     printf ("Total time: %f\n", end_time - start_time);
     
     return n_errors;
