@@ -685,6 +685,59 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
     return retval;
 }
 
+
+/** Cholesky decomposition.
+    
+   
+    Do a Cholesky decomposition, after adding epsilon * I to the
+    matrix. The original matrix is unchanged.
+*/
+Matrix Matrix::Cholesky(real epsilon)
+{
+    int n = Rows();
+    assert (n == Columns);
+    Matrix chol(n, n);
+    Cholesky(chol, epsilon);
+    return chol;
+}
+
+
+/** Cholesky decomposition.
+    
+    Based on code by Catherine Bourgain (2006).
+    Original code at:
+    http://www.stat.uchicago.edu/~mcpeek/software/CCQLSpackage1.3/
+
+    Can be safely called with chol = *this; however then the lower triangular
+    part of the matrix must be cleared by the user. (TODO?).
+*/
+void Matrix::Cholesky(Matrix& chol, real epsilon)
+{
+    int n = Rows();
+    assert (n == Columns);
+    for (int i=0; i<n; i++) {
+        // do diagonal first
+        chol(i,i) = (*this)(i,i) + epsilon;
+        for (int k=0; k<i; k++)  {
+            chol(i, i) -= chol(k, i)*chol(k, i);
+        }
+        if (chol(i, i) <= 0) {
+            fprintf(stderr,"\nERROR: non-positive definite matrix!\n");
+            fprintf(stderr, "\nproblem from %d %f\n",i,chol(i, i));
+            throw std::runtime_error("Could not do Cholesky, matrix not positive definite");
+        }
+        chol(i, i) = sqrt(chol(i, i));
+        
+        
+        for (int j=i+1; j<n; j++) {
+            chol(i, j) = (*this)(i, j);
+            for (int k=0; k<i; k++)
+                chol(i, j) -= chol(k, i)*chol(k, j);
+            chol(i, j) /= chol(i, i);
+        }
+    }
+}
+
 /** Matrix inversion using the LU decomposition.
     
     First call LUDecomposition with accuracy epsilon to obtain $\fL,
