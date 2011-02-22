@@ -21,7 +21,10 @@
 
 #undef REFERENCE_ACCESS
 
-/// \brief An n-by-m dimensional matrix.
+/** \brief An n-by-m dimensional matrix.
+
+    TODO: Use the BLAS interface for some / most routines.
+ */
 class Matrix
 {
 public:
@@ -68,6 +71,8 @@ public:
     real compute_det_triangular();
     real gaussian_elimination_forward(real epsilon = 10e-6);
     std::vector<Matrix> LUDecomposition(real& determinant, real epsilon = 10e-6);
+    Matrix Cholesky(real epsilon = 10e-6);
+    void Cholesky(Matrix& chol, real epsilon = 10e-6);
     void Clear();
     void Transpose();
     Vector getColumn(int c);

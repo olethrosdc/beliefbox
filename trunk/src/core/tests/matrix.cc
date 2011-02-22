@@ -193,7 +193,18 @@ int main()
     } else {
         printf ("All tests OK\n");
     }
-
+    
+    printf("Testing Decomposition of matrix:\n");
+    W.print(stdout);
+    printf("Cholesky:\n");
+    W.Cholesky().print(stdout);
+    
+    printf("LU:\n");
+    real det;
+    std::vector<Matrix> LU= W.LUDecomposition(det);
+    LU[0].print(stdout);
+    LU[1].print(stdout);
+    
     printf("Testing inverse:\n");
     W.print(stdout);
     printf("Inverse of W:\n");
