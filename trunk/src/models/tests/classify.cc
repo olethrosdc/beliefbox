@@ -86,7 +86,9 @@ void Train(C& classifier, Matrix& data, std::vector<int>& labels, bool randomise
 
 enum ClassifierType {
     GAUSSIAN_TREE,
+    KNN_TREE,
     NEAREST_NEIGHBOUR,
+    GAUSSIAN,
     HASHED_MIXTURE,
     LINEAR,
     SPARSE_LINEAR
@@ -97,7 +99,8 @@ static const char* const help_text = "Usage: ... \n\
  --sparse N          Sparse linear classifier with projection size N\n\
  --tree N            Tree Gaussian classifier\n\
  --mixture N         Hashed mixture of N classifiers (default 1-NN)\n\
- --knn K             K-nearest neighbour classifier\n\
+ --knn K             Use a K-nearest neighbour classifier as base\n\
+ --gaussian          Use a Gaussian classifier as base\n\
  --iterations N      Number of iterations N on the training set\n\
  --step_size u       Step size u in [0,1] to use for some methods\n\
  --normalise         Make the data zero mean, unit variance\n\
@@ -123,7 +126,8 @@ int main(int argc, char** argv)
     bool normalise = false;
     bool randomise = false;
     int projection_size = 4;
-
+    bool use_knn = false;
+    bool use_gaussian = false;
     ClassifierType classifier_type = LINEAR;
     {
         // options
@@ -143,6 +147,7 @@ int main(int argc, char** argv)
                 {"normalise", no_argument, 0, 0}, // 7 
                 {"randomise", no_argument, 0, 0}, // 8
                 {"sparse", required_argument, 0, 0}, // 9
+                {"gaussian", no_argument, 0, 0}, // 10
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -171,7 +176,7 @@ int main(int argc, char** argv)
                     break;
                 case 4: 
                     n_neighbours = atoi(optarg); 
-                    classifier_type = NEAREST_NEIGHBOUR;
+                    use_knn = true;
                     break;
                 case 5:
                     n_iterations = atoi(optarg); 
@@ -188,6 +193,9 @@ int main(int argc, char** argv)
                 case 9:
                     projection_size = atoi(optarg);
                     classifier_type = SPARSE_LINEAR;
+                    break;
+                case 10:
+                    use_gaussian = true;
                     break;
                 default:
                     fprintf (stderr, "%s", help_text);
@@ -220,11 +228,32 @@ int main(int argc, char** argv)
     }
 
     
+    if (use_gaussian && use_knn)  {
+        Serror("Must specify at most one of {use_gaussian, use_knn}\n");
+        exit(-1);
+    }
+
+    if (use_knn && classifier_type == GAUSSIAN_TREE) {
+        classifier_type = KNN_TREE;
+        logmsg("Setting classifier to KNN tree");
+    }
+
+    if (classifier_type == LINEAR) {
+        if (use_gaussian) {
+            classifier_type = GAUSSIAN;
+            logmsg("Setting classifier to multivariate Gaussian");
+        }
+        if (use_knn) {
+            classifier_type = NEAREST_NEIGHBOUR;
+            logmsg("Setting classifier to k-NN");
+        }
+    }
+
     if (!ReadClassData(data, labels, train_filename)) {
         Serror("Could not read train data\n");
     }
 
-
+    
     
     bool test = false;
     if (test_filename) {
@@ -311,11 +340,11 @@ int main(int argc, char** argv)
 		experts[i] = new KNNClassifier(n_inputs, n_classes, n_neighbours);
 	}
     HashedClassifierMixture<KNNClassifier> hashed_classifier_mixture(n_inputs, n_classes, experts);
-    //linear_classifier_mixture.setStepSize(step_size);
-    //MultivariateGaussianClassifier gaussian_classifier(n_inputs, n_classes);
+
+    MultivariateGaussianClassifier gaussian_classifier(n_inputs, n_classes);
     KNNClassifier knn_classifier(n_inputs, n_classes, n_neighbours);
-    //ConditionalKDGaussianClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
-    ConditionalKDNNClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
+    ConditionalKDGaussianClassifier tree_gaussian(2, tree_depth, lower_bound, upper_bound, n_classes);
+    ConditionalKDNNClassifier tree_knn(2, tree_depth, lower_bound, upper_bound, n_classes);
 
 
     //classifier.setStepSize(alpha);
@@ -330,6 +359,12 @@ int main(int argc, char** argv)
         switch(classifier_type) {
         case GAUSSIAN_TREE:
             Train(tree_gaussian, data, labels, randomise);
+            break;
+        case KNN_TREE:
+            Train(tree_knn, data, labels, randomise);
+            break;
+        case GAUSSIAN:
+            Train(gaussian_classifier, data, labels, randomise);
             break;
         case NEAREST_NEIGHBOUR:
             Train(knn_classifier, data, labels, randomise);
@@ -351,6 +386,12 @@ int main(int argc, char** argv)
     if (1) {
         printf("# Evaluating ...\n");
         switch(classifier_type) {
+        case KNN_TREE:
+            Evaluate(tree_knn, data, labels, "TRAIN");
+            break;
+        case GAUSSIAN:
+            Evaluate(gaussian_classifier, data, labels, "TRAIN");
+            break;
         case GAUSSIAN_TREE:
             Evaluate(tree_gaussian, data, labels, "TRAIN");
             break;
@@ -372,6 +413,12 @@ int main(int argc, char** argv)
     if (test) {
         printf("# Evaluating ...\n");
         switch(classifier_type) {
+        case KNN_TREE:
+            Evaluate(tree_knn, test_data, test_labels, "TEST");
+            break;
+        case GAUSSIAN:
+            Evaluate(gaussian_classifier, test_data, test_labels, "TEST");
+            break;
         case GAUSSIAN_TREE:
             Evaluate(tree_gaussian, test_data, test_labels, "TEST");
             break;
