@@ -317,6 +317,17 @@ inline const Vector abs (const Vector& rhs)
     return lhs;
 }
 
+/// logAdd
+inline const Vector logAdd (const Vector& x, const Vector& y)
+{
+	int n = x.Size();
+	assert (x.Size() == y.Size());
+	Vector z(n);
+	for (int i=0; i<n; ++i) {
+		z(i) = logAdd(x(i), y(i));
+	}
+	return z;
+}
 
 /// exponentiate to a target vector
 void exp(const Vector& v, Vector& res);
