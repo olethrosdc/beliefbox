@@ -57,10 +57,10 @@ public:
         std::vector<Node*> children; ///< Pointer to children
         int level; ///< Level in the tree
 		int children_level; ///< Level of children
-
+		void* object; ///< the object stored
 
 		/// Constructor needs a point and a level
-        Node (const CoverTree& tree_, const Vector& point_, const int level_);
+        Node (const CoverTree& tree_, const Vector& point_, const int level_, void* object_);
 
 		/// Destructor
         ~Node();
@@ -72,7 +72,7 @@ public:
 		}
 
 		/// Insert a new point at the given level, as a child of this node
-        const Node* Insert(const Vector& new_point, const int level);
+        const Node* Insert(const Vector& new_point, const int level, void* obj = NULL);
         
         /// Find nearest neighbour of the node
         std::pair<const CoverTree::Node*, real> NearestNeighbour(const Vector& query, const real distance) const;
@@ -135,8 +135,8 @@ public:
     };
 	
 	const real metric(const CoverSet& Q, const Vector& p) const;
-	const Node* Insert(const Vector& new_point, const CoverSet& Q_i, const int level);
-	const Node* Insert(const Vector& new_point);
+	const Node* Insert(const Vector& new_point, const CoverSet& Q_i, const int level, void* obj);
+	const Node* Insert(const Vector& new_point, void* obj = NULL);
 
 
 	const Node* NearestNeighbour(const Vector& query_point) const;

@@ -80,7 +80,7 @@ TimeStatistics knn_regression_test(int n_points, int K)
 int main (void)
 {
     for (int n_points=100; n_points<=100000; n_points*=2) {
-        for (int K=2; K<=16; ++K) {
+        for (int K=1; K<=16; ++K) {
             TimeStatistics time_statistics = knn_regression_test(n_points, K);
             printf ("%d %d %f %f\n", n_points, K, time_statistics.combined_time, time_statistics.search_time);
             fflush(stdout);

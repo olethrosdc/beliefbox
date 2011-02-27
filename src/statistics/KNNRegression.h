@@ -13,6 +13,7 @@
 #define KNN_REGRESSION_H
 
 #include "KDTree.h"
+//#include "CoverTree.h"
 #include "PointPair.h"
 #include "BasisSet.h"
 
@@ -22,8 +23,8 @@ class KNNRegression
 protected:
     int M; ///< Tree and conditioning variable dimension
     int N; ///< Dimension of the conditioned variable
-    KDTree<PointPair> kd_tree; ///< The tree
-    //CoverTree<PointPair> kd_tree;
+	KDTree<PointPair> kd_tree; ///< The tree
+	//CoverTree<PointPair> kd_tree;
     //RBFBasisSet basis;
     std::list<PointPair> pairs; ///< A list of pairs
 public:	

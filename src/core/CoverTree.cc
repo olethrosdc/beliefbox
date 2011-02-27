@@ -14,11 +14,13 @@
 /// Constructor needs a point and a level
 CoverTree::Node::Node (const CoverTree& tree_, 
                        const Vector& point_,
-                       const int level_)
+                       const int level_, 
+					   void* object_)
 	:  tree(tree_),
        point(point_),
        level(level_), 
-       children_level(level_)
+       children_level(level_),
+	   object(object_)
 {
 }
 
@@ -31,7 +33,7 @@ CoverTree::Node::~Node()
 }
 
 /// Insert a new point at the given level, as a child of this node
-const CoverTree::Node* CoverTree::Node::Insert(const Vector& new_point, const int level)
+const CoverTree::Node* CoverTree::Node::Insert(const Vector& new_point, const int level, void* obj)
 {
 
 #ifdef DEBUG_COVER_TREE
@@ -42,7 +44,7 @@ const CoverTree::Node* CoverTree::Node::Insert(const Vector& new_point, const in
 #endif
 
 	assert(level <= this->level); //hm, does this assert make sense?
-	Node* node = new Node(tree, new_point, level);
+	Node* node = new Node(tree, new_point, level, obj);
 	children.push_back(node);
 	if (level < children_level) {
 		children_level = level;
@@ -125,7 +127,8 @@ const real CoverTree::metric(const CoverSet& Q, const Vector& p) const
 */
 const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
                                          const CoverSet& Q_i,
-                                         const int level)
+                                         const int level,
+										 void* obj)
 {
 	Node* closest_node = NULL;
 	
@@ -173,7 +176,7 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
 
 	// Try and see whether the point can be inserted in a subtree
 	// Maintain only the points within 2^level distance.
-	const Node* found = Insert(new_point, Q_next, max_next_level);
+	const Node* found = Insert(new_point, Q_next, max_next_level, obj);
 
     // The new point x is only possible 
 	if (!found) {
@@ -205,7 +208,7 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
 
 
 /// Insert a new point in the tree
-const CoverTree::Node* CoverTree::Insert(const Vector& new_point)
+const CoverTree::Node* CoverTree::Insert(const Vector& new_point, void* obj)
 {
 	if (!root) {
 #ifdef DEBUG_COVER_TREE
@@ -213,14 +216,14 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point)
 		new_point.print(stdout);
 		printf("\n");
 #endif
-		root = new Node(*this, new_point, std::numeric_limits<int>::max());
+		root = new Node(*this, new_point, std::numeric_limits<int>::max(), obj);
 		return root;
 	}
 	real distance = metric(new_point, root->point);
 	int level = 1 + (int) ceil(log(distance) / log_c);
 	CoverSet Q;
 	Q.Insert(root, distance);
-	return Insert(new_point, Q, level);
+	return Insert(new_point, Q, level, obj);
 }
 
 
