@@ -56,10 +56,6 @@ Vector KernelRegression::expected_value(const Vector& x)
 
     // otherwise, do the kernel estimate
 	real log_P = LOG_ZERO;
-	//Vector log_Y(n_y);
-	//for (int i=0; i<n_y; ++i) {
-	//log_Y(i) = LOG_ZERO;
-	//}
 
     real ib2 = 1.0 / (b * b);
     if (nearest_neighbour_size == 0) {
@@ -69,8 +65,8 @@ Vector KernelRegression::expected_value(const Vector& x)
             real d = SquareNorm(&x, &(it->x));
             real log_p_i = - 0.5 * d * ib2;
             log_P = logAdd(log_P, log_p_i);
-			y += it->y * exp(log_p_i);
-			//log_Y = logAdd(log_Y, it->y + log_p_i);
+			real p_i = exp(log_p_i);
+			y += it->y * p_i;
 		}
     } else {
         int K = points.size();
@@ -78,17 +74,24 @@ Vector KernelRegression::expected_value(const Vector& x)
             K = nearest_neighbour_size;
         }
         OrderedFixedList<KDNode> node_list = kd_tree.FindKNearestNeighbours(x, K);
-        
+		real max_log_p_i;
+		{
+			std::list<std::pair<real, KDNode*> >::iterator it = node_list.S.begin();
+			KDNode* node = it->second;
+            PointPair* p = kd_tree.getObject(node);
+			real d = SquareNorm(&x, &(p->x));
+			max_log_p_i =  - 0.5 * d * ib2;
+		}
         for (std::list<std::pair<real, KDNode*> >::iterator it = node_list.S.begin();
              it != node_list.S.end();
              ++it) {
             KDNode* node = it->second;
             PointPair* p = kd_tree.getObject(node);
             real d = SquareNorm(&x, &(p->x));
-            real log_p_i =  - 0.5 * d * ib2;
+            real log_p_i =  - 0.5 * d * ib2 - max_log_p_i;
+			real p_i = exp(log_p_i);
             log_P = logAdd(log_P, log_p_i);
-			y += p->y * exp(log_p_i);
-			//log_Y = logAdd(log_Y, p->y + log_p_i);
+			y += p->y * p_i;
         }
     }
 	return y * exp(-log_P);

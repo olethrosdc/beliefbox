@@ -25,29 +25,37 @@ struct TimeStatistics
 
 void kernel_regression_evaluate(int T)
 {
-	int n_x = 1;
+	int n_x = 2;
 	int n_y = 1;
 	
-	KernelRegression kernel_regression(n_x, n_y, 1.0, 0);
+	KernelRegression kernel_regression(n_x, n_y, 0.1, 5);
 
 	Vector X(n_x);
 	Vector Y(n_y);
 	real theta = 0.0;
 
 	for (int t=0; t<T; t++) {
-		theta = urandom() * 10;
-		X(0) = theta;
-		Y(0) = sin(theta);
+		theta += 0.01;
+		X(0) = sin(theta);
+		X(1) = sin(theta + 0.01);
+		Y(0) = 1.0;
+        kernel_regression.AddPoint(X, Y);
+		X(0) = sin(theta);
+		X(1) = sin(theta);
+		Y(0) = 0.0;
         kernel_regression.AddPoint(X, Y);
 	}
 
 	kernel_regression.BootstrapBandwidth();
 	theta = 0;
-	for (int t=0; t<1000; t++) {
-		X(0) = theta;
-		theta += 0.03;
-		Vector Z = kernel_regression.expected_value(X);
-		printf ("%f %f %f # theta\n", X(0), Z(0), sin(theta));
+	for (real x = -1; x<1; x+=0.01) {
+		for (real y = -1; y<1; y+=0.01) {
+			X(0) = x;
+			X(0) = y;
+			Vector Z = kernel_regression.expected_value(X);
+			printf ("%f ", Z(0));
+		}
+		printf ("# theta\n");
 	}
 }
 
@@ -108,7 +116,7 @@ TimeStatistics kernel_regression_test(int n_points, int K)
 }
 int main (void)
 {
-	kernel_regression_evaluate(1000);
+	kernel_regression_evaluate(100);
 	
     for (int n_points=10; n_points<=100; n_points*=2) {
         for (int K=0; K<=16; ++K) {
