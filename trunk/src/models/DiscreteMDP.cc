@@ -14,48 +14,44 @@
 #include "Distribution.h"
 #include "Random.h"
 #include "SmartAssert.h"
+#include "Matrix.h"
+
 #include <iostream>
 
 
-DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distribution** initial_rewards) 
+DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions)
+	: P(n_states*n_actions, n_states),
+	  reward_distribution(n_states, n_actions)
 {   
-    this->n_states = n_states;
-    this->n_actions = n_actions;
-    
-    N = n_states * n_actions;
-    
-    P.resize(N);//= new real* [N];
-    P_data.resize(N*n_states);
-    state = 0;
-    
     next_states.resize(N);
     
     real p = 1.0 / (real) n_states;
-    
     if (initial_transitions) {
         for (int i=0; i<N; i++) {
-            P[i] = &P_data[i*n_states];
+            //P[i] = &P_data[i*n_states];
             for (int j=0; j<n_states; j++) {
-                P[i][j] = initial_transitions[i][j];
+                //P[i][j] = initial_transitions[i][j];
+				P(i,j) = initial_transitions[i][j];
             }
         } 
     } else {
         int i=0;
         for (int s=0; s<n_states; s++) {
             for (int a=0; a<n_actions; a++, i++) {
-                P[i] = &P_data[i*n_states];
-
                 for (int j=0; j<n_states; j++) {
                     if (s == j) {
-                        P[i][j] = 1;
+                        //P[i][j] = 1;
+						P(i,j) = 1.0;
                     } else {
-                        P[i][j] = 0;
+                        //P[i][j] = 0;
+						P(i,j) = 0.0;
                     }
                 }
             }
         }
     }
-    
+
+#if 0    
     ER.resize(N);
     R.resize(N);
     if (initial_rewards) {
@@ -69,6 +65,7 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
             ER[i] = 0xBADFEED;
         }
     }
+#endif
 }
 
 /** Partially copies an MDP.
@@ -78,46 +75,20 @@ DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions, Distr
 */
 DiscreteMDP::MDP(const MDP<int,int>& mdp)
     : n_states(mdp.n_states),
-      n_actions(mdp.n_actions)
+      n_actions(mdp.n_actions),
+	  reward_distribution(n_states, n_actions)
 {
     N = n_states * n_actions;
 
-    // Setup transitions
-    P.resize(N);
-    P_data.resize(N*n_states);
-    state = 0;
-    
+	state = 0;
     next_states.resize(N);
-    for (int i=0; i<N; i++) {
-        P[i] = &P_data[i*n_states];
-        for (int j=0; j<n_states; j++) {
-            P[i][j] = mdp.P[i][j];
-        }
-    }
-    
-    // Setup rewards
-    ER.resize(N);
-    R.resize(N);
-    for (int s=0; s<n_states; ++s) {
-        for (int a=0; a<n_actions; a++) {
-            real r = mdp.getExpectedReward(s, a);
-            addFixedReward(s, a, r);
-        }
-    }
-
+	P = mdp.P;
+	reward_distribution = mdp.reward_distribution;
 }
+
 
 DiscreteMDP::~MDP()
 {
-    // clear all distributions that have been added
-    for (std::vector<Distribution*>::iterator i = distribution_vector.begin();
-         i < distribution_vector.end(); ++i) {
-        if (*i) {
-            delete *i;
-            *i = NULL;
-        }
-    }
-         
 }
 
 
@@ -128,10 +99,11 @@ DiscreteMDP::~MDP()
 void DiscreteMDP::AperiodicityTransform(real tau)
 {
     SMART_ASSERT(tau > 0 && tau < 1)(tau);
-    for (int i=0; i<N; i++) {
-        //R[i] *= tau;
-        ER[i] *= tau;
-    }
+    for (int s=0; s<n_states; s++) {
+        for (int a=0; a<n_actions; a++) {
+			reward_distribution.setFixedReward(s, a, tau * reward_distribution.expected(s, a));
+		}
+	}
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             int i = getID(s,a);
@@ -140,7 +112,7 @@ void DiscreteMDP::AperiodicityTransform(real tau)
                 if (j==s) {
                     delta = 1.0;
                 }
-                P[i][j] = (1-tau)*delta + tau*P[i][j];
+                P(i,j) = (1-tau)*delta + tau*P(i,j);
             }
         }
     }
@@ -153,7 +125,7 @@ void DiscreteMDP::ShowModel() const
             int i = getID(s,a);
             std::cout << "(" << s << "," << a << ") -> ";
             for (int j=0; j<n_states; j++) {
-                real p = P[i][j];
+                real p = P(i,j);
                 if (p>0.01) {
                     std::cout << j << " (" << p << ") ";
                 }
@@ -165,7 +137,7 @@ void DiscreteMDP::ShowModel() const
         for (int a=0; a<n_actions; a++) {
             int i = getID(s,a);
             std::cout << "R[" << s << "," << a << "] = "
-                      << ER[i] << std::endl; 
+                      << reward_distribution.expected(s,a) << std::endl; 
         }
     }
 }
@@ -186,11 +158,11 @@ void DiscreteMDP::dotModel(FILE* fout) const
             int colour_id = a % 7;
             int i = getID(s,a);
             for (int j=0; j<n_states; j++) {
-                real p = P[i][j];
+                real p = P(i, j);
                 if (p>0.000001) {
                     fprintf (fout,
                              "s%d -> s%d [label = \" p=%.2f, r=%.1f\", color=%s];\n",
-                             s, j, p, ER[i], colour[colour_id]);
+                             s, j, p, reward_distribution.expected(s,a), colour[colour_id]);
                 }
             }
         }
@@ -202,23 +174,18 @@ void DiscreteMDP::dotModel(FILE* fout) const
 
 real DiscreteMDP::generateReward (int s, int a) const
 {
-    int ID = getID (s, a);
-    assert (R[ID]);
-    //dprint ("ID: %d : %p\n", ID, R[ID]);
-    return ER[ID];
-    //    return R[ID]->generate();
+    return reward_distribution.generate(s, a);
 }
 
 int DiscreteMDP::generateState (int s, int a) const
 {
     int ID = getID (s,a);
-    real* Ps=P[ID];
     real sum = 0.0f;
     real X = urandom();
 
     int select = 0;
     for (int i=0; i<n_states; i++) {
-        sum += Ps[i];
+        sum += P(ID, i);
         if (X<sum) {
             select = i;
             break;

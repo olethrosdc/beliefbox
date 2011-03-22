@@ -78,7 +78,7 @@ Gridworld::Gridworld(const char* fname,
 
 DiscreteMDP* Gridworld::getMDP()  const
 {
-    DiscreteMDP* mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
+    DiscreteMDP* mdp = new DiscreteMDP (n_states, n_actions, NULL);
 
     // set up rewards		
 #if 0

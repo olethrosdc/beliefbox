@@ -16,11 +16,15 @@
 #include "SmartAssert.h"
 #include "MDP.h"
 #include "Distribution.h"
+#include "RewardDistribution.h"
+#include "Matrix.h"
 #include <vector>
 #include <set>
 
 typedef std::set<int> DiscreteStateSet;
 typedef std::set<int>& DiscreteStateSetRef;
+
+
 
 
 template<>
@@ -29,11 +33,7 @@ protected:
     int state;
     int n_states; ///< number of states (or dimensionality of state space)
     int n_actions; ///< number of actions (or dimensionality of action space)
-    std::vector<real*> P; ///< transition distribution
-    std::vector<real> P_data; ///< transition distribution data
-    //std::vector<Distribution*> R; ///< reward distribution
-    //std::vector<Distribution*> distribution_vector; ///< for malloc
-    RewardDistribution<int, int> reward_distribution;
+    Matrix P; ///< transition distribution
     std::vector<DiscreteStateSet> next_states;
     int N;
     inline int getID (int s, int a) const
@@ -46,10 +46,11 @@ protected:
     }
 
 public:
+    DiscreteSpaceRewardDistribution reward_distribution;
 
     MDP<int, int>(int n_states, int n_actions,
-                  real** initial_transitions = NULL,
-                  Distribution** initial_rewards = NULL);
+                  real** initial_transitions = NULL);
+	//Distribution** initial_rewards = NULL);
     MDP<int,int> (const MDP<int,int>& mdp);
 
     inline int GetNStates() const
@@ -69,7 +70,7 @@ public:
     {
         int ID = getID (s, a);                
         assert (s2>=0 && s2<n_states);
-        return P[ID][s2];
+        return P(ID, s2);
     }
     inline real getExpectedReward (int s, int a) const
     {
@@ -79,9 +80,8 @@ public:
     {
         assert(s>=0 && s<n_states);
         int ID = getID (s, a);
-        real* Ps=P[ID];
         assert(s2>=0 && s2<n_states);
-        Ps[s2] = p;
+		P(ID, s2) = p;
         DiscreteStateSet& next = next_states[ID];
         if (p==0) {
             next.erase(s2);
@@ -89,47 +89,31 @@ public:
             next.insert(s2);
         }
     }
-    inline void setRewardDistribution(int s, int a, Distribution* reward)
-    {   
-        int ID = getID (s, a);
-        R[ID] = reward;
-        ER[ID] = reward->getMean();
-    }
-    // only use this function once per state-action pair
-    inline void addRewardDistribution(int s, int a, Distribution* reward)
-    {   
-        int ID = getID (s, a);
-        distribution_vector.push_back(reward);
-        R[ID] = reward;
-        ER[ID] = reward->getMean();
-    }
-    // only use this function once per state-action pair
-    inline void addFixedReward(int s, int a, real reward)
-    {   
-        SingularDistribution* distribution = new SingularDistribution(reward);
-        addRewardDistribution(s, a, distribution);
-    }
-    // you can use this function more than once per state-action pair
-    inline void setFixedReward(int s, int a, real reward)
-    {   
-        int ID = getID (s, a);
-        if (R[ID]) {
-            R[ID]->setMean(reward);
-            ER[ID] = reward;
-        } else {
-            SingularDistribution* distribution = new SingularDistribution(reward);
-            addRewardDistribution(s, a, distribution);
-            ER[ID] = reward;
-        }
-    }
     inline const DiscreteStateSet& getNextStates(int s, int a) const
     {
         int ID = getID (s,a);
         return next_states[ID];
     }
+
     void AperiodicityTransform(real tau);
     bool Check() const;
     real CalculateDiameter() const;
+	inline void setRewardDistribution(int s, int a, Distribution* reward)
+	{
+		reward_distribution.setRewardDistribution(s, a, reward);
+	}
+	inline void addRewardDistribution(int s, int a, Distribution* reward)
+	{
+		reward_distribution.addRewardDistribution(s, a, reward);
+	}
+	inline void addFixedReward(int s, int a, real reward)
+	{
+		reward_distribution.addFixedReward(s, a, reward);
+	}
+	inline void setFixedReward(int s, int a, real reward)
+	{
+		reward_distribution.setFixedReward(s, a, reward);
+	}
 };
 
 typedef MDP<int, int> DiscreteMDP;

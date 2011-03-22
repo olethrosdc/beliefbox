@@ -12,7 +12,12 @@
 #ifndef REWARD_DISTRIBUTION_H
 #define REWARD_DISTRIBUTION_H
 
+#include "Vector.h"
 #include "real.h"
+#include <vector>
+
+class Distribution;
+
 
 /** Generic reward distribution */
 template <typename StateType, typename ActionType>
@@ -49,15 +54,30 @@ public:
 class DiscreteSpaceRewardDistribution : public RewardDistribution<int, int>
 {
 protected:
-    real default_reward;
-    int goal_state;
-    real goal_reward;
+    std::vector<Distribution*> R; ///< reward distribution
+	std::vector<Distribution*> distribution_vector; ///< for malloc
+	Vector ER; ///< expected reward
+	int n_states; ///< number of states
+	int n_actions; ///< number of actions
+    inline int getID (int s, int a) const
+    {
+#ifndef NDEBUG
+        SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
+        SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
+#endif
+        return s*n_actions + a;
+    }
+
 public:
-    DiscreteSpaceRewardDistribution();
+    DiscreteSpaceRewardDistribution(int n_states_, int n_actions_);
     virtual ~DiscreteSpaceRewardDistribution();
     virtual real generate(int state, int action) const;
     virtual real expected(int state, int action) const;
     virtual real pdf(int state, int action, real reward) const;
+	void setRewardDistribution(int s, int a, Distribution* reward);
+	void addRewardDistribution(int s, int a, Distribution* reward);
+	void addFixedReward(int s, int a, real reward);
+	void setFixedReward(int s, int a, real reward);
 };
 
 
