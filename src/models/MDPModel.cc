@@ -19,11 +19,11 @@
 DiscreteMDP* MDPModel::CreateMDP()
 {
     mdp_dbg("Making a DiscreteMDP with %d states, %d actions from model\n", n_states, n_actions);
-    DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL, NULL);
+    DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL);
     for (int i=0; i<n_states; ++i) {
         for (int a=0; a<n_actions; ++a) {
             SingularDistribution* ER = new SingularDistribution(getExpectedReward(i, a));
-            mdp->addRewardDistribution(i, a, ER);
+            mdp->reward_distribution.addRewardDistribution(i, a, ER);
             real sum_p = 0.0;
 
             for (int j=0; j<n_states; ++j) {

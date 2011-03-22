@@ -24,7 +24,7 @@
  */
 DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count, int init_reward_count, real init_reward) :
     MDPModel(n_states, n_actions),
-    mean_mdp(n_states, n_actions, NULL, NULL)
+    mean_mdp(n_states, n_actions, NULL)
 {
     mdp_dbg("Creating DiscreteMDPCounts with %d states and %d actions\n",  n_states, n_actions);
     N = n_states * n_actions;
@@ -77,7 +77,7 @@ void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
 
     Vector C =  P[ID].GetMean();
     real expected_reward = getExpectedReward(s,a);
-    mean_mdp.setFixedReward(s, a, expected_reward);
+    mean_mdp.reward_distribution.setFixedReward(s, a, expected_reward);
     for (int s_next=0; s_next<n_states; s_next++) {
         mean_mdp.setTransitionProbability(s, a, s_next, C[s_next]);
     }
@@ -158,13 +158,13 @@ void DiscreteMDPCounts::ShowModel() const
 
 DiscreteMDP* DiscreteMDPCounts::generate() 
 {
-    DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL, NULL);
+    DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL);
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             //Vector C =  P[getID (s,a)].GetMean();
             Vector C =  P[getID (s,a)].generate();
             real expected_reward = getExpectedReward(s,a);
-            mdp->addFixedReward(s, a, expected_reward);
+            mdp->reward_distribution.addFixedReward(s, a, expected_reward);
             for (int s2=0; s2<n_states; s2++) {
                 if (C[s2]) {
                     mdp->setTransitionProbability(s, a, s2, C[s2]);
@@ -198,7 +198,7 @@ void DiscreteMDPCounts::CopyMeanMDP(DiscreteMDP* mdp) const
         for (int a=0; a<n_actions; a++) {
             Vector C =  P[getID (s,a)].GetMean();
             real expected_reward = getExpectedReward(s,a);
-            mdp->addFixedReward(s, a, expected_reward);
+            mdp->reward_distribution.addFixedReward(s, a, expected_reward);
             for (int s2=0; s2<n_states; s2++) {
                 mdp->setTransitionProbability(s, a, s2, C[s2]);
             }

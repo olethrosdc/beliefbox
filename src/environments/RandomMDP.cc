@@ -49,7 +49,7 @@ RandomMDP::RandomMDP(uint n_actions_,
 	
 DiscreteMDP* RandomMDP::getMDP() const
 {
-    DiscreteMDP* mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
+    DiscreteMDP* mdp = new DiscreteMDP (n_states, n_actions, NULL);
     
     // first the terminal state rewards
     if (termination) {

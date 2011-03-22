@@ -31,7 +31,7 @@ InventoryManagement::InventoryManagement(int period_,
     assert (demand >= 0 && demand <= 1);
     assert (period > 0);
 
-    mdp = new DiscreteMDP(n_states, n_actions, NULL, NULL);
+    mdp = new DiscreteMDP(n_states, n_actions, NULL);
 
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {

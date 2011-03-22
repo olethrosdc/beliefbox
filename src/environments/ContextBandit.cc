@@ -27,7 +27,7 @@ ContextBandit::ContextBandit(uint n_actions_,
     rewards.push_back(positive_reward);
     rewards.push_back(negative_reward);
 
-    mdp = new DiscreteMDP (n_states, n_actions, NULL, NULL);
+    mdp = new DiscreteMDP (n_states, n_actions, NULL);
 
     // setup rewards
     for (uint s=0; s<n_states; ++s) {

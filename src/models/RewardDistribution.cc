@@ -10,6 +10,7 @@
  ***************************************************************************/
 
 #include "RewardDistribution.h"
+#include "Distribution.h"
 
 // -- Goal state reward distribution -- //
 
@@ -17,9 +18,9 @@
 GoalStateRewardDistribution::    GoalStateRewardDistribution(real default_reward_, 
 															 int goal_state_,
 															 real goal_reward_)
-  : default_reward(default_reward_),
-    goal_state(goal_state_),
-    goal_reward(goal_reward_)
+	: default_reward(default_reward_),
+	  goal_state(goal_state_),
+	  goal_reward(goal_reward_)
 {
     // empty
 }
@@ -61,29 +62,38 @@ real GoalStateRewardDistribution::pdf(int state, int action, real reward) const
 /// Constructor. Set up the default reward to be received
 DiscreteSpaceRewardDistribution::    DiscreteSpaceRewardDistribution(int n_states_, int n_actions_)
     : n_states(n_states_),
-      n_actions(n_actions_)
+      n_actions(n_actions_),
+	  ER(n_states * n_actions)
 {
     // empty
 }
 
-/// Destructor - nothing to do
+/// Destructor - remove all distribution vectors
 DiscreteSpaceRewardDistribution::~DiscreteSpaceRewardDistribution() 
 {
+    // clear all distributions that have been added
+    for (std::vector<Distribution*>::iterator i = distribution_vector.begin();
+         i < distribution_vector.end(); ++i) {
+        if (*i) {
+            delete *i;
+            *i = NULL;
+        }
+    }
+
 }
 
 /// Generate a value - always the expected value
 real DiscreteSpaceRewardDistribution::generate(int state, int action) const
 {
-	return expected(state, action);
+	int ID = getID(state, action);
+	return distribution_vector[ID]->generate();
 }
 
 /// Get expected value
 real DiscreteSpaceRewardDistribution::expected(int state, int action) const
 {
-    if (state == goal_state) {
-        return goal_reward;
-    }
-    return default_reward;
+	int ID = getID(state, action);
+	return distribution_vector[ID]->getMean();
 }
 
 /// Generate pdf -- in fact, a probability since there are just two outcomes.
@@ -96,4 +106,42 @@ real DiscreteSpaceRewardDistribution::pdf(int state, int action, real reward) co
         return 0.0;
     }
     
+}
+
+
+void DiscreteSpaceRewardDistribution::setRewardDistribution(int s, int a, Distribution* reward)
+{   
+	int ID = getID (s, a);
+	R[ID] = reward;
+	ER(ID) = reward->getMean();
+}
+
+// only use this function once per state-action pair
+void DiscreteSpaceRewardDistribution::addRewardDistribution(int s, int a, Distribution* reward)
+{   
+	int ID = getID (s, a);
+	distribution_vector.push_back(reward);
+	R[ID] = reward;
+	ER(ID) = reward->getMean();
+}
+// only use this function once per state-action pair
+void DiscreteSpaceRewardDistribution::addFixedReward(int s, int a, real reward)
+{   
+	SingularDistribution* distribution = new SingularDistribution(reward);
+	addRewardDistribution(s, a, distribution);
+}
+
+// you can use this function more than once per state-action pair
+void DiscreteSpaceRewardDistribution::setFixedReward(int s, int a, real reward)
+{   
+	int ID = getID (s, a);
+	if (R[ID]) {
+		R[ID]->setMean(reward);
+		ER[ID] = reward;
+	} else {
+		SingularDistribution* distribution = new SingularDistribution(reward);
+		addRewardDistribution(s, a, distribution);
+		ER[ID] = reward;
+	}
+	
 }
