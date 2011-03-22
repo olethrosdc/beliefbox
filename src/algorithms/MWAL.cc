@@ -6,6 +6,7 @@
 #include "DiscretePolicy.h"
 #include "ValueIteration.h"
 
+/// Calculate the feature counts from a given set of demonstrations.
 void MWAL::CalculateFeatureCounts(Demonstrations<int, int>& D)
 {
 
@@ -25,6 +26,8 @@ void MWAL::CalculateFeatureCounts(Demonstrations<int, int>& D)
     mu_E /= (real) K;
 }
 
+/// Calculate the feature expectations for a particular policy and
+/// discount factor gamma, up to accuracy epsilon.
 Vector MWAL::CalculateFeatureExpectation(DiscreteMDP& mdp,
                                          FixedDiscretePolicy& policy,
                                          real gamma, real epsilon)
@@ -63,6 +66,8 @@ Vector MWAL::CalculateFeatureExpectation(DiscreteMDP& mdp,
 }
 
 
+/// Compute a policy for a particular mdp, with discount factor gamma,
+/// an error tolerance and a particular number of iterations T.
 void MWAL::Compute(DiscreteMDP& original_mdp, real gamma, real epsilon, int T)
 {
     DiscreteMDP& mdp(original_mdp); // make a copy

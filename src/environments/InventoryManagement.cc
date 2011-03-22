@@ -56,8 +56,7 @@ InventoryManagement::InventoryManagement(int period_,
             mdp->setTransitionProbability(s, a, 0, P_empty);
 
             // Add the expected reward.
-            dist.push_back(new SingularDistribution(expected_reward));
-            mdp->setRewardDistribution(s, a, dist.back());
+            mdp->setFixedReward(s, a, expected_reward);
         }
     }
     mdp->Check();

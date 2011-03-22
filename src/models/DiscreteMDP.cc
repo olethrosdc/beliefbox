@@ -19,13 +19,17 @@
 #include <iostream>
 
 
-DiscreteMDP::MDP (int n_states, int n_actions, real** initial_transitions)
-	: P(n_states*n_actions, n_states),
+DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
+	: n_states(n_states_),
+      n_actions(n_actions_),
+      P(n_states*n_actions, n_states),
+      next_states(n_states * n_actions),
+      N(n_states * n_actions),
 	  reward_distribution(n_states, n_actions)
 {   
     next_states.resize(N);
     
-    real p = 1.0 / (real) n_states;
+    //real p = 1.0 / (real) n_states;
     if (initial_transitions) {
         for (int i=0; i<N; i++) {
             //P[i] = &P_data[i*n_states];
@@ -135,7 +139,7 @@ void DiscreteMDP::ShowModel() const
     }
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
-            int i = getID(s,a);
+            //int i = getID(s,a);
             std::cout << "R[" << s << "," << a << "] = "
                       << reward_distribution.expected(s,a) << std::endl; 
         }

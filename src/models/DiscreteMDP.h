@@ -47,8 +47,8 @@ protected:
 
 public:
     DiscreteSpaceRewardDistribution reward_distribution;
-
-    MDP<int, int>(int n_states, int n_actions,
+    
+    MDP<int, int>(int n_states_, int n_actions_,
                   real** initial_transitions = NULL);
 	//Distribution** initial_rewards = NULL);
     MDP<int,int> (const MDP<int,int>& mdp);
