@@ -13,11 +13,13 @@
 #ifndef MDP_H
 #define MDP_H
 
+class Distribution;
+
 #include "real.h"
 #include "TransitionDistribution.h"
 #include "RewardDistribution.h"
 
-class Distribution;
+
 
 /** Abstract MDP class */
 class AbstractMDP {
