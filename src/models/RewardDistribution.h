@@ -22,11 +22,11 @@ public:
     /// Empty destructor
     virtual ~RewardDistribution() {}
     /// generate reward
-    virtual real generate(StateType state, ActionType action) = 0;
+    virtual real generate(StateType state, ActionType action) const = 0;
     /// get expected value
-    virtual real expected(StateType state, ActionType action) = 0;
+    virtual real expected(StateType state, ActionType action) const = 0;
     /// get pdf
-    virtual real pdf(StateType state, ActionType action, real reward) = 0;
+    virtual real pdf(StateType state, ActionType action, real reward) const = 0;
 };
 
 /** Goal state reward distribution */
@@ -40,12 +40,12 @@ public:
     GoalStateRewardDistribution(real default_reward_, int goal_state_, real goal_reward_);
     
     virtual ~GoalStateRewardDistribution();
-    virtual real generate(int state, int action);
-    virtual real expected(int state, int action);
-    virtual real pdf(int state, int action, real reward);
+    virtual real generate(int state, int action) const;
+    virtual real expected(int state, int action) const;
+    virtual real pdf(int state, int action, real reward) const;
 };
 
-/** Goal state reward distribution */
+/** Generate reward distribution for a discrete space */
 class DiscreteSpaceRewardDistribution : public RewardDistribution<int, int>
 {
 protected:
@@ -55,9 +55,9 @@ protected:
 public:
     DiscreteSpaceRewardDistribution();
     virtual ~DiscreteSpaceRewardDistribution();
-    virtual real generate(int state, int action);
-    virtual real expected(int state, int action);
-    virtual real pdf(int state, int action, real reward);
+    virtual real generate(int state, int action) const;
+    virtual real expected(int state, int action) const;
+    virtual real pdf(int state, int action, real reward) const;
 };
 
 
