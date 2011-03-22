@@ -31,9 +31,9 @@ protected:
     int n_actions; ///< number of actions (or dimensionality of action space)
     std::vector<real*> P; ///< transition distribution
     std::vector<real> P_data; ///< transition distribution data
-    std::vector<Distribution*> R; ///< reward distribution
-    std::vector<Distribution*> distribution_vector; ///< for malloc
-    std::vector<real> ER; ///< expected reward
+    //std::vector<Distribution*> R; ///< reward distribution
+    //std::vector<Distribution*> distribution_vector; ///< for malloc
+    RewardDistribution<int, int> reward_distribution;
     std::vector<DiscreteStateSet> next_states;
     int N;
     inline int getID (int s, int a) const
@@ -73,8 +73,7 @@ public:
     }
     inline real getExpectedReward (int s, int a) const
     {
-        int ID = getID (s, a);
-        return ER[ID];
+        return reward_distribution.expected(s,a);
     }
     inline void setTransitionProbability(int s, int a, int s2, real p)
     {
