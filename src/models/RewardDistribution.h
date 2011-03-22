@@ -18,7 +18,7 @@
 template <typename StateType, typename ActionType>
 class RewardDistribution
 {
- public:
+public:
     /// Empty destructor
     virtual ~RewardDistribution() {}
     /// generate reward
@@ -44,5 +44,22 @@ public:
     virtual real expected(int state, int action);
     virtual real pdf(int state, int action, real reward);
 };
+
+/** Goal state reward distribution */
+class DiscreteSpaceRewardDistribution : public RewardDistribution<int, int>
+{
+protected:
+    real default_reward;
+    int goal_state;
+    real goal_reward;
+public:
+    DiscreteSpaceRewardDistribution();
+    virtual ~DiscreteSpaceRewardDistribution();
+    virtual real generate(int state, int action);
+    virtual real expected(int state, int action);
+    virtual real pdf(int state, int action, real reward);
+};
+
+
 
 #endif
