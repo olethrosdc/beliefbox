@@ -18,39 +18,46 @@
 #include "Gridworld.h"
 #include "InventoryManagement.h"
 #include "RandomMDP.h"
+#include "OptimisticTask.h"
+#include "DiscreteChain.h"
 #include "DiscretePolicy.h"
 
 int main (void)
 {
     int period = 30;
     int max_items = 10;
-    real gamma = 1.0;
+    real gamma = 0.9;
     real demand = 0.1;
     real random = 0.0;
     real pit = -100.0;
     real goal = 0.0;
     real step = -0.1;
-
-    InventoryManagement inventory_management (period, max_items, demand);
-
+    real margin = 1.1;
+    
+    //InventoryManagement inventory_management (period, max_items, demand, margin);
+    
     Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", random, pit, goal, step);
-    RandomMDP random_mdp(1, 4, 0.01, 0.1, 0, 1, false);
-    random_mdp.AperiodicityTransform(0.99);
+    OptimisticTask optimistic_task(0.1, 0.01);
+    DiscreteChain chain_task(8);
+    //RandomMDP random_mdp(1, 4, 0.01, 0.1, 0, 1, false);
+    //random_mdp.AperiodicityTransform(0.99);
     //const DiscreteMDP* mdp = random_mdp.getMDP();
-    const DiscreteMDP* mdp = inventory_management.getMDP();
+    //const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
+    //const DiscreteMDP* mdp = optimistic_task.getMDP();
+    const DiscreteMDP* mdp = chain_task.getMDP();
 
     int n_states = mdp->GetNStates();
     int n_actions = mdp->GetNActions();
     printf ("# states: %d, actions: %d\n", n_states, n_actions);
     AveragePolicyEvaluation policy_evaluation(NULL, mdp);
     PolicyIteration policy_iteration(&policy_evaluation, mdp, gamma);
-    //ValueIteration value_iteration(mdp, gamma);
+    ValueIteration value_iteration(mdp, gamma);
     //AverageValueIteration value_iteration(mdp);
 
     std::vector<real> Q(n_actions);
 
-#if 1
+    printf ("Policy iteration\n");
     policy_iteration.ComputeStateValues(0.01, 1000);
     for (int s=0; s<mdp->GetNStates(); s++) {
         printf ("%1.f ", policy_iteration.getValue(s));
@@ -58,6 +65,16 @@ int main (void)
     printf(", D = %.1f, b = %.1f\n",
               policy_iteration.Delta,
               policy_iteration.baseline);
+
+    printf ("Value iteration\n");
+    value_iteration.ComputeStateActionValues(0.01, 100000);
+    for (int s=0; s<mdp->GetNStates(); s++) {
+        printf ("%1.f ", value_iteration.getValue(s));
+    }
+    printf(", D = %.1f, b = %.1f\n",
+              value_iteration.Delta,
+              value_iteration.baseline);
+
     //mdp->ShowModel();
    if (1) {
        FILE* f = fopen("test.dot", "w");
@@ -69,63 +86,10 @@ int main (void)
            fclose(f);
        }
    }
-#endif
 
-#if 0
-    // GRIDOWRLD CODE
-    for (int iter=0; iter < 100; iter++) {
-	printf ("ITER: %d\n", iter);
-    for (uint y=0; y<height; y++) {
-        for (uint x=0; x<width; x++) {
-            int s= x + y*width;
-            for (int a=0; a<n_actions; a++) {
-                Q[a] = policy_evaluation.getValue(s,a);
-            }
-            //int a_max = ArgMax(Q);
-            //real Q_max = Q[a_max];
-            real V = policy_evaluation.getValue(s);
-	    Gridworld::MapElement element = grid_world.whatIs(x, y);
-	    if (x) printf ("&");
-	    if (element == Gridworld::WALL) {
-		printf ("\\bsqr ");
-	    } else {
-		printf ("%+.1f ", V);
-	    }
-        }
-        printf ("\\\\\\hline\n");
-    }
+   
+   
 
-
-    for (uint y=0; y<height; y++) {
-        for (uint x=0; x<width; x++) {
-	    int s = grid_world.getState(x, y);
-	    Gridworld::MapElement element = grid_world.whatIs(x, y);
-		  if (x) printf ("&");
-
-	    if (element == Gridworld::WALL) {
-		//printf ("#");
-		printf ("\\msqr ");
-	    } else {
-		for (int a=0; a<n_actions; a++) {
-		    Q[a] = policy_evaluation.getValue(s,a);
-		}
-		int a_max = ArgMax(Q);
-		switch (a_max) {
-		case Gridworld::NORTH: printf ("$\\uparrow$ "); break;
-		case Gridworld::SOUTH: printf ("$\\downarrow$ "); break;
-		case Gridworld::EAST:  printf ("$\\rightarrow$ "); break;
-		case Gridworld::WEST:  printf ("$\\leftarrow$ "); break;
-		}
-	    }
-        }
-        printf ("\\\\\\hline\n");
-        //printf ("\n");
-    }
-    policy_evaluation.ComputeStateValues(0.001, 1);
-    //policy_evaluation.ComputeStateActionValues(0.001, 1);
-    }
-    grid_world.Show();
-#endif
 }
 
 

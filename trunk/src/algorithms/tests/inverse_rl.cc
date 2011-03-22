@@ -506,6 +506,7 @@ int main (int argc, char** argv)
         statistics.ep_stats[i].discounted_reward /= (float) n_runs;
         statistics.ep_stats[i].steps /= n_runs;
         statistics.ep_stats[i].mse /= n_runs;
+#if 0
 		std::cout << statistics.ep_stats[i].n_runs << " "
 				  << statistics.ep_stats[i].total_reward << " "
                   << statistics.ep_stats[i].discounted_reward << "# REWARD"
@@ -513,15 +514,18 @@ int main (int argc, char** argv)
         std::cout << statistics.ep_stats[i].steps << " "
                   << statistics.ep_stats[i].mse << "# MSE"
                   << std::endl;
+#endif
     }
 
+    #if 0
     for (uint i=0; i<statistics.reward.size(); ++i) {
         statistics.reward[i] /= (float) n_runs;
         std::cout << statistics.n_runs[i] << " "
 				  << statistics.reward[i] << " # INST_PAYOFF"
                   << std::endl;
     }
-    
+    #endif
+
     statistics.DV /= (real) n_runs;
     statistics.DV.printf(stdout); printf("# DV_MEAN\n");
     Vector DV_var(N_COMPARISONS);

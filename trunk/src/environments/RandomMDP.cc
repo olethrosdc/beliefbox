@@ -61,7 +61,7 @@ DiscreteMDP* RandomMDP::getMDP() const
     for (uint s=0; s<terminal_state; ++s) { 
         for (uint a=0; a<n_actions; ++a) {
             mdp->setFixedReward(s, a, step_value);
-        }
+        } 
     }
 
 

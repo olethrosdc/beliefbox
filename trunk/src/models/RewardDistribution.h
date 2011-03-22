@@ -54,17 +54,16 @@ public:
 class DiscreteSpaceRewardDistribution : public RewardDistribution<int, int>
 {
 protected:
+	int n_states; ///< number of states
+	int n_actions; ///< number of actions
     std::vector<Distribution*> R; ///< reward distribution
 	std::vector<Distribution*> distribution_vector; ///< for malloc
 	Vector ER; ///< expected reward
-	int n_states; ///< number of states
-	int n_actions; ///< number of actions
     inline int getID (int s, int a) const
     {
-#ifndef NDEBUG
-        SMART_ASSERT(s>=0 && s<n_states)(s)(n_states);
-        SMART_ASSERT(a>=0 && a<n_actions)(a)(n_actions);
-#endif
+        
+        assert(s>=0 && s<n_states);
+        assert(a>=0 && a<n_actions);
         return s*n_actions + a;
     }
 

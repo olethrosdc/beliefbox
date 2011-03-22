@@ -60,12 +60,15 @@ real GoalStateRewardDistribution::pdf(int state, int action, real reward) const
 // -- General reward distribution for discrete environments -- //
 
 /// Constructor. Set up the default reward to be received
-DiscreteSpaceRewardDistribution::    DiscreteSpaceRewardDistribution(int n_states_, int n_actions_)
+DiscreteSpaceRewardDistribution::DiscreteSpaceRewardDistribution(int n_states_, int n_actions_)
     : n_states(n_states_),
       n_actions(n_actions_),
-	  ER(n_states * n_actions)
+	  R(n_states * n_actions),
+	  ER(n_states * n_actions) 
 {
     // empty
+
+    printf ("%d %d %d %d\n", n_states, n_actions, R.size(), ER.Size());
 }
 
 /// Destructor - remove all distribution vectors
