@@ -14,6 +14,7 @@
 
 #include "RewardDistribution.h"
 #include "Vector.h"
+#include <cassert>
 #include <vector>
 
 
@@ -42,20 +43,21 @@ public:
     spaces.
     
  */
-class FiniteDiscreteRewardBelief
+class FiniteDiscreteRewardBelief : public DiscreteRewardBelief
 {
 protected:
     std::vector<const DiscreteSpaceRewardDistribution*>& rewards; ///< reward distributions
     Vector probabilities; ///< vector of probabilites for each reward distribution
 public:
-    FiniteDiscreteRewardBelief(int n_states_, int n_actions_,
+    FiniteDiscreteRewardBelief(int n_states_,
+                               int n_actions_,
                                std::vector<const DiscreteSpaceRewardDistribution*>& rewards_,
                                Vector probabilities_)
         : DiscreteRewardBelief(n_states_, n_actions_),
           rewards(rewards_),
-          probabilities(probabilites_)
+          probabilities(probabilities_)
     {
-        assert(probabilites.Size() == reward
+        assert(probabilities.Size() == rewards.size());
     }
         
     virtual ~FiniteDiscreteRewardBelief()
@@ -64,3 +66,4 @@ public:
 };
 
 
+#endif
