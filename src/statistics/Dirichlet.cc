@@ -50,6 +50,7 @@ DirichletDistribution::~DirichletDistribution()
 {
 }
 
+/// Generate a multinomial vector
 Vector DirichletDistribution::generate()
 {
     Vector x(n);

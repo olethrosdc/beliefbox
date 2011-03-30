@@ -12,9 +12,15 @@
 #ifndef POLICY_BELIEF_H
 #define POLICY_BELIEF_H
 
+
+
 #include "Dirichlet.h"
 #include "real.h"
 #include <vector>
+
+class DiscretePolicy;
+
+template <class S, class C> class Demonstrations;
 
 /** A belief about rewards in discrete spaces.
     
@@ -34,7 +40,8 @@ public:
     {}
 
     virtual real Update(int state, int action) = 0;
-    virtual real CalculatePosterior(std::vector<int> states, std::vector<int> actions) = 0;
+    virtual real CalculatePosterior(Demonstrations<int, int>& D) =0;
+    virtual DiscretePolicy* Sample() = 0;
 };
 
 
@@ -62,7 +69,8 @@ public:
     {}
 
     virtual real Update(int state, int action);
-    virtual real CalculatePosterior(std::vector<int> states, std::vector<int> actions);
+    virtual real CalculatePosterior(Demonstrations<int, int>& D) =0;
+    virtual DiscretePolicy* Sample();
 };
 
 

@@ -10,7 +10,11 @@
  ***************************************************************************/
 
 #include "PolicyBelief.h"
+#include "DiscretePolicy.h"
+#include "Demonstrations.h"
 
+
+/// Update distribution from a single state-action observation
 real DirichletProductPolicyBelief::Update(int state, int action)
 {
     assert(state >= 0 && state < n_states);
@@ -19,3 +23,28 @@ real DirichletProductPolicyBelief::Update(int state, int action)
     return P[state].Observe(action);
 }
 
+/// Create a new policy
+DiscretePolicy* DirichletProductPolicyBelief::Sample()
+{
+    std::vector<Vector> p_sa(n_states);
+    for (int i=0; i<n_states; ++i) {
+        p_sa[i] = P[i].generate();
+    }
+    DiscretePolicy* policy = new FixedDiscretePolicy(p_sa);
+    return policy;
+}
+
+real DirichletProductPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
+{
+    real log_p = 0;
+    for (uint k=0; k<D.trajectories.size(); ++k) {
+        for (uint t=0; t<D.trajectories[k].x.size(); ++t) {
+            int s = D.trajectories[k].x[t].first;
+            int a = D.trajectories[k].x[t].second;
+            assert(s >= 0 && s < n_states);
+            assert(a >= 0 && a < n_actions);
+            log_p += log(Update(s, a));
+        }
+    }
+    return exp(log_p);
+}

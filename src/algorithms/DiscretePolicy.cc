@@ -16,6 +16,8 @@
 #include "Random.h"
 #include <cmath>
 
+/// Create an uniform discrete policy with a given number of states
+/// and actions.
 FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions)
     : DiscretePolicy()
 {
@@ -32,6 +34,7 @@ FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions)
     }
 }
 
+/// Create a fixed discrete policy from a demonstrator policy
 FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions, Demonstrations<int, int>& D)
   : DiscretePolicy()
 {
@@ -64,7 +67,7 @@ FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions, Demonstrat
 }
 
 
-
+/// Create a fixed discrete policy from a set of probability vectors.
 FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
     : DiscretePolicy()
 {
@@ -76,6 +79,7 @@ FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
 }
 
 
+/// Create a greedy policy from a Q value matrix.
 FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions,
                                           Matrix& Q)
   : DiscretePolicy()
@@ -107,6 +111,7 @@ FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions,
     }
  }
 
+/// Destructor. Does nothing at the moment.
 FixedDiscretePolicy::~FixedDiscretePolicy()
 {
 }
