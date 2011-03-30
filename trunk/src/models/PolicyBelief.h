@@ -12,7 +12,9 @@
 #ifndef POLICY_BELIEF_H
 #define POLICY_BELIEF_H
 
-
+#include "Dirichlet.h"
+#include "real.h"
+#include <vector>
 
 /** A belief about rewards in discrete spaces.
     
@@ -31,8 +33,8 @@ public:
     virtual ~DiscretePolicyBelief()
     {}
 
-    virtual real Update(int state, int action);
-    virtual real CalculatePosterior(std::vecotr<int> states, std::vector<int> actions);
+    virtual real Update(int state, int action) = 0;
+    virtual real CalculatePosterior(std::vector<int> states, std::vector<int> actions) = 0;
 };
 
 
@@ -41,24 +43,28 @@ public:
 /** A belief about rewards in discrete spaces.
     
  */
-class DirichletProductPolicyBelief
+class DirichletProductPolicyBelief : public DiscretePolicyBelief
 {
 protected:
     std::vector<DirichletDistribution> P; ///< dirichlet distribution
 public:
     // only set up
     DirichletProductPolicyBelief(int n_states_, int n_actions_)
-        : DiscretePolicyBelief(n_states_, n_actions_)
+        : DiscretePolicyBelief(n_states_, n_actions_),
+          P(n_states)
     {
+        for (int i=0; i<n_states; ++i) {
+            P[i].resize(n_actions);
+        }
     }
         
-    virtual ~DiscretePolicyBelief()
+    virtual ~DirichletProductPolicyBelief()
     {}
 
     virtual real Update(int state, int action);
-    virtual real CalculatePosterior(std::vecotr<int> states, std::vector<int> actions);
+    virtual real CalculatePosterior(std::vector<int> states, std::vector<int> actions);
 };
 
 
 
-#define
+#endif

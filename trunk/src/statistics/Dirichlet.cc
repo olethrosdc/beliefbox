@@ -96,9 +96,11 @@ real DirichletDistribution::pdf(const Vector& x) const
 }
 
 
-void DirichletDistribution::Observe(int i)
+real DirichletDistribution::Observe(int i)
 {
+    real p = a(i) / a.Sum();
     a(i) += 1.0;
+    return p;
 }
 
 Vector DirichletDistribution::GetParameters() const
