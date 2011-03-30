@@ -39,7 +39,7 @@ public:
 		a += *x;
 	}
     /// When there is only one observation, give it directly.
-    void Observe(int i);
+    real Observe(int i);
     Vector GetParameters() const;
     Vector GetMean() const;
     real& Alpha(int i)
