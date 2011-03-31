@@ -700,6 +700,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_MWGR\n");
 
+        //----------------- imitator ----------------------//
         FixedDiscretePolicy imitating_policy(n_states, n_actions,
                                              demonstrations);
         printf ("imitator policy:\n------------\n");
