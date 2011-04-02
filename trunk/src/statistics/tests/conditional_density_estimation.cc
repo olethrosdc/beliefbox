@@ -33,6 +33,7 @@ static const char* const help_text = "Usage: conditional_density_estimation [opt
     --grid_size:      grid size for plot\n\
     --pdf_test:       test against the actual pdf at given locations\n\
     --test:           test log loss on additional data\n\
+    --kfold:         test on a k-fold rather than a separate set.
 \n";
 
 

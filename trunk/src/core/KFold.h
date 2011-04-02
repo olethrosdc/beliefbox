@@ -1,5 +1,5 @@
 /* -*- Mode: C++; -*- */
-// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -9,14 +9,20 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef READ_FILE_H
-#define READ_FILE_H
-
 #include <vector>
-#include "Matrix.h"
+class Matrix;
 
-int FileToIntVector(std::vector<int>& data, const char* fname, int tmpT);
-int ReadClassData(Matrix& data, std::vector<int>& labels, const char* fname);
-int ReadFloatDataASCII(Matrix& data, const char* fname);
-
-#endif
+/// A simple K-Fold class for easy access
+class KFold
+{
+protected:
+	Matrix& data; ///< the data, to which we need access
+	int K; ///< number of folds
+	int T; ///< total amount of data
+	int N; ///< number of columns in data
+	std::vector<int> assignment; ///< assignment of data to folds
+public:
+	KFold(Matrix& data_, int K_);
+	Matrix getTrainFold(int n);
+	Matrix getTestFold(int n);
+};
