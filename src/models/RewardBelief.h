@@ -61,7 +61,9 @@ public:
     }
         
     virtual ~FiniteDiscreteRewardBelief()
-    {}
+    {
+	}
+
     virtual real Update(int state, int action, real reward);
 };
 

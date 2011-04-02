@@ -12,8 +12,6 @@
 #ifndef POLICY_BELIEF_H
 #define POLICY_BELIEF_H
 
-
-
 #include "Dirichlet.h"
 #include "real.h"
 #include <vector>
@@ -76,3 +74,4 @@ public:
 
 
 #endif
+

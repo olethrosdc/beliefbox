@@ -1,6 +1,7 @@
 /* -*- Mode: C++; -*- */
 // VER: $Id: Distribution.c,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $
 // copyright (c) 2004 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// Adapted from Torch, by Ronan Cololbert et al.
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -35,8 +36,6 @@ void MersenneTwister::seed()
 
 ///////////// The next 4 methods are taken from http://www.math.keio.ac.jp/matumoto/emt.html
 ///////////// Here is the copyright:
-///////////// Some minor modifications have been made to adapt to "my" C++...
-
 /*
    A C-program for MT19937, with initialization improved 2002/2/10.
    Coded by Takuji Nishimura and Makoto Matsumoto.
