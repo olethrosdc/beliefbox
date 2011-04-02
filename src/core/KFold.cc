@@ -18,31 +18,31 @@
 /// Constructor
 KFold::KFold(Matrix& data_, int K_)
 	: data(data_),
-	  K(K_),
-	  T(data.Rows()),
-	  N(data.Columns()),
-	  assignment(T)
+	  n_folds(K_),
+	  n_records(data.Rows()),
+	  n_columns(data.Columns()),
+	  assignment(n_records),
+	  totals(n_folds)
 {
-
 	MersenneTwisterRNG rng;
-	rng.manualSeed(1801174128);
-	std::vector<int> totals(K);
-	for (int k=0; k<K; ++k) {
+	rng.manualSeed(1801174128); 
+	std::vector<int> totals(n_folds);
+	for (int k=0; k<n_folds; ++k) {
 		totals[k] = 0;
 	}
-	for (int t=0; t<T; ++T) {
-		int x = rng.discrete_uniform(K);
+	for (int t=0; t<n_records; ++t) {
+		int x = rng.discrete_uniform(n_folds);
 		assignment[t] = x;
 		totals[x] ++;
 	}
 	bool flag = true;
 	while (flag) {
 		flag = false;
-		for (int k=0; k<K; ++k) {
+		for (int k=0; k<n_folds; ++k) {
 			if (totals[k] == 0) {
 				flag = true;
 				// choose a random, assigned part
-				int t = rng.discrete_uniform(T);
+				int t = rng.discrete_uniform(n_records);
 				int swapped = assignment[t];
 				assignment[t] = k;
 				totals[k]++;
@@ -52,3 +52,39 @@ KFold::KFold(Matrix& data_, int K_)
 	}
 }
 
+Matrix KFold::getTrainFold(int n)
+{
+	assert(n>=0 && n<n_folds);
+
+	int M = n_records - totals[n];
+	Matrix fold(M, n_columns);
+	int m = 0;
+	for (int t=0; t<n_records; ++t) {
+		if (assignment[t]!=n) {
+			for (int i=0; i<n_columns; ++i) {
+				fold(m, i) = data(t, i);
+			}
+			m++;
+		}
+	}
+	return fold;
+}
+
+
+Matrix KFold::getTestFold(int n)
+{
+	assert(n>=0 && n<n_folds);
+
+	int M = totals[n];
+	Matrix fold(M, n_columns);
+	int m = 0;
+	for (int t=0; t<n_records; ++t) {
+		if (assignment[t]!=n) {
+			for (int i=0; i<n_columns; ++i) {
+				fold(m, i) = data(t, i);
+			}
+			m++;
+		}
+	}
+	return fold;
+}

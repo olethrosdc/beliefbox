@@ -17,10 +17,11 @@ class KFold
 {
 protected:
 	Matrix& data; ///< the data, to which we need access
-	int K; ///< number of folds
-	int T; ///< total amount of data
-	int N; ///< number of columns in data
+	int n_folds; ///< number of folds
+	int n_records; ///< total amount of data
+	int n_columns; ///< number of columns in data
 	std::vector<int> assignment; ///< assignment of data to folds
+	std::vector<int> totals; ///< the total number of data per assignment
 public:
 	KFold(Matrix& data_, int K_);
 	Matrix getTrainFold(int n);
