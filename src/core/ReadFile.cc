@@ -103,7 +103,7 @@ int ReadClassData(Matrix& data, std::vector<int>& labels, const char* fname)
     returns:
     number of lines read
  */
-int ReadFloatDataASCII(Matrix& data, const char* fname) 
+int ReadFloatDataASCII(Matrix& data, const char* fname, int tmpT) 
 {
     FILE* file = fopen(fname, "r");
     if (!file) {
@@ -118,7 +118,9 @@ int ReadFloatDataASCII(Matrix& data, const char* fname)
             Serror("Could not scan file %s - T =%d - retval: %d - errno %d\n", fname, T, success, errno);
             exit(-1);
 	}
-    
+	if (tmpT > 0) {
+		T = std::min<int>(T, tmpT);
+	}
     printf("# horizon: %d, columns: %d\n", T, columns);
     data.Resize(T, columns);
 

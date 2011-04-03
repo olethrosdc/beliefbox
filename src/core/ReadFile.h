@@ -17,6 +17,6 @@
 
 int FileToIntVector(std::vector<int>& data, const char* fname, int tmpT);
 int ReadClassData(Matrix& data, std::vector<int>& labels, const char* fname);
-int ReadFloatDataASCII(Matrix& data, const char* fname);
+int ReadFloatDataASCII(Matrix& data, const char* fname, int tmpT = 0);
 
 #endif
