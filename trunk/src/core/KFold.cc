@@ -26,7 +26,6 @@ KFold::KFold(Matrix& data_, int K_)
 {
 	MersenneTwisterRNG rng;
 	rng.manualSeed(1801174128); 
-	std::vector<int> totals(n_folds);
 	for (int k=0; k<n_folds; ++k) {
 		totals[k] = 0;
 	}
@@ -50,6 +49,11 @@ KFold::KFold(Matrix& data_, int K_)
 			}
 		}
 	}
+	printf("# Making %d-fold with totals: ", n_folds);
+	for (int k=0; k<n_folds; ++k) {
+		printf ("%d ", totals[k]);
+	}
+	printf("\n");
 }
 
 Matrix KFold::getTrainFold(int n)
@@ -79,7 +83,7 @@ Matrix KFold::getTestFold(int n)
 	Matrix fold(M, n_columns);
 	int m = 0;
 	for (int t=0; t<n_records; ++t) {
-		if (assignment[t]!=n) {
+		if (assignment[t]==n) {
 			for (int i=0; i<n_columns; ++i) {
 				fold(m, i) = data(t, i);
 			}

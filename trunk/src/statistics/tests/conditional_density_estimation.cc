@@ -13,11 +13,12 @@
 #include "ContextTreeKDTree.h"
 #include "ConditionalKDContextTree.h"
 #include "Random.h"
-#include <vector>
 #include "EasyClock.h"
 #include "NormalDistribution.h"
 #include "BetaDistribution.h"
 #include "ReadFile.h"
+#include "KFold.h"
+#include <vector>
 #include <cstring>
 #include <getopt.h>
 
@@ -33,21 +34,39 @@ static const char* const help_text = "Usage: conditional_density_estimation [opt
     --grid_size:      grid size for plot\n\
     --pdf_test:       test against the actual pdf at given locations\n\
     --test:           test log loss on additional data\n\
-    --kfold:         test on a k-fold rather than a separate set.
+    --kfold:         test on a k-fold rather than a separate set.\n\
 \n";
 
 
+
+struct LocalOptions{
+	int T;
+	int max_depth;
+	int max_depth_cond;
+	bool joint;
+	char* filename;
+	char* test_filename;
+	char* pdf_test_filename;
+	int n_inputs;
+	int grid_size;
+	int kfold;
+};
+
+void train_and_test(Matrix& data, Matrix& test_data, LocalOptions& options);
+
 int main (int argc, char** argv)
 {
-    int T = 0;
-    int max_depth = 8;
-    int max_depth_cond = 8;
-    bool joint = false;
-    char* filename = NULL;
-    char* test_filename = NULL;
-    char* pdf_test_filename = NULL;
-    int n_inputs = 1;
-    int grid_size = 256;
+	LocalOptions options;
+    options.T = 0;
+    options.max_depth = 8;
+    options.max_depth_cond = 8;
+    options.joint = false;
+    options.filename = NULL;
+    options.test_filename = NULL;
+    options.pdf_test_filename = NULL;
+    options.n_inputs = 1;
+    options.grid_size = 0;
+	options.kfold = 0;
 
     {
         // options
@@ -66,6 +85,7 @@ int main (int argc, char** argv)
                 {"grid_size", required_argument, 0, 0}, // 6
                 {"test", required_argument, 0, 0}, // 7
                 {"pdf_test", required_argument, 0, 0}, // 8
+                {"kfold", required_argument, 0, 0}, // 9
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -82,15 +102,16 @@ int main (int argc, char** argv)
                 printf ("\n");
 #endif
                 switch (option_index) {
-                case 0: T = atoi(optarg); break;
-                case 1: max_depth = atoi(optarg); break;
-                case 2: max_depth_cond = atoi(optarg); break;
-                case 3: joint = true; break;
-                case 4: filename = optarg; break;
-                case 5: n_inputs = atoi(optarg); break;
-                case 6: grid_size = atoi(optarg); assert(grid_size > 0); break;
-                case 7: test_filename = optarg; break;
-                case 8: pdf_test_filename = optarg; break;
+                case 0: options.T = atoi(optarg); break;
+                case 1: options.max_depth = atoi(optarg); break;
+                case 2: options.max_depth_cond = atoi(optarg); break;
+                case 3: options.joint = true; break;
+                case 4: options.filename = optarg; break;
+                case 5: options.n_inputs = atoi(optarg); break;
+                case 6: options.grid_size = atoi(optarg); assert(options.grid_size >= 0); break;
+                case 7: options.test_filename = optarg; break;
+                case 8: options.pdf_test_filename = optarg; break;
+                case 9: options.kfold = atoi(optarg); break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -122,33 +143,58 @@ int main (int argc, char** argv)
     }
 
     Matrix data;
-    int n_records = ReadFloatDataASCII(data, filename);
+    int n_records = ReadFloatDataASCII(data, options.filename, options.T);
     assert(n_records == data.Rows());
-    if (T > 0) {
-        T = std::min<int>(T, n_records);
-    } else {
-        T = n_records;
-    }
-    int data_dimension = data.Columns();
 
-    if (T < 0) {
-        Serror("T should be >= 0\n");
-        exit(-1);
-    }
-
-
-    if (max_depth <= 0) {
+    if (options.max_depth <= 0) {
         Serror("max_depth should be >= 0\n");
         exit(-1);
     }
 
 
-    if (max_depth_cond <= 0) {
+    if (options.max_depth_cond <= 0) {
         Serror("max_depth_cond should be >= 0\n");
         exit(-1);
     }
+	
+	if (options.test_filename && options.kfold > 0) {
+		Matrix test_data;
+        int n_test = ReadFloatDataASCII(test_data, options.test_filename);
+		if (n_test > 0) {
+			train_and_test(data, test_data, options);
+		} else {
+			fprintf(stderr, "Failed to load test data\n");
+			exit(-1);
+		}
+		KFold k_fold(data, options.kfold);
+		for (int i=0; i<options.kfold; ++i) {
+			Matrix train_data = k_fold.getTrainFold(i);
+			train_and_test(train_data, test_data, options);
+		}
+	} else if (options.test_filename && !options.kfold) {
+		Matrix test_data;
+        int n_test = ReadFloatDataASCII(test_data, options.test_filename);
+		if (n_test > 0) {
+			train_and_test(data, test_data, options);
+		} else {
+			fprintf(stderr, "Failed to load test data\n");
+			exit(-1);
+		}
+	} else if (options.kfold > 0) {
+		KFold k_fold(data, options.kfold);
+		for (int i=0; i<options.kfold; ++i) {
+			Matrix train_data = k_fold.getTrainFold(i);
+			Matrix test_data = k_fold.getTestFold(i);
+			train_and_test(train_data, test_data, options);
+		}
+	}
 
-    
+}
+
+void train_and_test(Matrix& data, Matrix& test_data, LocalOptions& options)
+{ 
+	int n_inputs = options.n_inputs;
+    int data_dimension = data.Columns();
 	Vector lower_bound(data_dimension);
 	Vector upper_bound(data_dimension);
 	Vector lower_bound_x(n_inputs);
@@ -156,7 +202,7 @@ int main (int argc, char** argv)
     int n_outputs = data_dimension - n_inputs;
 	Vector lower_bound_y(n_outputs);
 	Vector upper_bound_y(n_outputs);
-	for (int t=0; t<T; ++t) {
+	for (int t=0; t<data.Rows(); ++t) {
         for (int i=0; i<data_dimension; ++i) {
             real x = data(t, i);
             //printf ("%f ", x);
@@ -176,9 +222,9 @@ int main (int argc, char** argv)
         lower_bound_y(i) = lower_bound(i + n_inputs);
         upper_bound_y(i) = upper_bound(i + n_inputs);
 	}
-
-    printf ("# T: %d\n", T);
-    printf ("# Joint: %d\n", joint);
+	
+    printf ("# T: %d\n", options.T);
+    printf ("# Joint: %d\n", options.joint);
     printf ("# L: "); lower_bound.print(stdout);
     printf ("# U: "); upper_bound.print(stdout);
     printf ("# LX: "); lower_bound_x.print(stdout);
@@ -190,17 +236,17 @@ int main (int argc, char** argv)
     ContextTreeKDTree* pdf = NULL;
     ConditionalKDContextTree* cpdf = NULL;
     
-    if (joint) {
-        pdf = new ContextTreeKDTree (2, max_depth, lower_bound, upper_bound);
+    if (options.joint) {
+        pdf = new ContextTreeKDTree (2, options.max_depth, lower_bound, upper_bound);
     } else {
         cpdf = new ConditionalKDContextTree(2,
-                                            max_depth, max_depth_cond,
+                                            options.max_depth, options.max_depth_cond,
                                             lower_bound_x, upper_bound_x,
                                             lower_bound_y, upper_bound_y);
     }
 	Vector z(data_dimension);
 	real log_loss = 0;
-    for (int t=0; t<T; ++t) {
+    for (int t=0; t<data.Rows(); ++t) {
         z = data.getRow(t);
 #if 0
         for (int i=0; i<z.Size(); ++i) {
@@ -232,14 +278,14 @@ int main (int argc, char** argv)
     }
     
 
-	printf ("%f # AVERAGE LOG LOSS\n", log_loss / (real) T);
-    if (grid_size) {
-        if (joint) {
+	printf ("%f # AVERAGE LOG LOSS\n", log_loss / (real) data.Rows());
+    if (options.grid_size) {
+        if (options.joint) {
             Vector v(data_dimension);
             if (data_dimension==1) {
                 real min_axis = Min(lower_bound);
                 real max_axis = Max(upper_bound);
-                real step = (max_axis - min_axis) / (real) grid_size;
+                real step = (max_axis - min_axis) / (real) options.grid_size;
                 printf ("# MIN AXIS: %f\n", min_axis);
                 printf ("# MAX AXIS: %f\n", max_axis);
                 printf ("# STEP: %f\n", step);
@@ -249,7 +295,7 @@ int main (int argc, char** argv)
                     printf ("%f %f # P_XY\n", z, pdf->pdf(v));
                 }
             } else {
-                Vector step = (upper_bound - lower_bound) / (real) grid_size;
+                Vector step = (upper_bound - lower_bound) / (real) options.grid_size;
 
                 printf ("# MIN AXIS:"); lower_bound.print(stdout);
                 printf ("# MAX AXIS:"); upper_bound.print(stdout);
@@ -295,7 +341,7 @@ int main (int argc, char** argv)
         } else {
             real min_axis = Min(lower_bound);
             real max_axis = Max(upper_bound);
-            real step = (max_axis - min_axis) / (real) grid_size;
+            real step = (max_axis - min_axis) / (real) options.grid_size;
 
             printf ("# MIN AXIS: %f\n", min_axis);
             printf ("# MAX AXIS: %f\n", max_axis);
@@ -312,7 +358,8 @@ int main (int argc, char** argv)
                 printf(" # P_Y_X\n");
             }
         }
-    }
+    } // options.grid_size
+
     if (pdf) {
         printf ("PDF model\n");
         pdf->Show();
@@ -325,9 +372,8 @@ int main (int argc, char** argv)
     // ------------------ tests --------------------- //
     
     // Test against a PDF
-    if (pdf_test_filename) {
-        Matrix test_data;
-        int n_test = ReadFloatDataASCII(test_data, test_filename);
+    if (test_data.Rows() > 0) {
+		int n_test = test_data.Rows();
         real mse = 0;
         real abs = 0;
         if (pdf) {
@@ -348,9 +394,8 @@ int main (int argc, char** argv)
     }
     
     // Test against prediction.
-    if (test_filename) {
-        Matrix test_data;
-        int n_test = ReadFloatDataASCII(test_data, test_filename);
+    if (test_data.Rows()) {
+        int n_test = test_data.Rows();
         real log_loss = 0;
         for (int t=0; t<n_test; ++t) {
             Vector z = test_data.getRow(t);
@@ -375,7 +420,6 @@ int main (int argc, char** argv)
 
     delete cpdf;
     delete pdf;
-    return 0;
 }
 
 #endif
