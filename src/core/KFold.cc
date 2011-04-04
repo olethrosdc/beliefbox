@@ -56,11 +56,14 @@ KFold::KFold(Matrix& data_, int K_)
 	printf("\n");
 }
 
-Matrix KFold::getTrainFold(int n)
+Matrix KFold::getTrainFold(int n, int T)
 {
 	assert(n>=0 && n<n_folds);
 
 	int M = n_records - totals[n];
+	if (T > 0 && T < M) {
+		M = T;
+	}
 	Matrix fold(M, n_columns);
 	int m = 0;
 	for (int t=0; t<n_records; ++t) {
@@ -68,26 +71,33 @@ Matrix KFold::getTrainFold(int n)
 			for (int i=0; i<n_columns; ++i) {
 				fold(m, i) = data(t, i);
 			}
-			m++;
+			if (++m >= M) {
+				break;
+			}
 		}
 	}
 	return fold;
 }
 
 
-Matrix KFold::getTestFold(int n)
+Matrix KFold::getTestFold(int n, int T)
 {
 	assert(n>=0 && n<n_folds);
 
 	int M = totals[n];
 	Matrix fold(M, n_columns);
+	if (T > 0 && T < M) {
+		M = T;
+	}
 	int m = 0;
 	for (int t=0; t<n_records; ++t) {
 		if (assignment[t]==n) {
 			for (int i=0; i<n_columns; ++i) {
 				fold(m, i) = data(t, i);
 			}
-			m++;
+			if (++m >= M) {
+				break;
+			}
 		}
 	}
 	return fold;

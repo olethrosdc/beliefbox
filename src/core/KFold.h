@@ -24,6 +24,6 @@ protected:
 	std::vector<int> totals; ///< the total number of data per assignment
 public:
 	KFold(Matrix& data_, int K_);
-	Matrix getTrainFold(int n);
-	Matrix getTestFold(int n);
+	Matrix getTrainFold(int n, int T=0);
+	Matrix getTestFold(int n, int T=0);
 };
