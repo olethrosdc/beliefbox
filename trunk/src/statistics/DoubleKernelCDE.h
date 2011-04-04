@@ -54,6 +54,7 @@ public:
     void BootstrapBandwidth();
     void Show()
     {
+		printf ("# Double Kernel CDE\n");
     }
 };
 

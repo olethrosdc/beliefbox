@@ -88,6 +88,7 @@ void DoubleKernelCDE::BootstrapBandwidth()
 
     real current_b = b_x;
     real log_p = LOG_ZERO;
+	int n_breaks = 0;
     while (1) {
         kde.b_x = current_b;
         kde.b_y = current_b;
@@ -110,7 +111,10 @@ void DoubleKernelCDE::BootstrapBandwidth()
             fprintf (stderr, "b: %f = %f (%f %f) # bandwidth found\n",
                      b_x, current_b,
                      log_p, current_log_p);
-            break;
+			if (++n_breaks >= 10) {
+				break;
+			}
+			current_b *= 2.1;
         }
         
         current_b *= 0.5;
