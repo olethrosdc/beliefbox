@@ -51,7 +51,7 @@ public:
     real Observe(const Vector& x, const Vector& y); 
     real pdf(const Vector& x, const Vector& y);
     real log_pdf(const Vector& x, const Vector& y);
-    void BootstrapBandwidth();
+    void BootstrapBandwidth(bool stochastic = false);
     void Show()
     {
 		printf ("# Double Kernel CDE\n");

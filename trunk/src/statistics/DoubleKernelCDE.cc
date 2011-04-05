@@ -71,7 +71,7 @@ real DoubleKernelCDE::log_pdf(const Vector& x, const Vector& y)
     return log_P - log_Z - log(b_y);
 }
 
-void DoubleKernelCDE::BootstrapBandwidth()
+void DoubleKernelCDE::BootstrapBandwidth(bool stochastic)
 {
     DoubleKernelCDE kde(n_x, n_y, b_x);
     std::vector<PointPair> test_data;
@@ -79,19 +79,23 @@ void DoubleKernelCDE::BootstrapBandwidth()
     for (std::vector<PointPair>::iterator it = D.begin();
          it != D.end();
          ++it) {
-        if (urandom() < 0.3) {
+        if (urandom() < 0.1) {
             test_data.push_back(*it);
         } else {
             kde.AddPoint(it->x, it->y);
         }
     }
 
-    real current_b = b_x;
+    real current_b_x = b_x;
+    real current_b_y = b_y;
+    real best_x = b_x;
+    real best_y = b_y;
     real log_p = LOG_ZERO;
 	int n_breaks = 0;
+    int dim = 1;
     while (1) {
-        kde.b_x = current_b;
-        kde.b_y = current_b;
+        kde.b_x = current_b_x;
+        kde.b_y = current_b_y;
         // Get log-likelihood of b.
         real current_log_p = 0;
         for (std::vector<PointPair>::iterator p = test_data.begin();
@@ -99,29 +103,51 @@ void DoubleKernelCDE::BootstrapBandwidth()
              ++p) {
             current_log_p += kde.log_pdf(p->x, p->y);
         }        
-
+        dim = 1 - dim;
+        
         if (current_log_p > log_p) {
-            fprintf (stderr, "b: %f -> %f (%f %f) # bandwidth changed\n",
-                     b_x, current_b,
+            fprintf (stderr, "b: %f %f -> %f %f (%f %f) # bandwidth changed\n",
+                     b_x, b_y, current_b_x, current_b_y,
                      log_p, current_log_p);
-            b_x = current_b;
-            b_y = current_b;
+            b_x = current_b_x;
+            b_y = current_b_y;
+            best_x = b_x;
+            best_y = b_y;
             log_p = current_log_p;
         } else {
-            fprintf (stderr, "b: %f <= %f (%f %f) # bandwidth unchanged\n",
-                     b_x, current_b,
-                     log_p, current_log_p);
-			if (++n_breaks >= 10) {
+            //fprintf (stderr, "b: %f %f <= %f %f(%f %f) # bandwidth unchanged\n",
+            //b_x, b_y, current_b_x, current_b_y,
+            //log_p, current_log_p);
+			if (++n_breaks >= 1000) {
 				break;
 			}
-			current_b = (b_x + current_b);
+            if (!stochastic) {
+                current_b_x = (b_x + current_b_x);
+                current_b_y = (b_x + current_b_y);
+            } else {
+                fprintf (stderr,
+                         "b: %f %f ~> %f %f (%f %f) # bandwidth sampled\n",
+                         b_x, b_y, current_b_x, current_b_y,
+                         log_p, current_log_p);
+                
+                if (log(urandom()) < current_log_p - log_p) {
+                    b_x = current_b_x;
+                    b_y = current_b_y;
+                    log_p = current_log_p;
+                    
+                }
+            }
         }
-        
-        current_b *= 0.5;
-
+        if (stochastic) {
+            current_b_x = urandom();
+            current_b_y = urandom();
+        } else {
+            current_b_x *= 0.5;
+            current_b_y *= 0.5;
+        }
     }
-
-    
+    b_x = best_x;
+    b_y = best_y;
 }
 
 
