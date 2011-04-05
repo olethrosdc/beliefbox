@@ -101,20 +101,20 @@ void DoubleKernelCDE::BootstrapBandwidth()
         }        
 
         if (current_log_p > log_p) {
-            fprintf (stderr, "b: %f -> %f (%f %f) # bandwidth reduced\n",
+            fprintf (stderr, "b: %f -> %f (%f %f) # bandwidth changed\n",
                      b_x, current_b,
                      log_p, current_log_p);
             b_x = current_b;
             b_y = current_b;
             log_p = current_log_p;
         } else {
-            fprintf (stderr, "b: %f = %f (%f %f) # bandwidth found\n",
+            fprintf (stderr, "b: %f <= %f (%f %f) # bandwidth unchanged\n",
                      b_x, current_b,
                      log_p, current_log_p);
 			if (++n_breaks >= 10) {
 				break;
 			}
-			current_b *= 2.1;
+			current_b = (b_x + current_b);
         }
         
         current_b *= 0.5;
