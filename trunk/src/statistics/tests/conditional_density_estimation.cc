@@ -21,6 +21,7 @@
 #include "BetaDistribution.h"
 #include "Random.h"
 #include "EasyClock.h"
+#include "MersenneTwister.h"
 #include <vector>
 #include <cstring>
 #include <getopt.h>
@@ -61,12 +62,31 @@ struct LocalOptions{
 	real bandwidth;
 	bool tune_bandwidth;
 	bool double_kernel;
+    real noise_level;
 };
 
 void train_and_test(Matrix& data, Matrix& test_data, LocalOptions& options);
 void tree_train_and_test(Matrix& data, Matrix& test_data, LocalOptions& options);
 void kernel_train_and_test(Matrix& data, Matrix& test_data, LocalOptions& options);
 
+void Noisify(Matrix& data, real noise_level)
+{
+    if (noise_level == 0) {
+        printf("# Adding no noise\n");
+        return;
+    } 
+    printf("# Adding uniform noise %f\n", noise_level);
+
+    MersenneTwisterRNG rng;
+    rng.manualSeed(1849435425); // to ensure consistent noise is added
+    int T = data.Rows();
+    int n = data.Columns();
+    for (int i=0; i<T; ++i) {
+        for (int j=0; j<n; ++j) {
+            data(i,j) += noise_level*(rng.uniform() - 0.5);
+        }
+    }
+}
 int main (int argc, char** argv)
 {
 	LocalOptions options;
@@ -84,6 +104,7 @@ int main (int argc, char** argv)
 	options.double_kernel = false;
 	options.bandwidth = 1.0;
 	options.tune_bandwidth = false;
+    options.noise_level = 0;
     {
         // options
         int c;
@@ -106,6 +127,7 @@ int main (int argc, char** argv)
                 {"bandwidth", required_argument, 0, 0}, // 11
                 {"tune_bandwidth", no_argument, 0, 0}, // 12
                 {"double_kernel", no_argument, 0, 0}, // 13
+                {"noise", required_argument, 0, 0}, // 14
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -136,6 +158,7 @@ int main (int argc, char** argv)
                 case 11: options.bandwidth = atof(optarg); break;
                 case 12: options.tune_bandwidth = true; break;
                 case 13: options.kernel = true; options.double_kernel = true; printf("double\n"); break;
+                case 14: options.noise_level = atof(optarg); break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -211,11 +234,13 @@ int main (int argc, char** argv)
 		for (int i=0; i<options.kfold; ++i) {
 			printf("# Fold %d\n", i);
 			Matrix train_data = k_fold.getTrainFold(i);
+            Noisify(train_data, options.noise_level);
 			train_and_test(train_data, test_data, options);
 		}
 	} else if (options.test_filename && !options.kfold) {
 		Matrix data;
 		int n_records = ReadFloatDataASCII(data, options.filename, options.T);
+        Noisify(data, options.noise_level);
 		if (n_records <= 0) {
 			Serror("Failed to read train data\n");
 			exit(-1);
@@ -239,6 +264,7 @@ int main (int argc, char** argv)
 		for (int i=0; i<options.kfold; ++i) {
 			printf("# Fold %d\n", i);
 			Matrix train_data = k_fold.getTrainFold(i, options.T);
+            Noisify(train_data, options.noise_level);
 			Matrix test_data = k_fold.getTestFold(i);
 			train_and_test(train_data, test_data, options);
 		}
