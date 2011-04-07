@@ -286,7 +286,7 @@ int main (int argc, char** argv)
         } else if (!strcmp(environment_name, "Chain")) { 
             environment = new DiscreteChain (n_states);
         } else if (!strcmp(environment_name, "Optimistic")) { 
-            environment = new OptimisticTask (0.1, 0.01);
+            environment = new OptimisticTask (0.1, 0.001);
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
@@ -309,6 +309,9 @@ int main (int argc, char** argv)
         OnlineAlgorithm<int, int>* algorithm = NULL;
         MDPModel* model = NULL;
         //Gridworld* g2 = gridworld;
+        if (!strcmp(algorithm_name, "Oracle")) {
+            algorithm = NULL;
+        }
         if (!strcmp(algorithm_name, "Sarsa")) { 
             algorithm = new Sarsa(n_states,
                                   n_actions,
@@ -559,18 +562,17 @@ Statistics EvaluateAlgorithm (int episode_steps,
 {
     std:: cout << "evaluating..." << environment->Name() << std::endl;
     
-#if 0
     const DiscreteMDP* mdp = environment->getMDP(); 
-    //ValueIteration value_iteration(mdp, gamma);
+    ValueIteration value_iteration(mdp, gamma);
+    value_iteration.ComputeStateValues(0.001);
+    FixedSoftmaxPolicy softmax_policy(value_iteration.Q, 1.0);
+
     if (!mdp) {
         Serror("The environment must support the creation of an MDP\n");
         exit(-1);
     }
     std:: cout << "(value iteration)" << std::endl;
-    //value_iteration.ComputeStateActionValues(10e-6,1000);
-    int n_states = mdp->GetNStates();
-    int n_actions = mdp->GetNActions();
-#endif
+    
 
     Statistics statistics;
     statistics.ep_stats.reserve(n_episodes); 
@@ -602,7 +604,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
 				statistics.ep_stats[episode].steps = 0;
 				discount = 1.0;
 				environment->Reset();
-				algorithm->Reset();
+                if (algorithm) {
+                    algorithm->Reset();
+                }
 				action_ok = true;
 				current_time = 0;
 			}
@@ -618,7 +622,12 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		statistics.ep_stats[episode].discounted_reward += discount * reward;
 		discount *= gamma;
 
-		int action = algorithm->Act(reward, state);
+		int action;
+        if (algorithm) {
+            action = algorithm->Act(reward, state);
+        } else {
+            action = softmax_policy.SelectAction();
+        }
 		//std::cout << "t:" << current_time << " s:" << state << " r:" << reward << " a:" << action << std::endl;
 		action_ok = environment->Act(action);
 		current_time++;

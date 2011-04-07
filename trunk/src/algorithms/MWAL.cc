@@ -114,7 +114,7 @@ void MWAL::Compute(DiscreteMDP& original_mdp, real gamma, real epsilon, int T)
                 mean_policy.p[s](a) += p_sa;
             }
         }
-        if (delta < epsilon) {
+        if (delta < epsilon ) {
             printf ("Breaking at %d instead of %d\n", t, T);
             T = t;
         }
