@@ -164,7 +164,8 @@ real ContextTreeKDTree::Node::Observe(const Vector& x,
     alpha[k] ++;
     S++;
 
-    real threshold = 1; //log(depth);
+    //real threshold = 1; //log(depth);
+    real threshold = pow(1.1, (real) depth); 
     if ((tree.max_depth==0 || depth < tree.max_depth) && S >  threshold) {
         if (!next[k]) {
             if (k == 0) {
@@ -251,7 +252,8 @@ real ContextTreeKDTree::Node::pdf(const Vector& x,
 
     P =  (1.0 + alpha[k]) / (2.0 + S);
 
-    real threshold = 1;
+    //real threshold = 1;
+    real threshold = pow(1.1, (real) depth); 
     if (S >  threshold && next[k]) {
         P *= next[k]->pdf(x, P);
     } else {
