@@ -584,7 +584,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		discount *= gamma;
 		//std::cout << "Acting!\n";
 		int action = algorithm->Act(reward, state);
-		std::cout << "# runlog t:" << current_time << " s:" << state << " r:" << reward << " a:" << action << std::endl;
+		//std::cout << "# runlog t:" << current_time << " s:" << state << " r:" << reward << " a:" << action << std::endl;
 		action_ok = environment->Act(action);
 		current_time++;
 
@@ -608,7 +608,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 	if ((int) statistics.ep_stats.size() != n_episodes) {
 		statistics.ep_stats.resize(statistics.ep_stats.size() - 1);
 	}
-	fprintf (stderr, "Exiting after %d episodes, %d steps (%d %d)\n",
+	printf ("# Exiting after %d episodes, %d steps (%d %d)\n",
 			 episode, n_steps,
 			 statistics.ep_stats.size(),
 			 statistics.reward.size());
