@@ -11,13 +11,11 @@
  ***************************************************************************/
 
 #ifdef MAKE_MAIN
+
+// -- Algorithms and models -- //
 #include "PolicyEvaluation.h"
 #include "PolicyIteration.h"
 #include "ValueIteration.h"
-#include "RandomMDP.h"
-#include "Gridworld.h"
-#include "OneDMaze.h"
-#include "InventoryManagement.h"
 #include "DiscretePolicy.h"
 #include "Environment.h"
 #include "ExplorationPolicy.h"
@@ -32,11 +30,25 @@
 #include "ContextBandit.h"
 #include "DiscreteMDPCollection.h"
 #include "ContextBanditCollection.h"
-#include "RandomNumberFile.h"
-#include "MersenneTwister.h"
+#include "HQLearning.h"
+
+// -- Discrete environments -- //
+#include "RandomMDP.h"
+#include "Gridworld.h"
+#include "OneDMaze.h"
+#include "DiscreteChain.h"
+#include "OptimisticTask.h"
+#include "InventoryManagement.h"
+
+// -- Continuous environments -- //
 #include "MountainCar.h"
 #include "DiscretisedEnvironment.h"
-#include "HQLearning.h"
+
+// -- Randomness -- //
+#include "RandomNumberFile.h"
+#include "MersenneTwister.h"
+
+// -- Usual includes -- //
 #include <cstring>
 #include <getopt.h>
 
@@ -74,7 +86,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
     --algorithm:   {QLearning, Model, Sarsa, Sampling}\n\
-    --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld}\n\
+    --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}\n\
     --n_states:    number of states (usually there is no need to specify it)\n\
     --n_actions:   number of actions (usually there is no need to specify it)\n\
     --gamma:       reward discounting in [0,1]\n\
@@ -255,6 +267,10 @@ int main (int argc, char** argv)
             environment = new ContextBandit(n_actions, 3, 4, rng);
         } else if (!strcmp(environment_name, "OneDMaze")) { 
             environment = new OneDMaze(n_states, rng);
+        } else if (!strcmp(environment_name, "Chain")) { 
+            environment = new DiscreteChain (n_states);
+        } else if (!strcmp(environment_name, "Optimistic")) { 
+            environment = new OptimisticTask (0.1, 0.01);
         } else if (!strcmp(environment_name, "MountainCar")) { 
             MountainCar continuous_mountain_car;
             continuous_mountain_car.setRandomness(randomness);
@@ -476,7 +492,7 @@ int main (int argc, char** argv)
         statistics.ep_stats[i].mse /= n_runs;
 		std::cout << statistics.ep_stats[i].n_runs << " "
 				  << statistics.ep_stats[i].total_reward << " "
-                  << statistics.ep_stats[i].discounted_reward << "# REWARD"
+                  << statistics.ep_stats[i].discounted_reward << " # REWARD"
                   << std::endl;
         std::cout << statistics.ep_stats[i].steps << " "
                   << statistics.ep_stats[i].mse << "# MSE"
@@ -511,7 +527,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 							  DiscreteEnvironment* environment,
 							  real gamma)
 {
-    std:: cout << "evaluating..." << environment->Name() << std::endl;
+    std:: cout << "# evaluating..." << environment->Name() << std::endl;
     
 #if 0
     const DiscreteMDP* mdp = environment->getMDP(); 
@@ -540,6 +556,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
     for (uint step = 0; step < n_steps; ++step) {
 		if (!action_ok) {
 			episode++;
+			printf ("# episode %d complete\n", episode);
 			if (n_episodes >= 0 && episode >= n_episodes) {
 				fprintf (stderr, "Breaking after %d episodes,  %d steps\n",
 						 episode, step);
@@ -567,7 +584,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		discount *= gamma;
 		//std::cout << "Acting!\n";
 		int action = algorithm->Act(reward, state);
-		//std::cout << "t:" << current_time << "s:" << state << " r:" << reward << " a:" << action << std::endl;
+		std::cout << "# runlog t:" << current_time << " s:" << state << " r:" << reward << " a:" << action << std::endl;
 		action_ok = environment->Act(action);
 		current_time++;
 

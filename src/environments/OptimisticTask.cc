@@ -1,5 +1,7 @@
 #include "OptimisticTask.h"
 
+/// In the optimistic task, you get reward epsilon in the normal
+/// state, reward 1 in the good state.
 OptimisticTask::OptimisticTask(real epsilon_, real delta_) 
     : Environment<int, int> (3, 2),
       epsilon(epsilon_),
