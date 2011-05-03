@@ -17,17 +17,34 @@
 #include "RandomNumberGenerator.h"
 #include "DiscreteMDP.h"
 
-/// OneD Maze.
+/// A simple environment to test exploration.
 ///
+/// This environment has been used in two different settings.
+/// The One-Dimensional-Maze setting, and the Chain setting.
+///
+/// One-Dimensional-Maze
+/// --------------------------------
 /// Should be used with a discount of 0.75.
 ///
 /// Returns a reward of 0 at every step,
 /// and a reward of 1 at the end.
+///
+/// This is mainly useful when dealing with POMDPs.
+///
+/// Chain (default)
+/// --------------
+///
+/// In this case, the environment is used to test exploration.
+/// There is a slip probability of 0.2
+/// The first action gives a reward of 0 apart from at the final state.
+/// The second action always gives reward 0.2.
 class DiscreteChain : public DiscreteEnvironment
 {
+protected:
+	real slip, start, end;
 public:
     DiscreteMDP* mdp;
-    DiscreteChain(int n);
+    DiscreteChain(int n, real slip_ = 0.2, real start_ = 0.2, real end_ = 1.0);
     
     virtual ~DiscreteChain();
     

@@ -68,7 +68,7 @@ DiscreteSpaceRewardDistribution::DiscreteSpaceRewardDistribution(int n_states_, 
 {
     // empty
 
-    printf ("%d %d %d %d\n", n_states, n_actions, R.size(), ER.Size());
+    //printf ("%d %d %d %d\n", n_states, n_actions, R.size(), ER.Size());
 }
 
 /// Destructor - remove all distribution vectors

@@ -59,8 +59,8 @@ int main (int argc, char** argv)
     real step_value = -0.1;
     real epsilon = 0.01;
     int n_runs = 100;
-    int n_episodes = 100;
-    int n_steps = 10000;
+    int n_episodes = 10;
+    int n_steps = 1000;
 
     if (argc != 6) {
 		std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness\n";

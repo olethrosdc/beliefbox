@@ -32,7 +32,9 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_tra
     ER.resize(N);
     for (int i=0; i<N; ++i) {
         P[i].resize(n_states, init_transition_count);
-        ER[i].reset(init_reward, init_reward_count);
+		//        ER[i].Reset(init_reward, init_reward_count);
+		ER[i].beta = 1.0;
+		ER[i].alpha = 1.0;
     }
 }
 
@@ -89,11 +91,13 @@ void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
 //    ER[getID (s, a)].mean = r;
 //}
 
+/// Generate a reward from the marginal distribution 
 real DiscreteMDPCounts::GenerateReward (int s, int a) const
 {
-    return ER[getID (s, a)].Generate();
+    return ER[getID (s, a)].generate();
 }
 
+/// Generate a transition from the marginal distribution
 int DiscreteMDPCounts::GenerateTransition (int s, int a) const
 {
     Vector p = P[getID (s,a)].GetMean();
@@ -122,7 +126,7 @@ Vector DiscreteMDPCounts::getTransitionProbabilities (int s, int a) const
 
 real DiscreteMDPCounts::getExpectedReward (int s, int a) const
 {
-    return ER[getID (s,a)].GetMean();
+    return ER[getID (s,a)].getMean();
 }
 
 void DiscreteMDPCounts::Reset()
@@ -132,6 +136,7 @@ void DiscreteMDPCounts::Reset()
 
 void DiscreteMDPCounts::ShowModel() const
 {
+	printf ("# mean model\n");
     for (int a=0; a<n_actions; a++) {
         for (int i=0; i<n_states; i++) {
             std::cout << a << "," << i << ":";
@@ -150,7 +155,7 @@ void DiscreteMDPCounts::ShowModel() const
         for (int i=0; i<n_states; i++) {
             std::cout << "R(" << a << "," << i 
                       << ") = " << getExpectedReward(i, a)
-                      << " [" << ER[getID(i,a)].n_samples << "]"
+				//<< " [" << ER[getID(i,a)].n_samples << "]"
                       << std::endl; 
         }
    }
@@ -163,7 +168,7 @@ DiscreteMDP* DiscreteMDPCounts::generate()
         for (int a=0; a<n_actions; a++) {
             //Vector C =  P[getID (s,a)].GetMean();
             Vector C =  P[getID (s,a)].generate();
-            real expected_reward = getExpectedReward(s,a);
+            real expected_reward = GenerateReward(s,a);
             mdp->reward_distribution.addFixedReward(s, a, expected_reward);
             for (int s2=0; s2<n_states; s2++) {
                 if (C[s2]) {
