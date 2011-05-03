@@ -108,8 +108,8 @@ real NormalDistributionUnknownMean::getMean() const
 //------------------- Unknown mean and precision -------------------------//
 NormalUnknownMeanPrecision::NormalUnknownMeanPrecision()
 {
-    mu_0 = 0.0;
-    tau_0 = 1.0;
+    mu_0 = 0;
+    tau_0 = 1;
     alpha_0 = 1;
     beta_0 = 1;
     Reset();

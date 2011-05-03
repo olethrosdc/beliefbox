@@ -75,14 +75,31 @@ real BetaDistribution::getMean() const
     return alpha/(alpha + beta);
 }
 
-real BetaDistribution::getVariance()
+real BetaDistribution::getVariance() 
 {
     real a_b = alpha + beta;
     return (alpha/a_b)*(beta/a_b)/(a_b + 1);
 }
 
 /// Generate using ranlib
-real BetaDistribution::generate()
+real BetaDistribution::generate() 
 {
     return genbet(alpha, beta);
+}
+
+/// Generate using ranlib
+real BetaDistribution::generate() const
+{
+    return genbet(alpha, beta);
+}
+
+/// Generate using ranlib
+real BetaDistribution::generateMarginal() 
+{
+	real m = getMean();
+	if (urandom() < getMean()) {
+		return 1.0;
+	} else {
+		return 0.0;
+	}
 }

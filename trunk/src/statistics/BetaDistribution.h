@@ -54,8 +54,10 @@ public:
     virtual void setMean(real mean);
     virtual void setVariance(real var);
     virtual real getMean() const;
-    virtual real getVariance();
+    virtual real getVariance(); 
     virtual real generate();
+	real generate() const;
+    virtual real generateMarginal();
     real Observe(real x)
     {
         real p = (x * (alpha) + (1 - x) * beta) / (alpha + beta);

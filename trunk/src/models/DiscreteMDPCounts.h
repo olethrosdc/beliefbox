@@ -17,6 +17,8 @@
 #include "MDPModel.h"
 #include "Dirichlet.h"
 #include "MeanEstimator.h"
+#include "NormalDistribution.h"
+#include "BetaDistribution.h"
 #include "real.h"
 #include <vector>
 
@@ -28,7 +30,7 @@ class DiscreteMDPCounts : public MDPModel
 {
 protected:
     std::vector<DirichletDistribution> P; ///< Vector of Dirichlet distributions on P
-    std::vector<MeanEstimator> ER; ///< Vector of mean estimators on ER.
+    std::vector<BetaDistribution> ER; ///< Vector of estimators on ER.
     DiscreteMDP mean_mdp;
     int N;
     int getID (int s, int a) const

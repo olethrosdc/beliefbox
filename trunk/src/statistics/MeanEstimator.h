@@ -29,7 +29,7 @@ class MeanEstimator
         : mean(mean_), n_samples(n_samples_), min(mean_), max(mean_)
     {
     }
-    void reset(real mean_, int n_samples_)
+    void Reset(real mean_, int n_samples_)
     {
         mean = mean_;
         n_samples = n_samples_;
@@ -51,10 +51,29 @@ class MeanEstimator
     {
         return mean;
     }
+    real GenerateMarginal() const
+    {
+		real a = min;
+		real b = max;
+		if (urandom() < 0.5) {
+			b = mean;
+		} else {
+			a = mean;
+		}
+		real u = urandom();
+        return u * a + (1 - u) * b;
+    }
     real Generate() const
     {
-        return mean;
+		real delta = urandom();
+		real cb = (max - min) * sqrt(log(delta) / (2.0 * (real) n_samples));
+		real u = urandom();
+		return (mean - cb) * u + (mean + cb) * (1 - u);
     }
 };
+
+
+
+
 
 #endif

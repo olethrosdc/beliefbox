@@ -95,18 +95,22 @@ int SampleBasedRL::Act(real reward, int next_state)
     // Update MDPs
     //mdp_list[0] = model->getMeanMDP();
     // Do note waste much time generating MDPs
+
     if (T >= update_interval) {    
+		//printf("# mean model\n");
+		//model->ShowModel();
         update_interval = (int) (ceil)(1.1*(double) T);
         for (int i=0; i<max_samples; ++i) {
             delete mdp_list[i];
             mdp_list[i] = model->generate();
-            //model->ShowModel();
+			//printf("# sample model %d\n", i);
+			//mdp_list[i]->ShowModel();
         }
     }
     
     // update values
     value_iteration->setMDPList(mdp_list);
-    value_iteration->ComputeStateActionValues(0,1);
+    value_iteration->ComputeStateActionValues(0.001, 10);
     for (int i=0; i<n_actions; i++) {
         tmpQ[i] = value_iteration->getValue(next_state, i);
         //printf ("Q[%d] = %f ", i, tmpQ[i]);
