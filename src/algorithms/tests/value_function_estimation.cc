@@ -160,7 +160,7 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 										  Environment<int, int>* environment,
 										  real gamma)
 {
-	real accuracy_threshold = 1e-6;
+	real accuracy_threshold = 1e-3;
 
     std:: cout << "Evaluating..." << std::endl;
  
@@ -209,7 +209,7 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 		std::vector<DiscretePolicy*> policy_samples;
 		// collect some statistics
 		printf ("# Samples\n");
-		for (int n_samples=1; n_samples<=8; ++n_samples) {
+		for (int n_samples=1; n_samples<=4; ++n_samples) {
 			mdp_samples.push_back(model.generate());
 			printf ("# Optimistic policy\n");
 			ValueIteration vi(mdp_samples[n_samples - 1], gamma);
