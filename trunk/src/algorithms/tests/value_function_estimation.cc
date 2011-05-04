@@ -13,6 +13,7 @@
 #ifdef MAKE_MAIN
 #include "PolicyEvaluation.h"
 #include "ValueIteration.h"
+#include "MultiMDPValueIteration.h"
 #include "RandomMDP.h"
 #include "Gridworld.h"
 #include "InventoryManagement.h"
@@ -23,6 +24,7 @@
 #include "QLearning.h"
 #include "ModelBasedRL.h"
 #include "DiscreteMDPCounts.h"
+#include "DiscreteChain.h"
 //#include "RandomNumberGenerator.h"
 #include "RandomSourceRNG.h"
 /** 
@@ -54,11 +56,10 @@ int main (int argc, char** argv)
     real lambda = 0.9;
     real alpha = 0.01;
     real randomness = 0.1;
-    real pit_value = -1.0;
-    real goal_value = 0.0;
-    real step_value = -0.1;
+    real pit_value = 0.0;
+    real goal_value = 1.0;
+    real step_value = 0.01;
     real epsilon = 0.01;
-    int n_runs = 100;
     int n_episodes = 10;
     int n_steps = 1000;
 
@@ -94,18 +95,11 @@ int main (int argc, char** argv)
     std::cout << "Starting evaluation" << std::endl;
 
     // remember to use n_runs
-    std::vector<Statistics> statistics(n_episodes);
-    for (int run=0; run<n_runs; ++run) {
+	if (1) {
 		std::cerr << "Creating environment" << std::endl;
 		Environment<int, int>* environment = NULL;
-		if (0) {
-			environment = new RandomMDP (n_actions,
-										 n_states,
-										 randomness,
-										 step_value,
-										 pit_value,
-										 goal_value,
-										 &rng);
+		if (1) {
+			environment = new DiscreteChain(n_states);
 		} else {
 			environment = new Gridworld("/home/olethros/projects/beliefbox/dat/maze1",  8, 8);
 		}
@@ -115,7 +109,6 @@ int main (int argc, char** argv)
 		std::cerr << "Creating exploration policy" << std::endl;
 		VFExplorationPolicy* exploration_policy = NULL;
 		exploration_policy = new EpsilonGreedy(n_actions, epsilon);
-    
     
 		std::cerr << "Creating online algorithm" << std::endl;
 		OnlineAlgorithm<int, int>* algorithm = NULL;
@@ -140,20 +133,12 @@ int main (int argc, char** argv)
 
 		}
 
-		std::cerr << "run : " << run << std::endl;
 		std::vector<Statistics> run_statistics = EvaluateAlgorithm(n_steps, n_episodes, algorithm, environment, gamma);
-		for (uint i=0; i<statistics.size(); ++i) {
-			statistics[i].total_reward += run_statistics[i].total_reward;
-			statistics[i].discounted_reward += run_statistics[i].discounted_reward;
-			statistics[i].steps += run_statistics[i].steps;
-		}
-		if (n_runs ==1) {
-			for (int s=0; s<n_states; ++s) {
-				for (int a=0; a<n_actions; ++a) {
-					printf ("%f ", algorithm->getValue(s, a));
-				}
-				printf ("# Q(%d, .)\n", s);
-			}
+		
+		for (uint i=0; i!=run_statistics.size(); ++i) {
+			std::cout << "R:" << run_statistics[i].total_reward 
+					  << " V:" << run_statistics[i].discounted_reward
+					  << std::endl;
 		}
 		delete environment;
 		delete algorithm;
@@ -162,14 +147,6 @@ int main (int argc, char** argv)
     }
     
 
-    for (uint i=0; i<statistics.size(); ++i) {
-		statistics[i].total_reward /= (float) n_runs;
-		statistics[i].discounted_reward /= (float) n_runs;
-		statistics[i].steps /= n_runs;
-		std::cout << statistics[i].total_reward << " "
-				  << statistics[i].discounted_reward << "# REWARD"
-				  << std::endl;
-    }
     std::cout << "Done" << std::endl;
 
 
@@ -183,11 +160,15 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 										  Environment<int, int>* environment,
 										  real gamma)
 {
+	real accuracy_threshold = 1e-6;
+
     std:: cout << "Evaluating..." << std::endl;
  
     std::vector<Statistics> statistics(n_episodes);
 
-    //DiscreteMDP* mdp = environment->getMDP();
+    DiscreteMDPCounts model(environment->getNStates(),
+							environment->getNActions(),
+							1.0 / (real) environment->getNStates());
 	
 	for (int episode = 0; episode < n_episodes; ++episode) {
 		std::cerr << "Episode: " << episode << std::endl;
@@ -198,22 +179,55 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 		environment->Reset();
 		algorithm->Reset();
 		bool action_ok = true;
+		int prev_state = - 1;
+		int action = -1;
 		for (int t=0; t < n_steps; ++t) {
+			printf ("%d\n", t);
 			int state = environment->getState();
 			real reward = environment->getReward();
-			//std::cout << state << " " << reward << std::endl;
+			if (t) {
+				model.AddTransition(prev_state, action, reward, state);
+			}
+			prev_state = state;
 			statistics[episode].total_reward += reward;
 			statistics[episode].discounted_reward += discount * reward;
 			discount *= gamma;
 			statistics[episode].steps = t;
-			int action = algorithm->Act(reward, state);
+			action = algorithm->Act(reward, state);
 			if (!action_ok) {
 				break;
 			}		
 			 action_ok = environment->Act(action);
-
 		}
-        
+
+		printf ("# Mean model\n");
+		const DiscreteMDP* mean_mdp = model.CreateMDP();
+		ValueIteration value_iteration(mean_mdp, gamma);
+		value_iteration.ComputeStateActionValues(accuracy_threshold);
+		
+		std::vector<const DiscreteMDP*> mdp_samples;
+		std::vector<DiscretePolicy*> policy_samples;
+		// collect some statistics
+		printf ("# Samples\n");
+		for (int n_samples=1; n_samples<=8; ++n_samples) {
+			mdp_samples.push_back(model.generate());
+			printf ("# Optimistic policy\n");
+			ValueIteration vi(mdp_samples[n_samples - 1], gamma);
+			vi.ComputeStateActionValues(accuracy_threshold);
+
+			Vector w(n_samples);
+			real w_i = 1.0 / (real) n_samples;
+			for (int i=0; i < n_samples; ++i) {
+				w(i) = w_i;
+			}
+			
+			printf ("# Multi-MDP %d samples\n", n_samples);
+			MultiMDPValueIteration mmvi(w, mdp_samples, gamma);
+			mmvi.ComputeStateActionValues(accuracy_threshold);
+			
+			
+		}
+		delete mean_mdp;
 	}
     return statistics;
 }

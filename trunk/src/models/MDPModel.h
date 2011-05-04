@@ -21,7 +21,7 @@
 #include "Distribution.h"
 #include "DiscreteMDP.h"
 
-#undef DEBUG_MDP_MODELS
+#define DEBUG_MDP_MODELS
 
 
 #ifdef DEBUG_MDP_MODELS
