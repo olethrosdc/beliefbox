@@ -55,6 +55,7 @@ real BetaDistribution::log_pdf(real x) const
 /// Standard posterior calculation
 void BetaDistribution::calculatePosterior(real x)
 {
+	assert (x>=0 && x <= 1);
     alpha += x;
     beta += (1.0-x);
 }
@@ -84,19 +85,20 @@ real BetaDistribution::getVariance()
 /// Generate using ranlib
 real BetaDistribution::generate() 
 {
+	assert(alpha > 0 && beta >= 0 || alpha >= 0 && beta > 0);
     return genbet(alpha, beta);
 }
 
 /// Generate using ranlib
 real BetaDistribution::generate() const
 {
+	assert(alpha > 0 && beta >= 0 || alpha >= 0 && beta > 0);
     return genbet(alpha, beta);
 }
 
 /// Generate using ranlib
 real BetaDistribution::generateMarginal() 
 {
-	real m = getMean();
 	if (urandom() < getMean()) {
 		return 1.0;
 	} else {
