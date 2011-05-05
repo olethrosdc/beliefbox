@@ -15,9 +15,9 @@
 // -- Goal state reward distribution -- //
 
 /// Constructor. Set up the default reward to be received
-GoalStateRewardDistribution::    GoalStateRewardDistribution(real default_reward_, 
-															 int goal_state_,
-															 real goal_reward_)
+GoalStateRewardDistribution::GoalStateRewardDistribution(real default_reward_, 
+														 int goal_state_,
+														 real goal_reward_)
 	: default_reward(default_reward_),
 	  goal_state(goal_state_),
 	  goal_reward(goal_reward_)
@@ -89,14 +89,14 @@ DiscreteSpaceRewardDistribution::~DiscreteSpaceRewardDistribution()
 real DiscreteSpaceRewardDistribution::generate(int state, int action) const
 {
 	int ID = getID(state, action);
-	return distribution_vector[ID]->generate();
+	return R[ID]->generate();
 }
 
 /// Get expected value
 real DiscreteSpaceRewardDistribution::expected(int state, int action) const
 {
 	int ID = getID(state, action);
-	return distribution_vector[ID]->getMean();
+	return R[ID]->getMean();
 }
 
 /// Generate pdf -- in fact, a probability since there are just two outcomes.

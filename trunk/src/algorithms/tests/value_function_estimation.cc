@@ -113,7 +113,7 @@ int main (int argc, char** argv)
 		std::cerr << "Creating online algorithm" << std::endl;
 		OnlineAlgorithm<int, int>* algorithm = NULL;
 		MDPModel* mdp_model = NULL;
-		if (1) {
+		if (0) {
 			algorithm = new QLearning(n_states,
 									  n_actions,
 									  gamma,
@@ -161,6 +161,7 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 										  real gamma)
 {
 	real accuracy_threshold = 1e-3;
+	real max_iter = 10000;
 
     std:: cout << "Evaluating..." << std::endl;
  
@@ -182,38 +183,47 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 		int prev_state = - 1;
 		int action = -1;
 		for (int t=0; t < n_steps; ++t) {
-			printf ("%d\n", t);
+			//printf ("%d\n", t);
 			int state = environment->getState();
 			real reward = environment->getReward();
-			if (t) {
-				model.AddTransition(prev_state, action, reward, state);
-			}
+			//			if (t) {
+			//model.AddTransition(prev_state, action, reward, state);
+			//}
 			prev_state = state;
 			statistics[episode].total_reward += reward;
 			statistics[episode].discounted_reward += discount * reward;
 			discount *= gamma;
 			statistics[episode].steps = t;
-			action = algorithm->Act(reward, state);
+			//action = algorithm->Act(reward, state);
+			action = 1;
 			if (!action_ok) {
 				break;
 			}		
 			 action_ok = environment->Act(action);
 		}
-
-		printf ("# Mean model\n");
+		printf ("# reward: %f %f\n", 
+				statistics[episode].total_reward,
+				statistics[episode].discounted_reward);
+		//printf ("# Mean model\n");
 		const DiscreteMDP* mean_mdp = model.CreateMDP();
 		ValueIteration value_iteration(mean_mdp, gamma);
-		value_iteration.ComputeStateActionValues(accuracy_threshold);
-		
+		value_iteration.ComputeStateActionValues(accuracy_threshold, max_iter);
+		FixedDiscretePolicy* empirical_policy = value_iteration.getPolicy();
+
 		std::vector<const DiscreteMDP*> mdp_samples;
-		std::vector<DiscretePolicy*> policy_samples;
+		std::vector<DiscretePolicy*> optimistic_policy_samples;
+		std::vector<DiscretePolicy*> pessimistic_policy_samples;
+
 		// collect some statistics
-		printf ("# Samples\n");
-		for (int n_samples=1; n_samples<=4; ++n_samples) {
+		//printf ("# Samples\n");
+		FixedDiscretePolicy* pessimistic_policy;
+		for (int n_samples=1; n_samples<=16; ++n_samples) {
 			mdp_samples.push_back(model.generate());
 			printf ("# Optimistic policy\n");
 			ValueIteration vi(mdp_samples[n_samples - 1], gamma);
-			vi.ComputeStateActionValues(accuracy_threshold);
+			vi.ComputeStateActionValues(accuracy_threshold, max_iter);
+			FixedDiscretePolicy* vi_policy = vi.getPolicy();
+			optimistic_policy_samples.push_back(vi_policy);
 
 			Vector w(n_samples);
 			real w_i = 1.0 / (real) n_samples;
@@ -223,10 +233,53 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 			
 			printf ("# Multi-MDP %d samples\n", n_samples);
 			MultiMDPValueIteration mmvi(w, mdp_samples, gamma);
-			mmvi.ComputeStateActionValues(accuracy_threshold);
-			
+			mmvi.ComputeStateActionValues(accuracy_threshold, max_iter);
+			FixedDiscretePolicy* mmvi_policy = mmvi.getPolicy();
+			pessimistic_policy = mmvi_policy;
+			pessimistic_policy_samples.push_back(mmvi_policy);
+		}
+
+		for (int n_samples=1; n_samples<=128; ++n_samples) {
+			mdp_samples.push_back(model.generate());
+		}
+
+		int n_samples = mdp_samples.size();
+	
+		int n_states = mean_mdp->GetNStates();
+		Vector empirical_mean(mean_mdp->GetNStates());
+		Vector optimistic_mean(mean_mdp->GetNStates());
+		Vector pessimistic_mean(mean_mdp->GetNStates());
+		for (int s=0; s<n_states; ++s) {
+			empirical_mean(s) = 0.0;
+			optimistic_mean(s) = 0.0;
+			pessimistic_mean(s) = 0.0;
+		}
+		for (int sample=0; sample < n_samples; ++sample) {
+			{
+				PolicyEvaluation pe_mean (empirical_policy,
+										  mdp_samples[sample], gamma);
+				pe_mean.ComputeStateValues(accuracy_threshold, max_iter);
+				for (int s=0; s<n_states; ++s) {
+					empirical_mean(s) += pe_mean.getValue(s);
+				}
+			}
+
+
+			{
+				PolicyEvaluation pe_pessimistic (pessimistic_policy,
+										   mdp_samples[sample], gamma);
+				pe_pessimistic.ComputeStateValues(accuracy_threshold, max_iter);
+				for (int s=0; s<n_states; ++s) {
+					pessimistic_mean(s) += pe_pessimistic.getValue(s);
+				}
+			}
 			
 		}
+		empirical_mean /= (real) n_samples;
+		pessimistic_mean /= (real) n_samples;
+		empirical_mean.print(stdout);
+		pessimistic_mean.print(stdout);
+		
 		delete mean_mdp;
 	}
     return statistics;

@@ -217,8 +217,9 @@ void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_it
         }
         Delta = abs(V - pV).Sum();
         n_iter++;
+		//printf("%f\n", Delta);
     } while(Delta >= threshold && max_iter != 0);
-    //printf("Exiting at d:%f, n:%d\n", Delta, n_iter);	
+    printf("Exiting at d:%f, n:%d\n", Delta, n_iter);	
 }
 
 /// Get the policy that is optimal for the mixed MDP.
