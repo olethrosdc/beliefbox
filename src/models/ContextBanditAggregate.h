@@ -60,7 +60,7 @@ public:
         fprintf(stderr, "Not implemented!\n");
         exit(-1);
     }
-    virtual const DiscreteMDP* getMeanMDP() const
+    virtual const DiscreteMDP* const getMeanMDP() const
     {
         fprintf(stderr, "There is no mean MDP!\n");
         exit(-1);

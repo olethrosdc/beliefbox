@@ -1,6 +1,7 @@
 /* -*- Mode: C++; -*- */
 /* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2006-2011 by Christos Dimitrakakis
+// <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -60,8 +61,8 @@ int main (int argc, char** argv)
     real goal_value = 1.0;
     real step_value = 0.01;
     real epsilon = 0.01;
-    int n_episodes = 10;
-    int n_steps = 1000;
+    int n_episodes = 2;
+    int n_steps = 100;
 
     if (argc != 6) {
 		std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness\n";
@@ -177,6 +178,7 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 		statistics[episode].discounted_reward = 0.0;
 		statistics[episode].steps = 0;
 		real discount = 1.0;
+
 		environment->Reset();
 		algorithm->Reset();
 		bool action_ok = true;
@@ -186,21 +188,22 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 			//printf ("%d\n", t);
 			int state = environment->getState();
 			real reward = environment->getReward();
-			//			if (t) {
-			//model.AddTransition(prev_state, action, reward, state);
-			//}
+			if (t) {
+				model.AddTransition(prev_state, action, reward, state);
+			}
 			prev_state = state;
 			statistics[episode].total_reward += reward;
 			statistics[episode].discounted_reward += discount * reward;
 			discount *= gamma;
 			statistics[episode].steps = t;
-			//action = algorithm->Act(reward, state);
-			action = 1;
+			action = algorithm->Act(reward, state);
+			//action = 1;
 			if (!action_ok) {
 				break;
 			}		
 			 action_ok = environment->Act(action);
 		}
+
 		printf ("# reward: %f %f\n", 
 				statistics[episode].total_reward,
 				statistics[episode].discounted_reward);
@@ -217,7 +220,7 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 		// collect some statistics
 		//printf ("# Samples\n");
 		FixedDiscretePolicy* pessimistic_policy;
-		for (int n_samples=1; n_samples<=16; ++n_samples) {
+		for (int n_samples=1; n_samples<=4; ++n_samples) {
 			mdp_samples.push_back(model.generate());
 			printf ("# Optimistic policy\n");
 			ValueIteration vi(mdp_samples[n_samples - 1], gamma);
@@ -239,7 +242,7 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 			pessimistic_policy_samples.push_back(mmvi_policy);
 		}
 
-		for (int n_samples=1; n_samples<=128; ++n_samples) {
+		for (int n_samples=1; n_samples<=4; ++n_samples) {
 			mdp_samples.push_back(model.generate());
 		}
 
@@ -275,11 +278,25 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 			}
 			
 		}
+
+
+		
 		empirical_mean /= (real) n_samples;
 		pessimistic_mean /= (real) n_samples;
 		empirical_mean.print(stdout);
 		pessimistic_mean.print(stdout);
-		
+
+		printf ("# reward: %f %f\n", 
+				statistics[episode].total_reward,
+				statistics[episode].discounted_reward);
+
+		delete empirical_policy;
+		for (uint i=0; i<pessimistic_policy_samples.size(); ++i) {
+			delete pessimistic_policy_samples[i];
+		}
+		for (uint i=0; i<optimistic_policy_samples.size(); ++i) {
+			delete optimistic_policy_samples[i];
+		}
 		delete mean_mdp;
 	}
     return statistics;
