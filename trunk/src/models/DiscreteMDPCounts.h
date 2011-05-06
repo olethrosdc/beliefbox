@@ -31,7 +31,7 @@ class DiscreteMDPCounts : public MDPModel
 protected:
     std::vector<DirichletDistribution> P; ///< Vector of Dirichlet distributions on P
     std::vector<BetaDistribution> ER; ///< Vector of estimators on ER.
-    DiscreteMDP mean_mdp;
+    DiscreteMDP mean_mdp; ///< a model of the mean MDP
     int N;
     int getID (int s, int a) const
     {
@@ -53,7 +53,7 @@ public:
     virtual void ShowModel() const;
 
     virtual DiscreteMDP* generate();
-    virtual const DiscreteMDP* getMeanMDP() const;
+    virtual const DiscreteMDP* const getMeanMDP() const;
 
     virtual DiscreteMDP* CreateMDP();
     virtual void CopyMeanMDP(DiscreteMDP* mdp) const;

@@ -67,7 +67,9 @@ DiscreteSpaceRewardDistribution::DiscreteSpaceRewardDistribution(int n_states_, 
 	  ER(n_states * n_actions) 
 {
     // empty
-
+	for (int i=0; i<n_states * n_actions; ++i) {
+		R[i] = NULL;
+	}
     //printf ("%d %d %d %d\n", n_states, n_actions, R.size(), ER.Size());
 }
 
@@ -75,11 +77,10 @@ DiscreteSpaceRewardDistribution::DiscreteSpaceRewardDistribution(int n_states_, 
 DiscreteSpaceRewardDistribution::~DiscreteSpaceRewardDistribution() 
 {
     // clear all distributions that have been added
-    for (std::vector<Distribution*>::iterator i = distribution_vector.begin();
-         i < distribution_vector.end(); ++i) {
-        if (*i) {
-            delete *i;
-            *i = NULL;
+    for (uint i = 0; i<distribution_vector.size(); ++i) {
+        if (distribution_vector[i]) {
+            delete distribution_vector[i];
+			distribution_vector[i] = NULL;
         }
     }
 
@@ -138,6 +139,7 @@ void DiscreteSpaceRewardDistribution::addFixedReward(int s, int a, real reward)
 void DiscreteSpaceRewardDistribution::setFixedReward(int s, int a, real reward)
 {   
 	int ID = getID (s, a);
+
 	if (R[ID]) {
 		R[ID]->setMean(reward);
 		ER[ID] = reward;
