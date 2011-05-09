@@ -61,8 +61,8 @@ int main (int argc, char** argv)
     real goal_value = 1.0;
     real step_value = 0.01;
     real epsilon = 0.01;
-    int n_episodes = 2;
-    int n_steps = 100;
+    int n_episodes = 10;
+    int n_steps = 1000;
 
     if (argc != 6) {
 		std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness\n";
@@ -163,6 +163,8 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 {
 	real accuracy_threshold = 1e-3;
 	real max_iter = 10000;
+	int initial_samples = 16;
+	int evaluation_samples = 0;
 
     std:: cout << "Evaluating..." << std::endl;
  
@@ -204,7 +206,8 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 			 action_ok = environment->Act(action);
 		}
 
-		printf ("# reward: %f %f\n", 
+		printf ("# episode %d reward (learning): %f %f\n", 
+				episode,
 				statistics[episode].total_reward,
 				statistics[episode].discounted_reward);
 		//printf ("# Mean model\n");
@@ -220,21 +223,21 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 		// collect some statistics
 		//printf ("# Samples\n");
 		FixedDiscretePolicy* pessimistic_policy;
-		for (int n_samples=1; n_samples<=4; ++n_samples) {
+		for (int sample=1; sample<=initial_samples; ++sample) {
 			mdp_samples.push_back(model.generate());
-			printf ("# Optimistic policy\n");
-			ValueIteration vi(mdp_samples[n_samples - 1], gamma);
+			//printf ("# Optimistic policy\n");
+			ValueIteration vi(mdp_samples[sample - 1], gamma);
 			vi.ComputeStateActionValues(accuracy_threshold, max_iter);
 			FixedDiscretePolicy* vi_policy = vi.getPolicy();
 			optimistic_policy_samples.push_back(vi_policy);
 
-			Vector w(n_samples);
-			real w_i = 1.0 / (real) n_samples;
-			for (int i=0; i < n_samples; ++i) {
+			Vector w(sample);
+			real w_i = 1.0 / (real) sample;
+			for (int i=0; i < sample; ++i) {
 				w(i) = w_i;
 			}
 			
-			printf ("# Multi-MDP %d samples\n", n_samples);
+			//printf ("# Multi-MDP %d samples\n", sample);
 			MultiMDPValueIteration mmvi(w, mdp_samples, gamma);
 			mmvi.ComputeStateActionValues(accuracy_threshold, max_iter);
 			FixedDiscretePolicy* mmvi_policy = mmvi.getPolicy();
@@ -242,7 +245,7 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 			pessimistic_policy_samples.push_back(mmvi_policy);
 		}
 
-		for (int n_samples=1; n_samples<=4; ++n_samples) {
+		for (int i=1; i<=evaluation_samples; ++i) {
 			mdp_samples.push_back(model.generate());
 		}
 
@@ -286,11 +289,15 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 		empirical_mean.print(stdout);
 		pessimistic_mean.print(stdout);
 
-		printf ("# reward: %f %f\n", 
+		printf ("# episode %d reward: %f %f\n", 
+				episode, 
 				statistics[episode].total_reward,
 				statistics[episode].discounted_reward);
 
 		delete empirical_policy;
+		for (uint i=0; i<mdp_samples.size(); ++i) {
+			delete mdp_samples[i];
+		}
 		for (uint i=0; i<pessimistic_policy_samples.size(); ++i) {
 			delete pessimistic_policy_samples[i];
 		}
