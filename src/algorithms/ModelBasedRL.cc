@@ -33,7 +33,7 @@ ModelBasedRL::ModelBasedRL(int n_states_,
 }
 ModelBasedRL::~ModelBasedRL()
 {
-	//delete mdp;
+	delete mdp;
     delete value_iteration;
 }
 void ModelBasedRL::Reset()
@@ -72,6 +72,9 @@ int ModelBasedRL::Act(real reward, int next_state)
     state = next_state;
 
     if (use_value_iteration) {
+		if (mdp) {
+			delete mdp;
+		}
         mdp = model->getMeanMDP();
         
         // update values

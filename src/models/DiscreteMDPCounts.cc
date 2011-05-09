@@ -48,8 +48,15 @@ DiscreteMDPCounts::~DiscreteMDPCounts()
 DiscreteMDP* DiscreteMDPCounts::CreateMDP()
 {
     mdp_dbg("Making a DiscreteMDP with %d states, %d actions from model\n", n_states, n_actions);
-    DiscreteMDP* mdp = new DiscreteMDP(*getMeanMDP());
-	//DiscreteMDP* mdp = getMeanMDP();
+#if 0
+	DiscreteMDP* tmp_mdp = *getMeanMDP();
+    DiscreteMDP* mdp = new DiscreteMDP(*tmp_mpd);
+	delete tmp_mdp;
+#else
+	DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions);
+	CopyMeanMDP(mdp);
+#endif
+
 #if 0
     for (int i=0; i<n_states; ++i) {
         for (int a=0; a<n_actions; ++a) {
@@ -186,8 +193,8 @@ DiscreteMDP* DiscreteMDPCounts::generate()
 /// Get a pointer to the mean MDP
 const DiscreteMDP * const DiscreteMDPCounts::getMeanMDP() const
 {
-	 DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions);
-	 CopyMeanMDP(mdp);
+	DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions);
+	CopyMeanMDP(mdp);
 	return mdp;
 	//return &mean_mdp;
 }
