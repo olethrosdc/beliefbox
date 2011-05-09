@@ -423,7 +423,9 @@ int main (int argc, char** argv)
             statistics.ep_stats[i].mse += run_statistics.ep_stats[i].mse;
 			statistics.ep_stats[i].n_runs ++;
         }
+		
         for (uint i=0; i<run_statistics.reward.size(); ++i) {
+			statistics.total_reward[run] += run_statistics.reward[i];
             statistics.reward[i] += run_statistics.reward[i];
 			statistics.n_runs[i]++;
         }
@@ -582,16 +584,17 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		statistics.ep_stats[episode].total_reward += reward;
 		statistics.ep_stats[episode].discounted_reward += discount * reward;
 		discount *= gamma;
-		//std::cout << "Acting!\n";
+
 		int action = algorithm->Act(reward, state);
-		//std::cout << "# runlog t:" << current_time << " s:" << state << " r:" << reward << " a:" << action << std::endl;
+
+		printf("%f ", reward);
 		action_ok = environment->Act(action);
 		current_time++;
 
 
 
     }
-
+	printf(" # RUN_REWARD\n");
 #if 1
         real sse = 0.0;
         for (int i=0; i<n_states; i++) {
