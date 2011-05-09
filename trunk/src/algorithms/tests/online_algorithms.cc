@@ -425,7 +425,6 @@ int main (int argc, char** argv)
         }
 		
         for (uint i=0; i<run_statistics.reward.size(); ++i) {
-			statistics.total_reward[run] += run_statistics.reward[i];
             statistics.reward[i] += run_statistics.reward[i];
 			statistics.n_runs[i]++;
         }
