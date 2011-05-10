@@ -62,6 +62,17 @@ public:
         return n_actions;
     }
     virtual ~MDP<int, int>();
+	int getState() const
+	{
+		return state;
+	}
+    // generate a new state given the current state and action, then set the current state to be the new state.
+    real Act (int a)
+    {
+        real r = generateReward(state, a);
+        state = generateState(state, a);
+        return r;
+    }
     virtual void ShowModel() const;
     virtual void dotModel(FILE* fout) const;
     real generateReward (int s, int a) const;
