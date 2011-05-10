@@ -40,6 +40,10 @@ public:
     MDP(TransitionDistribution<StateType, ActionType>& transition_distribution_, RewardDistribution<StateType, ActionType>& reward_distribution_)
         : transition_distribution(transition_distribution_), reward_distribution(reward_distribution_) {}
   virtual ~MDP() {}
+	StateType getState() const
+	{
+		return state;
+	}
     real getTransitionProbability (StateType& s, ActionType& a, StateType& s2) const
     {
         return transition_distribution.pdf(s, a, s2);
