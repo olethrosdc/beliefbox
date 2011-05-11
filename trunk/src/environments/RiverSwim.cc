@@ -9,6 +9,7 @@ RiverSwim::RiverSwim(int n, real r_start_, real r_end_)
 	  p_stuck(1.0 - (p_right + p_left))
 {
 	model = getMDP();
+	Reset();
 }
     
 RiverSwim::~RiverSwim()
@@ -25,6 +26,7 @@ void RiverSwim::Reset()
 		state = 3;
 	}
     reward = 0;
+	model->setState(state);
 }
 
 bool RiverSwim::Act(int action)

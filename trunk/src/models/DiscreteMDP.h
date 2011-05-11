@@ -66,6 +66,12 @@ public:
 	{
 		return state;
 	}
+	int setState(int new_state)
+	{
+		assert(new_state >=0 && new_state < n_states);
+		state = new_state;
+		return state;
+	}
     // generate a new state given the current state and action, then set the current state to be the new state.
     real Act (int a)
     {

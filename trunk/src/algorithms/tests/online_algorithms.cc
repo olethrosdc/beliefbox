@@ -37,6 +37,7 @@
 #include "Gridworld.h"
 #include "OneDMaze.h"
 #include "DiscreteChain.h"
+#include "RiverSwim.h"
 #include "OptimisticTask.h"
 #include "InventoryManagement.h"
 
@@ -86,7 +87,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
     --algorithm:   {QLearning, Model, Sarsa, Sampling}\n\
-    --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}\n\
+    --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim}\n\
     --n_states:    number of states (usually there is no need to specify it)\n\
     --n_actions:   number of actions (usually there is no need to specify it)\n\
     --gamma:       reward discounting in [0,1]\n\
@@ -271,6 +272,8 @@ int main (int argc, char** argv)
             environment = new DiscreteChain (n_states);
         } else if (!strcmp(environment_name, "Optimistic")) { 
             environment = new OptimisticTask (0.1, 0.01);
+        } else if (!strcmp(environment_name, "RiverSwim")) { 
+            environment = new RiverSwim();
         } else if (!strcmp(environment_name, "MountainCar")) { 
             MountainCar continuous_mountain_car;
             continuous_mountain_car.setRandomness(randomness);
@@ -610,6 +613,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
     //std::cout << "REAL MODEL\n";
     //mdp->ShowModel();
+		
+	delete mdp;
+	  
 	if ((int) statistics.ep_stats.size() != n_episodes) {
 		statistics.ep_stats.resize(statistics.ep_stats.size() - 1);
 	}
@@ -617,6 +623,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
 			 episode, n_steps,
 			 statistics.ep_stats.size(),
 			 statistics.reward.size());
+
+
+
     return statistics;
 }
 
