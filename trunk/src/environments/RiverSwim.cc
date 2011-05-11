@@ -9,6 +9,7 @@ RiverSwim::RiverSwim(int n, real r_start_, real r_end_)
 	  p_stuck(1.0 - (p_right + p_left))
 {
 	model = getMDP();
+	model->Check();
 	Reset();
 }
     
@@ -31,6 +32,12 @@ void RiverSwim::Reset()
 
 bool RiverSwim::Act(int action)
 {
+#if 0
+	for (uint i=0; i<n_states; ++i) {
+		printf ("%f ", model->getTransitionProbability(state, action, i));
+	}
+	printf("= P(s' | s = %d, a = %d)\n", state, action);
+#endif
 	reward = model->Act(action);
 	state = model->getState();
     return true;
@@ -72,9 +79,11 @@ DiscreteMDP* RiverSwim::getMDP() const
 	// Action 0 always goes left
 	mdp->setTransitionProbability(n_states - 2, 0, n_states - 3, 1.0);
 	mdp->setTransitionProbability(n_states - 1, 0, n_states - 3, 1.0);
+
 	// Action 1 might go right!
 	mdp->setTransitionProbability(n_states - 2, 1, n_states - 1, p_right);
 	mdp->setTransitionProbability(n_states - 2, 1, n_states - 3, 1 - p_right);
+	mdp->setTransitionProbability(n_states - 1, 1, n_states - 1, p_right);
 	mdp->setTransitionProbability(n_states - 1, 1, n_states - 3, 1 - p_right);
 
 	// -- final state --
@@ -84,15 +93,6 @@ DiscreteMDP* RiverSwim::getMDP() const
 	mdp->addFixedReward(n_states - 1, 0, r_end);
 	mdp->addFixedReward(n_states - 1, 1, r_end);
 
-	// Action 0 always goes left
-	mdp->setTransitionProbability(n_states - 2, 0, n_states - 3, 1.0);
-	mdp->setTransitionProbability(n_states - 1, 0, n_states - 3, 1.0);
-	// Action 1 might go right!
-	mdp->setTransitionProbability(n_states - 2, 1, n_states - 1, p_right);
-	mdp->setTransitionProbability(n_states - 2, 1, n_states - 3, 1 - p_right);
-	mdp->setTransitionProbability(n_states - 1, 1, n_states - 3, 1 - p_right);
-
-	
     return mdp;
 }
 

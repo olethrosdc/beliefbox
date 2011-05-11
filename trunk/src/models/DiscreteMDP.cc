@@ -43,13 +43,7 @@ DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
         for (int s=0; s<n_states; s++) {
             for (int a=0; a<n_actions; a++, i++) {
                 for (int j=0; j<n_states; j++) {
-                    if (s == j) {
-                        //P[i][j] = 1;
-						P(i,j) = 1.0;
-                    } else {
-                        //P[i][j] = 0;
 						P(i,j) = 0.0;
-                    }
                 }
             }
         }
@@ -124,16 +118,22 @@ void DiscreteMDP::AperiodicityTransform(real tau)
 
 void DiscreteMDP::ShowModel() const
 {
+	real threshold = 0.001;
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             int i = getID(s,a);
             std::cout << "(" << s << "," << a << ") -> ";
+			real sum = 0.0;
             for (int j=0; j<n_states; j++) {
                 real p = P(i,j);
-                if (p>0.01) {
+				sum += p;
+                if (p>threshold) {
                     std::cout << j << " (" << p << ") ";
                 }
             }
+			if (fabs(sum - 1.0) > threshold) {
+				std::cout << "# ERR";
+			}
             std::cout << std::endl;
         }
     }
