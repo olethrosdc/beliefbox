@@ -6,7 +6,7 @@ RiverSwim::RiverSwim(int n, real r_start_, real r_end_)
 	  r_end(r_end_),
 	  p_right(0.3),
 	  p_left(0.1),
-	  p_stuck(1.0 - (right + left))
+	  p_stuck(1.0 - (p_right + p_left))
 {
 	model = getMDP();
 }
