@@ -557,6 +557,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
     std:: cout << "(running)" << std::endl;
 	int episode = -1;
 	bool action_ok = false;
+    real total_reward = 0.0;
     for (uint step = 0; step < n_steps; ++step) {
 		if (!action_ok) {
 			episode++;
@@ -587,16 +588,16 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		statistics.ep_stats[episode].discounted_reward += discount * reward;
 		discount *= gamma;
 
-		int action = 1;//algorithm->Act(reward, state);
-
-		printf("%f ", reward);
+		int action = algorithm->Act(reward, state);
+        total_reward += reward;
+		//printf("%f ", reward);
 		action_ok = environment->Act(action);
 		current_time++;
 
 
 
     }
-	printf(" # RUN_REWARD\n");
+	printf(" %f # RUN_REWARD\n", total_reward);
 #if 1
         real sse = 0.0;
         for (int i=0; i<n_states; i++) {
