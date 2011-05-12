@@ -587,7 +587,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		statistics.ep_stats[episode].discounted_reward += discount * reward;
 		discount *= gamma;
 
-		int action = algorithm->Act(reward, state);
+		int action = 1;//algorithm->Act(reward, state);
 
 		printf("%f ", reward);
 		action_ok = environment->Act(action);
