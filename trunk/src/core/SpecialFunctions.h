@@ -54,9 +54,9 @@ real logBeta(real x, real y);
 real Beta(real x, real y);
 
 /** The lector Beta function */
-real logBeta(Vector& x);
+real logBeta(const Vector& x);
 /** The vector Beta function */
-real Beta(Vector& x);
+real Beta(const Vector& x);
 
 float betacf(float a, float b, float x);
 float BetaInc(float x, float a, float b);

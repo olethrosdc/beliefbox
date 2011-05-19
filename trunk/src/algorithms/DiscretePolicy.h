@@ -16,6 +16,10 @@
 #include "Matrix.h"
 #include "Demonstrations.h"
 
+/** A policy in a discrete state-action space.
+
+	Abstract class
+ */
 class DiscretePolicy : public AbstractPolicy<int, int>
 {
 public:
@@ -30,8 +34,9 @@ public:
         Reset(reset_state);
     }
     virtual void Reset(int& start_state) = 0;
-    virtual real getActionProbability(int& action) = 0;
-    virtual real getActionProbability(int& state, int& action) = 0;
+    virtual real getActionProbability(int& action) const = 0;
+    virtual real getActionProbability(int& state, int& action) const = 0;
+	virtual Vector getActionProbabilities(int& state) const = 0;
 };
 
 class FixedDiscretePolicy : public DiscretePolicy
@@ -52,8 +57,8 @@ public:
         Reset(reset_state);
     }
     virtual void Reset(int& start_state);
-    virtual real getActionProbability(int& action);
-    virtual real getActionProbability(int& state, int& action);
+    virtual real getActionProbability(int& action) const;
+    virtual real getActionProbability(int& state, int& action) const;
     inline virtual Vector getActionProbabilities(int& state) const
     {
         return p[state];

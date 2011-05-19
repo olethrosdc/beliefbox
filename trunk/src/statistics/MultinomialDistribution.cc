@@ -13,15 +13,18 @@
 #include "MultinomialDistribution.h"
 #include "Random.h"
 
-MultinomialDistribution::MultinomialDistribution(Vector p_)
+/// Construct it from a vector
+MultinomialDistribution::MultinomialDistribution(const Vector& p_)
     : p(p_)
 {
 }
 
+/// Create an empty one
 MultinomialDistribution::MultinomialDistribution()
 {
 }
 
+/// Create a uniform distribution on n outcomes
 MultinomialDistribution::MultinomialDistribution(int n)
 {
 	p.Resize(n);
@@ -31,8 +34,8 @@ MultinomialDistribution::MultinomialDistribution(int n)
 	}
 }
 
-
-MultinomialDistribution::MultinomialDistribution(std::vector<real> p_)
+/// Construct it from a std vector
+MultinomialDistribution::MultinomialDistribution(const std::vector<real>& p_)
 {
     int n = p_.size();
 	p.Resize(n);
@@ -41,10 +44,12 @@ MultinomialDistribution::MultinomialDistribution(std::vector<real> p_)
 	}
 }
 
+/// Destructor
 MultinomialDistribution::~MultinomialDistribution()
 {
 }
 
+/// resize to n elements and make uniform
 void MultinomialDistribution::Resize(int n)
 {
 	p.Resize(n);
@@ -54,17 +59,21 @@ void MultinomialDistribution::Resize(int n)
 	}
 }
 
-
-void MultinomialDistribution::generate(Vector* x)
+/// generate from it
+void MultinomialDistribution::generate(Vector* x) const
 {
 	*x = generate();
 }
-void MultinomialDistribution::generate(Vector& x)
+
+
+/// generate from it
+void MultinomialDistribution::generate(Vector& x) const
 {
 	x = generate();
 }
 
-int MultinomialDistribution::generateInt()
+/// generate an integer
+int MultinomialDistribution::generateInt() const
 {
     real d=urandom();
     real sum = 0.0;
@@ -78,7 +87,9 @@ int MultinomialDistribution::generateInt()
     }
     return rand()%n;
 }
-Vector MultinomialDistribution::generate()
+
+/// generate and return a vector
+Vector MultinomialDistribution::generate() const
 {
     int z = generateInt();
     int n = p.Size();

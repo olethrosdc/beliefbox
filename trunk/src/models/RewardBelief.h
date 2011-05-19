@@ -64,7 +64,10 @@ public:
     {
 	}
 
-    virtual real Update(int state, int action, real reward);
+    virtual real Update(int state, int action, real reward)
+	{
+		
+	}
 };
 
 

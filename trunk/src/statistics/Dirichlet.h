@@ -31,9 +31,10 @@ public:
     DirichletDistribution(int n, real p = 1.0);
     DirichletDistribution(Vector& x);
     virtual ~DirichletDistribution();
-    virtual void generate(Vector& x);
-    virtual Vector generate();
+    virtual void generate(Vector& x) const;
+    virtual Vector generate() const;
     virtual real pdf(const Vector& x) const;
+    virtual real log_pdf(const Vector& x) const;
     virtual void update(Vector* x)
 	{
 		a += *x;

@@ -12,6 +12,7 @@
 
 #include "Dirichlet.h"
 #include "ranlib.h"
+#include "SpecialFunctions.h"
 
 /// Create a placeholder Dirichlet
 DirichletDistribution::DirichletDistribution()
@@ -51,14 +52,14 @@ DirichletDistribution::~DirichletDistribution()
 }
 
 /// Generate a multinomial vector
-Vector DirichletDistribution::generate()
+Vector DirichletDistribution::generate() const
 {
     Vector x(n);
     generate(x);
     return x;
 }
 
-void DirichletDistribution::generate(Vector& y)
+void DirichletDistribution::generate(Vector& y) const
 {
         //Vector y(n);
     real sum = 0.0;
@@ -70,11 +71,24 @@ void DirichletDistribution::generate(Vector& y)
      y *= invsum;
 }
 
-
 /** Dirichlet distribution
     Gets the parameters of a multinomial distribution as input.
 */
 real DirichletDistribution::pdf(const Vector& x) const
+{
+	return exp(log_pdf(x));
+}
+
+/** Dirichlet distribution
+
+    Gets the parameters \f$x\f$ of a multinomial distribution as
+	input.
+	
+	
+	Returns the logarithm of the pdf.
+
+*/
+real DirichletDistribution::log_pdf(const Vector& x) const
 {
     assert(x.Size() == n);
 
@@ -82,18 +96,18 @@ real DirichletDistribution::pdf(const Vector& x) const
     real sum = 0.0;
     for (int i=0; i<n; i++) {
         real xi = x(i);
-        if (xi<0) {
+        if (xi<=0) {
             Swarning ("Got a negative value for x[%d]:%f\n", i, xi);
             return 0.0;
         }
         sum += xi;
-        log_prod += xi * a(i);
+        log_prod += log(xi) * a(i);
     }
     if (fabs(sum-1.0f)>0.001) {
         Swarning ("Vector x not a distribution apparently: sum=%f.  Returning 0.\n", sum);
         return 0.0;
     }
-    return exp(log_prod);
+    return log_prod - logBeta(a);
 }
 
 

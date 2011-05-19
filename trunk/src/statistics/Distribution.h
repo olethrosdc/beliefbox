@@ -29,8 +29,8 @@ class AbstractDistribution : public Object {
 public:
 	AbstractDistribution()  {}
     virtual ~AbstractDistribution() {};
-    virtual void generate(T& x) = 0;
-    virtual T generate() = 0;
+    virtual void generate(T& x) const = 0;
+    virtual T generate() const = 0;
     virtual real pdf(const T& x) const =0;
 };
 
@@ -41,7 +41,7 @@ class DiscreteObjectDistribution : public ObjectDistribution
 public:
     DiscreteObjectDistribution() {}
     virtual ~DiscreteObjectDistribution() {};
-    virtual void generate(Object& x) = 0;
+    virtual void generate(Object& x) const = 0;
     virtual real pdf(Object& x) const =0;
 };
 
@@ -53,7 +53,7 @@ class Distribution : public Object {
 public:
     Distribution() {}
     virtual ~Distribution() {}
-    virtual real generate() = 0; ///< generate a value from this distribution
+    virtual real generate() const = 0; ///< generate a value from this distribution
     virtual real pdf(real x) const = 0; ///< return the density at point x
     virtual Distribution* clone() { return NULL; /* does nothing */}
     virtual real getMean() const {return 0.0f;}
@@ -98,8 +98,8 @@ public:
     virtual void setVariance (real var) {}; ///< ignore variance
     virtual void setMean (real mean); ///< set the mean
     virtual real getMean () const;
-    virtual real getVariance();
-    virtual real generate();
+    virtual real getVariance() const;
+    virtual real generate() const;
     virtual real pdf(real x) const;
 };
 
@@ -114,7 +114,7 @@ public:
     virtual ~BernoulliDistribution() {}
     virtual void setMean(real mean) {p = mean;}
     virtual void setVariance(real var) {} ///< set variance in a magic way
-    virtual real generate();
+    virtual real generate() const;
     virtual real pdf(real x) const;
     virtual real getMean() const {return p;}
 };
@@ -128,7 +128,7 @@ public:
     /// Make a discrete distribution with N outcomes
     DiscreteDistribution(int N); 
     virtual ~DiscreteDistribution();
-    virtual real generate();
+    virtual real generate() const;
     virtual real pdf(real x) const;
     virtual Distribution* clone();
     virtual real getMean() const;
@@ -151,7 +151,7 @@ public:
         this->range = b-a;
     }
     virtual ~UniformDistribution() {}
-    virtual real generate();
+    virtual real generate() const;
     virtual real pdf(real x) const;
     virtual void setVariance (real var) 
     {
@@ -186,7 +186,7 @@ public:
         setVariance (var);
     }
     virtual ~LaplacianDistribution() {}
-    virtual real generate();
+    virtual real generate() const;
     virtual real pdf(real x) const;
     virtual void setVariance (real var)
     {l = sqrt(0.5f / var);}
@@ -215,7 +215,7 @@ public:
         setVariance(var);
     }
     virtual ~ExponentialDistribution() {}
-    virtual real generate();
+    virtual real generate() const;
     virtual real pdf(real x) const;
     virtual void setVariance (real var)
     {l = sqrt(1.0f / var);}

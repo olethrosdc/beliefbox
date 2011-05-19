@@ -89,6 +89,7 @@ static Assert make_assert (bool flag) {
 	return Assert(flag);
 }
 
+Assert _dummy_make_assert();
 
 // Must define the macros afterwards
 /// Clever macro A

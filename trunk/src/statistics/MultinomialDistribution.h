@@ -16,20 +16,21 @@
 #include "Vector.h"
 #include "Distribution.h"
 
+/// Multinomial distribution
 class MultinomialDistribution : public VectorDistribution
 {
 protected:
 	Vector p;
 public:
-	MultinomialDistribution(std::vector<real> p_);
-	MultinomialDistribution(Vector p_);
+	MultinomialDistribution(const std::vector<real>& p_);
+	MultinomialDistribution(const Vector& p_);
 	MultinomialDistribution(int n);
 	MultinomialDistribution();
 	virtual ~MultinomialDistribution();
 	virtual void Resize(int n);
-	virtual void generate(Vector* x);
-	virtual Vector generate();
-    int generateInt();
+	virtual void generate(Vector* x) const;
+	virtual Vector generate() const;
+    int generateInt() const;
     virtual Vector getMean()
     {
         return p;
@@ -44,7 +45,7 @@ public:
         return pdf(*x);
     }
     virtual real pdf(const Vector& x) const;
-    virtual void generate(Vector& x);
+    virtual void generate(Vector& x) const;
 
 };
 

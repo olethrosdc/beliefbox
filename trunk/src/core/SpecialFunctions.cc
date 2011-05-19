@@ -23,12 +23,12 @@ real logBeta(real x, real y)
 }
 
 
-real Beta(Vector& x)
+real Beta(const Vector& x)
 {
     return exp(logBeta(x));
 }
 
-real logBeta(Vector& x)
+real logBeta(const Vector& x)
 {
 	int N = x.Size();
 	real sum = 0.0;

@@ -19,7 +19,7 @@
 #include "Random.h"
 
 
-real UniformDistribution::generate()
+real UniformDistribution::generate() const
 {
     real x = min + urandom()*range;
     //printf ("Uniform (%f,%f): %f\n", min, range, x);
@@ -48,12 +48,12 @@ real SingularDistribution::getMean() const
 	return m;
 }
 
-real SingularDistribution::getVariance()
+real SingularDistribution::getVariance() const
 {
     return 0.0;
 }
 
-real SingularDistribution::generate()
+real SingularDistribution::generate() const
 {
     return m;
 }
@@ -74,7 +74,7 @@ BernoulliDistribution::BernoulliDistribution(real p)
 }
 
 
-real BernoulliDistribution::generate()
+real BernoulliDistribution::generate() const
 {
     if (urandom()<p) {
         return 1.0f;
@@ -94,7 +94,7 @@ real BernoulliDistribution::pdf(real x) const
 
 
 
-real LaplacianDistribution::generate()
+real LaplacianDistribution::generate() const
 {
     real x = urandom(-1.0, 1.0);
     real absx = fabs (x);
@@ -114,7 +114,7 @@ real LaplacianDistribution::pdf(real x) const
     return 0.5*l * exp (-l*fabs(x-m));
 }
 
-real ExponentialDistribution::generate()
+real ExponentialDistribution::generate() const
 {
     real x = urandom();
     return - log (1.0 - x) / l;
@@ -162,7 +162,7 @@ DiscreteDistribution::~DiscreteDistribution() {
     }
 }
 
-real DiscreteDistribution::generate()
+real DiscreteDistribution::generate() const
 {
     real d=urandom();
     real sum = 0.0;
@@ -176,7 +176,7 @@ real DiscreteDistribution::generate()
     return 0.0;
 }
 
-int DiscreteDistribution::generate(const std::vector<real>& x)
+int DiscreteDistribution::generate(const std::vector<real>& x) 
 {
     real d=urandom();
     real sum = 0.0;
@@ -190,7 +190,7 @@ int DiscreteDistribution::generate(const std::vector<real>& x)
     return rand()%n; 
 }
 
-int DiscreteDistribution::generate(const Vector& x)
+int DiscreteDistribution::generate(const Vector& x) 
 {
     real d=urandom();
     real sum = 0.0;
@@ -203,7 +203,6 @@ int DiscreteDistribution::generate(const Vector& x)
     }
     return rand()%n; 
 }
-
 
 real DiscreteDistribution::getMean() const
 {

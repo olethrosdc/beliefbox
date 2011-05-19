@@ -25,7 +25,7 @@ public:
     }
 
     virtual ~GeometricDistribution() {}
-    virtual real generate();
+    virtual real generate() const;
     virtual real pdf(real x) const;
     virtual void setVariance (real var)
     {
