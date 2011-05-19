@@ -23,7 +23,7 @@ ContextBanditCollection::ContextBanditCollection(int n_aggregates, int n_states,
         if (i==0) {
             A[i] = new ContextBanditGaussian(n_states, n_actions, tau, mu_0, tau_0);
         } else {
-            int n = (int) floor(log(n_states) / log(2));
+            //int n = (int) floor(log(n_states) / log(2));
             // make sure 1 < n_sets < n_states
             int n_sets = 4;//1 + n_states >> (((i-1) % n) + 1);
             mdp_dbg ("Collection size: %d / %d\n", n_sets, n_states);

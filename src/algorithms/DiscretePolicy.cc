@@ -160,13 +160,13 @@ void FixedDiscretePolicy::Reset(int& start_state)
     state = start_state;
 }
 
-real FixedDiscretePolicy::getActionProbability(int& action)
+real FixedDiscretePolicy::getActionProbability(int& action) const
 {
 	return p[state][action];
 }
 
 
-real FixedDiscretePolicy::getActionProbability(int& state, int& action)
+real FixedDiscretePolicy::getActionProbability(int& state, int& action) const
 {
 	return p[state][action];
 }

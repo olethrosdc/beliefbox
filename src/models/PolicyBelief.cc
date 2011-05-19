@@ -23,8 +23,8 @@ real DirichletProductPolicyBelief::Update(int state, int action)
     return P[state].Observe(action);
 }
 
-/// Create a new policy
-DiscretePolicy* DirichletProductPolicyBelief::Sample()
+/// Create a new policy by sampling from the current distribution
+DiscretePolicy* DirichletProductPolicyBelief::Sample() const
 {
     std::vector<Vector> p_sa(n_states);
     for (int i=0; i<n_states; ++i) {
@@ -34,6 +34,18 @@ DiscretePolicy* DirichletProductPolicyBelief::Sample()
     return policy;
 }
 
+/// Create a new policy, the same as the expected policy. 
+DiscretePolicy* DirichletProductPolicyBelief::getExpectedPolicy() const
+{
+    std::vector<Vector> p_sa(n_states);
+    for (int i=0; i<n_states; ++i) {
+        p_sa[i] = P[i].generate();
+    }
+    DiscretePolicy* policy = new FixedDiscretePolicy(p_sa);
+    return policy;
+}
+
+/// Get the posterior
 real DirichletProductPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 {
     real log_p = 0;
@@ -48,3 +60,19 @@ real DirichletProductPolicyBelief::CalculatePosterior(Demonstrations<int, int>& 
     }
     return exp(log_p);
 }
+
+
+real DirichletProductPolicyBelief::getLogDensity(const DiscretePolicy& policy) const
+{
+	real log_pdf = 0;
+	for (int s=0; s<n_states; ++s) {
+		log_pdf += P[s].log_pdf(policy.getActionProbabilities(s));
+	}
+	return log_pdf;
+}
+real DirichletProductPolicyBelief::getDensity(const DiscretePolicy& policy) const
+{
+	return exp(getLogDensity(policy));
+}
+
+

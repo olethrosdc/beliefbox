@@ -39,6 +39,7 @@
 #include "DiscretisedEnvironment.h"
 #include "HQLearning.h"
 #include "MWAL.h"
+#include "PolicyBelief.h"
 #include <cstring>
 #include <getopt.h>
 
@@ -666,6 +667,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
         mwal.Compute(*computation_mdp, gamma, 0.001, iterations);
         delete computation_mdp;
 
+		DirichletProductPolicyBelief policy_belief (n_states, n_actions);
+		policy_belief.CalculatePosterior(demonstrations);
+		
         //fprintf(stderr, "Estimating optimal value function\n");
         ValueIteration VI(mdp, gamma);
         VI.ComputeStateValues(0.001);

@@ -56,10 +56,10 @@ DiscreteMDP* DiscreteChain::getMDP() const
 {
     DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions);
 
-    for (int s=0; s<n_states; ++s) {
+    for (uint s=0; s<n_states; ++s) {
         // Action 0
         mdp->setTransitionProbability(s, 0, 0, 1.0 - slip);
-        for (int j=0; j<n_states;++j) {
+        for (uint j=0; j<n_states;++j) {
 			if (j == s) {
                 mdp->setTransitionProbability(s, 0, j, slip);
 			} else if (j != 0) {
@@ -68,12 +68,12 @@ DiscreteMDP* DiscreteChain::getMDP() const
         }
 
         // Action 1
-        int s_n = s + 1;
+        uint s_n = s + 1;
         if (s_n > n_states - 1) {
             s_n = n_states - 1;
         }
         mdp->setTransitionProbability(s, 1, s_n, 1 - slip);
-        for (int j=0; j<n_states;++j) {
+        for (uint j=0; j<n_states;++j) {
 			if (j == 0) {
                 mdp->setTransitionProbability(s, 1, j, slip);
 			} else if (j != s_n) {

@@ -32,7 +32,7 @@ real NormalDistribution::generate() const
     }
 }
 
-real NormalDistribution::generate()
+real NormalDistribution::generate() 
 {
     if(!cache) {
         normal_x = urandom();
@@ -240,13 +240,13 @@ MultivariateNormal::MultivariateNormal(const Vector& mean_, const Matrix& accura
 }
 
 /// Multivariate Gaussian generation
-void MultivariateNormal::generate(Vector& x)
+void MultivariateNormal::generate(Vector& x) const
 {
 	x = mean;
 }
 
 /// Multivariate Gaussian generation
-Vector MultivariateNormal::generate()
+Vector MultivariateNormal::generate() const
 {	
 	return mean; /// NOTE: FIX ME
 }

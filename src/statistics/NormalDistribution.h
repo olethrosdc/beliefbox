@@ -193,8 +193,8 @@ class MultivariateNormal : public VectorDistribution
         accuracy.LUDecomposition(determinant);
     }
     virtual ~MultivariateNormal() {}
-    virtual void generate(Vector& x);
-    virtual Vector generate();
+    virtual void generate(Vector& x) const;
+    virtual Vector generate() const;
     virtual real log_pdf(const Vector& x) const;
     virtual real pdf(const Vector& x) const
     {

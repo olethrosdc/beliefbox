@@ -11,7 +11,7 @@
 #include "GeometricDistribution.h"
 #include "Random.h"
 
-real GeometricDistribution::generate()
+real GeometricDistribution::generate() const
 {
     real x = urandom();
     return floor(log(x) * gen_scale);
