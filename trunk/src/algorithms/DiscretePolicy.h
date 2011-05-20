@@ -37,6 +37,7 @@ public:
     virtual real getActionProbability(int& action) const = 0;
     virtual real getActionProbability(int& state, int& action) const = 0;
 	virtual Vector getActionProbabilities(int& state) const = 0;
+    virtual void Show() = 0;
 };
 
 class FixedDiscretePolicy : public DiscretePolicy
