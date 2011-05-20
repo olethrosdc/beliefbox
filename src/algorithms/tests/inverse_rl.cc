@@ -61,7 +61,7 @@ struct EpisodeStatistics
     }
 };
 
-#define N_COMPARISONS 4
+#define N_COMPARISONS 5
 
 struct Statistics
 {
@@ -664,12 +664,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
         DiscreteMDP* computation_mdp = environment->getMDP();
         MWAL mwal(n_states, n_actions, gamma);
         mwal.CalculateFeatureCounts(demonstrations);
-        mwal.Compute(*computation_mdp, gamma, 0.001, iterations);
+        mwal.Compute(*computation_mdp, gamma, 0.0001, iterations);
         delete computation_mdp;
 
-		DirichletProductPolicyBelief policy_belief (n_states, n_actions);
-		policy_belief.CalculatePosterior(demonstrations);
-		
         //fprintf(stderr, "Estimating optimal value function\n");
         ValueIteration VI(mdp, gamma);
         VI.ComputeStateValues(0.001);
@@ -694,6 +691,19 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_SMAX\n");
 
+
+		DirichletProductPolicyBelief policy_belief (n_states, n_actions);
+		policy_belief.CalculatePosterior(demonstrations);
+		DiscretePolicy* expected_policy = policy_belief.getExpectedPolicy();
+        printf ("Posterior policy:\n---------------\n");
+        expected_policy->Show();
+        PolicyEvaluation post_evaluator(expected_policy, mdp, gamma);
+        post_evaluator.ComputeStateValues(0.001);
+        for (int i=0; i<n_states; ++i) {
+            printf ("%f ", post_evaluator.getValue(i));
+        }
+        printf ("# V_EXPECTED\n");
+		delete expected_policy;
 
 
         printf ("MWAL policy:\n------------\n");
@@ -730,11 +740,13 @@ Statistics EvaluateAlgorithm (int episode_steps,
         statistics.DV(1) = (VI.V - imitating_evaluator.V).L1Norm();
         statistics.DV(2) = (VI.V - mwal_evaluator.V).L1Norm();
         statistics.DV(3) = (VI.V - mwal_greedy_evaluator.V).L1Norm();
-        printf ("%f %f %f %f # DV run\n", 
+        statistics.DV(4) = (VI.V - post_evaluator.V).L1Norm();
+        printf ("%f %f %f %f %f# DV run\n", 
                 statistics.DV(0),
                 statistics.DV(1),
                 statistics.DV(2),
-                statistics.DV(3));
+                statistics.DV(3),
+                statistics.DV(4));
         
         delete mdp;
         
