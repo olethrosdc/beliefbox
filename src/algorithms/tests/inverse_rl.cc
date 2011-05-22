@@ -654,12 +654,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
     {
         //fprintf (stderr, "Trying to guess policy!\n");
-
-
-        
         DiscreteMDP* mdp = environment->getMDP();
-        int n_states = mdp->GetNStates();
-        int n_actions = mdp->GetNActions();
+        int n_states = mdp->getNStates();
+        int n_actions = mdp->getNActions();
 
         DiscreteMDP* computation_mdp = environment->getMDP();
         MWAL mwal(n_states, n_actions, gamma);

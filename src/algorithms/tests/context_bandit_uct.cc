@@ -713,14 +713,14 @@ int MakeDecision(BeliefTree<ContextBanditBelief>& new_tree,
         value_iteration_upper.ComputeStateValues(vi_threshold, max_value_iterations);
         
         if (verbose >= 60) {
-            std::cout << "mdp states " << mean_mdp.GetNStates()
+            std::cout << "mdp states " << mean_mdp.getNStates()
                       << " nodes " << node_set.size()
                       << std::endl;
-            for (int s=0; s<mean_mdp.GetNStates() - 1; s++) {
+            for (int s=0; s<mean_mdp.getNStates() - 1; s++) {
                 if (s >= (int) node_set.size()) {
                     std::cerr << "ERROR in mdp size!"
                               << s << " >= " << node_set.size()
-                              << "mdp size = " << mean_mdp.GetNStates()
+                              << "mdp size = " << mean_mdp.getNStates()
                               << std::endl;
                     exit(-1);
                 }
@@ -760,7 +760,7 @@ int MakeDecision(BeliefTree<ContextBanditBelief>& new_tree,
         }
 
 
-        for (int s=0; s<mean_mdp.GetNStates(); s++) {
+        for (int s=0; s<mean_mdp.getNStates(); s++) {
             fprintf (fout,
                      "s%d [label = \"%.2f - %.2f\"];\n",
                      s,
@@ -779,8 +779,8 @@ int MakeDecision(BeliefTree<ContextBanditBelief>& new_tree,
     }
 
     if (verbose >= 20) {
-        for (int s=0; s<mean_mdp.GetNStates(); s++) {
-            for (int a=0; a<mean_mdp.GetNActions(); a++) {
+        for (int s=0; s<mean_mdp.getNStates(); s++) {
+            for (int a=0; a<mean_mdp.getNActions(); a++) {
                 std::cout << "Q[" << s << ", " << a << "]"
                           << " = " << value_iteration_lower.getValue(s,a)
                           << " - " << value_iteration_upper.getValue(s,a)

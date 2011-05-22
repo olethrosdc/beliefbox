@@ -295,7 +295,7 @@ int MakeDecision(ExpansionMethod expansion_method,
     }
 
     if (verbose >= 60) {
-        for (int s=0; s<mdp.GetNStates(); s++) {
+        for (int s=0; s<mdp.getNStates(); s++) {
             std::cout << "V[" << s << "]"
                       << " = " << value_iteration.getValue(s)
                       << std::endl;
@@ -303,11 +303,11 @@ int MakeDecision(ExpansionMethod expansion_method,
     }
 
     if (fout) {
-        for (int s=0; s<mdp.GetNStates(); s++) {
+        for (int s=0; s<mdp.getNStates(); s++) {
             //BeliefTree<SimpleBelief>::Node* node = tree->nodes[s];
             real alpha = 0.0;
             real beta = 0.0;
-            if (s < mdp.GetNStates() - 1) {
+            if (s < mdp.getNStates() - 1) {
                 BetaDistribution belief = tree.nodes[s]->belief.getPrior();
                 alpha = belief.alpha;
                 beta = belief.beta;
@@ -330,8 +330,8 @@ int MakeDecision(ExpansionMethod expansion_method,
     }
 
     if (verbose >= 10) {
-        for (int s=0; s<mdp.GetNStates(); s++) {
-            for (int a=0; a<mdp.GetNActions(); a++) {
+        for (int s=0; s<mdp.getNStates(); s++) {
+            for (int a=0; a<mdp.getNActions(); a++) {
                 std::cout << "Q[" << s << ", " << a << "]"
                           << " = " << value_iteration.getValue(s,a)
                           << std::endl;

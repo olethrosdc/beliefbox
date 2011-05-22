@@ -23,8 +23,8 @@ GoalStateIteration::GoalStateIteration(const DiscreteMDP* mdp)
     this->mdp = mdp;
     this->gamma = gamma;
     this->baseline = baseline;
-    n_actions = mdp->GetNActions();
-    n_states = mdp->GetNStates();
+    n_actions = mdp->getNActions();
+    n_states = mdp->getNStates();
     Reset();
 }
 

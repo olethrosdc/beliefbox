@@ -222,8 +222,8 @@ Stats Evaluate() {
     random_mdp.AperiodicityTransform(tau);
     mdp->Check();
     
-    int n_states = mdp->GetNStates();
-    int n_actions = mdp->GetNActions();
+    int n_states = mdp->getNStates();
+    int n_actions = mdp->getNActions();
     
     std::vector<Vector> p(n_states);
     for (int s=0; s<n_states; s++) {
@@ -240,7 +240,7 @@ Stats Evaluate() {
     
     value_iteration.ComputeStateValues(0.1, 1000);
 #if 0
-    for (int s=0; s<mdp->GetNStates(); s++) {
+    for (int s=0; s<mdp->getNStates(); s++) {
         printf ("%1.f ", value_iteration.getValue(s));
     }
     printf("\n");
@@ -258,7 +258,7 @@ Stats Evaluate() {
             fprintf (f, "digraph MDP {\n");
             fprintf (f, "ranksep=2; rankdir=LR; \n");
             mdp->dotModel(f);
-            for (int s=0; s<mdp->GetNStates(); s++) {
+            for (int s=0; s<mdp->getNStates(); s++) {
                 fprintf (f,
                          "s%d [label = \"%.2f\"];\n",
                          s,
@@ -279,8 +279,8 @@ void TestModel(const DiscreteMDP* mdp,
                const bool relative,
                const char* fname)
 {
-    const int n_states = mdp->GetNStates();
-    const int n_actions = mdp->GetNActions();
+    const int n_states = mdp->getNStates();
+    const int n_actions = mdp->getNActions();
     mdp->Check();
 
     // Get MDP diameter
@@ -295,7 +295,7 @@ void TestModel(const DiscreteMDP* mdp,
     for (int i=0; i<max_iter; i++) {
         value_iteration.ComputeStateValues(threshold, 1);
         printf ("%d : ", i);
-        for (int s=0; s<mdp->GetNStates(); s++) {
+        for (int s=0; s<mdp->getNStates(); s++) {
             printf ("%+4.4f ", value_iteration.getValue(s));
         }
         printf("%f\n", value_iteration.Delta);
@@ -313,7 +313,7 @@ void TestModel(const DiscreteMDP* mdp,
             fprintf (f, "digraph MDP {\n");
             fprintf (f, "ranksep=2; rankdir=LR; \n");
             mdp->dotModel(f);
-            for (int s=0; s<mdp->GetNStates(); s++) {
+            for (int s=0; s<mdp->getNStates(); s++) {
                 fprintf (f,
                          "s%d [label = \"%.2f\"];\n",
                          s,

@@ -26,8 +26,8 @@ PolicyEvaluation::PolicyEvaluation(DiscretePolicy* policy_,
     assert (mdp);
     assert (gamma>=0 && gamma <=1);
 
-    n_actions = mdp->GetNActions();
-    n_states = mdp->GetNStates();
+    n_actions = mdp->getNActions();
+    n_states = mdp->getNStates();
     Reset();
 }
 

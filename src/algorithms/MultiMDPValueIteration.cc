@@ -29,13 +29,13 @@ MultiMDPValueIteration::MultiMDPValueIteration(const Vector& w_,
     assert (mdp_list.size());
     assert (gamma>=0 && gamma <=1);
     assert ((int) mdp_list.size() == w.Size());
-    n_actions = mdp_list[0]->GetNActions();
-    n_states = mdp_list[0]->GetNStates();
+    n_actions = mdp_list[0]->getNActions();
+    n_states = mdp_list[0]->getNStates();
     for (int i=1; i<n_mdps; ++i) {
-        if (n_actions != mdp_list[i]->GetNActions()) {
+        if (n_actions != mdp_list[i]->getNActions()) {
             throw std::runtime_error("Number of actions in MDPs does not agree\n");
         }
-        if (n_states != mdp_list[i]->GetNStates()) {
+        if (n_states != mdp_list[i]->getNStates()) {
             throw std::runtime_error("Number of states in MDPs does not agree\n");
         }
     }

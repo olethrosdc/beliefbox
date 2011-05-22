@@ -90,14 +90,22 @@ DiscreteSpaceRewardDistribution::~DiscreteSpaceRewardDistribution()
 real DiscreteSpaceRewardDistribution::generate(int state, int action) const
 {
 	int ID = getID(state, action);
-	return R[ID]->generate();
+	if (R[ID]) {
+		return R[ID]->generate();
+	} else {
+		return 0.0;
+	}
 }
 
 /// Get expected value
 real DiscreteSpaceRewardDistribution::expected(int state, int action) const
 {
 	int ID = getID(state, action);
-	return R[ID]->getMean();
+	if (R[ID]) {
+		return R[ID]->getMean();
+	} else {
+		return 0.0;
+	}
 }
 
 /// Generate pdf -- in fact, a probability since there are just two outcomes.

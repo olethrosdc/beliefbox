@@ -40,8 +40,8 @@ int main (void)
     const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
     
-    int n_states = mdp->GetNStates();
-    int n_actions = mdp->GetNActions();
+    int n_states = mdp->getNStates();
+    int n_actions = mdp->getNActions();
     
     std::vector<Vector> p(n_states);
     for (int s=0; s<n_states; s++) {
@@ -79,7 +79,7 @@ int main (void)
        FixedDiscretePolicy* vi_policy = value_iteration.getPolicy();
        policy_evaluation.SetPolicy(vi_policy);
        policy_evaluation.ComputeStateValues(0.0, 1000);
-       for (int s=0; s<mdp->GetNStates(); s++) {
+       for (int s=0; s<mdp->getNStates(); s++) {
            printf ("%.1f (%.1f)",
                    value_iteration.getValue(s),
                    policy_evaluation.getValue(s));
