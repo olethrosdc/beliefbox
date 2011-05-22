@@ -47,8 +47,8 @@ int main (void)
     //const DiscreteMDP* mdp = optimistic_task.getMDP();
     const DiscreteMDP* mdp = chain_task.getMDP();
 
-    int n_states = mdp->GetNStates();
-    int n_actions = mdp->GetNActions();
+    int n_states = mdp->getNStates();
+    int n_actions = mdp->getNActions();
     printf ("# states: %d, actions: %d\n", n_states, n_actions);
     AveragePolicyEvaluation policy_evaluation(NULL, mdp);
     PolicyIteration policy_iteration(&policy_evaluation, mdp, gamma);
@@ -59,7 +59,7 @@ int main (void)
 
     printf ("Policy iteration\n");
     policy_iteration.ComputeStateValues(0.01, 1000);
-    for (int s=0; s<mdp->GetNStates(); s++) {
+    for (int s=0; s<mdp->getNStates(); s++) {
         printf ("%1.f ", policy_iteration.getValue(s));
     }
     printf(", D = %.1f, b = %.1f\n",
@@ -68,7 +68,7 @@ int main (void)
 
     printf ("Value iteration\n");
     value_iteration.ComputeStateActionValues(0.01, 100000);
-    for (int s=0; s<mdp->GetNStates(); s++) {
+    for (int s=0; s<mdp->getNStates(); s++) {
         printf ("%1.f ", value_iteration.getValue(s));
     }
     printf(", D = %.1f, b = %.1f\n",

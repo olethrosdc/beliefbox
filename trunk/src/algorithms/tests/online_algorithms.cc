@@ -542,8 +542,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
     }
     std:: cout << "(value iteration)" << std::endl;
     value_iteration.ComputeStateActionValues(10e-6,-1);
-    int n_states = mdp->GetNStates();
-    int n_actions = mdp->GetNActions();
+    int n_states = mdp->getNStates();
+    int n_actions = mdp->getNActions();
 #endif
 
     Statistics statistics;

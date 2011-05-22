@@ -65,11 +65,11 @@ public:
         this->n_actions = n_actions;
         mdp_dbg("Creating MDPModel with %d states and %d actions\n",  n_states, n_actions);
     }
-    inline virtual int GetNStates()
+    inline virtual int getNStates()
     {
         return n_states;
     }
-    inline virtual int GetNActions()
+    inline virtual int getNActions()
     {
         return n_actions;
     }

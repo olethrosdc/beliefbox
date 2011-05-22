@@ -14,9 +14,9 @@ Matrix GetQValues(const DiscreteMDP* mdp, real gamma)
     ValueIteration value_iteration(mdp, gamma);
     value_iteration.ComputeStateActionValues(ACCURACY_THRESHOLD);
     
-    Matrix Q(mdp->GetNStates(), mdp->GetNActions());
-    for (int s=0; s<mdp->GetNStates(); ++s) {
-        for (int a=0; a<mdp->GetNActions(); ++a) {
+    Matrix Q(mdp->getNStates(), mdp->getNActions());
+    for (int s=0; s<mdp->getNStates(); ++s) {
+        for (int a=0; a<mdp->getNActions(); ++a) {
             Q(s,a) = value_iteration.getValue(s, a);
         }
     }
@@ -30,9 +30,9 @@ Matrix GetQValues(std::vector<const DiscreteMDP*>& M,
     MultiMDPValueIteration value_iteration(w, M, gamma);
     value_iteration.ComputeStateActionValues(ACCURACY_THRESHOLD);
     
-    Matrix Q(M[0]->GetNStates(), M[0]->GetNActions());
-    for (int s=0; s<M[0]->GetNStates(); ++s) {
-        for (int a=0; a<M[0]->GetNActions(); ++a) {
+    Matrix Q(M[0]->getNStates(), M[0]->getNActions());
+    for (int s=0; s<M[0]->getNStates(); ++s) {
+        for (int a=0; a<M[0]->getNActions(); ++a) {
             Q(s,a) = value_iteration.getValue(s, a);
         }
     }

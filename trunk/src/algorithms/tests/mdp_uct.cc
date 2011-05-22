@@ -502,7 +502,7 @@ int MakeDecision(ExpansionMethod expansion_method,
         value_iteration_upper.ComputeStateValues(0.00001, max_value_iterations);
         
         if (verbose >= 60) {
-            for (int s=0; s<mean_mdp.GetNStates(); s++) {
+            for (int s=0; s<mean_mdp.getNStates(); s++) {
                 std::cout << "V[" << s << "]"
                           << " = " << value_iteration_lower.getValue(s)
                           << " ... " << value_iteration_upper.getValue(s)
@@ -510,7 +510,7 @@ int MakeDecision(ExpansionMethod expansion_method,
             }
         }
 
-        for (int s=0; s<mean_mdp.GetNStates(); s++) {
+        for (int s=0; s<mean_mdp.getNStates(); s++) {
             fprintf (fout,
                      "s%d [label = \"%.2f - %.2f\"];\n",
                      s,
@@ -529,8 +529,8 @@ int MakeDecision(ExpansionMethod expansion_method,
     }
 
     if (verbose >= 10) {
-        for (int s=0; s<mean_mdp.GetNStates(); s++) {
-            for (int a=0; a<mean_mdp.GetNActions(); a++) {
+        for (int s=0; s<mean_mdp.getNStates(); s++) {
+            for (int a=0; a<mean_mdp.getNActions(); a++) {
                 std::cout << "Q[" << s << ", " << a << "]"
                           << " = " << value_iteration_lower.getValue(s,a)
                           << " - " << value_iteration_upper.getValue(s,a)

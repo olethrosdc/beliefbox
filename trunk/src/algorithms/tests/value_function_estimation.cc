@@ -89,8 +89,8 @@ int main (int argc, char** argv)
 
 
     //const DiscreteMDP* mdp = environment->getMDP();
-    //assert(n_states == mdp->GetNStates());
-    //assert(n_actions == mdp->GetNActions());
+    //assert(n_states == mdp->getNStates());
+    //assert(n_actions == mdp->getNActions());
 	RandomSourceRNG rng(false);
     
     std::cout << "Starting evaluation" << std::endl;
@@ -251,10 +251,10 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 
 		int n_samples = mdp_samples.size();
 	
-		int n_states = mean_mdp->GetNStates();
-		Vector empirical_mean(mean_mdp->GetNStates());
-		Vector optimistic_mean(mean_mdp->GetNStates());
-		Vector pessimistic_mean(mean_mdp->GetNStates());
+		int n_states = mean_mdp->getNStates();
+		Vector empirical_mean(mean_mdp->getNStates());
+		Vector optimistic_mean(mean_mdp->getNStates());
+		Vector pessimistic_mean(mean_mdp->getNStates());
 		for (int s=0; s<n_states; ++s) {
 			empirical_mean(s) = 0.0;
 			optimistic_mean(s) = 0.0;

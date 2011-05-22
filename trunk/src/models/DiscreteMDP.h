@@ -53,11 +53,11 @@ public:
 	//Distribution** initial_rewards = NULL);
     MDP<int,int> (const MDP<int,int>& mdp);
 
-    inline int GetNStates() const
+    inline int getNStates() const
     {
         return n_states;
     }
-    inline int GetNActions() const
+    inline int getNActions() const
     {
         return n_actions;
     }

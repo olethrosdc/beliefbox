@@ -201,11 +201,11 @@ const DiscreteMDP * const DiscreteMDPCounts::getMeanMDP() const
 
 void DiscreteMDPCounts::CopyMeanMDP(DiscreteMDP* mdp) const
 {
-    if (mdp->GetNStates() != n_states) {
+    if (mdp->getNStates() != n_states) {
         throw std::runtime_error("incorrect number of states");
     }
 
-    if (mdp->GetNActions() != n_actions) {
+    if (mdp->getNActions() != n_actions) {
         throw std::runtime_error("incorrect number of actions");
     }
 
