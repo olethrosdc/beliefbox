@@ -19,15 +19,19 @@
 class RewardPolicyBelief
 {
 protected:
+    real gamma;
     DirichletProductPolicyBelief policy_belief;
 	DiscreteMDP mdp;
 	std::vector<DiscreteSpaceRewardDistribution> rewards;
+    int n_samples;
 public:
     RewardPolicyBelief(int n_states, int n_actions,
+                       real gamma_,
 					   DiscreteMDP& mdp_,
 					   const std::vector<DiscreteSpaceRewardDistribution> rewards_);	
 
     RewardPolicyBelief(int n_states, int n_actions,
+                       real gamma_,
 					   DiscreteMDP& mdp_);
 
 	/// Virtual destructor
@@ -45,7 +49,10 @@ public:
 	/// Set accuracy
 	void setAccuracy(real epsilon)
 	{
-		
+        n_samples = (int) ceil(pow((1 - gamma) * epsilon, -2.0));
+        printf("# setting accuracy to %f -> n_samples = %d\n", 
+               epsilon,
+               n_samples);
 	}
 };
 

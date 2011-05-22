@@ -14,25 +14,33 @@
 
 /// Create from a fixed set of reward distributions
 RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
+                                       real gamma_,
 									   DiscreteMDP& mdp_,
 									   const std::vector<DiscreteSpaceRewardDistribution> rewards_)
 
 	: policy_belief(n_states, n_actions),
+      gamma(gamma_),
 	  mdp(mdp_),
 	  rewards(rewards_)
 {
 	assert(n_states == mdp.getNStates());
 	assert(n_actions == mdp.getNActions());
+    assert(gamma >= 0 && gamma <= 1);
+    setAccuracy(1e-3);
 }
 
 /// Enumerate all index reward functions
 RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
+                                       real gamma_,
 									   DiscreteMDP& mdp_)
 	: policy_belief(n_states, n_actions),
+      gamma(gamma_),
 	  mdp(mdp_)
 {
 	assert(n_states == mdp.getNStates());
 	assert(n_actions == mdp.getNActions());
+    assert(gamma >= 0 && gamma <= 1);
+    setAccuracy(1e-3);
 	for (int s=0; s<n_states; ++s) {
 		for (int a=0; a<n_actions; ++a) {
 			DiscreteSpaceRewardDistribution R_sa(n_states, n_actions);
@@ -48,8 +56,6 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 {
 	policy_belief.CalculatePosterior(D);
 	for (uint i=0; i<rewards.size(); ++i)  {
-		
-		
 	}
 	return 1.0;
 }
