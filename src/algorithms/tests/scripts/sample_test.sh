@@ -12,15 +12,15 @@ params="--environment RiverSwim --gamma $gamma --epsilon $epsilon --n_runs $runs
 
 outdir=$HOME/results/${task}/epsilon${epsilon}
 mkdir -p $outdir
-for algorithm in QLearning Sarsa Model
-do
-    time ./bin/online_algorithms --algorithm $algorithm $params >$outdir/${algorithm}.out
-    grep PAYOFF $outdir/${algorithm}.out > $outdir/${algorithm}.payoff
-    grep RUN $outdir/${algorithm}.out > $outdir/${algorithm}.reward
-    rm $outdir/${algorithm}.out
-done
+#for algorithm in QLearning Sarsa Model
+#do
+#    time ./bin/online_algorithms --algorithm $algorithm $params >$outdir/${algo#rithm}.out
+#    grep PAYOFF $outdir/${algorithm}.out > $outdir/${algorithm}.payoff
+#    grep RUN $outdir/${algorithm}.out > $outdir/${algorithm}.reward
+#    rm $outdir/${algorithm}.out
+#done
 
-for i in 1 2 3 4 5 6 7 8;
+for i in 8; #1 2 3 4 5 6 7 8;
 do 
     echo $i; 
     time ./bin/online_algorithms --algorithm Sampling --max_samples=${i} $params >$outdir/sampling${i}.out;
