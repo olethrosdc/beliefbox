@@ -19,24 +19,27 @@
 class RewardPolicyBelief
 {
 protected:
-    real gamma;
-    DirichletProductPolicyBelief policy_belief;
-	DiscreteMDP mdp;
-	std::vector<DiscreteSpaceRewardDistribution> rewards;
-    int n_samples;
+	const Distribution & epsilon; ///< Distribution of the sub-optimality of policies
+    DirichletProductPolicyBelief policy_belief;   ///< prior about policies
+	real gamma; ///< value of gamma (assumed known here)
+	DiscreteMDP mdp; ///< value of MDP (assumed known here)
+	std::vector<DiscreteSpaceRewardDistribution> rewards; ///< set of reward functions
+    int n_samples; ///< number of samples required
+	std::vector<DiscretePolicy*> policies; ///< storage for sampled policies from the belief
+	Vector P_rewards; ///< posterior probability of each reward function
 public:
     RewardPolicyBelief(int n_states, int n_actions,
+					   const Distribution& epsilon_,
                        real gamma_,
 					   DiscreteMDP& mdp_,
 					   const std::vector<DiscreteSpaceRewardDistribution> rewards_);	
 
     RewardPolicyBelief(int n_states, int n_actions,
+					   const Distribution& epsilon_,
                        real gamma_,
 					   DiscreteMDP& mdp_);
 
-	/// Virtual destructor
-	virtual ~RewardPolicyBelief()
-	{ }
+	virtual ~RewardPolicyBelief();
 	
 	virtual real CalculatePosterior(Demonstrations<int, int>& D);
 	

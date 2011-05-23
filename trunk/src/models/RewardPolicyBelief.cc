@@ -9,19 +9,28 @@
  *                                                                         *
  ***************************************************************************/
 
+// models
 #include "RewardPolicyBelief.h"
+
+// algorithms
+#include "DiscretePolicy.h"
+
+// system
 #include <vector>
 
 /// Create from a fixed set of reward distributions
 RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
+									   const Distribution& epsilon_,
                                        real gamma_,
 									   DiscreteMDP& mdp_,
 									   const std::vector<DiscreteSpaceRewardDistribution> rewards_)
 
-	: policy_belief(n_states, n_actions),
+	: epsilon(epsilon_),
+	  policy_belief(n_states, n_actions),
       gamma(gamma_),
 	  mdp(mdp_),
-	  rewards(rewards_)
+	  rewards(rewards_),
+	  P_rewards(rewards.size())
 {
 	assert(n_states == mdp.getNStates());
 	assert(n_actions == mdp.getNActions());
@@ -31,11 +40,13 @@ RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
 
 /// Enumerate all index reward functions
 RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
+									   const Distribution& epsilon_,
                                        real gamma_,
 									   DiscreteMDP& mdp_)
 	: policy_belief(n_states, n_actions),
       gamma(gamma_),
-	  mdp(mdp_)
+	  mdp(mdp_),
+	  P_rewards(rewards.size())
 {
 	assert(n_states == mdp.getNStates());
 	assert(n_actions == mdp.getNActions());
@@ -55,9 +66,40 @@ RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
 real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 {
 	policy_belief.CalculatePosterior(D);
-	for (uint i=0; i<rewards.size(); ++i)  {
+
+	//--  resample from the belief -- //
+	
+	// reset policies vector
+	for (uint i=0; i<policies.size(); ++i) {
+		delete policies[i];
 	}
+	policies.resize(n_samples);
+
+	// add new samples
+	for (int i=0; i<n_samples; ++i) {
+		policies[i] = policy_belief.Sample();
+	}
+
+
+	//-- calculate probability of each policy --//
+	int n_rewards = P_rewards.Size();
+	assert(n_rewards == rewards.size());
+
+	//-- Make a matrix that contains the optimality of each policy --//
+	P_rewards.Clear();
+	for (int i=0; i<n_samples; ++i) {
+		P_rewards(i) += p;
+	}
+	
 	return 1.0;
 }
 
+
+/// Virtual destructor
+RewardPolicyBelief::~RewardPolicyBelief()
+{
+	for (uint i=0; i<policies.size(); ++i) {
+		delete policies[i];
+	}	
+}
 
