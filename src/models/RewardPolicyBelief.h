@@ -19,7 +19,7 @@
 class RewardPolicyBelief
 {
 protected:
-	const Distribution & epsilon; ///< Distribution of the sub-optimality of policies
+	real lambda; ///< Exponential distribution parameter for the sub-optimality of policies
     DirichletProductPolicyBelief policy_belief;   ///< prior about policies
 	real gamma; ///< value of gamma (assumed known here)
 	DiscreteMDP mdp; ///< value of MDP (assumed known here)
@@ -29,13 +29,13 @@ protected:
 	Vector P_rewards; ///< posterior probability of each reward function
 public:
     RewardPolicyBelief(int n_states, int n_actions,
-					   const Distribution& epsilon_,
+					   real lambda_,
                        real gamma_,
 					   DiscreteMDP& mdp_,
 					   const std::vector<DiscreteSpaceRewardDistribution> rewards_);	
 
     RewardPolicyBelief(int n_states, int n_actions,
-					   const Distribution& epsilon_,
+					   real lambda_,
                        real gamma_,
 					   DiscreteMDP& mdp_);
 
