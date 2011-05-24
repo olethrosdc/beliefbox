@@ -17,15 +17,16 @@
 
 // system
 #include <vector>
+#include <set>
 
 /// Create from a fixed set of reward distributions
 RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
-									   const Distribution& epsilon_,
+									   real lambda_,
                                        real gamma_,
 									   DiscreteMDP& mdp_,
 									   const std::vector<DiscreteSpaceRewardDistribution> rewards_)
 
-	: epsilon(epsilon_),
+	: lambda(lambda_),
 	  policy_belief(n_states, n_actions),
       gamma(gamma_),
 	  mdp(mdp_),
@@ -43,7 +44,8 @@ RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
 									   const Distribution& epsilon_,
                                        real gamma_,
 									   DiscreteMDP& mdp_)
-	: policy_belief(n_states, n_actions),
+	: lambda(lambda_),
+      policy_belief(n_states, n_actions),
       gamma(gamma_),
 	  mdp(mdp_),
 	  P_rewards(rewards.size())
@@ -88,7 +90,7 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 	//-- Make a matrix that contains the optimality of each policy --//
 	P_rewards.Clear();
 	for (int i=0; i<n_samples; ++i) {
-		P_rewards(i) += p;
+        
 	}
 	
 	return 1.0;
