@@ -58,6 +58,12 @@ ValueIteration::~ValueIteration()
 {
 }
 
+/** Compute state values using value iteration.
+
+	The process ends either when the error is below the given threshold,
+	or when the given number of max_iter iterations is reached. Setting
+	max_iter to -1 means there is no limit to the number of iterations.
+*/
 void ValueIteration::ComputeStateValues(real threshold, int max_iter)
 {
     int n_iter = 0;
@@ -94,13 +100,12 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
 
 
 
-/** ComputeStateActionValues
-   
-    threshold - exit when difference in Q is smaller than the threshold
-    max_iter - exit when the number of iterations reaches max_iter
+/** Compute state-action values using value iteration.
 
+	The process ends either when the error is below the given threshold,
+	or when the given number of max_iter iterations is reached. Setting
+	max_iter to -1 means there is no limit to the number of iterations.
 */
-
 void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 {
     int n_iter = 0;
@@ -120,8 +125,6 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
                     real P = mdp->getTransitionProbability(s, a, s2);
                     real R = mdp->getExpectedReward(s, a) - baseline;
                     sum += P*(R + gamma*V(s2));
-                    //real Q_a_max = Max(Q.getRow(s2));
-                    //sum += P*(R + gamma*Q_a_max);
                 }
                 Q(s, a) = sum;
                 Delta += fabs(pQ(s, a) - sum);
@@ -137,7 +140,7 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
     //printf("Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
-
+/// Create the greedy policy with respect to the calculated value function.
 FixedDiscretePolicy* ValueIteration::getPolicy()
 {
     FixedDiscretePolicy* policy = new FixedDiscretePolicy(n_states, n_actions);

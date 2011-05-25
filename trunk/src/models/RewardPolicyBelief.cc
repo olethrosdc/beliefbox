@@ -14,19 +14,22 @@
 
 // algorithms
 #include "DiscretePolicy.h"
+#include "ValueIteration.h"
+#include "PolicyEvaluation.h"
 
 // system
 #include <vector>
 #include <set>
 
 /// Create from a fixed set of reward distributions
-RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
-									   real lambda_,
+RewardPolicyBelief::RewardPolicyBelief(real lambda_,
                                        real gamma_,
 									   DiscreteMDP& mdp_,
 									   const std::vector<DiscreteSpaceRewardDistribution> rewards_)
 
-	: lambda(lambda_),
+	: n_states(mdp_.getNStates()),
+	  n_actions(mdp_.getNActions()),
+	lambda(lambda_),
 	  policy_belief(n_states, n_actions),
       gamma(gamma_),
 	  mdp(mdp_),
@@ -40,11 +43,12 @@ RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
 }
 
 /// Enumerate all index reward functions
-RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
-									   const Distribution& epsilon_,
+RewardPolicyBelief::RewardPolicyBelief(real lambda_,
                                        real gamma_,
 									   DiscreteMDP& mdp_)
-	: lambda(lambda_),
+	: n_states(mdp_.getNStates()),
+	  n_actions(mdp_.getNActions()),
+	  lambda(lambda_),
       policy_belief(n_states, n_actions),
       gamma(gamma_),
 	  mdp(mdp_),
@@ -67,6 +71,9 @@ RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
 /// Calculate a posterior over reward functions
 real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 {
+	real epsilon = 1e-3; ///< minimu precision
+	int max_iter = 10e4; ///< maximum number of iterations
+
 	policy_belief.CalculatePosterior(D);
 	//--  resample from the belief -- //
 	
@@ -88,7 +95,7 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 
 	//-- Make a matrix that contains the optimality of each policy --//
 	P_rewards.Clear();
-	Matrix L(n_samples, n_policies);
+	Matrix L(n_samples, n_rewards);
 	std::set<real> loss_vector;
 	for (int i=0; i<P_rewards.Size(); ++i) {
 		// Change MDP reward
@@ -99,11 +106,11 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
         }		
 		// Calculate value of optimal policy
 		ValueIteration VI(&mdp, gamma);
-		VI.ComputeStateValues(epsilon);
+		VI.ComputeStateValues(epsilon, max_iter);
 		for (int j=0; j<n_samples; ++j) {
 			// Calculate value of actual policy;
-			PolicyEvaluation PE(&mdp, policy[j], gamma);
-			PE.ComputeStateValues(epislon);
+			PolicyEvaluation PE(policies[j], &mdp, gamma);
+			PE.ComputeStateValues(epsilon);
 			L(i, j) = VI.getValue(0) - PE.getValue(0);
 			for (int s=1; s<n_states; ++s) {
 				real DV_s = VI.getValue(s) - PE.getValue(s);
