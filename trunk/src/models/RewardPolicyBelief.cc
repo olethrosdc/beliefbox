@@ -24,12 +24,12 @@
 /// Create from a fixed set of reward distributions
 RewardPolicyBelief::RewardPolicyBelief(real lambda_,
                                        real gamma_,
-									   DiscreteMDP& mdp_,
+									   const DiscreteMDP& mdp_,
 									   const std::vector<DiscreteSpaceRewardDistribution> rewards_)
 
 	: n_states(mdp_.getNStates()),
 	  n_actions(mdp_.getNActions()),
-	lambda(lambda_),
+	  lambda(lambda_),
 	  policy_belief(n_states, n_actions),
       gamma(gamma_),
 	  mdp(mdp_),
@@ -45,7 +45,7 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
 /// Enumerate all index reward functions
 RewardPolicyBelief::RewardPolicyBelief(real lambda_,
                                        real gamma_,
-									   DiscreteMDP& mdp_)
+									   const DiscreteMDP& mdp_)
 	: n_states(mdp_.getNStates()),
 	  n_actions(mdp_.getNActions()),
 	  lambda(lambda_),
@@ -58,11 +58,12 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
 	assert(n_actions == mdp.getNActions());
     assert(gamma >= 0 && gamma <= 1);
     setAccuracy(1e-3);
+
 	for (int s=0; s<n_states; ++s) {
 		for (int a=0; a<n_actions; ++a) {
-			DiscreteSpaceRewardDistribution R_sa(n_states, n_actions);
-			R_sa.setFixedReward(s, a, 1.0);
-			rewards.push_back(R_sa);
+			rewards.push_back(DiscreteSpaceRewardDistribution(n_state, n_actions));
+			DiscreteSpaceRewardDistribution& R_sa.setFixedReward(s, a, 1.0);
+
 		}
 	}
 }
@@ -93,20 +94,24 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 	int n_rewards = P_rewards.Size();
 	assert(n_rewards == rewards.size());
 
-	//-- Make a matrix that contains the optimality of each policy --//
+	//-- Make a matrix that contains the loss of each policy/reward combination --//
 	P_rewards.Clear();
 	Matrix L(n_samples, n_rewards);
 	std::set<real> loss_vector;
 	for (int i=0; i<P_rewards.Size(); ++i) {
-		// Change MDP reward
+
+		// Change MDP reward to the i-th reward
         for (int s=0; s<n_states; ++s) {
             for (int a=0; a<n_actions; ++a) {
                 mdp.setFixedReward(s, a, rewards[i].expected(s, a));
             }
         }		
-		// Calculate value of optimal policy
+
+		// Calculate value of optimal policy for the i-th reward function
 		ValueIteration VI(&mdp, gamma);
 		VI.ComputeStateValues(epsilon, max_iter);
+
+		// Calculate the loss for each policy sample
 		for (int j=0; j<n_samples; ++j) {
 			// Calculate value of actual policy;
 			PolicyEvaluation PE(policies[j], &mdp, gamma);
@@ -118,7 +123,14 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 					L(i, j) = DV_s;
 				}
 			}
+			loss_vector.insert(L(i,j));
 		}
+	}
+
+	for (std::set<real>::iterator it = loss_vector.begin();
+		 it != loss_vector.end();
+		 ++it) {
+		printf ("it: %f\n", *it);
 	}
 	
 	return 1.0;

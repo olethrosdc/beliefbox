@@ -40,6 +40,8 @@
 #include "HQLearning.h"
 #include "MWAL.h"
 #include "PolicyBelief.h"
+#include "RewardPolicyBelief.h"
+
 #include <cstring>
 #include <getopt.h>
 
@@ -561,11 +563,12 @@ Statistics EvaluateAlgorithm (int episode_steps,
 							  real gamma,
                               int iterations)
 {
+	real accuracy = 1e-3;
     std:: cout << "evaluating..." << environment->Name() << std::endl;
     
     const DiscreteMDP* mdp = environment->getMDP(); 
     ValueIteration value_iteration(mdp, gamma);
-    value_iteration.ComputeStateValues(0.001);
+    value_iteration.ComputeStateValues(accuracy);
     FixedSoftmaxPolicy softmax_policy(value_iteration.Q, 1.0);
 
     if (!mdp) {
@@ -666,7 +669,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
         //fprintf(stderr, "Estimating optimal value function\n");
         ValueIteration VI(mdp, gamma);
-        VI.ComputeStateValues(0.001);
+        VI.ComputeStateValues(accuracy);
         printf ("Optimal Q function:\n---------------\n");
         VI.Q.print(stdout);
 
@@ -682,7 +685,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("Softmax policy:\n---------------\n");
         softmax_policy.Show();
         PolicyEvaluation smax_evaluator(&softmax_policy, mdp, gamma);
-        smax_evaluator.ComputeStateValues(0.001);
+        smax_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", smax_evaluator.getValue(i));
         }
@@ -695,7 +698,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("Posterior policy:\n---------------\n");
         expected_policy->Show();
         PolicyEvaluation post_evaluator(expected_policy, mdp, gamma);
-        post_evaluator.ComputeStateValues(0.001);
+        post_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", post_evaluator.getValue(i));
         }
@@ -703,10 +706,31 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		delete expected_policy;
 
 
+		{
+			real expected_optimality = 1.0;
+			RewardPolicyBelief reward_policy_belief (expected_optimality, 
+													 gamma,
+													 *mdp);
+			reward_policy_belief.setAccuracy(accuracy);
+			reward_policy_belief.CalculatePosterior(demonstrations);
+#if 0
+			DiscretePolicy* rpb_policy = reward_policy_belief.getOptimalPolicy();
+			printf ("Posterior policy:\n---------------\n");
+			rpb_policy->Show();
+			PolicyEvaluation post_evaluator(expected_policy, mdp, gamma);
+			post_evaluator.ComputeStateValues(accuracy);
+			for (int i=0; i<n_states; ++i) {
+				printf ("%f ", post_evaluator.getValue(i));
+			}
+			printf ("# V_RPB\n");
+			delete rpb_policy;
+#endif
+		}
+
         printf ("MWAL policy:\n------------\n");
         mwal.mean_policy.Show();
         PolicyEvaluation mwal_evaluator(&mwal.mean_policy, mdp, gamma);
-        mwal_evaluator.ComputeStateValues(0.001);
+        mwal_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", mwal_evaluator.getValue(i));
         }
@@ -714,7 +738,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
         FixedDiscretePolicy mwal_greedy = mwal.mean_policy.MakeGreedyPolicy();
         PolicyEvaluation mwal_greedy_evaluator(&mwal_greedy, mdp, gamma);
-        mwal_greedy_evaluator.ComputeStateValues(0.001);
+        mwal_greedy_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", mwal_greedy_evaluator.getValue(i));
         }
@@ -726,7 +750,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("imitator policy:\n------------\n");
         imitating_policy.Show();
         PolicyEvaluation imitating_evaluator(&imitating_policy, mdp, gamma);
-        imitating_evaluator.ComputeStateValues(0.01);
+        imitating_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", imitating_evaluator.getValue(i));
         }
