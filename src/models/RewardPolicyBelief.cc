@@ -25,7 +25,7 @@
 RewardPolicyBelief::RewardPolicyBelief(real lambda_,
                                        real gamma_,
 									   const DiscreteMDP& mdp_,
-									   const std::vector<DiscreteSpaceRewardDistribution> rewards_)
+									   const std::vector<DiscreteSpaceRewardDistribution*> rewards_)
 
 	: n_states(mdp_.getNStates()),
 	  n_actions(mdp_.getNActions()),
@@ -61,11 +61,12 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
 
 	for (int s=0; s<n_states; ++s) {
 		for (int a=0; a<n_actions; ++a) {
-			rewards.push_back(DiscreteSpaceRewardDistribution(n_state, n_actions));
-			DiscreteSpaceRewardDistribution& R_sa.setFixedReward(s, a, 1.0);
-
+			DiscreteSpaceRewardDistribution* R_sa = new DiscreteSpaceRewardDistribution(n_states, n_actions);
+            R_sa->setFixedReward(s, a, 1.0); 
+			rewards.push_back(R_sa);
 		}
 	}
+    P_rewards.Resize(rewards.size());
 }
 
 
@@ -96,25 +97,26 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 
 	//-- Make a matrix that contains the loss of each policy/reward combination --//
 	P_rewards.Clear();
-	Matrix L(n_samples, n_rewards);
+	Matrix L(n_rewards, n_samples);
 	std::set<real> loss_vector;
+    DiscreteMDP tmp_mdp(mdp);
 	for (int i=0; i<P_rewards.Size(); ++i) {
 
 		// Change MDP reward to the i-th reward
         for (int s=0; s<n_states; ++s) {
             for (int a=0; a<n_actions; ++a) {
-                mdp.setFixedReward(s, a, rewards[i].expected(s, a));
+                tmp_mdp.setFixedReward(s, a, rewards[i]->expected(s, a));
             }
         }		
 
 		// Calculate value of optimal policy for the i-th reward function
-		ValueIteration VI(&mdp, gamma);
+		ValueIteration VI(&tmp_mdp, gamma);
 		VI.ComputeStateValues(epsilon, max_iter);
 
 		// Calculate the loss for each policy sample
 		for (int j=0; j<n_samples; ++j) {
 			// Calculate value of actual policy;
-			PolicyEvaluation PE(policies[j], &mdp, gamma);
+			PolicyEvaluation PE(policies[j], &tmp_mdp, gamma);
 			PE.ComputeStateValues(epsilon);
 			L(i, j) = VI.getValue(0) - PE.getValue(0);
 			for (int s=1; s<n_states; ++s) {

@@ -26,7 +26,7 @@ protected:
     DirichletProductPolicyBelief policy_belief;   ///< prior about policies
 	real gamma; ///< value of gamma (assumed known here)
 	DiscreteMDP mdp; ///< the actual MDP (transitions assumed known here)
-	std::vector<DiscreteSpaceRewardDistribution> rewards; ///< set of reward functions
+	std::vector<DiscreteSpaceRewardDistribution*> rewards; ///< set of reward functions
     int n_samples; ///< number of samples required
 	std::vector<DiscretePolicy*> policies; ///< storage for sampled policies from the belief
 	Vector P_rewards; ///< posterior probability of each reward function
@@ -34,7 +34,7 @@ public:
     RewardPolicyBelief(real lambda_,
                        real gamma_,
 					   const DiscreteMDP& mdp_,
-					   const std::vector<DiscreteSpaceRewardDistribution> rewards_);	
+					   const std::vector<DiscreteSpaceRewardDistribution*> rewards_);	
 
     RewardPolicyBelief(real lambda_,
                        real gamma_,

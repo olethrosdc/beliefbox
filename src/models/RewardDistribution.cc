@@ -67,7 +67,7 @@ DiscreteSpaceRewardDistribution::DiscreteSpaceRewardDistribution(int n_states_, 
 	  ER(n_states * n_actions) 
 {
     // empty
-	for (int i=0; i<n_states * n_actions; ++i) {
+	for (uint i=0; i<R.size(); ++i) {
 		R[i] = NULL;
 	}
     //printf ("%d %d %d %d\n", n_states, n_actions, R.size(), ER.Size());
@@ -132,6 +132,7 @@ void DiscreteSpaceRewardDistribution::setRewardDistribution(int s, int a, Distri
 void DiscreteSpaceRewardDistribution::addRewardDistribution(int s, int a, Distribution* reward)
 {   
 	int ID = getID (s, a);
+    assert(reward);
 	distribution_vector.push_back(reward);
 	R[ID] = reward;
 	ER(ID) = reward->getMean();

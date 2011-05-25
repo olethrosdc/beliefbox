@@ -25,7 +25,7 @@ MYINCS = -I$(INCS_EXPORT)
 DBG_OPT=OPT
 
 # Add -pg flag for profiling
-CFLAGS_DBG = -fPIC -g -Wall -DUSE_DOUBLE -pipe -pg
+CFLAGS_DBG = -fPIC -g -Wall -DUSE_DOUBLE -pipe
 CFLAGS_OPT = -fPIC -g -O3 -Wall -DUSE_DOUBLE -DNDEBUG -pipe -pg
 #CFLAGS_DBG = -fPIC -g -Wall -pipe -pg
 #CFLAGS_OPT = -fPIC -g -O3 -Wall -DNDEBUG -pipe -pg
