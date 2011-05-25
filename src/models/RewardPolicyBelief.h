@@ -22,6 +22,7 @@ protected:
 	int n_states; ///< the number of sattes
 	int n_actions; ///< the number of actions
 	real lambda; ///< Exponential distribution parameter for the sub-optimality of policies
+	real epsilon; ///< accuracy
     DirichletProductPolicyBelief policy_belief;   ///< prior about policies
 	real gamma; ///< value of gamma (assumed known here)
 	DiscreteMDP mdp; ///< the actual MDP (transitions assumed known here)
@@ -32,12 +33,12 @@ protected:
 public:
     RewardPolicyBelief(real lambda_,
                        real gamma_,
-					   DiscreteMDP& mdp_,
+					   const DiscreteMDP& mdp_,
 					   const std::vector<DiscreteSpaceRewardDistribution> rewards_);	
 
     RewardPolicyBelief(real lambda_,
                        real gamma_,
-					   DiscreteMDP& mdp_);
+					   const DiscreteMDP& mdp_);
 
 	virtual ~RewardPolicyBelief();
 	
@@ -50,9 +51,12 @@ public:
 	}
 
 	/// Set accuracy
-	void setAccuracy(real epsilon)
+	void setAccuracy(real epsilon_)
 	{
-        n_samples = (int) ceil(pow((1 - gamma) * epsilon, -2.0));
+		epsilon = epsilon_;
+		assert(epsilon > 0);
+        //n_samples = (int) ceil(pow((1 - gamma) * epsilon, -2.0));
+        n_samples = (int) ceil(1.0 / epsilon);
         printf("# setting accuracy to %f -> n_samples = %d\n", 
                epsilon,
                n_samples);
