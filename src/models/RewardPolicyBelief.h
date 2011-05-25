@@ -19,6 +19,8 @@
 class RewardPolicyBelief
 {
 protected:
+	int n_states; ///< the number of sattes
+	int n_actions; ///< the number of actions
 	real lambda; ///< Exponential distribution parameter for the sub-optimality of policies
     DirichletProductPolicyBelief policy_belief;   ///< prior about policies
 	real gamma; ///< value of gamma (assumed known here)
@@ -28,14 +30,12 @@ protected:
 	std::vector<DiscretePolicy*> policies; ///< storage for sampled policies from the belief
 	Vector P_rewards; ///< posterior probability of each reward function
 public:
-    RewardPolicyBelief(int n_states, int n_actions,
-					   real lambda_,
+    RewardPolicyBelief(real lambda_,
                        real gamma_,
 					   DiscreteMDP& mdp_,
 					   const std::vector<DiscreteSpaceRewardDistribution> rewards_);	
 
-    RewardPolicyBelief(int n_states, int n_actions,
-					   real lambda_,
+    RewardPolicyBelief(real lambda_,
                        real gamma_,
 					   DiscreteMDP& mdp_);
 
