@@ -22,7 +22,7 @@ protected:
 	real lambda; ///< Exponential distribution parameter for the sub-optimality of policies
     DirichletProductPolicyBelief policy_belief;   ///< prior about policies
 	real gamma; ///< value of gamma (assumed known here)
-	DiscreteMDP mdp; ///< value of MDP (assumed known here)
+	DiscreteMDP mdp; ///< the actual MDP (transitions assumed known here)
 	std::vector<DiscreteSpaceRewardDistribution> rewards; ///< set of reward functions
     int n_samples; ///< number of samples required
 	std::vector<DiscretePolicy*> policies; ///< storage for sampled policies from the belief

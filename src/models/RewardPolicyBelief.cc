@@ -68,7 +68,6 @@ RewardPolicyBelief::RewardPolicyBelief(int n_states, int n_actions,
 real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 {
 	policy_belief.CalculatePosterior(D);
-
 	//--  resample from the belief -- //
 	
 	// reset policies vector
@@ -89,8 +88,30 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 
 	//-- Make a matrix that contains the optimality of each policy --//
 	P_rewards.Clear();
-	for (int i=0; i<n_samples; ++i) {
-        
+	Matrix L(n_samples, n_policies);
+	std::set<real> loss_vector;
+	for (int i=0; i<P_rewards.Size(); ++i) {
+		// Change MDP reward
+        for (int s=0; s<n_states; ++s) {
+            for (int a=0; a<n_actions; ++a) {
+                mdp.setFixedReward(s, a, rewards[i].expected(s, a));
+            }
+        }		
+		// Calculate value of optimal policy
+		ValueIteration VI(&mdp, gamma);
+		VI.ComputeStateValues(epsilon);
+		for (int j=0; j<n_samples; ++j) {
+			// Calculate value of actual policy;
+			PolicyEvaluation PE(&mdp, policy[j], gamma);
+			PE.ComputeStateValues(epislon);
+			L(i, j) = VI.getValue(0) - PE.getValue(0);
+			for (int s=1; s<n_states; ++s) {
+				real DV_s = VI.getValue(s) - PE.getValue(s);
+				if (DV_s > L(i, j)) {
+					L(i, j) = DV_s;
+				}
+			}
+		}
 	}
 	
 	return 1.0;
