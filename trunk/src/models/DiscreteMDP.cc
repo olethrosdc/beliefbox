@@ -74,6 +74,7 @@ DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
 DiscreteMDP::MDP(const MDP<int,int>& mdp)
     : n_states(mdp.n_states),
       n_actions(mdp.n_actions),
+	  next_states(mdp.next_states),
 	  reward_distribution(n_states, n_actions)
 {
     N = n_states * n_actions;
@@ -81,6 +82,7 @@ DiscreteMDP::MDP(const MDP<int,int>& mdp)
 	state = 0;
     next_states.resize(N);
 	P = mdp.P;
+
 	reward_distribution = mdp.reward_distribution;
 }
 
@@ -118,7 +120,7 @@ void DiscreteMDP::AperiodicityTransform(real tau)
 
 void DiscreteMDP::ShowModel() const
 {
-	real threshold = 0.001;
+	real threshold = 10e-5;
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             int i = getID(s,a);
@@ -208,7 +210,7 @@ bool DiscreteMDP::Check() const
 bool DiscreteMDP::Check() const
 {
     real threshold = 0.001;
-    bool flag = false;
+    bool flag = true;
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             real sum = 0.0;
@@ -218,7 +220,8 @@ bool DiscreteMDP::Check() const
             }
             assert(fabs(sum - 1.0f) <= threshold);//(s)(a)(sum);
             if (fabs(sum - 1.0f) > threshold) {
-                flag = true;
+                flag = false;
+				Serror("transition s:%d a:%d = %f\n", s, a, sum);
             }
         }
     }

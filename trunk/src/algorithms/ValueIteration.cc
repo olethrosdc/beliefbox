@@ -93,8 +93,7 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
         }
         n_iter++;
     } while(Delta >= threshold && max_iter != 0);
-    printf("Exiting at d:%f, n:%d\n", Delta, n_iter);
-
+    printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
 
@@ -116,7 +115,6 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
         for (int s=0; s<n_states; s++) {
             for (int a=0; a<n_actions; a++) {
                 real sum = 0.0;
-
                 const DiscreteStateSet& next = mdp->getNextStates(s, a);
                 for (DiscreteStateSet::iterator i=next.begin();
                      i!=next.end();
@@ -125,6 +123,7 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
                     real P = mdp->getTransitionProbability(s, a, s2);
                     real R = mdp->getExpectedReward(s, a) - baseline;
                     sum += P*(R + gamma*V(s2));
+					//printf ("%d %d %d ->(%f)-> %f + g %f\n", s, a, s2, P,	R, V(s2));
                 }
                 Q(s, a) = sum;
                 Delta += fabs(pQ(s, a) - sum);
@@ -137,7 +136,7 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
         }
         n_iter++;
     } while(Delta >= threshold && max_iter != 0);
-    //printf("Exiting at d:%f, n:%d\n", Delta, n_iter);
+    printf("#ValueIteration::ComputeStateActionValues Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
 /// Create the greedy policy with respect to the calculated value function.

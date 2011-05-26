@@ -70,8 +70,29 @@ DiscreteSpaceRewardDistribution::DiscreteSpaceRewardDistribution(int n_states_, 
 	for (uint i=0; i<R.size(); ++i) {
 		R[i] = NULL;
 	}
+	ER.Clear();
     //printf ("%d %d %d %d\n", n_states, n_actions, R.size(), ER.Size());
 }
+
+/// Copy constructor. Do not actually copy anything!
+DiscreteSpaceRewardDistribution::DiscreteSpaceRewardDistribution(const DiscreteSpaceRewardDistribution& rhs)
+{
+	n_states = rhs.n_states;
+	n_actions = rhs.n_actions;
+	ER = rhs.ER;
+}
+
+/// Assignment operator. Do not copy anything!
+DiscreteSpaceRewardDistribution& DiscreteSpaceRewardDistribution::operator= (const DiscreteSpaceRewardDistribution& rhs)
+{
+	if (this == &rhs) return *this;
+	n_states = rhs.n_states;
+	n_actions = rhs.n_actions;
+	ER = rhs.ER;
+	return *this;
+}
+
+
 
 /// Destructor - remove all distribution vectors
 DiscreteSpaceRewardDistribution::~DiscreteSpaceRewardDistribution() 
@@ -108,9 +129,13 @@ real DiscreteSpaceRewardDistribution::expected(int state, int action) const
 	}
 }
 
-/// Generate pdf -- in fact, a probability since there are just two outcomes.
+/// Generate pdf.
 real DiscreteSpaceRewardDistribution::pdf(int state, int action, real reward) const
 {
+	int ID = getID (state, action);
+	if (R[ID]) {
+		return R[ID]->pdf(reward);
+	}
     real r = expected(state, action);
     if (fabs(r - reward) < 1e-6) {
         return 1.0;

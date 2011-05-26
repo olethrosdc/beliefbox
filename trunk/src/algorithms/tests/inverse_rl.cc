@@ -734,6 +734,10 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		{
 			printf ("# RPB MODE\n");
 			real expected_optimality = 1.0;
+			if (!mdp->Check()) {
+				Serror("MDP check failed\n");
+				mdp->ShowModel();
+			}
 			RewardPolicyBelief reward_policy_belief (expected_optimality, 
 													 gamma,
 													 *mdp);
@@ -743,7 +747,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 			DiscretePolicy* rpb_policy = reward_policy_belief.getOptimalPolicy();
 			printf ("Posterior policy:\n---------------\n");
 			rpb_policy->Show();
-			PolicyEvaluation post_evaluator(expected_policy, mdp, gamma);
+			PolicyEvaluation post_evaluator(rpb_policy, mdp, gamma);
 			post_evaluator.ComputeStateValues(accuracy);
 			for (int i=0; i<n_states; ++i) {
 				printf ("%f ", post_evaluator.getValue(i));
@@ -756,7 +760,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
 
         //----------------- imitator ----------------------//
-        if (0) {
+        if (1) {
             FixedDiscretePolicy imitating_policy(n_states, n_actions,
                                                  demonstrations);
             printf ("imitator policy:\n------------\n");
