@@ -39,7 +39,7 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
 	assert(n_states == mdp.getNStates());
 	assert(n_actions == mdp.getNActions());
     assert(gamma >= 0 && gamma <= 1);
-    setAccuracy(1e-3);
+    setAccuracy(1e-1);
 }
 
 /// Enumerate all index reward functions
@@ -57,7 +57,7 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
 	assert(n_states == mdp.getNStates());
 	assert(n_actions == mdp.getNActions());
     assert(gamma >= 0 && gamma <= 1);
-    setAccuracy(1e-3);
+    setAccuracy(1e-1);
 
 	for (int s=0; s<n_states; ++s) {
 		for (int a=0; a<n_actions; ++a) {
@@ -73,68 +73,102 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
 /// Calculate a posterior over reward functions
 real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 {
-	real epsilon = 1e-3; ///< minimu precision
-	int max_iter = 10e4; ///< maximum number of iterations
+	real epsilon = 1e-3; ///< minimum precision
+	int max_iter = 1e4; ///< maximum number of iterations
 
-	policy_belief.CalculatePosterior(D);
-	//--  resample from the belief -- //
-	
+	// --------  resample from the belief -------- //
 	// reset policies vector
 	for (uint i=0; i<policies.size(); ++i) {
 		delete policies[i];
 	}
-	policies.resize(n_samples);
+	policies.resize(n_policies);
 
 	// add new samples
-	for (int i=0; i<n_samples; ++i) {
+	policy_belief.CalculatePosterior(D);
+	for (int i=0; i<n_policies; ++i) {
 		policies[i] = policy_belief.Sample();
 	}
 
 
-	//-- calculate probability of each policy --//
+	// -------- calculate probability of each policy -------- //
 	int n_rewards = P_rewards.Size();
-	assert(n_rewards == rewards.size());
+	assert(n_rewards == (int) rewards.size());
 
-	//-- Make a matrix that contains the loss of each policy/reward combination --//
+	// -------- create loss matrix -------- //
 	P_rewards.Clear();
-	Matrix L(n_rewards, n_samples);
+	Matrix L(n_rewards, n_policies);
 	std::set<real> loss_vector;
-    DiscreteMDP tmp_mdp(mdp);
-	for (int i=0; i<P_rewards.Size(); ++i) {
 
+	printf ("# calculating %d x %d loss matrix\n", n_rewards, n_policies);
+	for (int i=0; i<P_rewards.Size(); ++i) {
+		//mdp.Check();
+		//mdp.ShowModel();
 		// Change MDP reward to the i-th reward
         for (int s=0; s<n_states; ++s) {
             for (int a=0; a<n_actions; ++a) {
-                tmp_mdp.setFixedReward(s, a, rewards[i]->expected(s, a));
+                //mdp.setFixedReward(s, a, rewards[i]->expected(s, a));
+				/// BUG - for some reasoin the MDP value iteration does not work
+                mdp.setFixedReward(s, a, urandom());
+				//printf ("R(%d, %d) = %f (%f)\n", s, a, rewards[i]->expected(s, a),
+				//mdp.getExpectedReward(s, a));
             }
         }		
-
+		mdp.ShowModel();
 		// Calculate value of optimal policy for the i-th reward function
-		ValueIteration VI(&tmp_mdp, gamma);
-		VI.ComputeStateValues(epsilon, max_iter);
+		ValueIteration VI(&mdp, gamma);
+		VI.ComputeStateActionValues(epsilon, max_iter);
 
 		// Calculate the loss for each policy sample
-		for (int j=0; j<n_samples; ++j) {
+		for (int j=0; j<n_policies; ++j) {
 			// Calculate value of actual policy;
-			PolicyEvaluation PE(policies[j], &tmp_mdp, gamma);
+			PolicyEvaluation PE(policies[j], &mdp, gamma);
 			PE.ComputeStateValues(epsilon);
 			L(i, j) = VI.getValue(0) - PE.getValue(0);
-			for (int s=1; s<n_states; ++s) {
+			for (int s=0; s<n_states; ++s) {
 				real DV_s = VI.getValue(s) - PE.getValue(s);
+				//printf ("# s: %d, V(s)=%f, Vk(s)=%f\n", s, VI.getValue(s), PE.getValue(s));
 				if (DV_s > L(i, j)) {
 					L(i, j) = DV_s;
 				}
 			}
+			//printf ("Inserting L(%d, %d) = %f\n", i, j, L(i, j));
 			loss_vector.insert(L(i,j));
 		}
 	}
 
-	for (std::set<real>::iterator it = loss_vector.begin();
-		 it != loss_vector.end();
-		 ++it) {
-		printf ("it: %f\n", *it);
-	}
 	
+	// -------- calculate the final posterior -------- //
+	int n_losses = loss_vector.size();
+	Vector loss_prior (n_losses);
+
+	// first calculate the loss measures
+	{
+		std::set<real>::iterator it;
+		int k = 0;
+		real prev_loss = 0.0;
+		for (it=loss_vector.begin(); it!=loss_vector.end(); ++it, ++k) {
+			real loss = *it;
+			loss_prior(k) = exp(-lambda * prev_loss) - exp(-lambda * loss);
+			prev_loss = loss;
+		}
+	}
+
+	// now calculate the posterior measure over policies
+	Vector reward_posterior(n_rewards);
+	reward_posterior.Clear();
+	for (int i=0; i<n_rewards; ++i) {
+		for (int j=0; j<n_policies; ++j) {
+			std::set<real>::iterator it;
+			int k = 0;
+			for (it=loss_vector.begin(); it!=loss_vector.end(); ++it, ++k) {
+				real loss = *it;
+				if (L(i, j) <= loss) {
+					reward_posterior(i) += loss_prior(k);
+				}
+			}
+			
+		}
+	}
 	return 1.0;
 }
 

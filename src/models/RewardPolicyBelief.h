@@ -19,7 +19,7 @@
 class RewardPolicyBelief
 {
 protected:
-	int n_states; ///< the number of sattes
+	int n_states; ///< the number of states
 	int n_actions; ///< the number of actions
 	real lambda; ///< Exponential distribution parameter for the sub-optimality of policies
 	real epsilon; ///< accuracy
@@ -27,7 +27,7 @@ protected:
 	real gamma; ///< value of gamma (assumed known here)
 	DiscreteMDP mdp; ///< the actual MDP (transitions assumed known here)
 	std::vector<DiscreteSpaceRewardDistribution*> rewards; ///< set of reward functions
-    int n_samples; ///< number of samples required
+    int n_policies; ///< number of policy samples required
 	std::vector<DiscretePolicy*> policies; ///< storage for sampled policies from the belief
 	Vector P_rewards; ///< posterior probability of each reward function
 public:
@@ -45,9 +45,9 @@ public:
 	virtual real CalculatePosterior(Demonstrations<int, int>& D);
 	
 	/// Set number of samples
-	void setNSamples(int n_samples_)
+	void setNSamples(int n_policies_)
 	{
-		n_samples = n_samples_;
+		n_policies = n_policies_;
 	}
 
 	/// Set accuracy
@@ -55,11 +55,11 @@ public:
 	{
 		epsilon = epsilon_;
 		assert(epsilon > 0);
-        //n_samples = (int) ceil(pow((1 - gamma) * epsilon, -2.0));
-        n_samples = (int) ceil(1.0 / epsilon);
-        printf("# setting accuracy to %f -> n_samples = %d\n", 
+        //n_policies = (int) ceil(pow((1 - gamma) * epsilon, -2.0));
+        n_policies = (int) ceil(1.0 / epsilon);
+        printf("# setting accuracy to %f -> n_policies = %d\n", 
                epsilon,
-               n_samples);
+               n_policies);
 	}
 };
 
