@@ -93,7 +93,7 @@ real DiscreteSpaceRewardDistribution::generate(int state, int action) const
 	if (R[ID]) {
 		return R[ID]->generate();
 	} else {
-		return 0.0;
+		return ER[ID];
 	}
 }
 
@@ -104,7 +104,7 @@ real DiscreteSpaceRewardDistribution::expected(int state, int action) const
 	if (R[ID]) {
 		return R[ID]->getMean();
 	} else {
-		return 0.0;
+		return ER[ID];
 	}
 }
 
