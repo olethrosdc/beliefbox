@@ -69,6 +69,17 @@ protected:
 
 public:
     DiscreteSpaceRewardDistribution(int n_states_, int n_actions_);
+    DiscreteSpaceRewardDistribution(const DiscreteSpaceRewardDistribution& rhs)
+    {
+        n_states = rhs.n_states;
+    }
+    DiscreteSpaceRewardDistribution& operator= (const DiscreteSpaceRewardDistribution& rhs)
+    {
+        if (this == &rhs) return *this;
+        n_states = rhs.n_states;
+        n_actions = rhs.n_actions;
+        ER = rhs.ER;
+    }
     virtual ~DiscreteSpaceRewardDistribution();
     virtual real generate(int state, int action) const;
     virtual real expected(int state, int action) const;
