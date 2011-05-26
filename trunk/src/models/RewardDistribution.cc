@@ -184,3 +184,12 @@ void DiscreteSpaceRewardDistribution::setFixedReward(int s, int a, real reward)
 	}
 	
 }
+
+void DiscreteSpaceRewardDistribution::Show()
+{
+    for (int s=0; s<n_states; ++s) {
+        for (int a=0; a<n_actions; ++a) {
+            printf ("R(%d, %d) = %f\n", s, a, expected(s, a));
+        }
+    }
+}
