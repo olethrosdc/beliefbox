@@ -79,6 +79,11 @@ public:
 	void addRewardDistribution(int s, int a, Distribution* reward);
 	void addFixedReward(int s, int a, real reward);
 	void setFixedReward(int s, int a, real reward);
+    void Show();
+    Vector getExpectedRewardVector() const
+    {
+        return ER;
+    }
 };
 
 

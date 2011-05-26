@@ -51,8 +51,7 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
 	  lambda(lambda_),
       policy_belief(n_states, n_actions),
       gamma(gamma_),
-	  mdp(mdp_),
-	  P_rewards(rewards.size())
+	  mdp(mdp_)
 {
 	assert(n_states == mdp.getNStates());
 	assert(n_actions == mdp.getNActions());
@@ -69,12 +68,45 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
     P_rewards.Resize(rewards.size());
 }
 
+/// Sample a set of reward functions
+RewardPolicyBelief::RewardPolicyBelief(real lambda_,
+                                       real gamma_,
+									   const DiscreteMDP& mdp_,
+                                       const DirichletDistribution& reward_prior,
+                                       int n_reward_samples)
+	: n_states(mdp_.getNStates()),
+	  n_actions(mdp_.getNActions()),
+	  lambda(lambda_),
+      policy_belief(n_states, n_actions),
+      gamma(gamma_),
+	  mdp(mdp_)
+{
+	assert(n_states == mdp.getNStates());
+	assert(n_actions == mdp.getNActions());
+    assert(gamma >= 0 && gamma <= 1);
+    setAccuracy(1e-1);
+
+    for (int i=0; i<n_reward_samples; ++i) {
+        DiscreteSpaceRewardDistribution* R_sa = new DiscreteSpaceRewardDistribution(n_states, n_actions);
+        Vector R = reward_prior.generate();
+        int i = 0;
+        for (int s=0; s<n_states; ++s) {
+            for (int a=0; a<n_actions; ++a, ++i) {
+                R_sa->setFixedReward(s, a, R(i)); 
+            }
+        }
+        rewards.push_back(R_sa);
+    }
+    P_rewards.Resize(rewards.size());
+}
+
+
 
 /// Calculate a posterior over reward functions
-real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
+DiscretePolicy* RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 {
 	real epsilon = 1e-3; ///< minimum precision
-	int max_iter = 1e4; ///< maximum number of iterations
+	int max_iter = 1e3; ///< maximum number of iterations
 
 	// --------  resample from the belief -------- //
 	// reset policies vector
@@ -104,16 +136,20 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 		//mdp.Check();
 		//mdp.ShowModel();
 		// Change MDP reward to the i-th reward
+        #if 1
         for (int s=0; s<n_states; ++s) {
             for (int a=0; a<n_actions; ++a) {
-                //mdp.setFixedReward(s, a, rewards[i]->expected(s, a));
-				/// BUG - for some reasoin the MDP value iteration does not work
-                mdp.setFixedReward(s, a, urandom());
+                mdp.setFixedReward(s, a, rewards[i]->expected(s, a));
+				/// BUG - for some reason the MDP value iteration does not work
+                //mdp.setFixedReward(s, a, urandom());
 				//printf ("R(%d, %d) = %f (%f)\n", s, a, rewards[i]->expected(s, a),
 				//mdp.getExpectedReward(s, a));
             }
-        }		
-		mdp.ShowModel();
+        }	
+        #else
+        mdp.reward_distribution = *rewards[i];
+        #endif
+		//mdp.ShowModel();
 		// Calculate value of optimal policy for the i-th reward function
 		ValueIteration VI(&mdp, gamma);
 		VI.ComputeStateActionValues(epsilon, max_iter);
@@ -143,6 +179,7 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 
 	// first calculate the loss measures
 	{
+        printf("# loss measure\n");
 		std::set<real>::iterator it;
 		int k = 0;
 		real prev_loss = 0.0;
@@ -154,10 +191,16 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 	}
 
 	// now calculate the posterior measure over policies
+    printf("# reward posterior (%d x %d x %d = %d)\n",
+           n_rewards,
+           n_policies,
+           loss_vector.size(),
+           n_rewards * n_policies * loss_vector.size());
 	Vector reward_posterior(n_rewards);
 	reward_posterior.Clear();
 	for (int i=0; i<n_rewards; ++i) {
 		for (int j=0; j<n_policies; ++j) {
+            #if 0
 			std::set<real>::iterator it;
 			int k = 0;
 			for (it=loss_vector.begin(); it!=loss_vector.end(); ++it, ++k) {
@@ -166,10 +209,33 @@ real RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 					reward_posterior(i) += loss_prior(k);
 				}
 			}
-			
+            #else
+            reward_posterior(i) += exp(-lambda * L(i,j));
+			#endif
 		}
 	}
-	return 1.0;
+
+    reward_posterior /= reward_posterior.Sum();
+    //reward_posterior.print(stdout); printf ("# Reward posterior!\n");
+    int arg_max = ArgMax(reward_posterior);
+    rewards[arg_max]->getExpectedRewardVector().print(stdout); printf(" # MAP\n");
+    Vector R(n_states * n_actions);
+    R.Clear();
+    for (int i=0; i<n_rewards; ++i) {
+        R += rewards[i]->getExpectedRewardVector() * reward_posterior(i);
+    }
+    R.print(stdout); printf("# Expected\n");
+    {
+        int k=0;
+        for (int s=0; s<n_states; ++s) {
+            for (int a=0; a<n_actions; ++a, ++k) {
+                mdp.setFixedReward(s, a, R(k));
+            }
+        }	
+        ValueIteration VI(&mdp, gamma);
+		VI.ComputeStateActionValues(epsilon, max_iter);
+        return VI.getPolicy();
+    }
 }
 
 

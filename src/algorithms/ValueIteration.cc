@@ -93,7 +93,7 @@ void ValueIteration::ComputeStateValues(real threshold, int max_iter)
         }
         n_iter++;
     } while(Delta >= threshold && max_iter != 0);
-    printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
+    //printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
 
@@ -136,7 +136,7 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
         }
         n_iter++;
     } while(Delta >= threshold && max_iter != 0);
-    printf("#ValueIteration::ComputeStateActionValues Exiting at d:%f, n:%d\n", Delta, n_iter);
+    //printf("#ValueIteration::ComputeStateActionValues Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
 /// Create the greedy policy with respect to the calculated value function.

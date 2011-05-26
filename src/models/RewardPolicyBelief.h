@@ -30,6 +30,7 @@ protected:
     int n_policies; ///< number of policy samples required
 	std::vector<DiscretePolicy*> policies; ///< storage for sampled policies from the belief
 	Vector P_rewards; ///< posterior probability of each reward function
+    Vector estimated_reward;
 public:
     RewardPolicyBelief(real lambda_,
                        real gamma_,
@@ -40,9 +41,15 @@ public:
                        real gamma_,
 					   const DiscreteMDP& mdp_);
 
+    RewardPolicyBelief(real lambda_,
+                       real gamma_,
+                       const DiscreteMDP& mdp_,
+                       const DirichletDistribution& reward_prior,
+                       int n_reward_samples);
+
 	virtual ~RewardPolicyBelief();
 	
-	virtual real CalculatePosterior(Demonstrations<int, int>& D);
+	virtual DiscretePolicy* CalculatePosterior(Demonstrations<int, int>& D);
 	
 	/// Set number of samples
 	void setNSamples(int n_policies_)
