@@ -41,6 +41,7 @@
 #include "MWAL.h"
 #include "PolicyBelief.h"
 #include "RewardPolicyBelief.h"
+#include "EasyClock.h"
 
 #include <cstring>
 #include <getopt.h>
@@ -658,25 +659,35 @@ Statistics EvaluateAlgorithm (int episode_steps,
     }
 
     {
+        double start_time;
+        double end_time;
         //fprintf (stderr, "Trying to guess policy!\n");
         DiscreteMDP* mdp = environment->getMDP();
+        if (!mdp->Check()) {
+            Serror("MDP model is nonsense\n");
+            mdp->ShowModel();
+        }
+            
         int n_states = mdp->getNStates();
         int n_actions = mdp->getNActions();
-
+        
         // -------- MWAL -------- //
+        start_time = GetCPU();
         DiscreteMDP* computation_mdp = environment->getMDP();
         MWAL mwal(n_states, n_actions, gamma);
         mwal.CalculateFeatureCounts(demonstrations);
         mwal.Compute(*computation_mdp, gamma, 0.0001, iterations);
         delete computation_mdp;
+        end_time = GetCPU();
+        printf("%f # T_MWAL\n", end_time - start_time);
         printf ("MWAL policy:\n------------\n");
         mwal.mean_policy.Show();
         PolicyEvaluation mwal_evaluator(&mwal.mean_policy, mdp, gamma);
         mwal_evaluator.ComputeStateValues(accuracy);
+
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", mwal_evaluator.getValue(i));
         }
-        
         printf ("# V_MWAL\n");
         
         FixedDiscretePolicy mwal_greedy = mwal.mean_policy.MakeGreedyPolicy();
@@ -722,15 +733,21 @@ Statistics EvaluateAlgorithm (int episode_steps,
             mdp->ShowModel();
         }
         DirichletDistribution dirichlet(n_states * n_actions);
+        start_time = GetCPU();
         RewardPolicyBelief reward_policy_belief (expected_optimality, 
                                                  gamma,
                                                  *mdp,
                                                  dirichlet,
-                                                 (int) ceil(1.0 / accuracy));
-        reward_policy_belief.setAccuracy(accuracy);
+                                                 (int) ceil(0.1 / accuracy));
+
+        reward_policy_belief.setAccuracy(10.0 * accuracy);
+
         DiscretePolicy* rpb_policy = reward_policy_belief.CalculatePosterior(demonstrations);
+        end_time = GetCPU();
+        printf("%f # T_RPB\n", end_time - start_time);
         printf ("Posterior policy:\n---------------\n");
         rpb_policy->Show();
+
         PolicyEvaluation rpb_evaluator(rpb_policy, mdp, gamma);
         rpb_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
