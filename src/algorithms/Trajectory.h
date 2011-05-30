@@ -21,6 +21,22 @@ public:
         x.push_back(std::pair<S, A>(s, a));
     }
     
+	uint size() const
+	{
+		return x.size();
+	}
+	
+	S state(uint t) const
+	{
+		assert (t < x.size());
+		return x[t].second;
+	}
+
+	A action(uint t) const
+	{
+		assert (t < x.size());
+		return x[t].first;
+	}
 };
 
 #endif

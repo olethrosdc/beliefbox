@@ -13,6 +13,7 @@
 #define REWARD_BELIEF_H
 
 #include "RewardDistribution.h"
+#include "Dirichlet.h"
 #include "Vector.h"
 #include <cassert>
 #include <vector>
@@ -66,8 +67,37 @@ public:
 
     virtual real Update(int state, int action, real reward)
 	{
-		
+		return 0;
 	}
+};
+
+
+/** A dirichlet reward belief.
+	
+ */
+class DirichletRewardBelief : public DiscreteRewardBelief
+{
+protected:
+	DirichletDistribution dirichlet; ///< the prior
+public:
+	/// Constructor
+	DirichletRewardBelief(int n_states_, int n_actions_)
+		: DiscreteRewardBelief(n_states_, n_actions_),
+		  dirichlet(n_states * n_actions)				  
+	{
+	}
+	virtual ~DirichletRewardBelief()
+	{
+	}
+	DiscreteSpaceRewardDistribution* sample() const;
+	Matrix sampleMatrix() const;
+	virtual real Update(int state, int action, real reward) 
+	{
+		Serror("Not implemented.\n");
+		return 0.0;
+	}
+
+	
 };
 
 

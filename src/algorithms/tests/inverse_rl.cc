@@ -41,6 +41,7 @@
 #include "MWAL.h"
 #include "PolicyBelief.h"
 #include "RewardPolicyBelief.h"
+#include "PolicyRewardBelief.h"
 #include "EasyClock.h"
 
 #include <cstring>
