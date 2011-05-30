@@ -8,12 +8,12 @@ do
     environment=Chain
     resdir=$baseres/$environment
     mkdir -p $resdir
-    for n_states in 5
+    for n_states in 4 5 6 8
     do
         echo $environment $n_states $steps
         fname=$resdir/${n_states}s_${steps}T
-        /usr/bin/time -o $fname.time ./bin/inverse_rl --algorithm Model --n_states $n_states --environment $environment --n_runs $n_runs --n_steps $steps | tee $fname.out | grep DV >${fname}_DV.out 
+        /usr/bin/time -o $fname.time ./bin/inverse_rl --algorithm Model --n_states $n_states --environment $environment --n_runs $n_runs --n_steps $steps | tee $fname.out | grep DV >${fname}_DV.out &
     done
-
+    wait;
 done
 
