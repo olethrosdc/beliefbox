@@ -733,6 +733,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             Serror("MDP check failed\n");
             mdp->ShowModel();
         }
+
         DirichletDistribution dirichlet(n_states * n_actions);
         start_time = GetCPU();
         RewardPolicyBelief reward_policy_belief (expected_optimality, 
@@ -757,6 +758,11 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("# V_RPB\n");
         delete rpb_policy;
         
+
+		// ----- PRB ------ //
+		PolicyRewardBelief prb(1.0, gamma, *mdp);
+		prb.MHSampler(demonstrations, 100);
+		
         // -------- imitator -------- //
         FixedDiscretePolicy imitating_policy(n_states, n_actions,
                                              demonstrations);
