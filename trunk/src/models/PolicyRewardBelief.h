@@ -13,38 +13,66 @@
 #define POLICY_REWARD_BELIEF_H
 
 #include "DiscreteMDP.h"
+#include "Demonstrations.h"
+#include "DiscretePolicy.h"
+#include "RewardDistribution.h"
+#include "RewardBelief.h"
+#include "DiscretePolicy.h"
+#include "ValueIteration.h"
 
-/** Prior on policy given belief */
-class RewardPolicyBelief
+#include <vector>
+
+
+class DiscreteSpaceRewardDistribution;
+
+
+/** Prior on policy given reward belief */
+class PolicyRewardBelief
 {
 protected:
+	DiscreteMDP mdp; ///< the actual MDP (transitions assumed known here)
 	int n_states; ///< the number of states
 	int n_actions; ///< the number of actions
-	real lambda; ///< Exponential distribution parameter for the temperature
+	ExponentialDistribution softmax_prior; ///< softmax prior
+	DirichletRewardBelief reward_prior; ///< reward prior
 	real gamma; ///< value of gamma (assumed known here)
     real epsilon; ///< accuracy
-	DiscreteMDP mdp; ///< the actual MDP (transitions assumed known here)
-	std::vector<DiscreteSpaceRewardDistribution*> rewards; ///< set of reward function samples
-	std::vector<DiscretePolicy*> policies; ///< storage for sampled policies from the belief
-	Vector P_rewards; ///< posterior probability of each reward function
-    Vector estimated_reward;
+	ValueIteration value_iteration;
+
+	// -- the following values are stored during the sampling procedure -- //
+	std::vector<Matrix> rewards; ///< set of reward function samples
+	std::vector<FixedDiscretePolicy> policies; ///< storage for sampled policies from the belief
+	std::vector<real> betas; ///< values of beta sampled
+	std::vector<real> sample_counts; ///< amount of times we drew each sample
+
 public:
-    PolicyReward Belief(real lambda_,
-                        real gamma_,
-                        const DiscreteMDP& mdp_,
-                        const std::vector<DiscreteSpaceRewardDistribution*> rewards_);	
-	virtual ~RewardPolicyBelief();
+    PolicyRewardBelief(real lambda,
+					   real gamma_,
+					   const DiscreteMDP& mdp_);
+	virtual ~PolicyRewardBelief();
 	
 	virtual DiscretePolicy* CalculatePosterior(Demonstrations<int, int>& D);
-	
-	/// Set accuracy
-	void setAccuracy(real epsilon_)
+	virtual real logLikelihood(const Demonstrations<int, int>&D,
+							   const  DiscretePolicy& policy) const;
+
+	/// Calculate  $log P(a^T \mid s^T, \pi)$
+	virtual real Likelihood(const Demonstrations<int, int>&D,
+							const  DiscretePolicy& policy) const
+	{
+		return exp(logLikelihood(D, policy));
+	}
+
+	virtual FixedDiscretePolicy samplePolicy(Matrix& R, real beta);
+
+	 /// Set accuracy
+	 void setAccuracy(real epsilon_)
 	{
 		epsilon = epsilon_;
 		assert(epsilon > 0);
         printf("# setting accuracy to %f\n", 
                epsilon);
 	}
+	void MHSampler(Demonstrations<int, int>& D, int n_iterations);
 };
 
 
