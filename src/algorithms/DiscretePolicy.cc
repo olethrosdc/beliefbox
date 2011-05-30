@@ -19,7 +19,7 @@
 /// Create an uniform discrete policy with a given number of states
 /// and actions.
 FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions)
-    : DiscretePolicy()
+    : DiscretePolicy(n_states, n_actions)
 {
     state = 0;
     real p_u = 1.0 / (real) n_actions;
@@ -36,7 +36,7 @@ FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions)
 
 /// Create a fixed discrete policy from a demonstrator policy
 FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions, Demonstrations<int, int>& D)
-  : DiscretePolicy()
+    : DiscretePolicy(n_states, n_actions)      
 {
 
     p.resize(n_states);
@@ -69,7 +69,7 @@ FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions, Demonstrat
 
 /// Create a fixed discrete policy from a set of probability vectors.
 FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
-    : DiscretePolicy()
+    : DiscretePolicy(n_states, n_actions)
 {
     state = 0;
     this->p = p;
@@ -82,7 +82,7 @@ FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
 /// Create a greedy policy from a Q value matrix.
 FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions,
                                           Matrix& Q)
-  : DiscretePolicy()
+    : DiscretePolicy(n_states, n_actions)
 {
     assert(Q.Rows() == n_states);
     assert(Q.Columns() == n_actions);
@@ -162,12 +162,16 @@ void FixedDiscretePolicy::Reset(int& start_state)
 
 real FixedDiscretePolicy::getActionProbability(int& action) const
 {
+    assert(state >= 0 && state < n_states);
+    assert(action >= 0 && action < n_actions);
 	return p[state][action];
 }
 
 
 real FixedDiscretePolicy::getActionProbability(int& state, int& action) const
 {
+    assert(state >= 0 && state < n_states);
+    assert(action >= 0 && action < n_actions);
 	return p[state][action];
 }
 

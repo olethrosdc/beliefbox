@@ -91,6 +91,7 @@ public:
 	}
 	DiscreteSpaceRewardDistribution* sample() const;
 	Matrix sampleMatrix() const;
+    virtual real log_pdf(const Matrix& M) const;
 	virtual real Update(int state, int action, real reward) 
 	{
 		Serror("Not implemented.\n");

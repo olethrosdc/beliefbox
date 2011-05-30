@@ -129,6 +129,15 @@ real ExponentialDistribution::pdf(real x) const
     return 0.0;
 }
 
+real ExponentialDistribution::log_pdf(real x) const
+{
+    real d = x - m;
+    if (d>0.0) {
+        return log(l) - l*d;
+    }
+    return LOG_ZERO;
+}
+
 
 DiscreteDistribution::DiscreteDistribution() {
     p = NULL; n_outcomes=0;

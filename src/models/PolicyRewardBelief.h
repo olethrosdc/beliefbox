@@ -51,20 +51,20 @@ public:
 					   const DiscreteMDP& mdp_);
 	virtual ~PolicyRewardBelief();
 	
-	virtual DiscretePolicy* CalculatePosterior(Demonstrations<int, int>& D);
+	virtual FixedDiscretePolicy* CalculatePosterior(Demonstrations<int, int>& D);
 	virtual real logLikelihood(const Demonstrations<int, int>&D,
-							   const  DiscretePolicy& policy) const;
+							   const  FixedDiscretePolicy& policy) const;
 
 	/// Calculate  $log P(a^T \mid s^T, \pi)$
 	virtual real Likelihood(const Demonstrations<int, int>&D,
-							const  DiscretePolicy& policy) const
+							const  FixedDiscretePolicy& policy) const
 	{
 		return exp(logLikelihood(D, policy));
 	}
 
 	virtual FixedDiscretePolicy samplePolicy(Matrix& R, real beta);
-
-	 /// Set accuracy
+    virtual FixedDiscretePolicy* getPolicy();
+    /// Set accuracy
 	 void setAccuracy(real epsilon_)
 	{
 		epsilon = epsilon_;

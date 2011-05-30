@@ -22,8 +22,15 @@
  */
 class DiscretePolicy : public AbstractPolicy<int, int>
 {
+protected:
+    int n_states;
+    int n_actions;
 public:
-    DiscretePolicy() {}
+    DiscretePolicy(int n_states_, int n_actions_)
+        : n_states(n_states_),
+          n_actions(n_actions_)
+    {
+    }
     virtual ~DiscretePolicy() {}
     virtual int SelectAction() = 0;
     virtual void Observe (int& previous_state, int& action, real r, int& next_state) = 0;
