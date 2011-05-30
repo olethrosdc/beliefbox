@@ -34,7 +34,7 @@ PolicyRewardBelief::~PolicyRewardBelief()
 }
 
 /// This samples the posterior belief given the original sample....
-DiscretePolicy* PolicyRewardBelief::CalculatePosterior(Demonstrations<int, int>& D)
+FixedDiscretePolicy* PolicyRewardBelief::CalculatePosterior(Demonstrations<int, int>& D)
 {
 	
 	return NULL;
@@ -43,7 +43,7 @@ DiscretePolicy* PolicyRewardBelief::CalculatePosterior(Demonstrations<int, int>&
 
 /// Calculate  $log P(a^T \mid s^T, \pi)$
 real PolicyRewardBelief::logLikelihood(const Demonstrations<int, int>&D,
-						   const  DiscretePolicy& policy) const
+						   const FixedDiscretePolicy& policy) const
 {
 	real log_prod = 0.0;
 	for (uint i = 0; i != D.trajectories.size(); ++i) {
@@ -52,6 +52,7 @@ real PolicyRewardBelief::logLikelihood(const Demonstrations<int, int>&D,
 			int s = trajectory.state(t);
 			int a = trajectory.action(t);
 			real p_s_a = policy.getActionProbability(s, a);
+            assert(p_s_a > 0);
 			log_prod += log(p_s_a);
 		}
 	}
@@ -75,21 +76,51 @@ void PolicyRewardBelief::MHSampler(Demonstrations<int, int>&D,
 								   int n_iterations)
 {
 	int n_samples = 0;
-	real log_likelihood = LOG_ZERO;
+	real log_likelihood = -RAND_MAX;
 	for (int iter=0; iter<n_iterations; ++iter) {
 		Matrix reward = reward_prior.sampleMatrix(); 
 		real beta = softmax_prior.generate();
 		FixedDiscretePolicy policy = samplePolicy(reward, beta);
 		real new_log_likelihood = logLikelihood(D, policy);
+        new_log_likelihood += softmax_prior.log_pdf(beta);
+        new_log_likelihood += reward_prior.log_pdf(reward);
 		real log_accept_probability = new_log_likelihood - log_likelihood;
-		if (log(urandom()) < log_accept_probability) {
+        real Z = urandom();
+		if (log(Z) < log_accept_probability) {
 			rewards.push_back(reward);
 			policies.push_back(policy);
 			betas.push_back(beta);
 			sample_counts.push_back(1.0);
+            logmsg ("New likelihood: %f (%f)\n", new_log_likelihood, log_likelihood);
+            log_likelihood = new_log_likelihood;
+            n_samples++;
 		} else {
 			assert(n_samples); // we must have accepted at least one samplex
 			sample_counts[n_samples - 1]++;
 		}
 	}
+}
+
+FixedDiscretePolicy* PolicyRewardBelief::getPolicy() 
+{
+    int n_samples = betas.size();
+    real sum = 0.0;
+    Matrix R(n_states, n_actions);
+    assert(n_samples == rewards.size());
+    assert(n_samples == sample_counts.size());
+    for (int i=0; i<n_states; ++i) {
+        R += rewards[i] * sample_counts[i];
+        sum += sample_counts[i];
+    }
+    R = R / sum;
+    
+    for (int s=0; s<n_states; ++s) {
+		for (int a=0; a<n_actions; ++a) {
+			mdp.setFixedReward(s, a, R(s,a)); 
+		}
+	}
+    value_iteration.ComputeStateActionValues(epsilon, (int) ceil(10.0*log(epsilon * (1 - gamma)) / log(gamma)));
+    return value_iteration.getPolicy();
+
+
 }

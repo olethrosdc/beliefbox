@@ -39,3 +39,18 @@ Matrix DirichletRewardBelief::sampleMatrix() const
 	}
 	return M;
 }
+
+real DirichletRewardBelief::log_pdf(const Matrix& M) const
+{
+
+    assert(n_states == M.Rows());
+    assert(n_actions == M.Columns());
+	Vector R(n_states * n_actions);
+	int i=0; 
+	for (int s=0; s<n_states; ++s) {
+		for (int a=0; a<n_actions; ++a) {
+			R(i++) = M(s, a);
+		}
+	}
+    return dirichlet.log_pdf(R);
+}

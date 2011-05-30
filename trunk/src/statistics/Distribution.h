@@ -32,6 +32,10 @@ public:
     virtual void generate(T& x) const = 0;
     virtual T generate() const = 0;
     virtual real pdf(const T& x) const =0;
+    virtual real log_pdf(const T& x) const
+    {
+        return log(pdf(x));
+    }
 };
 
 typedef AbstractDistribution<Object> ObjectDistribution;
@@ -217,6 +221,7 @@ public:
     virtual ~ExponentialDistribution() {}
     virtual real generate() const;
     virtual real pdf(real x) const;
+    virtual real log_pdf(real x) const;
     virtual void setVariance (real var)
     {l = sqrt(1.0f / var);}
     virtual void setMean (real mean)

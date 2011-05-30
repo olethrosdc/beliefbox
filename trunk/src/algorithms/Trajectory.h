@@ -29,13 +29,13 @@ public:
 	S state(uint t) const
 	{
 		assert (t < x.size());
-		return x[t].second;
+		return x[t].first;
 	}
 
 	A action(uint t) const
 	{
 		assert (t < x.size());
-		return x[t].first;
+		return x[t].second;
 	}
 };
 

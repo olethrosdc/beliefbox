@@ -728,12 +728,13 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
         
         // -------- RPB -------- //
-        real expected_optimality = 1.0;
+        //real expected_optimality = 1.0;
         if (!mdp->Check()) {
             Serror("MDP check failed\n");
             mdp->ShowModel();
         }
 
+#if 0
         DirichletDistribution dirichlet(n_states * n_actions);
         start_time = GetCPU();
         RewardPolicyBelief reward_policy_belief (expected_optimality, 
@@ -757,12 +758,26 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_RPB\n");
         delete rpb_policy;
-        
+#endif        
 
 		// ----- PRB ------ //
+        start_time = GetCPU();
 		PolicyRewardBelief prb(1.0, gamma, *mdp);
-		prb.MHSampler(demonstrations, 100);
-		
+		prb.MHSampler(demonstrations, 100000);
+        DiscretePolicy* prb_policy = prb.getPolicy();
+        end_time = GetCPU();
+        printf("%f # T_PRB\n", end_time - start_time);
+        printf ("MH sampler policy:\n---------------\n");
+        prb_policy->Show();
+
+        PolicyEvaluation prb_evaluator(prb_policy, mdp, gamma);
+        prb_evaluator.ComputeStateValues(accuracy);
+        for (int i=0; i<n_states; ++i) {
+				printf ("%f ", prb_evaluator.getValue(i));
+        }
+        printf ("# V_PRB\n");
+        delete prb_policy;
+
         // -------- imitator -------- //
         FixedDiscretePolicy imitating_policy(n_states, n_actions,
                                              demonstrations);
@@ -780,7 +795,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         statistics.DV(1) = (VI.V - imitating_evaluator.V).L1Norm();
         statistics.DV(2) = (VI.V - mwal_evaluator.V).L1Norm();
         statistics.DV(3) = (VI.V - mwal_greedy_evaluator.V).L1Norm();
-        statistics.DV(4) = (VI.V - rpb_evaluator.V).L1Norm();
+        statistics.DV(4) = (VI.V - prb_evaluator.V).L1Norm();
         #if 0
         printf ("%f %f %f %f %f# DV run\n", 
                 statistics.DV(0),
