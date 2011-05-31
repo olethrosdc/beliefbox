@@ -108,6 +108,7 @@ void PolicyRewardBelief::MonteCarloSampler(Demonstrations<int, int>&D,
 										   int n_iterations)
 {
 	int n_samples = 0;
+	printf ("Running Monte Carlo sampler with %d iterations\n", n_iterations);
 	for (int iter=0; iter<n_iterations; ++iter) {
 		Matrix reward = reward_prior.sampleMatrix(); 
 		real beta = softmax_prior.generate();
