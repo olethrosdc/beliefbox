@@ -811,11 +811,14 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		PolicyRewardBelief prb(1.0, gamma, *mdp);
 
 		if (sampler.type == METROPOLIS) {
-			prb.MHSampler(demonstrations, sampler.n_chain_samples,
+			logmsg("Metropolis sampler: %d %d\n", sampler.n_chain_samples, sampler.n_chains);
+			prb.MHSampler(demonstrations,
+						  sampler.n_chain_samples,
 						  sampler.n_chains);
 		} else if (sampler.type == MONTE_CARLO) {
+			logmsg("Monte Carlo sampler: %d %d\n", sampler.n_chain_samples, sampler.n_chains);
 			prb.MonteCarloSampler(demonstrations, sampler.n_chain_samples);
-		}
+		} 
 
         DiscretePolicy* prb_policy = prb.getPolicy();
         end_time = GetCPU();
