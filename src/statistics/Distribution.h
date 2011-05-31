@@ -212,6 +212,7 @@ public:
     ExponentialDistribution(real lambda)
     {
         l = lambda;
+		m = 0.0;
     }
     ExponentialDistribution(real mean, real var)
     {
