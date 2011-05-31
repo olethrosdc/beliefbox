@@ -274,7 +274,7 @@ int main (int argc, char** argv)
     //rng = (RandomNumberGenerator*) &random_file;
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
-	rng.setRandomSeed(17893807315724802048);
+	rng->manualSeed(380731572);
 
 
     DiscreteMDPCounts* discrete_mdp = NULL;
