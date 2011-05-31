@@ -86,6 +86,21 @@ public:
 		  dirichlet(n_states * n_actions)				  
 	{
 	}
+
+	/// Constructor for given fixed parameter alpha
+	DirichletRewardBelief(int n_states_, int n_actions_, real alpha)
+		: DiscreteRewardBelief(n_states_, n_actions_),
+		  dirichlet(n_states * n_actions, alpha)				  
+	{
+	}
+	/// Constructor for given fixed parameter alpha
+	DirichletRewardBelief(int n_states_, int n_actions_, const Vector& alpha)
+		: DiscreteRewardBelief(n_states_, n_actions_),
+		  dirichlet(alpha)				  
+	{
+        assert(alpha.Size() == n_states * n_actions);
+	}
+
 	virtual ~DirichletRewardBelief()
 	{
 	}
