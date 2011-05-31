@@ -76,13 +76,30 @@ struct Statistics
     Matrix DV_total;
 };
 
+
+enum SamplerType {
+	INVALID = 0x0,
+	METROPOLIS,
+	MONTE_CARLO
+};
+
+struct Sampler
+{
+	SamplerType type;
+	int n_chains;
+	int n_chain_samples;
+};
+
+
 Statistics EvaluateAlgorithm (int episode_steps,
 							  int n_episodes,
 							  uint n_steps,
                               OnlineAlgorithm<int,int>* algorithm,
                               DiscreteEnvironment* environment,
                               real gamma,
-                              int iterations);
+                              int iterations,
+							  Sampler sampler,
+							  real accuracy);
 static const char* const environment_names_list = "{MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}";
 
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
@@ -124,6 +141,8 @@ int main (int argc, char** argv)
     uint episode_steps = 1000;
     uint grid_size = 4;
     uint maze_width = 4;
+	Sampler sampler = {INVALID, 10000, 10};
+	real accuracy = 1e-3;
     const char * algorithm_name = "QLearning";
     const char * environment_name = NULL;
 
@@ -156,6 +175,11 @@ int main (int argc, char** argv)
                 {"randomness", required_argument, 0, 0}, //15
                 {"episode_steps", required_argument, 0, 0}, //16
                 {"iterations", required_argument, 0, 0}, //17
+                {"n_chain_samples", required_argument, 0, 0}, //18
+                {"n_chains", required_argument, 0, 0}, //19
+                {"Metropolis", no_argument, 0, 0}, //20
+                {"MonteCarlo", no_argument, 0, 0}, //21
+                {"accuracy", required_argument, 0, 0}, //222
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -190,6 +214,11 @@ int main (int argc, char** argv)
                 case 15: randomness = atof(optarg); break;
                 case 16: episode_steps = atoi(optarg); break;
                 case 17: iterations = atoi(optarg); break;
+                case 18: sampler.n_chain_samples = atoi(optarg); break;
+                case 19: sampler.n_chains = atoi(optarg); break;
+                case 20: sampler.type=METROPOLIS; break;
+                case 21: sampler.type=MONTE_CARLO; break;
+                case 22: accuracy = atof(optarg); assert(accuracy > 0); break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -229,7 +258,10 @@ int main (int argc, char** argv)
     assert (n_episodes > 0);
     assert (n_steps > 0);
     assert (grid_size > 0);
-
+	if (sampler.type == INVALID) {
+		Serror ("invalid sampler specified\n");
+		exit(-1);
+	}
     srand48(34987235);
     srand(34987235);
     setRandomSeed(34987235);
@@ -437,7 +469,10 @@ int main (int argc, char** argv)
 													  algorithm,
 													  environment,
 													  gamma,
-                                                      iterations);
+                                                      iterations,
+													  sampler,
+													  accuracy);
+
         for (uint i=0; i<run_statistics.ep_stats.size(); ++i) {
             statistics.ep_stats[i].total_reward += run_statistics.ep_stats[i].total_reward;
             statistics.ep_stats[i].discounted_reward += run_statistics.ep_stats[i].discounted_reward;
@@ -565,9 +600,11 @@ Statistics EvaluateAlgorithm (int episode_steps,
 							  OnlineAlgorithm<int, int>* algorithm,
 							  DiscreteEnvironment* environment,
 							  real gamma,
-                              int iterations)
+                              int iterations,
+							  Sampler sampler,
+							  real accuracy)
 {
-	real accuracy = 1e-3;
+	assert(accuracy >= 0);
     std:: cout << "evaluating..." << environment->Name() << std::endl;
     
     const DiscreteMDP* mdp = environment->getMDP(); 
@@ -763,7 +800,14 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		// ----- PRB ------ //
         start_time = GetCPU();
 		PolicyRewardBelief prb(1.0, gamma, *mdp);
-		prb.MHSampler(demonstrations, 1000000);
+
+		if (sampler.type == METROPOLIS) {
+			prb.MHSampler(demonstrations, sampler.n_chain_samples,
+						  sampler.n_chains);
+		} else if (sampler.type == MONTE_CARLO) {
+			prb.MonteCarloSampler(demonstrations, sampler.n_chain_samples);
+		}
+
         DiscretePolicy* prb_policy = prb.getPolicy();
         end_time = GetCPU();
         printf("%f # T_PRB\n", end_time - start_time);

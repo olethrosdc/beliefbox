@@ -73,7 +73,39 @@ FixedDiscretePolicy PolicyRewardBelief::samplePolicy(Matrix& R, real beta)
 
 /// M-H sampler
 void PolicyRewardBelief::MHSampler(Demonstrations<int, int>&D, 
-								   int n_iterations)
+								   int n_iterations, int n_chains)
+{
+	int n_samples = 0;
+	for (int chain=0; chain<n_chains; ++chain) {
+		real log_likelihood = -RAND_MAX;
+		for (int iter=0; iter<n_iterations; ++iter) {
+			Matrix reward = reward_prior.sampleMatrix(); 
+			real beta = softmax_prior.generate();
+			FixedDiscretePolicy policy = samplePolicy(reward, beta);
+			real new_log_likelihood = logLikelihood(D, policy);
+			new_log_likelihood += softmax_prior.log_pdf(beta);
+			new_log_likelihood += reward_prior.log_pdf(reward);
+			real log_accept_probability = new_log_likelihood - log_likelihood;
+			real Z = urandom();
+			if (log(Z) < log_accept_probability) {
+				rewards.push_back(reward);
+				policies.push_back(policy);
+				betas.push_back(beta);
+				sample_counts.push_back(1.0);
+				//logmsg ("New likelihood: %f (%f)\n", new_log_likelihood, log_likelihood);
+				log_likelihood = new_log_likelihood;
+				n_samples++;
+			} else {
+				assert(n_samples); // we must have accepted at least one samplex
+				sample_counts[n_samples - 1]++;
+			}
+		}
+	}
+}
+
+/// Monte-Carlo sampler
+void PolicyRewardBelief::MonteCarloSampler(Demonstrations<int, int>&D, 
+										   int n_iterations)
 {
 	int n_samples = 0;
 	real log_likelihood = -RAND_MAX;
@@ -81,25 +113,15 @@ void PolicyRewardBelief::MHSampler(Demonstrations<int, int>&D,
 		Matrix reward = reward_prior.sampleMatrix(); 
 		real beta = softmax_prior.generate();
 		FixedDiscretePolicy policy = samplePolicy(reward, beta);
+		rewards.push_back(reward);
+		policies.push_back(policy);
+		betas.push_back(beta);
 		real new_log_likelihood = logLikelihood(D, policy);
-        new_log_likelihood += softmax_prior.log_pdf(beta);
-        new_log_likelihood += reward_prior.log_pdf(reward);
-		real log_accept_probability = new_log_likelihood - log_likelihood;
-        real Z = urandom();
-		if (log(Z) < log_accept_probability) {
-			rewards.push_back(reward);
-			policies.push_back(policy);
-			betas.push_back(beta);
-			sample_counts.push_back(1.0);
-            //logmsg ("New likelihood: %f (%f)\n", new_log_likelihood, log_likelihood);
-            log_likelihood = new_log_likelihood;
-            n_samples++;
-		} else {
-			assert(n_samples); // we must have accepted at least one samplex
-			sample_counts[n_samples - 1]++;
-		}
+		sample_counts.push_back(exp(new_log_likelihood));
+		n_samples++;
 	}
 }
+
 
 FixedDiscretePolicy* PolicyRewardBelief::getPolicy() 
 {
