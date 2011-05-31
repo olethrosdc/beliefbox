@@ -72,7 +72,8 @@ public:
         printf("# setting accuracy to %f\n", 
                epsilon);
 	}
-	void MHSampler(Demonstrations<int, int>& D, int n_iterations);
+	void MHSampler(Demonstrations<int, int>& D, int n_iterations, int n_chains);
+	void MonteCarloSampler(Demonstrations<int, int>& D, int n_iterations);
 };
 
 
