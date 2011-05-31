@@ -702,7 +702,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         
         // -------- optimal -------- //
         ValueIteration VI(mdp, gamma);
-        VI.ComputeStateValues(accuracy);
+        VI.ComputeStateValues(0.1 * accuracy);
         printf ("Optimal Q function:\n---------------\n");
         VI.Q.print(stdout);
 
@@ -763,7 +763,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		// ----- PRB ------ //
         start_time = GetCPU();
 		PolicyRewardBelief prb(1.0, gamma, *mdp);
-		prb.MHSampler(demonstrations, 100000);
+		prb.MHSampler(demonstrations, 1000000);
         DiscretePolicy* prb_policy = prb.getPolicy();
         end_time = GetCPU();
         printf("%f # T_PRB\n", end_time - start_time);
