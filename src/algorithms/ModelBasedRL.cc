@@ -17,12 +17,14 @@ ModelBasedRL::ModelBasedRL(int n_states_,
                            real gamma_,
                            real epsilon_,
                            MDPModel* model_,
+						   RandomNumberGenerator* rng_,
                            bool use_value_iteration_)
     : n_states(n_states_),
       n_actions(n_actions_),
       gamma(gamma_),
       epsilon(epsilon_),
       model(model_),
+	  rng(rng_),
       use_value_iteration(use_value_iteration_)
 {
     state = -1;
@@ -93,8 +95,8 @@ int ModelBasedRL::Act(real reward, int next_state)
     
     // choose action
     int next_action;
-    if (urandom()<epsilon) {
-        next_action = (int) floor(urandom(0.0, n_actions));
+    if (rng->uniform()<epsilon) {
+        next_action = rng->discrete_uniform(n_actions);
         //printf ("\n");
     } else {
         next_action = ArgMax(tmpQ);

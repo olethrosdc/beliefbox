@@ -266,7 +266,7 @@ int main (int argc, char** argv)
     srand(34987235);
     setRandomSeed(34987235);
 
-    DiscreteMDPCounts* discrete_mdp = NULL;
+
     
     RandomNumberGenerator* rng;
     
@@ -274,6 +274,10 @@ int main (int argc, char** argv)
     //rng = (RandomNumberGenerator*) &random_file;
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
+	rng.setRandomSeed(17893807315724802048);
+
+
+    DiscreteMDPCounts* discrete_mdp = NULL;
 
     if (!environment_name) {
         std::cerr << "Please choose an environment from "
@@ -390,7 +394,8 @@ int main (int argc, char** argv)
                                          n_actions,
                                          gamma,
                                          epsilon,
-                                         model);
+                                         model,
+										 rng);
         } else if (!strcmp(algorithm_name, "Sampling")) {
             discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states);
             model= (MDPModel*) discrete_mdp;
@@ -410,6 +415,7 @@ int main (int argc, char** argv)
                                          gamma,
                                          epsilon,
                                          model,
+										 rng,
                                          false);
         } else if (!strcmp(algorithm_name, "Aggregate")) {
             model= (MDPModel*)
@@ -422,6 +428,7 @@ int main (int argc, char** argv)
                                          gamma,
                                          epsilon,
                                          model,
+										 rng,
                                          false);
         } else if (!strcmp(algorithm_name, "Collection")) {
             DiscreteMDPCollection* collection = NULL;
@@ -442,6 +449,7 @@ int main (int argc, char** argv)
                                               gamma,
                                               epsilon,
                                               collection,
+											  rng,
                                               true);
         } else if (!strcmp(algorithm_name, "ContextBanditCollection")) {
             ContextBanditCollection* collection = 
@@ -456,6 +464,7 @@ int main (int argc, char** argv)
                                          gamma,
                                          epsilon,
                                          collection,
+										 rng,
                                          false);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);

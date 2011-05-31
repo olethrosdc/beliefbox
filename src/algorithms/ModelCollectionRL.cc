@@ -17,8 +17,9 @@ ModelCollectionRL::ModelCollectionRL(int n_states_,
                                      real gamma_,
                                      real epsilon_,
                                      DiscreteMDPCollection* model_,
+									 RandomNumberGenerator* rng_,
                                      bool use_value_iteration_) :
-    ModelBasedRL(n_states_, n_actions_, gamma_, epsilon_, model_, use_value_iteration_),
+    ModelBasedRL(n_states_, n_actions_, gamma_, epsilon_, model_, rng, use_value_iteration_),
     collection(model_),
     n_models(collection->get_n_models()),
     models(collection->GetModels())
