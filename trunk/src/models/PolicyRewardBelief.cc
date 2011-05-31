@@ -130,7 +130,7 @@ FixedDiscretePolicy* PolicyRewardBelief::getPolicy()
     Matrix R(n_states, n_actions);
     assert(n_samples == rewards.size());
     assert(n_samples == sample_counts.size());
-    for (int i=0; i<n_states; ++i) {
+    for (int i=0; i<n_samples; ++i) {
         R += rewards[i] * sample_counts[i];
         sum += sample_counts[i];
     }
