@@ -58,7 +58,7 @@ public:
           rewards(rewards_),
           probabilities(probabilities_)
     {
-        assert(probabilities.Size() == rewards.size());
+        assert(probabilities.Size() == (int) rewards.size());
     }
         
     virtual ~FiniteDiscreteRewardBelief()

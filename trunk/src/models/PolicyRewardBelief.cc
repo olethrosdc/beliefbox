@@ -91,7 +91,7 @@ void PolicyRewardBelief::MHSampler(Demonstrations<int, int>&D,
 			policies.push_back(policy);
 			betas.push_back(beta);
 			sample_counts.push_back(1.0);
-            logmsg ("New likelihood: %f (%f)\n", new_log_likelihood, log_likelihood);
+            //logmsg ("New likelihood: %f (%f)\n", new_log_likelihood, log_likelihood);
             log_likelihood = new_log_likelihood;
             n_samples++;
 		} else {
