@@ -21,6 +21,7 @@
 #include "OnlineAlgorithm.h"
 #include "MDPModel.h"
 #include "ValueIteration.h"
+#include "RandomNumberGenerator.h"
 #include <vector>
 
 /// \ingroup ReinforcementLearning
@@ -44,6 +45,7 @@ protected:
     const DiscreteMDP* mdp;
     ValueIteration* value_iteration;
     std::vector<real> tmpQ;
+	RandomNumberGenerator* rng;
     bool use_value_iteration;
 public:
     ModelBasedRL(int n_states_,
@@ -51,6 +53,7 @@ public:
                  real gamma_,
                  real epsilon_,
                  MDPModel* model_,
+				 RandomNumberGenerator* rng_,
                  bool use_value_iteration_ = true);
     virtual ~ModelBasedRL();
     virtual void Reset();

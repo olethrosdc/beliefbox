@@ -39,6 +39,7 @@ public:
                  real gamma_,
                  real epsilon_,
                  DiscreteMDPCollection* model_,
+					  RandomNumberGenerator* rng_,
                  bool use_value_iteration_ = true);
     virtual ~ModelCollectionRL();
     //virtual void Reset();
