@@ -51,7 +51,7 @@ Vector MWAL::CalculateFeatureExpectation(DiscreteMDP& mdp,
     // is N x 1. If each column of P is a probability distribution
     // 
     Vector mu(n_states);
-    int T = (int) (log(epsilon) / log(gamma));
+    int T = (int) (log(epsilon * (1.0 - gamma)) / log(gamma));
     real discount = 1;
     Vector D(Vector::Unity(n_states));
     D /= (real) n_states;

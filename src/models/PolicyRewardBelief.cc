@@ -140,7 +140,7 @@ FixedDiscretePolicy* PolicyRewardBelief::getPolicy()
 			mdp.setFixedReward(s, a, R(s,a)); 
 		}
 	}
-    value_iteration.ComputeStateActionValues(epsilon, (int) ceil(10.0*log(epsilon * (1 - gamma)) / log(gamma)));
+    value_iteration.ComputeStateActionValues(epsilon, (int) ceil(log(epsilon * (1 - gamma)) / log(gamma)));
     return value_iteration.getPolicy();
 
 
