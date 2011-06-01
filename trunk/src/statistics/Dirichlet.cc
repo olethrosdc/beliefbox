@@ -31,7 +31,7 @@ DirichletDistribution::DirichletDistribution(int n, real p)
 }
 
 /// Initialise parameters from a vector
-DirichletDistribution::DirichletDistribution(Vector& x) : n(x.Size()), a(x)
+DirichletDistribution::DirichletDistribution(const Vector& x) : n(x.Size()), a(x)
 {
     for (int i=0; i<n; ++i) {
         assert(a(i) >= 0);
