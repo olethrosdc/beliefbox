@@ -130,28 +130,19 @@ DiscretePolicy* RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>&
 	P_rewards.Clear();
 	Matrix L(n_rewards, n_policies);
 	std::set<real> loss_vector;
-
+    mdp.Check();
+    //mdp.ShowModel();
+    ValueIteration VI(&mdp, gamma);
 	printf ("# calculating %d x %d loss matrix\n", n_rewards, n_policies);
 	for (int i=0; i<P_rewards.Size(); ++i) {
-		//mdp.Check();
-		//mdp.ShowModel();
 		// Change MDP reward to the i-th reward
-        #if 1
         for (int s=0; s<n_states; ++s) {
             for (int a=0; a<n_actions; ++a) {
                 mdp.setFixedReward(s, a, rewards[i]->expected(s, a));
-				/// BUG - for some reason the MDP value iteration does not work
-                //mdp.setFixedReward(s, a, urandom());
-				//printf ("R(%d, %d) = %f (%f)\n", s, a, rewards[i]->expected(s, a),
-				//mdp.getExpectedReward(s, a));
             }
         }	
-        #else
-        mdp.reward_distribution = *rewards[i];
-        #endif
-		//mdp.ShowModel();
+
 		// Calculate value of optimal policy for the i-th reward function
-		ValueIteration VI(&mdp, gamma);
 		VI.ComputeStateActionValues(epsilon, max_iter);
 
 		// Calculate the loss for each policy sample

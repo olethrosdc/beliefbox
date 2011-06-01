@@ -83,17 +83,20 @@ void PopulationPolicyRewardBelief::MonteCarloSampler(Demonstrations<int, int>&D,
 {
 	int n_samples = 0;
 	logmsg (" Running Monte Carlo sampler with %d iterations\n", n_iterations);
-    DirichletRewardBelief reward_hyperprior(n_states, n_actions);
     ExponentialDistribution softmax_hyperprior(eta);
 	for (int iter=0; iter<n_iterations; ++iter) {
         real lambda = softmax_hyperprior.generate();
-        ExponentialDistribution softmax_prior(lambda);
-        DirichletRewardBelief reward_prior(n_states, n_actions,
-                                           reward_hyperprior.generate());
+        ExponentialDistribution local_prior(lambda);
+        Vector reward_prior_parameters (n_states * n_actions);
+        for (int i=0; i<reward_prior_parameters.Size(); ++i) {
+            reward_prior_parameters(i) = local_prior.generate();
+        }
+        DirichletRewardBelief reward_prior(n_states, n_actions, reward_prior_parameters);
+
         int n_demonstrations = D.trajectories.size();
         for (int d=0; d<n_demonstrations; ++d) {
             Matrix reward = reward_prior.sampleMatrix(); 
-            real beta = softmax_prior.generate();
+            real beta = local_prior.generate();
             FixedDiscretePolicy policy = samplePolicy(reward, beta);
             rewards.push_back(reward);
             policies.push_back(policy);

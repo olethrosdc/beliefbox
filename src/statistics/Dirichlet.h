@@ -29,7 +29,7 @@ protected:
 public:
     DirichletDistribution();
     DirichletDistribution(int n, real p = 1.0);
-    DirichletDistribution(Vector& x);
+    DirichletDistribution(const Vector& x);
     virtual ~DirichletDistribution();
     virtual void generate(Vector& x) const;
     virtual Vector generate() const;

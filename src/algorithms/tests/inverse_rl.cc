@@ -65,7 +65,7 @@ struct EpisodeStatistics
     }
 };
 
-#define N_COMPARISONS 5
+#define N_COMPARISONS 6
 
 struct Statistics
 {
@@ -773,23 +773,23 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("# V_SMAX\n");
 
         
-        // -------- RPB -------- //
-        //real expected_optimality = 1.0;
+        
         if (!mdp->Check()) {
             Serror("MDP check failed\n");
             mdp->ShowModel();
         }
 
-#if 0
+        // -------- RPB : Reward | Policy Belief -------- //
+        real expected_optimality = 1.0;
         DirichletDistribution dirichlet(n_states * n_actions);
         start_time = GetCPU();
         RewardPolicyBelief reward_policy_belief (expected_optimality, 
                                                  gamma,
                                                  *mdp,
                                                  dirichlet,
-                                                 (int) ceil(0.1 / accuracy));
+                                                 sampler.n_chain_samples);
 
-        reward_policy_belief.setAccuracy(10.0 * accuracy);
+        reward_policy_belief.setAccuracy(accuracy);
 
         DiscretePolicy* rpb_policy = reward_policy_belief.CalculatePosterior(demonstrations);
         end_time = GetCPU();
@@ -804,9 +804,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
         }
         printf ("# V_RPB\n");
         delete rpb_policy;
-#endif        
 
-		// ----- PRB ------ //
+		// ----- PRB: Policy | Reward Belief ------ //
         start_time = GetCPU();
 		PolicyRewardBelief prb(1.0, gamma, *mdp);
 
@@ -852,6 +851,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         statistics.DV(2) = (VI.V - mwal_evaluator.V).L1Norm();
         statistics.DV(3) = (VI.V - mwal_greedy_evaluator.V).L1Norm();
         statistics.DV(4) = (VI.V - prb_evaluator.V).L1Norm();
+        statistics.DV(5) = (VI.V - rpb_evaluator.V).L1Norm();
         #if 0
         printf ("%f %f %f %f %f# DV run\n", 
                 statistics.DV(0),
