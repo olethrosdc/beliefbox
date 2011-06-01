@@ -42,7 +42,7 @@ FixedDiscretePolicy* PopulationPolicyRewardBelief::CalculatePosterior(Demonstrat
 
 /// Calculate  $log P(a^T \mid s^T, \pi)$
 real PopulationPolicyRewardBelief::logLikelihood(const Demonstrations<int, int>&D,
-						   const FixedDiscretePolicy& policy) const
+												 const FixedDiscretePolicy& policy) const
 {
 	real log_prod = 0.0;
 	for (uint i = 0; i != D.trajectories.size(); ++i) {
