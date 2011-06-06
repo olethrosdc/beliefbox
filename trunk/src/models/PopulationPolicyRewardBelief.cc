@@ -13,7 +13,7 @@
 
 
 
-/// Create teh blief
+/// Create the belief
 PopulationPolicyRewardBelief::PopulationPolicyRewardBelief(real eta_,
 									   real gamma_,
 									   const DiscreteMDP& mdp_)
