@@ -74,6 +74,8 @@ FixedDiscretePolicy PopulationPolicyRewardBelief::samplePolicy(Matrix& R, real b
 void PopulationPolicyRewardBelief::MHSampler(Demonstrations<int, int>&D, 
 								   int n_iterations, int n_chains)
 {
+	Serror("Not implemented\n");
+	exit(-1);
     return;
 }
 
