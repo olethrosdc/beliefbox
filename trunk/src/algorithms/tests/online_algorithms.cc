@@ -113,7 +113,7 @@ int main (int argc, char** argv)
     real randomness = 0.01;
     real pit_value = 0.0;
     real goal_value = 1.0;
-    real step_value = 0.01;
+    real step_value = 0.00;
     real epsilon = 0.01;
     uint n_runs = 1000;
     uint n_episodes = 1000;
@@ -573,6 +573,10 @@ Statistics EvaluateAlgorithm (int episode_steps,
     real total_reward = 0.0;
     for (uint step = 0; step < n_steps; ++step) {
 		if (!action_ok) {
+			int state = environment->getState();
+			real reward = environment->getReward();
+			algorithm->Act(reward, state);
+			//printf ("%d %d %f\n", state, action, reward);
 			episode++;
 			printf ("# episode %d complete\n", episode);
 			if (n_episodes >= 0 && episode >= n_episodes) {
@@ -603,7 +607,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
 		int action = algorithm->Act(reward, state);
         total_reward += reward;
-		//printf("%f ", reward);
+		if (0) {
+			printf ("%d %d %f\n", state, action, reward);
+		}
 		action_ok = environment->Act(action);
 		current_time++;
 
