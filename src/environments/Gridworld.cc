@@ -44,7 +44,7 @@ Gridworld::Gridworld(const char* fname,
     while (getline(ifs, line)) {// && y<height) {
         if (line.length() != width) {
             Serror ("Line length (%ld) does not match width (%d)",
-                    line.length(), width);
+                    (long int) line.length(),  width);
             exit(-1);
         }
         
@@ -299,7 +299,7 @@ bool Gridworld::Act(int action)
     assert(whatIs(x,y) != INVALID && whatIs(x, y) != WALL);
     //std::cout << "(" << x << ", "<< y << ")" << " [" << whatIs(x,y) << "] a: " << action;
     total_time++;
-    real prev_reward = reward;
+    //real prev_reward = reward;
     reward = mdp->generateReward(state, action);
     state = mdp->generateState(state, action);
     x = state % width;
@@ -310,13 +310,11 @@ bool Gridworld::Act(int action)
     ox = x;
     oy = y;
 
-    //std::cout << " -> (" << x << ", "<< y << ")" << " [" << whatIs(x,y)
-    //              << "] s: " << state << "r: " << reward << std::endl;
-
+	//std::cout << " -> (" << x << ", "<< y << ")" << " [" << whatIs(x,y)
+	//<< "] s: " << state << "r: " << reward << std::endl;
     //Show();
 
     if (state==(int) terminal_state) {
-        reward = 0;
         return false;
     }
     return true;
