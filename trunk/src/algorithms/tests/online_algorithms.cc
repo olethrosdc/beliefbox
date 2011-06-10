@@ -111,9 +111,9 @@ int main (int argc, char** argv)
     real lambda = 0.9;
     real alpha = 0.1;
     real randomness = 0.01;
-    real pit_value = -1.0;
+    real pit_value = 0.0;
     real goal_value = 1.0;
-    real step_value = -0.01;
+    real step_value = 0.01;
     real epsilon = 0.01;
     uint n_runs = 1000;
     uint n_episodes = 1000;
@@ -271,7 +271,7 @@ int main (int argc, char** argv)
                                          rng,
                                          false);
         } else if (!strcmp(environment_name, "Gridworld")) { 
-            environment = new Gridworld(maze_name, randomness);
+            environment = new Gridworld(maze_name, randomness, pit_value, goal_value, step_value);
         } else if (!strcmp(environment_name, "ContextBandit")) { 
             environment = new ContextBandit(n_actions, 3, 4, rng);
         } else if (!strcmp(environment_name, "OneDMaze")) { 
