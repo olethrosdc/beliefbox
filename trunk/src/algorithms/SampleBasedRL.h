@@ -25,13 +25,13 @@
 
 /// \ingroup ReinforcementLearning
 /// @{
-	
+    
 /** Direct model-based reinforcement learning.
-	
-	This class maintains a model of the (discrete) MDP.
+    
+    This class maintains a model of the (discrete) MDP.
     It selects actions based on a set of _sampled_ MDPs.
-	
- */
+    
+*/
 class SampleBasedRL : public OnlineAlgorithm<int, int>
 {
 protected:
@@ -46,15 +46,18 @@ protected:
     MultiMDPValueIteration* value_iteration;
     std::vector<real> tmpQ;
     int max_samples;
+    RandomNumberGenerator* rng;
     int T;
     int update_interval;
+    int next_update;
 public:
     SampleBasedRL(int n_states_,
-                 int n_actions_,
-                 real gamma_,
-                 real epsilon_,
-                 MDPModel* model_,
-                 int max_samples_ = 1);
+                  int n_actions_,
+                  real gamma_,
+                  real epsilon_,
+                  MDPModel* model_,
+                  RandomNumberGenerator* rng_,
+                  int max_samples_ = 1);
     virtual ~SampleBasedRL();
     virtual void Reset();
     /// Full observation
