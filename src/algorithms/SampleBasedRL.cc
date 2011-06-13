@@ -13,39 +13,42 @@
 #include "SampleBasedRL.h"
 
 SampleBasedRL::SampleBasedRL(int n_states_,
-                           int n_actions_,
-                           real gamma_,
-                           real epsilon_,
-                           MDPModel* model_,
-                           int max_samples_)
+                             int n_actions_,
+                             real gamma_,
+                             real epsilon_,
+                             MDPModel* model_,
+                             RandomNumberGenerator* rng_,
+                             int max_samples_)
     : n_states(n_states_),
       n_actions(n_actions_),
       gamma(gamma_),
       epsilon(epsilon_),
       model(model_),
       max_samples(max_samples_),
+      rng(rng_),
       T(0),
-      update_interval(10)
+      update_interval(10),
+      next_update()
 {
-	printf("# Starting Sample-Based-RL with %d samples, update interval %d\n",
-		   max_samples, update_interval);
+    printf("# Starting Sample-Based-RL with %d samples, update interval %d\n",
+           max_samples, update_interval);
 
     state = -1;
 
     Vector w(max_samples);
     real w_i = 1.0 / (real) max_samples;
     mdp_list.resize(max_samples);
-	printf("# Generating mean MDP\n");
-	//mdp_list[0] = model->getMeanMDP();
+    printf("# Generating mean MDP\n");
+    //mdp_list[0] = model->getMeanMDP();
     for (int i=0; i<max_samples; ++i) {
-		printf("# Generating sampled MDP\n");
+        printf("# Generating sampled MDP\n");
         mdp_list[i] = model->generate();
         w[i] = w_i;
     }
 
-	printf ("# Setting up MultiMPDValueIteration\n");
+    printf ("# Setting up MultiMPDValueIteration\n");
     value_iteration = new MultiMDPValueIteration(w, mdp_list, gamma);
-	printf ("# Testing MultiMPDValueIteration\n");
+    printf ("# Testing MultiMPDValueIteration\n");
     value_iteration->ComputeStateActionValues(0,10);
     tmpQ.resize(n_actions);
 }
@@ -96,15 +99,16 @@ int SampleBasedRL::Act(real reward, int next_state)
     //mdp_list[0] = model->getMeanMDP();
     // Do note waste much time generating MDPs
 
-    if (T >= update_interval) {    
-		//printf("# mean model\n");
-		//model->ShowModel();
-        update_interval = (int) (ceil)(1.1*(double) T);
+    if (T >= next_update) {    
+        //printf("# mean model\n");
+        //model->ShowModel();
+        update_interval += 1;//(int) (ceil)(1.01*(double) T);
+        next_update = T + update_interval;
         for (int i=0; i<max_samples; ++i) {
             delete mdp_list[i];
             mdp_list[i] = model->generate();
-			//printf("# sample model %d\n", i);
-			//mdp_list[i]->ShowModel();
+            //printf("# sample model %d\n", i);
+            //mdp_list[i]->ShowModel();
         }
     }
     
@@ -119,8 +123,7 @@ int SampleBasedRL::Act(real reward, int next_state)
     int next_action;
     // choose action
     if (urandom()<epsilon) {
-        next_action = (int) floor(urandom(0.0, n_actions));
-        //printf ("\n");
+        next_action = rng->discrete_uniform(n_actions);
     } else {
         next_action = ArgMax(tmpQ);
     }

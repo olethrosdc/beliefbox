@@ -365,6 +365,7 @@ int main (int argc, char** argv)
                                           gamma,
                                           epsilon,
                                           model,
+                                          rng,
                                           max_samples);
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
