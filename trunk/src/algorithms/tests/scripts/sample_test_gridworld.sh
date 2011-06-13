@@ -7,7 +7,7 @@ epsilon=0.0
 ## params="--n_states 5 --n_actions 2 --environment Chain --gamma $gamma --epsilon $epsilon --n_runs $runs --n_steps $steps"
 
 task=Gridworld
-for maze in maze0 maze1 
+for maze in maze1 maze2
 do
     params="--environment $task --maze_name $HOME/projects/beliefbox/dat/$maze --gamma $gamma --epsilon $epsilon --n_runs $runs --n_steps $steps --n_episodes 10000 --episode_steps -1"
     
