@@ -1,4 +1,4 @@
-runs=10
+runs=1
 steps=10000
 gamma=0.95
 epsilon=0.0
@@ -9,7 +9,7 @@ epsilon=0.0
 task=Gridworld
 
 
-for randomness in 0.01 0.1 0.2
+for randomness in 0.1
 do
     for maze in maze1 maze2
     do
