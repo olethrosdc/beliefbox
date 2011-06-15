@@ -9,7 +9,7 @@ epsilon=0.0
 task=Gridworld
 
 
-for randomness in 0.05 0.1 0.2 0.3 0.4
+for randomness in 0.01 0.05 0.1 0.2 0.3 0.4
 do
     for maze in maze0 maze1 maze2 maze3 maze4
     do
@@ -40,13 +40,13 @@ do
         done
 
 
-        for i in 16 32 64 128;
+        for i in 10 12 14 16
         do 
             echo $i; 
             time ./bin/online_algorithms --algorithm Sampling --max_samples=${i} $params >$outdir/sampling${i}.out &
 	done
 	wait;
-        for i in 16 32 64 128;
+        for i in 10 12 14 16
         do 
             grep PAYOFF $outdir/sampling${i}.out >$outdir/sampling${i}.payoff; 
             grep RUN $outdir/sampling${i}.out >$outdir/sampling${i}.reward; 
