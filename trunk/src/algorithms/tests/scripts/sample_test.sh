@@ -13,7 +13,7 @@ outdir=$HOME/results/${task}/epsilon${epsilon}
 mkdir -p $outdir
 #for algorithm in QLearning Sarsa Model
 #do
-#    time ./bin/online_algorithms --algorithm $algorithm $params >$outdir/${algo#rithm}.out
+#    time ./bin/online_algorithms --algorithm $algorithm $params >$outdir/${algorithm}.out
 #    grep PAYOFF $outdir/${algorithm}.out > $outdir/${algorithm}.payoff
 #    grep RUN $outdir/${algorithm}.out > $outdir/${algorithm}.reward
 #    rm $outdir/${algorithm}.out
