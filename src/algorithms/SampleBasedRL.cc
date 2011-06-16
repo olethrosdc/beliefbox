@@ -27,7 +27,7 @@ SampleBasedRL::SampleBasedRL(int n_states_,
       max_samples(max_samples_),
       rng(rng_),
       T(0),
-      update_interval(10),
+      update_interval(1),
       next_update()
 {
     printf("# Starting Sample-Based-RL with %d samples, update interval %d\n",
@@ -49,7 +49,7 @@ SampleBasedRL::SampleBasedRL(int n_states_,
     printf ("# Setting up MultiMPDValueIteration\n");
     value_iteration = new MultiMDPValueIteration(w, mdp_list, gamma);
     printf ("# Testing MultiMPDValueIteration\n");
-    value_iteration->ComputeStateActionValues(0,10);
+    value_iteration->ComputeStateActionValues(0,1);
     tmpQ.resize(n_actions);
 }
 SampleBasedRL::~SampleBasedRL()
@@ -110,11 +110,13 @@ int SampleBasedRL::Act(real reward, int next_state)
             //printf("# sample model %d\n", i);
             //mdp_list[i]->ShowModel();
         }
+        value_iteration->setMDPList(mdp_list);
+        value_iteration->ComputeStateActionValues(0.001, 1000);
     }
     
     // update values
     value_iteration->setMDPList(mdp_list);
-    value_iteration->ComputeStateActionValues(0.001, 10);
+    value_iteration->ComputeStateActionValues(0, 1);
     for (int i=0; i<n_actions; i++) {
         tmpQ[i] = value_iteration->getValue(next_state, i);
         //printf ("Q[%d] = %f ", i, tmpQ[i]);

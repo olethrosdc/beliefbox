@@ -1,13 +1,17 @@
 runs=10000
-steps=5000
-gamma=0.95
+steps=1000
+gamma=0.999
 epsilon=0.0
+
+
+task=Optimistic
+params="--n_states 5 --n_actions 2 --environment Optimistic --gamma $gamma --epsilon $epsilon --n_runs $runs --n_steps $steps"
 
 ## task=Chain
 ## params="--n_states 5 --n_actions 2 --environment Chain --gamma $gamma --epsilon $epsilon --n_runs $runs --n_steps $steps"
 
-task=RiverSwim
-params="--environment RiverSwim --gamma $gamma --epsilon $epsilon --n_runs $runs --n_steps $steps"
+#task=RiverSwim
+#params="--environment RiverSwim --gamma $gamma --epsilon $epsilon --n_runs $runs --n_steps $steps"
 
 outdir=$HOME/results/${task}/epsilon${epsilon}
 mkdir -p $outdir
