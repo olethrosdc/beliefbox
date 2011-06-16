@@ -26,27 +26,15 @@ do
             rm $outdir/${algorithm}.out
         done
         
-        for i in 1 2 4 8;
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16;
         do 
             echo $i; 
             time ./bin/online_algorithms --algorithm Sampling --max_samples=${i} $params >$outdir/sampling${i}.out &
 	done
-	wait;
-        for i in 1 2 4 8;
-        do 
-            grep PAYOFF $outdir/sampling${i}.out >$outdir/sampling${i}.payoff; 
-            grep RUN $outdir/sampling${i}.out >$outdir/sampling${i}.reward; 
-            rm $outdir/sampling${i}.out
-        done
 
-
-        for i in 10 12 14 16
-        do 
-            echo $i; 
-            time ./bin/online_algorithms --algorithm Sampling --max_samples=${i} $params >$outdir/sampling${i}.out &
-	done
 	wait;
-        for i in 10 12 14 16
+
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16;
         do 
             grep PAYOFF $outdir/sampling${i}.out >$outdir/sampling${i}.payoff; 
             grep RUN $outdir/sampling${i}.out >$outdir/sampling${i}.reward; 
