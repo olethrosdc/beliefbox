@@ -29,50 +29,50 @@ class DiscreteSpaceRewardDistribution;
 class PopulationPolicyRewardBelief
 {
 protected:
-	DiscreteMDP mdp; ///< the actual MDP (transitions assumed known here)
-	int n_states; ///< the number of states
-	int n_actions; ///< the number of actions
-    real eta; ///< the hyperprior parameter (only one!)
-	real gamma; ///< value of gamma (assumed known here)
-    real epsilon; ///< accuracy
-	ValueIteration value_iteration;
+  DiscreteMDP mdp; ///< the actual MDP (transitions assumed known here)
+  int n_states; ///< the number of states
+  int n_actions; ///< the number of actions
+  real eta; ///< the hyperprior parameter (only one!)
+  real gamma; ///< value of gamma (assumed known here)
+  real epsilon; ///< accuracy
+  ValueIteration value_iteration;
 
-	// -- the following values are stored during the sampling procedure -- //
-	std::vector<Matrix> rewards; ///< set of reward function samples
-	std::vector<FixedDiscretePolicy> policies; ///< storage for sampled policies from the belief
-	std::vector<real> betas; ///< values of beta sampled
-	std::vector<real> lambdas; ///< values of lambda sampled
-	std::vector<real> sample_counts; ///< amount of times we drew each sample
+  // -- the following values are stored during the sampling procedure -- //
+  std::vector<Matrix> rewards; ///< set of reward function samples
+  std::vector<FixedDiscretePolicy> policies; ///< storage for sampled policies from the belief
+  std::vector<real> betas; ///< values of beta sampled
+  std::vector<real> lambdas; ///< values of lambda sampled
+  std::vector<real> sample_counts; ///< amount of times we drew each sample
 
 public:
-    PopulationPolicyRewardBelief(real eta_,
-					   real gamma_,
-					   const DiscreteMDP& mdp_);
-	virtual ~PopulationPolicyRewardBelief();
-	
-	virtual FixedDiscretePolicy* CalculatePosterior(Demonstrations<int, int>& D);
-	virtual real logLikelihood(const Demonstrations<int, int>&D,
-							   const  FixedDiscretePolicy& policy) const;
+  PopulationPolicyRewardBelief(real eta_,
+                               real gamma_,
+                               const DiscreteMDP& mdp_);
+  virtual ~PopulationPolicyRewardBelief();
+    
+  virtual FixedDiscretePolicy* CalculatePosterior(Demonstrations<int, int>& D);
+  virtual real logLikelihood(const Demonstrations<int, int>&D,
+                             const  FixedDiscretePolicy& policy) const;
 
-	/// Calculate  $log P(a^T \mid s^T, \pi)$
-	virtual real Likelihood(const Demonstrations<int, int>&D,
-							const  FixedDiscretePolicy& policy) const
-	{
-		return exp(logLikelihood(D, policy));
-	}
+  /// Calculate  $log P(a^T \mid s^T, \pi)$
+  virtual real Likelihood(const Demonstrations<int, int>&D,
+                          const  FixedDiscretePolicy& policy) const
+  {
+    return exp(logLikelihood(D, policy));
+  }
 
-	virtual FixedDiscretePolicy samplePolicy(Matrix& R, real beta);
-    virtual FixedDiscretePolicy* getPolicy();
-    /// Set accuracy
-	 void setAccuracy(real epsilon_)
-	{
-		epsilon = epsilon_;
-		assert(epsilon > 0);
-        printf("# setting accuracy to %f\n", 
-               epsilon);
-	}
-	void MHSampler(Demonstrations<int, int>& D, int n_iterations, int n_chains);
-	void MonteCarloSampler(Demonstrations<int, int>& D, int n_iterations);
+  virtual FixedDiscretePolicy samplePolicy(Matrix& R, real beta);
+  virtual FixedDiscretePolicy* getPolicy();
+  /// Set accuracy
+  void setAccuracy(real epsilon_)
+  {
+    epsilon = epsilon_;
+    assert(epsilon > 0);
+    printf("# setting accuracy to %f\n", 
+           epsilon);
+  }
+  void MHSampler(Demonstrations<int, int>& D, int n_iterations, int n_chains);
+  void MonteCarloSampler(Demonstrations<int, int>& D, int n_iterations);
 };
 
 
