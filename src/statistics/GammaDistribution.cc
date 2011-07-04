@@ -47,3 +47,6 @@ real GammaDistribution::generate() const
 {
     return gengam(alpha, beta);
 }
+
+// ----- conjugate  prior for gamma distribution ------ //
+
