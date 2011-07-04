@@ -35,4 +35,12 @@ public:
     virtual real generate() const;
 };
 
+/// Conjugate prior to gamma distribution with unknown shape and
+/// inverse scale
+class GammaDistributionUnknownShapeScale : public ConjugatePrior
+{
+  real S; ///< sum of observations
+  real P; ///< product of observations
+
+}
 #endif
