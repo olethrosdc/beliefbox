@@ -39,8 +39,16 @@ public:
 /// inverse scale
 class GammaDistributionUnknownShapeScale : public ConjugatePrior
 {
-  real S; ///< sum of observations
-  real P; ///< product of observations
+public:
+    real S; ///< sum of observations
+    real P; ///< product of observations
+    real log_P; ///< log product of observations
+    int T; ///< number of observations
+    GammaDistributionUnknownShapeScale(real P_, real S_, int T_); ///< constructor
+    virtual ~GammaDistributionUnknownShapeScale(); ///< destructor
+    virtual void calculatePosterior(real x); ///< calculate posterior from an observation
+    virtual real Observe(real x); ///< observe, return posterior..
+    virtual real pdf (real x) const; ///< pdf
+};
 
-}
 #endif

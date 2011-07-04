@@ -88,6 +88,7 @@ public:
     ConjugatePrior() {}
     virtual ~ConjugatePrior() {}
     virtual void calculatePosterior(real x) = 0; ///< calculate posterior from an observation
+    virtual real Observe(real x) = 0; ///< observe, return posterior..
 };
 
 /// \brief Singular distribution.

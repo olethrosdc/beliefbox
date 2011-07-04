@@ -50,3 +50,32 @@ real GammaDistribution::generate() const
 
 // ----- conjugate  prior for gamma distribution ------ //
 
+GammaDistributionUnknownShapeScale::GammaDistributionUnknownShapeScale(real P_, real S_, int T_) :
+    P(P_),
+    S(S_),
+    T(T_),
+    log_P(log(P))
+{
+}
+
+GammaDistributionUnknownShapeScale::~GammaDistributionUnknownShapeScale()
+{
+}
+
+void GammaDistributionUnknownShapeScale::calculatePosterior(real x)
+{
+    log_P += log(x);
+    S += x;
+    T ++;
+}
+real GammaDistributionUnknownShapeScale::Observe(real x) 
+{
+    real p = pdf(x);
+    calculatePosterior(x);
+    return p;
+}
+/// We need the expected value here!
+real GammaDistributionUnknownShapeScale::pdf (real x) const
+{
+    return 0;
+}
