@@ -111,7 +111,7 @@ public:
     virtual real pdf(real x) const;
     virtual real getMean() const;
     virtual void calculatePosterior(real x);
-    real Observe(real x)
+    virtual real Observe(real x)
     {
         real p = pdf(x);
         calculatePosterior(x);
@@ -165,7 +165,7 @@ public:
     virtual real pdf(real x) const;
     virtual real getMean() const;
     virtual void calculatePosterior(real x);
-    real Observe(real x);
+    virtual real Observe(real x);
     void Show() const;
 };
 
@@ -253,7 +253,7 @@ public:
     virtual real log_pdf(const Vector& x) const;
     virtual const Vector& getMean() const;
     virtual void calculatePosterior(const Vector& x);
-    real Observe(const Vector& x);
+    virtual real Observe(const Vector& x);
     void Show();
 };
 #endif
