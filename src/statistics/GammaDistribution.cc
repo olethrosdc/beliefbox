@@ -77,5 +77,5 @@ real GammaDistributionUnknownShapeScale::Observe(real x)
 /// We need the expected value here!
 real GammaDistributionUnknownShapeScale::pdf (real x) const
 {
-    return 0;
+  
 }
