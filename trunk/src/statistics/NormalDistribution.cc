@@ -49,6 +49,13 @@ real NormalDistribution::generate()
         return normal_rho * sin(2.0 * M_PI * normal_x) * s + m; 
     }
 }
+/// Normal distribution log-pdf
+real NormalDistribution::log_pdf(real x) const
+{
+    real d = (m-x)/s;
+    return -0.5 * d*d - 0.5 * log(2.0 * M_PI * s * s);
+}
+
 /// Normal distribution pdf
 real NormalDistribution::pdf(real x) const
 {
@@ -212,6 +219,28 @@ void NormalUnknownMeanPrecision::calculatePosterior(real x)
     p_x_mr.setVariance(beta_n / alpha_n);
 }
 
+/** Get the log-likelihood of some observations */
+real NormalUnknownMeanPrecision::LogLikelihood(const std::vector<real>& x, int K) const
+{
+    real log_likelihood = LOG_ZERO;
+    ExponentialDistribution accuracy_prior(1.0);
+    for (int k=0; k<K; ++k) {
+        real accuracy = accuracy_prior.generate();
+        real variance = 1.0 / accuracy;
+        NormalDistribution mean_prior(0.0, variance);
+        real mean = mean_prior.generate();
+        real log_p = 0.0;
+        int n = x.size();
+        NormalDistribution sample(mean, accuracy);
+        for (int i=0; i<n; ++i) {
+            log_p += sample.log_pdf(x[i]);
+        }
+        log_likelihood = logAdd(log_likelihood, log_p);
+    }
+    log_likelihood -= log(K);
+    return log_likelihood;
+}
+
 void NormalUnknownMeanPrecision::Show() const
 {
     printf("Normal-Gamma - ");
@@ -336,6 +365,7 @@ real MultivariateNormalUnknownMeanPrecision::Observe(const Vector& x)
     calculatePosterior(x);
     return p;
 }
+
 /** The marginal pdf of the observations.
     
     Instead of calculating the actual marginal:

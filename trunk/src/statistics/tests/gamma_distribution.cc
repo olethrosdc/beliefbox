@@ -15,26 +15,41 @@
 #include "GammaDistribution.h"
 #include "NormalDistribution.h"
 #include "ReadFile.h"
+real Test(std::vector<real>& x, int T);
+
 int main (int argc, char** argv)
 {
-#if 0
-    int T = 1000;
+#if 1
+    int T = 100;
+    int N = 101;
+    int max_iter = 100;
+    Vector mix_probabilities(N);
+    Vector P_p(N);
+    for (int n=0; n<N; ++n) {
+        mix_probabilities[n] = (real) n / (real) (N - 1);
+        P_p[n] = 0.0;
+    }
 
-    std::vector<real> x(T);    
-    if (1) {
-        GammaDistribution source(2.0, 2.0);
-        printf("Data is Gamma!\n");
-        for (int t=0; t<T; ++t) {
-            x[t] = source.generate();
-        }
-    } else {
-        NormalDistribution source(2.0, 1.0);
-        printf("Data is Normal!\n");
-        for (int t=0; t<T; ++t) {
-            x[t] = exp(source.generate());
+    for (int iter=0; iter < max_iter; ++iter) {
+        std::vector<real> x(T);    
+        for (real i = 0; i<N; ++i) {
+            real p = mix_probabilities[i];
+            GammaDistribution gamma_source(1.0, 1.0);
+            NormalDistribution normal_source(0.0, 1.0);
+            for (int t=0; t<T; ++t) {
+                if (urandom() < p) {
+                    x[t] = gamma_source.generate();
+                } else {
+                    x[t] = exp(normal_source.generate());
+                }
+            }
+            real posterior = Test(x, T);
+            P_p[i] += posterior;
         }
     }
-    int max_T = T;
+    P_p /= max_iter;
+    mix_probabilities.print(stdout);
+    P_p.print(stdout);
 #else
     Matrix data;
     ReadFloatDataASCII(data, "./weights_scaled.dat");
@@ -43,25 +58,29 @@ int main (int argc, char** argv)
     for (int t=0; t<T; ++t) {
         x[t] = data(t, 1);
     }
-    int max_T = data.Rows();
+    real posterior = Test(x, T);
 #endif
 
-    for (T = 1; T<=max_T + 1; T+=1) {
-        if (T > max_T) {
-            T = max_T;
-        }
-    MultivariateNormalUnknownMeanPrecision normal_prior;
-    real log_norm_pdf = 0;
-    for (int t=0; t<T; ++t) {
-        Vector z(1);
-        z[0] = log(x[t]) + 3.0;
-        real log_p_z = normal_prior.log_pdf(z);
-        log_norm_pdf += log_p_z;
-        normal_prior.Observe(z);
-    }
-    //printf("# %f # normal likelihood\n", log_norm_pdf);
-    real a = 1;
+
+    return 0;
+}
+
+real Test(std::vector<real>& x, int T)
+{
     int K = 10e2;
+
+    NormalUnknownMeanPrecision normal_prior;
+    //real log_norm_pdf = 0;
+    std::vector<real> z(T);
+    for (int t=0; t<T; ++t) {
+        z[t] = log(x[t]);
+        //real log_p_z = normal_prior.log_pdf(z);
+        //log_norm_pdf += log_p_z;
+    }
+    real log_norm_pdf = normal_prior.LogLikelihood(z, K);
+    //printf("# %f # normal likelihood\n", log_norm_pdf);
+    
+    real a = 1;
     GammaDistributionUnknownShapeScale gamma_prior(a, a, a);
     real log_gamma_pdf =  gamma_prior.LogLikelihood(x, K);
     //printf ("%f %d %f\n", a, K, log_gamma_pdf);
@@ -72,11 +91,13 @@ int main (int argc, char** argv)
 
     real log_posterior_gamma = log_prior_gamma + log_gamma_pdf
         - logAdd(log_prior_gamma + log_gamma_pdf, log_prior_norm + log_norm_pdf);
-    printf ("%d %f %f %f %f\n", T, log_gamma_pdf, log_norm_pdf, log_posterior_gamma, exp(log_posterior_gamma));
-        if (T > max_T) {
-            break;
-        }
-    }
+    real posterior_gamma = exp(log_posterior_gamma);
+#if 0
+    printf ("%d %f %f %f %f\n",
+            T, log_gamma_pdf, log_norm_pdf,
+            log_posterior_gamma, posterior_gamma);
+#endif
+    return posterior_gamma;
 };
 
 #endif
