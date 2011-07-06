@@ -45,6 +45,7 @@ class NormalDistribution : public ParametricDistribution {
     virtual ~NormalDistribution() {}
     virtual real generate();
     virtual real generate() const;
+    virtual real log_pdf(real x) const;
     virtual real pdf(real x) const;
     void setSTD(real std)
     {
@@ -159,6 +160,7 @@ public:
     NormalUnknownMeanPrecision(real mu_0_, real tau_0_);
     void Reset();
     virtual ~NormalUnknownMeanPrecision();
+    virtual real LogLikelihood(const std::vector<real>& x, int K) const;
     virtual real generate();
     virtual real generate() const;
     /// Note that this the marginal likelihood!
