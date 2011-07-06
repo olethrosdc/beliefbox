@@ -23,6 +23,22 @@ GammaDistribution::GammaDistribution(real alpha_, real beta_) : alpha(alpha_), b
 {
 }
 
+/** The log-pdf
+
+    \f[
+    \ln[ x^{\alpha -1} e^{-\beta x} \beta^\alpha / \Gamma(\alpha)]
+    =
+    (\alpha - 1) \ln x - \beta x + \alpha \ln \beta - \ln Gamma(\alpha)
+    \f]
+ */
+real GammaDistribution::log_pdf(real x) const
+{
+   if (x<0.0 || alpha<0) {
+       return LOG_ZERO;
+    }
+    real log_pdf = log(x)*(alpha-1.0) + log(beta)*alpha - beta*x - logGamma(alpha);
+    return log_pdf;
+}
 
 /// Gamma has a support \f$[0, \infty)\f$, with pdf
 /// \f$x^{\alpha-1} \frac{\beta^\alpha \exp(-\beta x)}{\Gamma(\alpha)}\f$,
@@ -50,11 +66,12 @@ real GammaDistribution::generate() const
 
 // ----- conjugate  prior for gamma distribution ------ //
 
-GammaDistributionUnknownShapeScale::GammaDistributionUnknownShapeScale(real P_, real S_, int T_) :
-    P(P_),
-    S(S_),
-    T(T_),
-    log_P(log(P))
+GammaDistributionUnknownShapeScale::GammaDistributionUnknownShapeScale(real lambda_, real mu_, int nu_) :
+    lambda(lambda_),
+    mu(mu_),
+    nu(nu_),
+    S(0),
+    T(0)
 {
 }
 
@@ -64,9 +81,8 @@ GammaDistributionUnknownShapeScale::~GammaDistributionUnknownShapeScale()
 
 void GammaDistributionUnknownShapeScale::calculatePosterior(real x)
 {
-    log_P += log(x);
-    S += x;
     T ++;
+    S += x;
 }
 real GammaDistributionUnknownShapeScale::Observe(real x) 
 {
@@ -74,8 +90,41 @@ real GammaDistributionUnknownShapeScale::Observe(real x)
     calculatePosterior(x);
     return p;
 }
-/// We need the expected value here!
 real GammaDistributionUnknownShapeScale::pdf (real x) const
 {
-  
+    return 0.0;
 }
+
+real GammaDistributionUnknownShapeScale::LogLikelihood(std::vector<real>& x, int K) const
+{
+    real t = (real) T;
+    ExponentialDistribution Exp(lambda);
+    real log_likelihood = LOG_ZERO;
+    for (int k=0; k<K; ++k) {
+        real alpha = Exp.generate();
+        //GammaDistribution prior_gamma(mu + t * alpha, nu + S);
+        GammaDistribution prior_gamma(mu, nu);
+        real beta = prior_gamma.generate();
+        real log_p = 0.0;
+        int n = x.size();
+        GammaDistribution marginal_gamma(alpha, beta);
+        for (int i=0; i<n; ++i) {
+            log_p += marginal_gamma.log_pdf(x[i]);
+        }
+        log_likelihood = logAdd(log_likelihood, log_p);
+    }
+    log_likelihood -= log(K);
+    return log_likelihood;
+}
+
+real GammaDistributionUnknownShapeScale::generate() const
+{
+    ExponentialDistribution Exp(lambda);
+    real alpha = Exp.generate();
+    GammaDistribution prior_gamma(mu + (real) T * alpha, nu + S);
+    real beta = prior_gamma.generate();
+    real log_p = 0.0;
+    GammaDistribution marginal_gamma(alpha, beta);
+    return marginal_gamma.generate();
+}
+
