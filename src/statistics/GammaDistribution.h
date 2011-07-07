@@ -20,6 +20,7 @@
  * The gamma distribution is conjugate with the exponential, Poisson
  * and the normal distribution for known mean.
  *
+ * \f$\alpha, \beta\f$ are the shape and inverse scale parameters respectively.
  */
 class GammaDistribution : public Distribution
 {
@@ -34,6 +35,8 @@ public:
     virtual real log_pdf(real x) const;
     virtual real generate();
     virtual real generate() const;
+    real setMaximumLikelihoodParameters(std::vector<real>& x, int n_iterations);
+    real log_pdf(std::vector<real>& x) const;
 };
 
 /// Conjugate prior to gamma distribution with unknown shape and

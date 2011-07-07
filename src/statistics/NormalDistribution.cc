@@ -70,6 +70,28 @@ void NormalDistribution::Show() const
 }
 
 
+/// Set Maximum Likelihood parameters
+///
+/// Returns the log-likelihood of the parameters
+real NormalDistribution::setMaximumLikelihoodParameters (std::vector<real>& x)
+{
+    int T = x.size();
+    real t = (real) T;
+    m = Sum(x) / t;
+    s = 0;
+    for (int i=0; i<T; ++i) {
+        real d = x[i] - m;
+        s += d*d;
+    }
+    s /= t;
+    real log_likelihood = 0;
+    for (int i=0; i<T; ++i) {
+        log_likelihood += log_pdf(x[i]);
+    }
+    return log_likelihood;
+}
+
+
 //------------------ Unknown mean -----------------------//
 real NormalDistributionUnknownMean::generate()
 {

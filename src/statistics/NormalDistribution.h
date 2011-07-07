@@ -64,6 +64,7 @@ class NormalDistribution : public ParametricDistribution {
         return m;
     }                                         
     void Show() const;
+    real setMaximumLikelihoodParameters (std::vector<real>& x);
 };
 
 
