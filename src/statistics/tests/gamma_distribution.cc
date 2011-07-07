@@ -56,14 +56,28 @@ int main (int argc, char** argv)
     P_p.print(stdout);
 #else
     Matrix data;
-    ReadFloatDataASCII(data, "./weights_scaled.dat");
+    ReadFloatDataASCII(data, "./weights_raw.dat");
     int T = data.Rows();
     std::vector<real> x(T);    
     for (int t=0; t<T; ++t) {
-        x[t] = data(t, 0);
+        x[t] = data(t, 0) + 0.1*urandom();
     }
-    real posterior = Test(x, T, number_of_samples);
-    printf ("%f\n", posterior);
+    real S = Max(x);
+    for (int t=0; t<T; ++t) {
+        x[t] /= S;
+    }
+    for (int k=1; k<T; ++k) {
+        int t = k * k;
+        if (t > T) {
+            t = T;
+        }
+        real posterior = Test(x, t, number_of_samples);
+        //printf ("%f\n", posterior);
+        if (t >= T) {
+            break;
+        }
+    }
+
 #endif
 
 
@@ -82,7 +96,7 @@ real Test(std::vector<real>& x, int T, int K)
     real log_norm_pdf = normal_prior.LogLikelihood(z, K);
     //printf("# %f # normal likelihood\n", log_norm_pdf);
     
-    real a = 1;
+    real a = 10;
     GammaDistributionUnknownShapeScale gamma_prior(a, a, a);
     real log_gamma_pdf =  gamma_prior.LogLikelihood(x, K);
     //printf ("%f %d %f\n", a, K, log_gamma_pdf);
@@ -105,7 +119,7 @@ real Test(std::vector<real>& x, int T, int K)
     real log_ML_norm = ML_normal.setMaximumLikelihoodParameters(z);
     real log_ML_gamma = ML_gamma.setMaximumLikelihoodParameters(x, K);
     
-    printf("%f %f\n", log_ML_gamma, log_ML_norm);
+    //printf("%f %f\n", log_ML_gamma, log_ML_norm);
     return posterior_gamma;
 };
 
