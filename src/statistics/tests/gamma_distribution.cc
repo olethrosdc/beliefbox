@@ -15,11 +15,15 @@
 #include "GammaDistribution.h"
 #include "NormalDistribution.h"
 #include "ReadFile.h"
-real Test(std::vector<real>& x, int T);
+
+real Test(std::vector<real>& x, int T, int K);
 
 int main (int argc, char** argv)
 {
-#if 1
+
+    int number_of_samples = 10e2;
+
+#if 0
     int T = 100;
     int N = 101;
     int max_iter = 100;
@@ -43,7 +47,7 @@ int main (int argc, char** argv)
                     x[t] = exp(normal_source.generate());
                 }
             }
-            real posterior = Test(x, T);
+            real posterior = Test(x, T, number_of_samples);
             P_p[i] += posterior;
         }
     }
@@ -58,24 +62,22 @@ int main (int argc, char** argv)
     for (int t=0; t<T; ++t) {
         x[t] = data(t, 1);
     }
-    real posterior = Test(x, T);
+    real posterior = Test(x, T, number_of_samples);
+    printf ("%f\n", posterior);
 #endif
 
 
     return 0;
 }
 
-real Test(std::vector<real>& x, int T)
+real Test(std::vector<real>& x, int T, int K)
 {
-    int K = 10e2;
 
     NormalUnknownMeanPrecision normal_prior;
     //real log_norm_pdf = 0;
     std::vector<real> z(T);
     for (int t=0; t<T; ++t) {
         z[t] = log(x[t]);
-        //real log_p_z = normal_prior.log_pdf(z);
-        //log_norm_pdf += log_p_z;
     }
     real log_norm_pdf = normal_prior.LogLikelihood(z, K);
     //printf("# %f # normal likelihood\n", log_norm_pdf);
@@ -92,7 +94,7 @@ real Test(std::vector<real>& x, int T)
     real log_posterior_gamma = log_prior_gamma + log_gamma_pdf
         - logAdd(log_prior_gamma + log_gamma_pdf, log_prior_norm + log_norm_pdf);
     real posterior_gamma = exp(log_posterior_gamma);
-#if 0
+#if 1
     printf ("%d %f %f %f %f\n",
             T, log_gamma_pdf, log_norm_pdf,
             log_posterior_gamma, posterior_gamma);

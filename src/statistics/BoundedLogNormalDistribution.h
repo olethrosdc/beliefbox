@@ -12,7 +12,7 @@
 #ifndef BOUNDED_LOGNORMAL_DISTRIBUTION_H
 #define BOUNDED_LOGNORMAL_DISTRIBUTION_H
 
-#include "NormalDistribution.h"
+#include "MultivariateNormal.h"
 #include "Matrix.h"
 #include "Vector.h"
 #include "Student.h"
