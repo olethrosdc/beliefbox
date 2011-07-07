@@ -60,7 +60,7 @@ int main (int argc, char** argv)
     int T = data.Rows();
     std::vector<real> x(T);    
     for (int t=0; t<T; ++t) {
-        x[t] = data(t, 1);
+        x[t] = data(t, 0);
     }
     real posterior = Test(x, T, number_of_samples);
     printf ("%f\n", posterior);
@@ -99,6 +99,13 @@ real Test(std::vector<real>& x, int T, int K)
             T, log_gamma_pdf, log_norm_pdf,
             log_posterior_gamma, posterior_gamma);
 #endif
+    NormalDistribution ML_normal;
+    GammaDistribution ML_gamma;
+    
+    real log_ML_norm = ML_normal.setMaximumLikelihoodParameters(z);
+    real log_ML_gamma = ML_gamma.setMaximumLikelihoodParameters(x, K);
+    
+    printf("%f %f\n", log_ML_gamma, log_ML_norm);
     return posterior_gamma;
 };
 

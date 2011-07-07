@@ -64,6 +64,46 @@ real GammaDistribution::generate() const
     return gengam(alpha, beta);
 }
 
+/// Set the maximum likelihood parameters. Return the likelihood at that point.
+///
+/// Unfortunately this can only be done approximately. We generate
+/// \f$\alpha\f$ randomly and subsequently find the ML value for
+/// \f$\beta\f$ given \f$\alpha\f$. After a number of iterations, we
+/// report the highest values.
+real GammaDistribution::setMaximumLikelihoodParameters(std::vector<real>& x, int n_iterations)
+{
+    real max_alpha = alpha;
+    real max_beta = beta;
+    real max_likelihood = log_pdf(x);
+    ExponentialDistribution Exp;
+    real Z = ((real) x.size() / Sum(x));
+    for (int iter=0; iter<n_iterations; ++iter) {
+        alpha = Exp.generate();
+        beta = alpha * Z;
+        real likelihood = log_pdf(x);
+        if (likelihood > max_likelihood) {
+            max_likelihood = likelihood;
+            max_alpha = alpha;
+            max_beta = beta;
+        }
+    }
+    alpha = max_alpha;
+    beta = max_beta;
+    return max_likelihood;
+}
+
+/// Get the log pdf for a sequence
+real GammaDistribution::log_pdf(std::vector<real>& x) const
+{
+    int T = x.size();
+    real log_likelihood = 0;
+    for (int t=0; t<T; ++t) {
+        log_likelihood += log_pdf(x[t]);
+    }
+    return log_likelihood;
+}
+
+
 // ----- conjugate  prior for gamma distribution ------ //
 
 GammaDistributionUnknownShapeScale::GammaDistributionUnknownShapeScale(real lambda_, real mu_, int nu_) :
