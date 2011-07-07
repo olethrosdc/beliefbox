@@ -17,7 +17,7 @@
 #include "real.h"
 #include "Vector.h"
 #include "BetaDistribution.h"
-#include "NormalDistribution.h"
+#include "MultivariateNormal.h"
 #include "ContextTreeKDTree.h"
 
 /** A continuous context tree implementation.
