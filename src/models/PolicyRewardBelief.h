@@ -19,12 +19,13 @@
 #include "RewardBelief.h"
 #include "DiscretePolicy.h"
 #include "ValueIteration.h"
+#include "ExponentialDistribution.h"
 
 #include <vector>
 
 
 class DiscreteSpaceRewardDistribution;
-
+class ExponentialDistribution;
 
 /** Prior on policy given reward belief */
 class PolicyRewardBelief

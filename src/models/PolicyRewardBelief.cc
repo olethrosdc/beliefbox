@@ -10,8 +10,7 @@
  ***************************************************************************/
 
 #include "PolicyRewardBelief.h"
-
-
+#include "ExponentialDistribution.h"
 
 /// Create teh blief
 PolicyRewardBelief::PolicyRewardBelief(real lambda,
