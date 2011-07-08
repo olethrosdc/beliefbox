@@ -203,36 +203,6 @@ public:
     }
 };
 
-/// Exponential probability distribution
-class ExponentialDistribution : public ParametricDistribution {
-public:
-    real l; ///< lambda
-    real m; ///< mean
-    ExponentialDistribution() {m=0.0; l=1.0;}
-    /// Create an exponential distribution with parameter \c lambda
-    ExponentialDistribution(real lambda)
-    {
-        l = lambda;
-		m = 0.0;
-    }
-    ExponentialDistribution(real mean, real var)
-    {
-        setMean(mean);
-        setVariance(var);
-    }
-    virtual ~ExponentialDistribution() {}
-    virtual real generate() const;
-    virtual real pdf(real x) const;
-    virtual real log_pdf(real x) const;
-    virtual void setVariance (real var)
-    {l = sqrt(1.0f / var);}
-    virtual void setMean (real mean)
-    {m = mean;}
-    virtual real getMean () const
-    {
-        return m;
-    }
-};
 
 /*@}*/
 
