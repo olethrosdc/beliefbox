@@ -14,6 +14,7 @@
 #define GAMMA_DISTRIBUTION_H
 
 #include "Distribution.h"
+#include "ExponentialDistribution.h"
 
 /** Gamma distribution.
  *
