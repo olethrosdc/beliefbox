@@ -59,7 +59,13 @@ public:
     virtual ~Distribution() {}
     virtual real generate() const = 0; ///< generate a value from this distribution
     virtual real pdf(real x) const = 0; ///< return the density at point x
-    virtual Distribution* clone() { return NULL; /* does nothing */}
+    virtual real log_pdf(real x) const
+    {
+        return log(pdf(x));
+    }
+    virtual real log_pdf(const std::vector<real> & x) const;
+    virtual real log_pdf(const std::vector<real> & x);
+    virtual Distribution* clone() { return NULL; /*  does nothing */}
     virtual real getMean() const {return 0.0f;}
     virtual void setMean (real mean) ///< set the mean
     {

@@ -18,6 +18,25 @@
 #include "MersenneTwister.h"
 #include "Random.h"
 
+real Distribution::log_pdf(const std::vector<real> & x) const
+{
+    int T = x.size();
+    real log_prod = 0;
+    for (int i=0; i<T; ++i) {
+        log_prod += log_pdf(x[i]);
+    }
+    return log_prod;
+}
+
+real Distribution::log_pdf(const std::vector<real> & x) 
+{
+    int T = x.size();
+    real log_prod = 0;
+    for (int i=0; i<T; ++i) {
+        log_prod += log_pdf(x[i]);
+    }
+    return log_prod;
+}
 
 real UniformDistribution::generate() const
 {
