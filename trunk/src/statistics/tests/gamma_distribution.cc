@@ -14,9 +14,10 @@
 #include <vector>
 #include "GammaDistribution.h"
 #include "NormalDistribution.h"
+#include "ExponentialDistribution.h"
 #include "ReadFile.h"
 
-real Test(std::vector<real>& x, int T, int K);
+Vector Test(std::vector<real>& x, int T, int K);
 
 int main (int argc, char** argv)
 {
@@ -60,7 +61,7 @@ int main (int argc, char** argv)
     int T = data.Rows();
     std::vector<real> x(T);    
     for (int t=0; t<T; ++t) {
-        x[t] = data(t, 0) + 0.1*urandom();
+        x[t] = data(t, 0); // + 0.1*urandom(); // maybe add a bit of noise
     }
     real S = Max(x);
     for (int t=0; t<T; ++t) {
@@ -71,7 +72,7 @@ int main (int argc, char** argv)
         if (t > T) {
             t = T;
         }
-        real posterior = Test(x, t, number_of_samples);
+        Vector posterior = Test(x, t, number_of_samples);
         //printf ("%f\n", posterior);
         if (t >= T) {
             break;
@@ -84,7 +85,7 @@ int main (int argc, char** argv)
     return 0;
 }
 
-real Test(std::vector<real>& x, int T, int K)
+Vector Test(std::vector<real>& x, int T, int K)
 {
 
     NormalUnknownMeanPrecision normal_prior;
@@ -96,7 +97,7 @@ real Test(std::vector<real>& x, int T, int K)
     real log_norm_pdf = normal_prior.LogLikelihood(z, K);
     //printf("# %f # normal likelihood\n", log_norm_pdf);
     
-    real a = 10;
+    real a = 1;
     GammaDistributionUnknownShapeScale gamma_prior(a, a, a);
     real log_gamma_pdf =  gamma_prior.LogLikelihood(x, K);
     //printf ("%f %d %f\n", a, K, log_gamma_pdf);
@@ -108,11 +109,24 @@ real Test(std::vector<real>& x, int T, int K)
     real log_posterior_gamma = log_prior_gamma + log_gamma_pdf
         - logAdd(log_prior_gamma + log_gamma_pdf, log_prior_norm + log_norm_pdf);
     real posterior_gamma = exp(log_posterior_gamma);
-#if 1
-    printf ("%d %f %f %f %f\n",
-            T, log_gamma_pdf, log_norm_pdf,
-            log_posterior_gamma, posterior_gamma);
-#endif
+
+    GammaExponentialPrior exponential_prior(a, a);
+    real log_exp_pdf = exponential_prior.LogLikelihood(x, K);
+    
+    Vector log_P (3);
+    log_P(1) = log_norm_pdf;
+    log_P(2) = log_exp_pdf;
+    log_P(3) = log_gamma_pdf;
+    Vector log_prior (3);
+    for (int i=0; i<3; ++i) {
+        log_prior(3) = log(1/3);
+    }
+    Vector log_posterior = log_prior + log_P;
+    log_posterior -= log_posterior.logSum();
+    
+    Vector posterior = exp(log_posterior);
+    posterior.print(stdout);
+
     NormalDistribution ML_normal;
     GammaDistribution ML_gamma;
     
@@ -120,7 +134,7 @@ real Test(std::vector<real>& x, int T, int K)
     real log_ML_gamma = ML_gamma.setMaximumLikelihoodParameters(x, K);
     
     //printf("%f %f\n", log_ML_gamma, log_ML_norm);
-    return posterior_gamma;
+    return log_posterior;
 };
 
 #endif

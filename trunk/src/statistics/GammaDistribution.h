@@ -14,7 +14,6 @@
 #define GAMMA_DISTRIBUTION_H
 
 #include "Distribution.h"
-#include "ExponentialDistribution.h"
 
 /** Gamma distribution.
  *
@@ -36,9 +35,9 @@ public:
     virtual real log_pdf(real x) const;
     virtual real generate();
     virtual real generate() const;
-    real setMaximumLikelihoodParameters(std::vector<real>& x, int n_iterations);
-    real log_pdf(std::vector<real>& x) const;
+    real setMaximumLikelihoodParameters(const std::vector<real>& x, int n_iterations);
 };
+
 
 /// Conjugate prior to gamma distribution with unknown shape and
 /// inverse scale
