@@ -10,7 +10,7 @@
  ***************************************************************************/
 
 #include "PopulationPolicyRewardBelief.h"
-
+#include "ExponentialDistribution.h"
 
 
 /// Create the belief

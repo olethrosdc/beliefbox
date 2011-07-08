@@ -10,6 +10,7 @@
  ***************************************************************************/
 
 #include "NormalDistribution.h"
+#include "ExponentialDistribution.h"
 #include "Random.h"
 
 // Taken from numerical recipes in C

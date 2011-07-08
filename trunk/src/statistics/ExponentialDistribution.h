@@ -13,10 +13,11 @@
 #define EXPONENTIAL_DISTRIBUTION_H
 
 #include "real.h"
-class ParametricDistribution;
+#include "Distribution.h"
 
 /// Exponential probability distribution
-class ExponentialDistribution : public ParametricDistribution {
+class ExponentialDistribution : public ParametricDistribution
+{
 public:
     real l; ///< lambda
     real m; ///< mean
