@@ -47,6 +47,13 @@ real ExponentialDistribution::log_pdf(real x) const
     return LOG_ZERO;
 }
 
+
+/// There is a closed form solution for this.. let's do it!
+real ExponentialDistribution::setMaximumLikelihoodParameters(const std::vector<real>& x)
+{
+    setMean(Sum(x)  / (real) x.size());
+}
+
 // ----- gamma distribution conjugate prior for the exponential parameter ----- //
 
 
