@@ -12,6 +12,7 @@
 #ifdef MAKE_MAIN
 #include "Random.h"
 #include <vector>
+#include "BetaDistribution.h"
 #include "GammaDistribution.h"
 #include "NormalDistribution.h"
 #include "ExponentialDistribution.h"
@@ -22,7 +23,7 @@ Vector Test(std::vector<real>& x, int T, int K);
 int main (int argc, char** argv)
 {
 
-    int number_of_samples = 10e2;
+    int number_of_samples = 10;
 
 #if 0
     int T = 100;
@@ -57,11 +58,11 @@ int main (int argc, char** argv)
     P_p.print(stdout);
 #else
     Matrix data;
-    ReadFloatDataASCII(data, "./weights_raw.dat");
+    ReadFloatDataASCII(data, "./weights_scaled.dat");
     int T = data.Rows();
     std::vector<real> x(T);    
     for (int t=0; t<T; ++t) {
-        x[t] = data(t, 0); // + 0.1*urandom(); // maybe add a bit of noise
+        x[t] = (0.001 +data(t, 0))*0.999; // + 0.1*urandom(); // maybe add a bit of noise
     }
     real S = Max(x);
     for (int t=0; t<T; ++t) {
@@ -72,8 +73,8 @@ int main (int argc, char** argv)
         if (t > T) {
             t = T;
         }
+        printf ("%d ", t);
         Vector posterior = Test(x, t, number_of_samples);
-        //printf ("%f\n", posterior);
         if (t >= T) {
             break;
         }
@@ -114,26 +115,30 @@ Vector Test(std::vector<real>& x, int T, int K)
     real log_exp_pdf = exponential_prior.LogLikelihood(x, K);
     
     Vector log_P (3);
-    log_P(1) = log_norm_pdf;
-    log_P(2) = log_exp_pdf;
-    log_P(3) = log_gamma_pdf;
+    log_P(0) = log_norm_pdf;
+    log_P(1) = log_exp_pdf;
+    log_P(2) = log_gamma_pdf;
     Vector log_prior (3);
     for (int i=0; i<3; ++i) {
-        log_prior(3) = log(1/3);
+        log_prior(i) = log(1.0/3.0);
     }
     Vector log_posterior = log_prior + log_P;
     log_posterior -= log_posterior.logSum();
     
     Vector posterior = exp(log_posterior);
-    posterior.print(stdout);
+    log_posterior.print(stdout);
 
     NormalDistribution ML_normal;
     GammaDistribution ML_gamma;
+    ExponentialDistribution ML_exp;
+    BetaDistribution ML_beta;
     
     real log_ML_norm = ML_normal.setMaximumLikelihoodParameters(z);
     real log_ML_gamma = ML_gamma.setMaximumLikelihoodParameters(x, K);
+    real log_ML_beta = ML_beta.setMaximumLikelihoodParameters(x, K);
+    real log_ML_exp = ML_exp.setMaximumLikelihoodParameters(x);
     
-    //printf("%f %f\n", log_ML_gamma, log_ML_norm);
+    printf("%f %f %f %f # ML\n", log_ML_norm, log_ML_exp, log_ML_gamma, log_ML_beta);
     return log_posterior;
 };
 

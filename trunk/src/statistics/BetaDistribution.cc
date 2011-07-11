@@ -1,6 +1,5 @@
 /* -*- Mode: C++; -*- */
-// VER: $Id: Distribution.c,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $
-// copyright (c) 2004 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2004-2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,6 +12,7 @@
 #include "ranlib.h"
 #include "BetaDistribution.h"
 #include "SpecialFunctions.h"
+#include "ExponentialDistribution.h"
 
 /// Calculate
 /// \f[
@@ -85,14 +85,14 @@ real BetaDistribution::getVariance()
 /// Generate using ranlib
 real BetaDistribution::generate() 
 {
-	assert(alpha > 0 && beta >= 0 || alpha >= 0 && beta > 0);
+	assert(alpha > 0 && (beta >= 0 || alpha >= 0) && beta > 0);
     return genbet(alpha, beta);
 }
 
 /// Generate using ranlib
 real BetaDistribution::generate() const
 {
-	assert(alpha > 0 && beta >= 0 || alpha >= 0 && beta > 0);
+	assert(alpha > 0 && (beta >= 0 || alpha >= 0) && beta > 0);
     return genbet(alpha, beta);
 }
 
@@ -104,4 +104,39 @@ real BetaDistribution::generateMarginal()
 	} else {
 		return 0.0;
 	}
+}
+
+real BetaDistribution::setMaximumLikelihoodParameters(const std::vector<real>& x,
+                                    int n_iterations)
+{
+    // First set up the mean and variance by the method of moments
+    real Z = 1.0f / (real) x.size();
+    real mean = Sum(x) * Z;
+
+    real d = 0;
+    for (uint i=0; i != x.size(); ++i) {
+        assert(x[i] >= 0.0f && x[i] <= 1.0f);
+        d += (x[i] - mean);
+    }
+    real variance = d * Z;
+    real S = mean * (1.0f - mean) / variance - 1.0f;
+    real max_alpha = 1;// mean * S;
+    real max_beta = 1;//(1.0f - mean) * S;
+    real max_log_likelihood = Distribution::log_pdf(x);
+    printf ("%f %f %f # alpha, beta, LL, moments\n", max_alpha, max_beta, max_log_likelihood);
+    ExponentialDistribution Exp;
+    for (int k=0; k<n_iterations; ++k) {
+        alpha = 1 + Exp.generate();
+        beta = 1 + Exp.generate();
+        real log_likelihood = Distribution::log_pdf(x);
+        if (log_likelihood > max_log_likelihood) {
+            max_alpha = alpha;
+            max_beta = beta;
+            max_log_likelihood = log_likelihood;
+            printf ("%f %f %f # alpha, beta\n", max_alpha, max_beta, max_log_likelihood);
+        }
+    }
+    alpha = max_alpha;
+    beta = max_beta;
+    return max_log_likelihood;
 }

@@ -29,7 +29,7 @@ public:
     ExponentialDistribution(real lambda)
     {
         l = lambda;
-		m = 0.0;
+		m = 1.0 / lambda;
     }
     ExponentialDistribution(real mean, real var)
     {
@@ -44,12 +44,12 @@ public:
     virtual void setVariance (real var)
     {l = sqrt(1.0f / var);}
     virtual void setMean (real mean)
-    {m = mean;}
+    {m = mean; l = 1.0f /mean;}
     virtual real getMean () const
     {
         return m;
     }
-    real setMaximumLikelihoodParameters(std::vector<real>& x);
+    real setMaximumLikelihoodParameters(const std::vector<real>& x);
 };
 
 
