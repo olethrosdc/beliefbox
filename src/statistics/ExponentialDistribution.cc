@@ -12,6 +12,7 @@
 #include "Distribution.h"
 #include "SpecialFunctions.h"
 
+#include <cmath>
 
 real ExponentialDistribution::generate() const
 {
@@ -21,9 +22,8 @@ real ExponentialDistribution::generate() const
 
 real ExponentialDistribution::pdf(real x) const
 {
-    real d = x - m;
-    if (d>0.0) {
-        return l * exp (-l*d);
+    if (x>=0.0) {
+        return l * exp (-l*x);
     }
     return 0.0;
 }
@@ -40,9 +40,8 @@ real ExponentialDistribution::log_pdf(const std::vector<real>& x) const
 
 real ExponentialDistribution::log_pdf(real x) const
 {
-    real d = x - m;
-    if (d>0.0) {
-        return log(l) - l*d;
+    if (x>=0.0) {
+        return log(l) - l*x;
     }
     return LOG_ZERO;
 }
@@ -52,6 +51,17 @@ real ExponentialDistribution::log_pdf(real x) const
 real ExponentialDistribution::setMaximumLikelihoodParameters(const std::vector<real>& x)
 {
     setMean(Sum(x)  / (real) x.size());
+	//printf ("Lambda set to : %f\n", l);
+	real LL = 0;
+	for (uint i=0; i != x.size(); ++i) {
+		real log_p = log_pdf(x[i]);
+		assert(!isnan(log_p));
+		//	assert(log_p > -1e6);
+		LL += log_p;
+		//printf("LL, p:  %f %f %f\n", LL, log_p, x[i]);
+	}
+	//printf("LL: %f\n", LL);
+	return LL;
 }
 
 // ----- gamma distribution conjugate prior for the exponential parameter ----- //
@@ -106,6 +116,7 @@ real GammaExponentialPrior::generate() const
 real GammaExponentialPrior::LogLikelihood(const std::vector<real>& x,
                                           int n_iterations) const
 {
+#if 0
     real log_likelihood = 0;
     for (int iter = 0; iter < n_iterations; ++iter) {
         real lambda = gamma_prior.generate();
@@ -113,7 +124,7 @@ real GammaExponentialPrior::LogLikelihood(const std::vector<real>& x,
         log_likelihood = logAdd(log_likelihood, exponential_sample.log_pdf(x));
     }
     log_likelihood -= log(n_iterations);
-
+#endif
     real alpha = gamma_prior.alpha;
     real beta = gamma_prior.beta;
 
@@ -121,6 +132,6 @@ real GammaExponentialPrior::LogLikelihood(const std::vector<real>& x,
     for (int i=0; i<(int) x.size(); ++i) {
         l2 += logGamma(alpha + 1) - logGamma(alpha) + alpha * log(beta) - (alpha + 1) * log(beta + x[i]);
     }
-    //printf ("%f %f\n", log_likelihood, l2);
-    return log_likelihood;
+    //printf ("%f %f #gamma log likelihood\n", log_likelihood, l2);
+    return l2;//log_likelihood;
 }
