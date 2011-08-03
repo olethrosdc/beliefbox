@@ -15,7 +15,11 @@
 #include "PolicyBelief.h"
 #include "DiscreteMDP.h"
 
-/** Prior on epsilon optimality of policies */
+/** Prior on epsilon optimality of policies.
+
+    The main idea is that, given a set of reward functions, you end up
+    with this.
+ */
 class RewardPolicyBelief
 {
 protected:
