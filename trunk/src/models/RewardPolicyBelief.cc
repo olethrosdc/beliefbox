@@ -21,7 +21,13 @@
 #include <vector>
 #include <set>
 
-/// Create from a fixed set of reward distributions
+/** Create model from a fixed set of reward distributions.
+
+    \param lambda_ The optimality prior parameter
+    \param gamma_ The discount factor
+    \param mdp_ The MDP on which the reward distribution is going to be used
+    \param rewards_ The vector of possible reward distributions
+ */
 RewardPolicyBelief::RewardPolicyBelief(real lambda_,
                                        real gamma_,
 									   const DiscreteMDP& mdp_,
@@ -42,7 +48,17 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
     setAccuracy(1e-1);
 }
 
-/// Enumerate all index reward functions
+/** Enumerate all index reward functions.
+
+    \param lambda_ The optimality prior parameter.
+    \param gamma_ The discount factor.
+    \param mdp_ The MDP on which the reward distribution is going to be used.
+
+    The number of reward functions made are equal to the number of
+    states in the given MDP, such that for each state there exists a
+    reward function where the rewards in that state are 1 and 0 in all
+    other states.
+*/
 RewardPolicyBelief::RewardPolicyBelief(real lambda_,
                                        real gamma_,
 									   const DiscreteMDP& mdp_)
@@ -68,7 +84,14 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
     P_rewards.Resize(rewards.size());
 }
 
-/// Sample a set of reward functions
+/** Sample a set of reward functions.
+
+    \param lambda_ The optimality prior parameter.
+    \param gamma_ The discount factor.
+    \param mdp_ The MDP on which the reward distribution is going to be used.
+    \param reward_prior_ The distribution from which to draw the rewards.
+    \param n_reward_samples The number of samples to draw from the prior.
+ */
 RewardPolicyBelief::RewardPolicyBelief(real lambda_,
                                        real gamma_,
 									   const DiscreteMDP& mdp_,

@@ -104,21 +104,26 @@ static const char* const environment_names_list = "{MountainCar, ContextBandit, 
 
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:   {QLearning, Model, Sarsa, Sampling}\n\
-    --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}\n\
-    --n_states:    number of states (usually there is no need to specify it)\n\
-    --n_actions:   number of actions (usually there is no need to specify it)\n\
-    --gamma:       reward discounting in [0,1]\n\
-    --lambda:      eligibility trace parameter (for some algorithms)\n\
-    --iterations:  number of iterations (for some algorithms)\n\
-    --randomness:  environment randomness\n\
-    --n_runs:      maximum number of runs\n\
-    --n_episodes:  maximum number of episodes (ignored if < 0)\n\
-    --episode_steps:     maximum number of steps in each episode (ignored if <0)\n\
-    --n_steps:     maximum number of total steps\n\
-    --grid_size:   number of grid intervals for discretised environments\n\
-    --maze_name:   (Gridworld) file name for the maze\n\
-    --epsilon:     use epsilon-greedy with randomness in [0,1]\n\
+  --algorithm:   {QLearning, Model, Sarsa, Sampling}\n\
+  --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}\n\
+  --n_states:    number of states (usually there is no need to specify it)\n\
+  --n_actions:   number of actions (usually there is no need to specify it)\n\
+  --gamma:       reward discounting in [0,1]\n\
+  --lambda:      eligibility trace parameter (for some algorithms)\n\
+  --iterations:  number of iterations (for some algorithms)\n\
+  --randomness:  environment randomness\n\
+  --n_runs:      maximum number of runs\n\
+  --n_episodes:  maximum number of episodes (ignored if < 0)\n\
+  --episode_steps:     maximum number of steps in each episode (ignored if <0)\n\
+  --n_steps:           maximum number of total steps\n\
+  --grid_size:         number of grid intervals for discretised environments\n\
+  --maze_name:         (Gridworld) file name for the maze\n\
+  --epsilon:           use epsilon-greedy with randomness in [0,1]\n\
+  --n_chains:          number of chains [>0]\n\
+  --n_chains_samples:  length of each chain [>0]\n\
+  --Metropolis:        use Metropolis MCMC sampler\n\
+  --MonteCarlo:        use plain MonteCarlo sampler\n\
+  --accuracy:          estimation accuracy\n\
 \n";
 
 
@@ -404,6 +409,7 @@ int main (int argc, char** argv)
                                           gamma,
                                           epsilon,
                                           model,
+                                          rng,
                                           max_samples);
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
@@ -589,7 +595,8 @@ int main (int argc, char** argv)
     }
     DV_var /= (real) n_runs;
     DV_var.printf(stdout); printf("# DV_VAR\n");
-    std::cout << "Done" << std::endl;
+    printf("# SMAX IMIT MWAL MWGR PRB RBP # LEGEND\n");
+    std::cout << "# Done" << std::endl;
 
 
     
