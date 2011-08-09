@@ -123,7 +123,7 @@ real BetaDistribution::setMaximumLikelihoodParameters(const std::vector<real>& x
     real max_alpha = 1;// mean * S;
     real max_beta = 1;//(1.0f - mean) * S;
     real max_log_likelihood = Distribution::log_pdf(x);
-    printf ("%f %f %f # alpha, beta, LL, moments\n", max_alpha, max_beta, max_log_likelihood);
+    //printf ("%f %f %f %d # alpha, beta, LL, iter\n", max_alpha, max_beta, max_log_likelihood, n_iterations);
     ExponentialDistribution Exp;
     for (int k=0; k<n_iterations; ++k) {
         alpha = 1 + Exp.generate();
@@ -133,7 +133,7 @@ real BetaDistribution::setMaximumLikelihoodParameters(const std::vector<real>& x
             max_alpha = alpha;
             max_beta = beta;
             max_log_likelihood = log_likelihood;
-            printf ("%f %f %f # alpha, beta\n", max_alpha, max_beta, max_log_likelihood);
+            //printf ("%f %f %f # alpha, beta\n", max_alpha, max_beta, max_log_likelihood);
         }
     }
     alpha = max_alpha;
