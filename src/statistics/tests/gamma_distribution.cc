@@ -23,9 +23,9 @@ Vector Test(std::vector<real>& x, int T, int K);
 int main (int argc, char** argv)
 {
 
-    int number_of_samples = 10;
+    int number_of_samples = 1000;
 
-#if 1
+#if 0
     int T = 1000;
 
 	std::vector<real> x(T);    
@@ -49,7 +49,7 @@ int main (int argc, char** argv)
 
 #else
     Matrix data;
-    ReadFloatDataASCII(data, "./weights_scaled.dat");
+    ReadFloatDataASCII(data, "./weights_raw.dat");
     int T = data.Rows();
     std::vector<real> x(T);    
     for (int t=0; t<T; ++t) {
@@ -64,7 +64,6 @@ int main (int argc, char** argv)
         if (t > T) {
             t = T;
         }
-        printf ("%d ", t);
         Vector posterior = Test(x, t, number_of_samples);
         if (t >= T) {
             break;
@@ -77,14 +76,26 @@ int main (int argc, char** argv)
     return 0;
 }
 
-Vector Test(std::vector<real>& x, int T, int K)
+Vector Test(std::vector<real>& x_orig, int T, int K)
 {
-
+    std::vector<real> x(T);
+    for (int t=0; t<T; ++t) {
+        x[t] = x_orig[t];
+    }
+    //printf ("Running test for T = %d\n", T);
+    //printf ("=======================\n\n");
     NormalUnknownMeanPrecision normal_prior;
     //real log_norm_pdf = 0;
     std::vector<real> z(T);
     for (int t=0; t<T; ++t) {
         z[t] = log(x[t]);
+    }
+    std::vector<real> y(T);
+    real min_x = Min(x);
+    real scale_x = 1.0 / (Max(x) - min_x);
+    for (int t=0; t<T; ++t) {
+        y[t] = scale_x * (x[t] - min_x);
+        //printf ("%f # Y\n", y[t]);
     }
     real log_norm_pdf = normal_prior.LogLikelihood(z, K);
 
@@ -116,9 +127,9 @@ Vector Test(std::vector<real>& x, int T, int K)
     
     real log_ML_norm = ML_normal.setMaximumLikelihoodParameters(z);
     real log_ML_gamma = ML_gamma.setMaximumLikelihoodParameters(x, K);
-    real log_ML_beta = ML_beta.setMaximumLikelihoodParameters(x, K);
+    real log_ML_beta = ML_beta.setMaximumLikelihoodParameters(y, K);
     real log_ML_exp = ML_exp.setMaximumLikelihoodParameters(x);
-    
+    printf("ML Beta: %f %f\n", ML_beta.alpha, ML_beta.beta);
     printf("%f %f %f %f # ML log-norm, exp, gamma, beta\n", log_ML_norm, log_ML_exp, log_ML_gamma, log_ML_beta);
     return log_posterior;
 };
