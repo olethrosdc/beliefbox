@@ -127,7 +127,7 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
     ExponentialDistribution ML_exp;
     BetaDistribution ML_beta;
     
-    real log_ML_norm = ML_normal.setMaximumLikelihoodParameters(z);
+    real log_ML_norm = ML_normal.setMaximumLikelihoodParametersLogNormal(z);
     real log_ML_gamma = ML_gamma.setMaximumLikelihoodParameters(x, K);
     real log_ML_beta = ML_beta.setMaximumLikelihoodParameters(y, K);
     real log_ML_exp = ML_exp.setMaximumLikelihoodParameters(x);
