@@ -25,7 +25,9 @@
 
 class DiscreteSpaceRewardDistribution;
 
-/** Prior on policy given reward belief */
+/** Prior on policy given reward belief.
+
+ */
 class PopulationPolicyRewardBelief
 {
 protected:

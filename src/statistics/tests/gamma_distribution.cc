@@ -49,7 +49,7 @@ int main (int argc, char** argv)
 
 #else
     Matrix data;
-    ReadFloatDataASCII(data, "./weights_scaled.dat");
+    ReadFloatDataASCII(data, "./weights_raw.dat");
     int T = data.Rows();
     std::vector<real> x(T);    
     for (int t=0; t<T; ++t) {
