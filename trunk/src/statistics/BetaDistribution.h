@@ -69,4 +69,18 @@ public:
 };
 
 
+
+/// Conjugate prior to gamma distribution with unknown shape and
+/// inverse scale
+class BetaDistributionMCPrior
+{
+public:
+    real kappa; ///< exponential parameter 1
+    int lambda; ///< exponential parameter 2
+    BetaDistributionMCPrior(real kappa_, real lambda_); ///< constructor
+    virtual ~BetaDistributionMCPrior(); ///< destructor
+    virtual real LogLikelihood(std::vector<real>& x, int K) const; 
+};
+
+
 #endif

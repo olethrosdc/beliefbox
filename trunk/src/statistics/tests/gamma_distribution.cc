@@ -23,8 +23,8 @@ Vector Test(std::vector<real>& x, int T, int K);
 int main (int argc, char** argv)
 {
 
-    int number_of_samples = 1000;
-
+    real scaling = atof(argv[1]);
+    int number_of_samples = atoi(argv[2]);
 #if 0
     int T = 1000;
 
@@ -49,17 +49,17 @@ int main (int argc, char** argv)
 
 #else
     Matrix data;
-    ReadFloatDataASCII(data, "./weights_raw.dat");
+    ReadFloatDataASCII(data, "./weights_scaled.dat");
     int T = data.Rows();
     std::vector<real> x(T);    
     for (int t=0; t<T; ++t) {
-        x[t] = (0.001 +data(t, 0))*0.999; // + 0.1*urandom(); // maybe add a bit of noise
+        x[t] = data(t, 0) * scaling; // + 0.1*urandom(); // maybe add a bit of noise
     }
-    real S = Max(x);
-    for (int t=0; t<T; ++t) {
-        x[t] /= S;
-    }
-    for (int k=1; k<T; ++k) {
+    //real S = Max(x);
+    //for (int t=0; t<T; ++t) {
+    //x[t] /= S;
+    //}
+    for (int k=T; k<=T; ++k) {
         int t = k * k;
         if (t > T) {
             t = T;
@@ -78,7 +78,7 @@ int main (int argc, char** argv)
 
 Vector Test(std::vector<real>& x_orig, int T, int K)
 {
-    std::vector<real> x(T);
+    std::vector<real> x(T); // x is the set of truncated data
     for (int t=0; t<T; ++t) {
         x[t] = x_orig[t];
     }
@@ -91,13 +91,10 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
         z[t] = log(x[t]);
     }
     std::vector<real> y(T);
-    real min_x = Min(x);
-    real scale_x = 1.0 / (Max(x) - min_x);
     for (int t=0; t<T; ++t) {
-        y[t] = scale_x * (x[t] - min_x);
-        //printf ("%f # Y\n", y[t]);
+        y[t] = x[t];
     }
-    real log_norm_pdf = normal_prior.LogLikelihood(z, K);
+    real log_norm_pdf = normal_prior.LogLikelihoodLogNormal(z, K);
 
     real a = 1;
     GammaDistributionUnknownShapeScale gamma_prior(a, a, a);
@@ -105,20 +102,25 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
 
     GammaExponentialPrior exponential_prior(a, a);
     real log_exp_pdf = exponential_prior.LogLikelihood(x, K);
+
+    BetaDistributionMCPrior beta_prior(a, a);
+    real log_beta_pdf = beta_prior.LogLikelihood(x, K);
     
-    Vector log_P (3);
+    int n_c = 4;
+    Vector log_P (n_c);
     log_P(0) = log_norm_pdf;
     log_P(1) = log_exp_pdf;
     log_P(2) = log_gamma_pdf;
-    Vector log_prior (3);
-    for (int i=0; i<3; ++i) {
-        log_prior(i) = log(1.0/3.0);
+    log_P(3) = log_beta_pdf;
+    Vector log_prior (n_c);
+    for (int i=0; i<n_c; ++i) {
+        log_prior(i) = log(1.0/(real) n_c);
     }
     Vector log_posterior = log_prior + log_P;
     log_posterior -= log_posterior.logSum();
     
     Vector posterior = exp(log_posterior);
-    //log_posterior.print(stdout);
+    log_posterior.print(stdout); printf("# Posterior (norm, exp, gamma, beta)\n");
 
     NormalDistribution ML_normal;
     GammaDistribution ML_gamma;
@@ -129,7 +131,10 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
     real log_ML_gamma = ML_gamma.setMaximumLikelihoodParameters(x, K);
     real log_ML_beta = ML_beta.setMaximumLikelihoodParameters(y, K);
     real log_ML_exp = ML_exp.setMaximumLikelihoodParameters(x);
-    printf("ML Beta: %f %f\n", ML_beta.alpha, ML_beta.beta);
+    printf("norm_ml_params = [%f %f];\n", ML_normal.m, ML_normal.s);
+    printf("gamma_ml_params = [%f %f];\n", ML_gamma.alpha, ML_gamma.beta);
+    printf("beta_ml_params=[%f %f];\n", ML_beta.alpha, ML_beta.beta);
+    printf("exp_ml_params=[%f];\n", ML_exp.l);
     printf("%f %f %f %f # ML log-norm, exp, gamma, beta\n", log_ML_norm, log_ML_exp, log_ML_gamma, log_ML_beta);
     return log_posterior;
 };

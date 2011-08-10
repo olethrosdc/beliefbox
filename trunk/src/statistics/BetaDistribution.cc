@@ -116,18 +116,26 @@ real BetaDistribution::setMaximumLikelihoodParameters(const std::vector<real>& x
     real d = 0;
     for (uint i=0; i != x.size(); ++i) {
         assert(x[i] >= 0.0f && x[i] <= 1.0f);
-        d += (x[i] - mean);
+        real delta = (x[i] - mean);
+        d += delta * delta;
     }
+#if 1
+    // use moments for initial estimate
     real variance = d * Z;
     real S = mean * (1.0f - mean) / variance - 1.0f;
-    real max_alpha = 1;// mean * S;
-    real max_beta = 1;//(1.0f - mean) * S;
+    real max_alpha = mean * S;
+    real max_beta = (1.0f - mean) * S;
+#else
+    // just set to default values
+    real max_alpha = 1;
+    real max_beta = 1;
+#endif
     real max_log_likelihood = Distribution::log_pdf(x);
     //printf ("%f %f %f %d # alpha, beta, LL, iter\n", max_alpha, max_beta, max_log_likelihood, n_iterations);
     ExponentialDistribution Exp;
     for (int k=0; k<n_iterations; ++k) {
-        alpha = 1 + Exp.generate();
-        beta = 1 + Exp.generate();
+        alpha = 1 + 10 * Exp.generate();
+        beta = 1 + 10 * Exp.generate();
         real log_likelihood = Distribution::log_pdf(x);
         if (log_likelihood > max_log_likelihood) {
             max_alpha = alpha;
@@ -139,4 +147,35 @@ real BetaDistribution::setMaximumLikelihoodParameters(const std::vector<real>& x
     alpha = max_alpha;
     beta = max_beta;
     return max_log_likelihood;
+}
+
+BetaDistributionMCPrior::BetaDistributionMCPrior(real kappa_, real lambda_)
+    : kappa(kappa_),
+      lambda(lambda_)
+{
+}
+
+BetaDistributionMCPrior::~BetaDistributionMCPrior()
+{
+}
+
+real BetaDistributionMCPrior::LogLikelihood(std::vector<real>& x, int K) const
+{
+    //real t = (real) T;
+    ExponentialDistribution ExpA(kappa);
+    ExponentialDistribution ExpB(lambda);
+    real log_likelihood = LOG_ZERO;
+    for (int k=0; k<K; ++k) {
+        real alpha = ExpA.generate();
+        real beta = ExpB.generate();
+        GammaDistribution beta_distribution_h(alpha, beta);
+        real log_p = 0.0;
+        int n = x.size();
+        for (int i=0; i<n; ++i) {
+            log_p += beta_distribution_h.log_pdf(x[i]);
+        }
+        log_likelihood = logAdd(log_likelihood, log_p);
+    }
+    log_likelihood -= log(K);
+    return log_likelihood;
 }

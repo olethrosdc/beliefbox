@@ -162,6 +162,7 @@ public:
     void Reset();
     virtual ~NormalUnknownMeanPrecision();
     virtual real LogLikelihood(const std::vector<real>& x, int K) const;
+    virtual real LogLikelihoodLogNormal(const std::vector<real>& x, int K) const;
     virtual real generate();
     virtual real generate() const;
     /// Note that this the marginal likelihood!
