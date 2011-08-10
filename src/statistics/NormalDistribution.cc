@@ -263,6 +263,28 @@ real NormalUnknownMeanPrecision::LogLikelihood(const std::vector<real>& x, int K
     return log_likelihood;
 }
 
+/** Get the log-likelihood of some observations for Log-Normal observations */
+real NormalUnknownMeanPrecision::LogLikelihoodLogNormal(const std::vector<real>& x, int K) const
+{
+    real log_likelihood = LOG_ZERO;
+    ExponentialDistribution accuracy_prior(1.0);
+    for (int k=0; k<K; ++k) {
+        real accuracy = accuracy_prior.generate();
+        real variance = 1.0 / accuracy;
+        NormalDistribution mean_prior(0.0, variance);
+        real mean = mean_prior.generate();
+        real log_p = 0.0;
+        int n = x.size();
+        NormalDistribution sample(mean, accuracy);
+        for (int i=0; i<n; ++i) {
+            log_p += sample.log_pdf(x[i]) - x[i];
+        }
+        log_likelihood = logAdd(log_likelihood, log_p);
+    }
+    log_likelihood -= log(K);
+    return log_likelihood;
+}
+
 
 void NormalUnknownMeanPrecision::Show() const
 {

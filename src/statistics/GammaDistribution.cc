@@ -128,7 +128,7 @@ real GammaDistributionUnknownShapeScale::pdf (real x) const
 
 real GammaDistributionUnknownShapeScale::LogLikelihood(std::vector<real>& x, int K) const
 {
-    real t = (real) T;
+    //real t = (real) T;
     ExponentialDistribution Exp(lambda);
     real log_likelihood = LOG_ZERO;
     for (int k=0; k<K; ++k) {
