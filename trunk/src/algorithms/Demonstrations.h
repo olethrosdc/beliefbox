@@ -28,6 +28,10 @@ public:
         trajectories.push_back(Trajectory<S, A>());
         current_trajectory = &trajectories[trajectories.size() - 1];
     }
+    int size() const
+    {
+        return trajectories.size();
+    }
 };
 
 #endif
