@@ -9,6 +9,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#if 1
 #include "PopulationPolicyRewardBelief.h"
 #include "ExponentialDistribution.h"
 
@@ -86,12 +87,13 @@ void PopulationPolicyRewardBelief::MonteCarloSampler(Demonstrations<int, int>&D,
     
     logmsg (" Running multi-task Monte Carlo sampler with %d iterations\n", n_iterations);
     ExponentialDistribution softmax_hyperprior(eta);
+    ExponentialDistribution reward_hyperprior(1.0);
     for (int iter=0; iter<n_iterations; ++iter) {
         real lambda = softmax_hyperprior.generate();
         ExponentialDistribution softmax_prior(lambda);
         Vector reward_prior_parameters (n_states * n_actions);
         for (int i=0; i<reward_prior_parameters.Size(); ++i) {
-            reward_prior_parameters(i) = local_prior.generate();
+            reward_prior_parameters(i) = reward_hyperprior.generate();
         }
         DirichletRewardBelief reward_prior(n_states, n_actions, reward_prior_parameters);
 
@@ -103,34 +105,46 @@ void PopulationPolicyRewardBelief::MonteCarloSampler(Demonstrations<int, int>&D,
             policies[iter].push_back(policy);
             betas[iter].push_back(beta);
             real new_log_likelihood = logLikelihood(D, policy);
-            log_sample_weighs.push_back(new_log_likelihood); // log(p_m)
-            sample_weights.push_back(exp(new_log_likelihood)); // p_m
-            n_samples++;
+            log_P(iter, d) = new_log_likelihood; // log (p_m^k)
         }
     }
+
+    for (int iter=0; iter<n_iterations; ++iter) {
+        log_q(iter) = 0;
+        for (int d=0; d<n_demonstrations; ++d) {
+            log_q(iter) += log_P(iter, d);
+        }
+    }
+    log_q -= log_q.logSum();
 }
 
 
 std::vector<FixedDiscretePolicy*> PopulationPolicyRewardBelief::getPolicy() 
 {
-    int n_samples = betas.size();
-    real sum = 0.0;
-    Matrix R(n_states, n_actions);
-    assert(n_samples == rewards.size());
-    assert(n_samples == sample_counts.size());
-    for (int i=0; i<n_samples; ++i) {
-        R += rewards[i] * sample_counts[i];
-        sum += sample_counts[i];
-    }
-    R = R / sum;
-    
-    for (int s=0; s<n_states; ++s) {
-        for (int a=0; a<n_actions; ++a) {
-            mdp.setFixedReward(s, a, R(s,a)); 
+    int n_iterations = log_P.Rows();
+    int n_demonstrations = log_P.Columns();
+
+    std::vector<FixedDiscretePolicy*> policy_vector;
+
+    for (int d=0; d<n_demonstrations; ++d) {
+        // store the average reward in this matrix
+        Matrix R(n_states, n_actions);
+        for (int i=0; i<n_iterations; ++i) {
+            R += rewards[i][d] * exp(log_q(i));
         }
+        // solve mean MDP
+        for (int s=0; s<n_states; ++s) {
+            for (int a=0; a<n_actions; ++a) {
+                mdp.setFixedReward(s, a, R(s,a)); 
+            }
+        }
+        // find optimal policy for mean MDP
+        value_iteration.ComputeStateActionValues(epsilon, (int) ceil(log(epsilon * (1 - gamma)) / log(gamma)));
+        // save policy
+        policy_vector.push_back(value_iteration.getPolicy());
     }
-    value_iteration.ComputeStateActionValues(epsilon, (int) ceil(log(epsilon * (1 - gamma)) / log(gamma)));
-    return value_iteration.getPolicy();
 
 
 }
+
+#endif
