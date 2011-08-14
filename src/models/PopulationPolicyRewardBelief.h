@@ -9,6 +9,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#if 1
 #ifndef POPULATION_POLICY_REWARD_BELIEF_H
 #define POPULATION_POLICY_REWARD_BELIEF_H
 
@@ -21,7 +22,6 @@
 #include "ValueIteration.h"
 
 #include <vector>
-
 
 class DiscreteSpaceRewardDistribution;
 
@@ -49,7 +49,7 @@ protected:
     std::vector<std::vector<FixedDiscretePolicy> > policies; ///< storage for sampled policies from the belief
     std::vector<std::vector<real> > betas; ///< values of beta sampled
     Matrix log_P; ///< log-weight of each sample-demonstration pair
-    Vecor log_q; ///<  log-weight of each sample
+    Vector log_q; ///<  log-weight of each sample
 
 public:
     PopulationPolicyRewardBelief(real eta_,
@@ -68,7 +68,7 @@ public:
     }
 
     virtual FixedDiscretePolicy samplePolicy(Matrix& R, real beta);
-    virtual FixedDiscretePolicy* getPolicy();
+    virtual std::vector<FixedDiscretePolicy*> getPolicy();
     /// Set accuracy
     void setAccuracy(real epsilon_)
     {
@@ -82,5 +82,6 @@ public:
 };
 
 
+#endif
 
 #endif

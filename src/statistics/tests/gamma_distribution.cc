@@ -17,6 +17,7 @@
 #include "NormalDistribution.h"
 #include "ExponentialDistribution.h"
 #include "ReadFile.h"
+#include "ContextTreeKDTree.h"
 
 Vector Test(std::vector<real>& x, int T, int K);
 
@@ -86,11 +87,11 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
     //printf ("=======================\n\n");
     NormalUnknownMeanPrecision normal_prior;
     //real log_norm_pdf = 0;
-    std::vector<real> z(T);
+    std::vector<real> z(T); // x is the set of logarithmic data
     for (int t=0; t<T; ++t) {
         z[t] = log(x[t]);
     }
-    std::vector<real> y(T);
+    std::vector<real> y(T); // y is the same as x (!)
     for (int t=0; t<T; ++t) {
         y[t] = x[t];
     }
@@ -106,21 +107,45 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
     BetaDistributionMCPrior beta_prior(a, a);
     real log_beta_pdf = beta_prior.LogLikelihood(x, K);
     
-    int n_c = 4;
+    Vector lower_bound(1);
+    Vector upper_bound(1);
+    lower_bound(0) = 0.0;
+    upper_bound(0) = 0.02;
+    ContextTreeKDTree kd_tree (2, 128, lower_bound, upper_bound);
+    real log_kd_tree = 0;
+    for (int t=0; t<T; ++t) {
+        Vector v(1);
+        v(0) = x[t];
+        real log_p = log(kd_tree.Observe(v));
+        if (log_p < -40) {
+            log_p = -40;
+        }
+        log_kd_tree += log_p;
+        printf ("%f %f\n", x[t], log_p);
+    }
+    for (real X = lower_bound(0); X<=upper_bound(0); X+= 0.00001) {
+        Vector v(1);
+        v(0) = X;
+        real px = kd_tree.pdf(v);
+        printf ("%f %f # PDF\n", X, px);
+    }
+    int n_c = 5;
     Vector log_P (n_c);
     log_P(0) = log_norm_pdf;
     log_P(1) = log_exp_pdf;
     log_P(2) = log_gamma_pdf;
     log_P(3) = log_beta_pdf;
+    log_P(4) = log_kd_tree;
     Vector log_prior (n_c);
     for (int i=0; i<n_c; ++i) {
         log_prior(i) = log(1.0/(real) n_c);
+        
     }
     Vector log_posterior = log_prior + log_P;
     log_posterior -= log_posterior.logSum();
     
     Vector posterior = exp(log_posterior);
-    log_posterior.print(stdout); printf("# Posterior (norm, exp, gamma, beta)\n");
+    log_posterior.print(stdout); printf("# Posterior (norm, exp, gamma, beta, tree)\n");
 
     NormalDistribution ML_normal;
     GammaDistribution ML_gamma;
