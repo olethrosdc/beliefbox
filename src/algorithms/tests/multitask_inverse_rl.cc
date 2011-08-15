@@ -141,11 +141,11 @@ int main (int argc, char** argv)
     real step_value = -0.01;
     real epsilon = 0.01;
     uint n_runs = 1000;
-    uint n_demonstrations = 1000;
     uint n_steps = 100000;
     uint episode_steps = 1000;
     uint grid_size = 4;
     uint maze_width = 4;
+    real transition_randomness = 0.01;
     uint n_tasks = 4;
     uint n_demonstrations = 100;
 	Sampler sampler = {INVALID, 10000, 10};
@@ -319,7 +319,7 @@ int main (int argc, char** argv)
         std::vector<DiscreteEnvironment*> environments(n_demonstrations);
         
         // sample the number of necessary environments
-        for (int i=0; i<n_tasks; ++i) {
+        for (uint i=0; i<n_tasks; ++i) {
             DiscreteEnvironment* environment = NULL;
             if (!strcmp(environment_name, "RandomMDP")) { 
                 environment = new RandomMDP (n_actions,
@@ -341,9 +341,9 @@ int main (int argc, char** argv)
                 continuous_mountain_car.setRandomness(randomness);
                 environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,  grid_size);
             } else if (!strcmp(environment_name, "Chain")) { 
-                environment = new DiscreteChain (n_states);
+                environment = new DiscreteChain (n_states, 0.2, 0.2, 1.0 * (1.0 - randomness) + urandom()*randomness);
             } else if (!strcmp(environment_name, "Optimistic")) { 
-                environment = new OptimisticTask (urandom() * task_randomness, 0.001);
+                environment = new OptimisticTask (0.1 * (1.0 - randomness) + urandom() * randomness, 0.01 * (1.0 - randomness) + urandom() * randomness);
             } else {
                 fprintf(stderr, "Uknown environment %s\n", environment_name);
             }
@@ -357,7 +357,7 @@ int main (int argc, char** argv)
             if (demonstration < n_tasks) {
                 environments[demonstration] = tasks[demonstration];
             } else {
-                int i = rng.discrete_uniform(n_tasks);
+                int i = rng->discrete_uniform(n_tasks);
                 environments[demonstration] = tasks[i];
             }
         }
