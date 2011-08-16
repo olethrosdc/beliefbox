@@ -8,7 +8,6 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
 #ifdef MAKE_MAIN
 #include "PolicyEvaluation.h"
 #include "PolicyIteration.h"
@@ -90,11 +89,12 @@ struct Sampler
 };
 
 
+
 Statistics EvaluateAlgorithm (int episode_steps,
 							  int n_demonstrations,
 							  uint n_steps,
                               OnlineAlgorithm<int,int>* algorithm,
-                              std::vector<DiscreteEnvironment*> &environments,
+                              DiscreteEnvironment* environment,
                               real gamma, // discount parameter
                               int iterations, // algorithm iterations
 							  Sampler sampler, // sampler to use
@@ -127,8 +127,9 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
 \n";
 
 
-int main (int argc, char** argv)
+int main (int argc, char** argv){{
 {
+
     int n_actions = 4;
     int n_states = 4;
     real gamma = 0.9;
@@ -152,12 +153,13 @@ int main (int argc, char** argv)
 	real accuracy = 1e-3;
     const char * algorithm_name = "QLearning";
     const char * environment_name = NULL;
-
-
     int max_samples = 4;
     char* maze_name = NULL;
+
+
+
+    // options
     {
-        // options
         int c;
         int digit_optind = 0;
         while (1) {
@@ -275,6 +277,7 @@ int main (int argc, char** argv)
     setRandomSeed(34987235);
 
 
+
     
     RandomNumberGenerator* rng;
     
@@ -294,10 +297,12 @@ int main (int argc, char** argv)
     }
 
     std::cout << "Starting test program" << std::endl;
-
     std::cout << "Starting evaluation" << std::endl;
 
-    // remember to use n_runs
+    // }}} end load options
+
+
+    // {{{ Set up statistics
     Statistics statistics;
     statistics.ep_stats.resize(n_demonstrations);
     statistics.reward.resize(n_steps);
@@ -310,6 +315,8 @@ int main (int argc, char** argv)
     statistics.DV.Clear();
     statistics.DV_total.Resize(n_runs, N_COMPARISONS);
     statistics.DV_total.Clear();
+    // }}} end statistics set up
+
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
 
@@ -370,9 +377,15 @@ int main (int argc, char** argv)
         }
 
 
+        // {{{ Create data for demonstrations
         for (uint demonstration = 0; 
              demonstration<n_demonstrations;
              ++demonstration) {
+            std::cout << "Creating data for demonstration " 
+                      << demonstration 
+                      << std::endl;
+
+        
             DiscreteEnvironment* environment = environments[demonstration];
             //std::cout << "Creating exploration policy" << std::endl;
             VFExplorationPolicy* exploration_policy = NULL;
@@ -382,11 +395,10 @@ int main (int argc, char** argv)
             //std::cout << "Creating online algorithm" << std::endl;
             OnlineAlgorithm<int, int>* algorithm = NULL;
             MDPModel* model = NULL;
-            //Gridworld* g2 = gridworld;
+
             if (!strcmp(algorithm_name, "Oracle")) {
                 algorithm = NULL;
-            }
-            if (!strcmp(algorithm_name, "Sarsa")) { 
+            } else if (!strcmp(algorithm_name, "Sarsa")) { 
                 algorithm = new Sarsa(n_states,
                                       n_actions,
                                       gamma,
@@ -426,21 +438,15 @@ int main (int argc, char** argv)
 
         
             //std::cerr << "run : " << run << std::endl;
-            Statistics demonstration_statistics
-                = EvaluateAlgorithm(episode_steps,
-                                    n_demonstrations,
-                                    n_steps,
-                                    algorithm,
-                                    environment,
-                                    gamma,
-                                    iterations,
-                                    sampler,
-                                   baccuracy);
-            
-            delete algorithm;
-            delete exploration_policy;
-        } // for demonstrations
+            Demonstrations<int, int> demonstrations;
 
+            AddDemonstration(episode_steps,
+                             demonstrations,
+                             algorithm,
+                             environment,
+                             gamma}
+        } // for demonstrations
+        // }}} demo data
         
         for (uint i=0; i<n_tasks; ++i) {
             delete tasks[i];
@@ -461,7 +467,7 @@ int main (int argc, char** argv)
                                   int n_demonstrations,
                                   uint n_steps,
                                   OnlineAlgorithm<int, int>* algorithm,
-                                  std::vector<DiscreteEnvironment*>& environments,
+                                  DiscreteEnvironment* environment,
                                   real gamma,
                                   int iterations,
                                   Sampler sampler,
