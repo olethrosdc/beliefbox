@@ -88,7 +88,79 @@ struct Sampler
 	int n_chain_samples;
 };
 
+void AddDemonstration(int episode_steps,
+                      Demonstrations<int, int>& demonstrations,
+                      real epsilon,
+                      DiscreteEnvironment* environment,
+                      real gamma)
+{
+    const DiscreteMDP* mdp = environment->getMDP(); 
+    if (!mdp) {
+        Serror("The environment must support the creation of an MDP\n");
+        exit(-1);
+    }
 
+    ValueIteration value_iteration(mdp, gamma);
+    value_iteration.ComputeStateValues(accuracy);
+    FixedSoftmaxPolicy softmax_policy(value_iteration.Q, 1.0);
+
+    std:: cout << "(value iteration)" << std::endl;
+    Statistics statistics;
+    statistics.ep_stats.reserve(n_demonstrations); 
+    statistics.reward.reserve(n_steps);
+    
+    real discount = 1.0;
+    int current_time = 0;
+    environment->Reset();
+    
+    std:: cout << "(running)" << std::endl;
+    int episode = -1;
+    bool action_ok = false;
+    
+    for (uint step = 0; step < n_steps; ++step) {
+        if (!action_ok) {
+            if (episode > 0) {
+                demonstrations.NewEpisode();
+            }
+            episode++;
+            if (n_demonstrations >= 0 && episode >= n_demonstrations) {
+                //fprintf (stderr, "Breaking after %d episodes,  %d steps\n",
+                //episode, step);
+                break;
+            } else {
+                statistics.ep_stats.resize(episode + 1);
+                statistics.ep_stats[episode].total_reward = 0.0;
+                statistics.ep_stats[episode].discounted_reward = 0.0;
+                statistics.ep_stats[episode].steps = 0;
+                discount = 1.0;
+                environment->Reset();
+                if (algorithm) {
+                    algorithm->Reset();
+                }
+                action_ok = true;
+                current_time = 0;
+            }
+        }
+		
+        int state = environment->getState();
+        real reward = environment->getReward();
+        
+        statistics.reward.resize(step + 1);
+        statistics.reward[step] = reward;
+        statistics.ep_stats[episode].steps++;
+        statistics.ep_stats[episode].total_reward += reward;
+        statistics.ep_stats[episode].discounted_reward += discount * reward;
+        discount *= gamma;
+        
+        int action = softmax_policy.SelectAction();
+
+        //std::cout << "t:" << current_time << " s:" << state << " r:" << reward << " a:" << action << std::endl;
+        action_ok = environment->Act(action);
+        current_time++;
+        demonstrations.Observe(state, action);
+    }
+    delete mdp;
+}
 
 Statistics EvaluateAlgorithm (int episode_steps,
 							  int n_demonstrations,
@@ -103,7 +175,6 @@ static const char* const environment_names_list = "{MountainCar, ContextBandit, 
 
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-  --algorithm:   {QLearning, Model, Sarsa, Sampling}\n\
   --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}\n\
   --n_states:          number of states (usually there is no need to specify it)\n\
   --n_actions:         number of actions (usually there is no need to specify it)\n\
@@ -151,7 +222,6 @@ int main (int argc, char** argv){{
     uint n_demonstrations = 100;
 	Sampler sampler = {INVALID, 10000, 10};
 	real accuracy = 1e-3;
-    const char * algorithm_name = "QLearning";
     const char * environment_name = NULL;
     int max_samples = 4;
     char* maze_name = NULL;
@@ -317,14 +387,16 @@ int main (int argc, char** argv){{
     statistics.DV_total.Clear();
     // }}} end statistics set up
 
+
+    Demonstrations<int, int> demonstrations;
+
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
-
 
         Gridworld* gridworld = NULL;
         std::vector<DiscreteEnvironment*> tasks(n_tasks);
         std::vector<DiscreteEnvironment*> environments(n_demonstrations);
-        
+
         // sample the number of necessary environments
         for (uint i=0; i<n_tasks; ++i) {
             DiscreteEnvironment* environment = NULL;
@@ -391,60 +463,11 @@ int main (int argc, char** argv){{
             VFExplorationPolicy* exploration_policy = NULL;
             exploration_policy = new EpsilonGreedy(n_actions, epsilon);
             
-            
-            //std::cout << "Creating online algorithm" << std::endl;
-            OnlineAlgorithm<int, int>* algorithm = NULL;
-            MDPModel* model = NULL;
-
-            if (!strcmp(algorithm_name, "Oracle")) {
-                algorithm = NULL;
-            } else if (!strcmp(algorithm_name, "Sarsa")) { 
-                algorithm = new Sarsa(n_states,
-                                      n_actions,
-                                      gamma,
-                                      lambda,
-                                      alpha,
-                                      exploration_policy);
-            } else if (!strcmp(algorithm_name, "QLearning")) { 
-                algorithm = new QLearning(n_states,
-                                          n_actions,
-                                          gamma,
-                                          lambda,
-                                          alpha,
-                                          exploration_policy,
-                                          1.0);
-            } else if (!strcmp(algorithm_name, "Model")) {
-                discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states);
-                model= (MDPModel*) discrete_mdp;
-                algorithm = new ModelBasedRL(n_states,
-                                             n_actions,
-                                             gamma,
-                                             epsilon,
-                                             model,
-                                             rng);
-            } else if (!strcmp(algorithm_name, "Sampling")) {
-                discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states);
-                model= (MDPModel*) discrete_mdp;
-                algorithm = new SampleBasedRL(n_states,
-                                              n_actions,
-                                              gamma,
-                                              epsilon,
-                                              model,
-                                              rng,
-                                              max_samples);
-            } else {
-                Serror("Unknown algorithm: %s\n", algorithm_name);
-            }
-
-        
-            //std::cerr << "run : " << run << std::endl;
-            Demonstrations<int, int> demonstrations;
-
             AddDemonstration(episode_steps,
                              demonstrations,
-                             algorithm,
+                             epsilon,
                              environment,
-                             gamma}
+                             gamma);
         } // for demonstrations
         // }}} demo data
         
