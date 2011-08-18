@@ -68,7 +68,7 @@ public:
     }
 
     virtual FixedDiscretePolicy samplePolicy(Matrix& R, real beta);
-    virtual std::vector<FixedDiscretePolicy*> getPolicy();
+    virtual std::vector<FixedDiscretePolicy*> getPolicies();
     /// Set accuracy
     void setAccuracy(real epsilon_)
     {
