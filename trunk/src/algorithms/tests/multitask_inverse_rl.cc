@@ -532,18 +532,20 @@ Statistics EvaluateAlgorithm (Demonstrations<int, int>& demonstrations,
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", mwal_evaluator.getValue(i));
         }
-        
+        printf ("# MWAL\n");
         PolicyEvaluation imitating_evaluator(&imitating_policy, mdp, gamma);
         imitating_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", imitating_evaluator.getValue(i));
         }   
 
+        printf ("# IMIT \n");
         PolicyEvaluation prb_evaluator(prb_policy, mdp, gamma);
         prb_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", prb_evaluator.getValue(i));
         }
+        printf ("# PRB \n");
     }
 
 
