@@ -99,7 +99,7 @@ void PopulationPolicyRewardBelief::MonteCarloSampler(Demonstrations<int, int>&D,
 
         for (int d=0; d<n_demonstrations; ++d) {
             Matrix reward = reward_prior.sampleMatrix(); 
-            real beta = softmax_prior.generate();
+            real beta = 1.0 / softmax_prior.generate();
             FixedDiscretePolicy policy = samplePolicy(reward, beta);
             rewards[iter].push_back(reward);
             policies[iter].push_back(policy);
@@ -119,7 +119,8 @@ void PopulationPolicyRewardBelief::MonteCarloSampler(Demonstrations<int, int>&D,
 }
 
 
-std::vector<FixedDiscretePolicy*> PopulationPolicyRewardBelief::getPolicy() 
+/// Get all the policies for the PPRB
+std::vector<FixedDiscretePolicy*> PopulationPolicyRewardBelief::getPolicies() 
 {
     int n_iterations = log_P.Rows();
     int n_demonstrations = log_P.Columns();
@@ -145,6 +146,7 @@ std::vector<FixedDiscretePolicy*> PopulationPolicyRewardBelief::getPolicy()
     }
 
 
+    return policy_vector;
 }
 
 #endif
