@@ -21,8 +21,8 @@ MYINCS = -I$(INCS_EXPORT)
 
 ## Use DBG to compile a debug version.
 
-DBG_OPT=DBG
-#DBG_OPT=OPT
+#DBG_OPT=DBG
+DBG_OPT=OPT
 
 # Add -pg flag for profiling
 CFLAGS_DBG = -fPIC -g -Wall -DUSE_DOUBLE -pipe

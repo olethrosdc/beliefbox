@@ -85,7 +85,7 @@ void PopulationPolicyRewardBelief::MonteCarloSampler(Demonstrations<int, int>&D,
     log_P.Resize(n_iterations, n_demonstrations);
     log_q.Resize(n_iterations);
     
-    logmsg (" Running multi-task Monte Carlo sampler with %d iterations\n", n_iterations);
+    logmsg ("PPRB: Running multi-task Monte Carlo sampler with %d iterations\n", n_iterations);
     ExponentialDistribution softmax_hyperprior(eta);
     ExponentialDistribution reward_hyperprior(1.0);
     for (int iter=0; iter<n_iterations; ++iter) {

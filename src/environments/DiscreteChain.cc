@@ -5,7 +5,7 @@ DiscreteChain::DiscreteChain(int n, real slip_, real start_, real end_)
 	  start(start_),
 	  end(end_)
 {
-    
+    logmsg ("Dscrete chain, slip: %f, r_s: %f, r_e: %f\n", slip, start, end);
 }
     
 DiscreteChain::~DiscreteChain()

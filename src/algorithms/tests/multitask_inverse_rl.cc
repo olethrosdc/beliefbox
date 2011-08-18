@@ -64,7 +64,7 @@ struct EpisodeStatistics
     }
 };
 
-#define N_COMPARISONS 6
+#define N_COMPARISONS 4
 
 struct Statistics
 {
@@ -115,11 +115,11 @@ Vector AddDemonstration(uint n_steps,
     value_iteration.ComputeStateValues(accuracy);
     FixedSoftmaxPolicy softmax_policy(value_iteration.Q, epsilon);
 
-    std:: cout << "(value iteration)" << std::endl;
+    //std:: cout << "(value iteration)" << std::endl;
     
     environment->Reset();
     
-    std:: cout << "(running)" << std::endl;
+    //std:: cout << "(running)" << std::endl;
     bool action_ok = true;
 
     for (uint step = 0; step < n_steps; ++step) {
@@ -193,7 +193,7 @@ int main (int argc, char** argv) {
     real transition_randomness = 0.01;
     uint n_tasks = 4;
     uint n_demonstrations = 100;
-    Sampler sampler = {INVALID, 10000, 10};
+    Sampler sampler = {INVALID, 2, 10000};
     real accuracy = 1e-3;
     const char * environment_name = NULL;
     int max_samples = 4;
@@ -272,6 +272,7 @@ int main (int argc, char** argv) {
                 case 20: sampler.type=METROPOLIS; break;
                 case 21: sampler.type=MONTE_CARLO; break;
                 case 22: accuracy = atof(optarg); assert(accuracy > 0); break;
+                case 23: n_tasks = atoi(optarg); assert(n_tasks > 0); break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -390,7 +391,10 @@ int main (int argc, char** argv) {
                 continuous_mountain_car.setRandomness(randomness);
                 environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,  grid_size);
             } else if (!strcmp(environment_name, "Chain")) { 
-                environment = new DiscreteChain (n_states, 0.2, 0.2, 1.0 * (1.0 - randomness) + urandom()*randomness);
+                environment  = new DiscreteChain (n_states,
+                                                  0.2,
+                                                  0.2 * (1.0 - randomness) + urandom()*randomness,
+                                                  1.0 * (1.0 - randomness) + urandom()*randomness);
             } else if (!strcmp(environment_name, "Optimistic")) { 
                 environment = new OptimisticTask (0.1 * (1.0 - randomness) + urandom() * randomness, 0.01 * (1.0 - randomness) + urandom() * randomness);
             } else {
@@ -401,8 +405,8 @@ int main (int argc, char** argv) {
             n_states = environment->getNStates();
             n_actions = environment->getNActions();
             
-            std::cout <<  "Creating environment: " << environment_name
-                      << " with " << n_states << "states, "
+            std::cout <<  "# Creating environment: " << environment_name
+                      << " with " << n_states << " states, "
                       << n_actions << " actions.\n";
         }
 
@@ -420,15 +424,17 @@ int main (int argc, char** argv) {
         
         
         // {{{ Create data for demonstrations
+        std::vector<Vector> demonstrator_value;
+        logmsg("Creating data for demonstrations.\n");
         for (uint d = 0; d  < n_demonstrations; ++d) {
-            std::cout << "Creating data for demonstration " 
-                      << d << std::endl;
             DiscreteEnvironment* environment = environments[d];
             Vector V = AddDemonstration(episode_steps,
                                         demonstrations,
                                         epsilon,
                                         environment,
                                         gamma);
+            demonstrator_value.push_back(V);
+            //V.print(stdout);
         } // for d
         // }}} demo data
 
@@ -502,18 +508,18 @@ Statistics EvaluateAlgorithm (Demonstrations<int, int>& demonstrations,
     delete computation_mdp;
     
     // ----- PRB: Policy | Reward Belief ------ //
-    PolicyRewardBelief prb(1.0, gamma, *base_mdp);
+    PolicyRewardBelief sprb(1.0, gamma, *base_mdp);
     if (sampler.type == METROPOLIS) {
         logmsg("Metropolis sampler: %d %d\n", sampler.n_chain_samples, sampler.n_chains);
-        prb.MHSampler(demonstrations,
+        sprb.MHSampler(demonstrations,
                       sampler.n_chain_samples,
                       sampler.n_chains);
     } else if (sampler.type == MONTE_CARLO) {
         logmsg("Monte Carlo sampler: %d %d\n", sampler.n_chain_samples, sampler.n_chains);
-        prb.MonteCarloSampler(demonstrations, sampler.n_chain_samples);
+        sprb.MonteCarloSampler(demonstrations, sampler.n_chain_samples);
     } 
     
-    DiscretePolicy* prb_policy = prb.getPolicy();
+    DiscretePolicy* sprb_policy = sprb.getPolicy();
     
     // -------- imitator -------- //
     FixedDiscretePolicy imitating_policy(n_states, n_actions,
@@ -521,54 +527,76 @@ Statistics EvaluateAlgorithm (Demonstrations<int, int>& demonstrations,
 
 
     printf ("# V_IMIT\n");
-    
+
+    statistics.DV.Resize(N_COMPARISONS);
+    for (int i=0; i<N_COMPARISONS; ++i) {
+        statistics.DV(i) = 0;
+    }
     for (int d = 0; d<n_demonstrations; ++ d) {
         DiscreteEnvironment* environment = environments[d];
-        std:: cout << "evaluating..." << environment->Name() << std::endl;
+        std:: cout << "# evaluating..." << environment->Name() << std::endl;
         const DiscreteMDP* mdp = environment->getMDP(); 
+        ValueIteration value_iteration(mdp, gamma);
+        value_iteration.ComputeStateValues(accuracy);        
+        Vector& V_opt = value_iteration.V;
+        for (int i=0; i<n_states; ++i) {
+            printf ("%f ", V_opt(i));
+        }
+        printf (" # OPT\n");
+        
+        // -- IMIT -- //
+        PolicyEvaluation imitating_evaluator(&imitating_policy, mdp, gamma);
+        imitating_evaluator.ComputeStateValues(accuracy);
+        for (int i=0; i<n_states; ++i) {
+            printf ("%f ", imitating_evaluator.getValue(i));
+        }   
+        printf ("# IMIT \n");
 
+        // -- MWAL -- //
         PolicyEvaluation mwal_evaluator(&mwal.mean_policy, mdp, gamma);
         mwal_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", mwal_evaluator.getValue(i));
         }
         printf ("# MWAL\n");
-        PolicyEvaluation imitating_evaluator(&imitating_policy, mdp, gamma);
-        imitating_evaluator.ComputeStateValues(accuracy);
-        for (int i=0; i<n_states; ++i) {
-            printf ("%f ", imitating_evaluator.getValue(i));
-        }   
 
-        printf ("# IMIT \n");
-        PolicyEvaluation prb_evaluator(prb_policy, mdp, gamma);
-        prb_evaluator.ComputeStateValues(accuracy);
+
+
+        // -- SPRB -- //
+        PolicyEvaluation sprb_evaluator(sprb_policy, mdp, gamma);
+        sprb_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
-            printf ("%f ", prb_evaluator.getValue(i));
+            printf ("%f ", sprb_evaluator.getValue(i));
         }
-        printf ("# PRB \n");
+        printf ("# SPRB \n");
+
+        // -- PPRB -- //
+        Vector V_PPRB(n_states);
+        PolicyEvaluation pprb_evaluator(pprb_policies[d],mdp, gamma);
+        pprb_evaluator.ComputeStateValues(accuracy);
+        for (int i=0; i<n_states; ++i) {
+            printf ("%f ", pprb_evaluator.getValue(i));
+        }
+        printf ("# PPRB \n");
+        delete mdp;
+        
+        statistics.DV(0) += (V_opt - imitating_evaluator.V).L1Norm();
+        statistics.DV(1) += (V_opt - mwal_evaluator.V).L1Norm();
+        statistics.DV(2) += (V_opt - sprb_evaluator.V).L1Norm();
+        statistics.DV(3) += (V_opt - pprb_evaluator.V).L1Norm();
     }
+    statistics.DV /= (real) n_demonstrations;
 
-
-
-
-    statistics.DV.Resize(N_COMPARISONS);
-    // statistics.DV(0) = (VI.V - smax_evaluator.V).L1Norm();
-    // statistics.DV(1) = (VI.V - imitating_evaluator.V).L1Norm();
-    // statistics.DV(2) = (VI.V - mwal_evaluator.V).L1Norm();
-    // statistics.DV(3) = (VI.V - pprb_evaluator.V).L1Norm();
-    // statistics.DV(4) = (VI.V - prb_evaluator.V).L1Norm();
-    // statistics.DV(5) = (VI.V - rpb_evaluator.V).L1Norm();
-#if 0
-    printf ("%f %f %f %f %f# DV run\n", 
+#if 1
+    printf ("%f %f %f %f %f # DV run\n", 
             statistics.DV(0),
             statistics.DV(1),
             statistics.DV(2),
-            statistics.DV(3),
-            statistics.DV(4));
+            statistics.DV(3));
 #endif        
 
     delete base_mdp;
-    delete prb_policy;
+    delete sprb_policy;
 
     return statistics;
 }
