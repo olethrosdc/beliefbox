@@ -113,7 +113,7 @@ Vector AddDemonstration(uint n_steps,
 
     ValueIteration value_iteration(mdp, discount);
     value_iteration.ComputeStateValues(accuracy);
-    FixedSoftmaxPolicy softmax_policy(value_iteration.Q, epsilon);
+    FixedSoftmaxPolicy softmax_policy(value_iteration.Q, 1.0 / epsilon);
 
     //std:: cout << "(value iteration)" << std::endl;
     
@@ -166,7 +166,7 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
   --maze_name:         (Gridworld) file name for the maze\n\
   --epsilon:           use epsilon-greedy with randomness in [0,1]\n\
   --n_chains:          number of chains [>0]\n\
-  --n_chains_samples:  length of each chain [>0]\n\
+  --n_chain_samples:  length of each chain [>0]\n\
   --Metropolis:        use Metropolis MCMC sampler\n\
   --MonteCarlo:        use plain MonteCarlo sampler\n\
   --accuracy:          estimation accuracy\n\
@@ -588,7 +588,7 @@ Statistics EvaluateAlgorithm (Demonstrations<int, int>& demonstrations,
     statistics.DV /= (real) n_demonstrations;
 
 #if 1
-    printf ("%f %f %f %f %f # DV run\n", 
+    printf ("%f %f %f %f # DV run\n", 
             statistics.DV(0),
             statistics.DV(1),
             statistics.DV(2),
