@@ -19,7 +19,7 @@ real ExponentialDistribution::generate() const
     real x = urandom();
     return - log (1.0 - x) / l;
 }
-
+ 
 real ExponentialDistribution::pdf(real x) const
 {
     if (x>=0.0) {

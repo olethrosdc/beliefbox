@@ -362,7 +362,7 @@ int main (int argc, char** argv) {
 
 
     for (uint run=0; run<n_runs; ++run) {
-        std::cout << "Run: " << run << " - Creating environment.." << std::endl;
+        logmsg("Run %d\n", 0);
 
         Demonstrations<int, int> demonstrations;
         std::vector<DiscreteEnvironment*> tasks(n_tasks);
@@ -370,6 +370,7 @@ int main (int argc, char** argv) {
 
         // sample the number of necessary environments
         for (uint i=0; i<n_tasks; ++i) {
+            logmsg("Task %d\n", i);
             DiscreteEnvironment* environment = NULL;
             if (!strcmp(environment_name, "RandomMDP")) { 
                 environment = new RandomMDP (n_actions,
@@ -380,8 +381,18 @@ int main (int argc, char** argv) {
                                              goal_value,
                                              rng,
                                              false);
-            } else if (!strcmp(environment_name, "Gridworld")) { 
-                environment = new Gridworld(maze_name, transition_randomness);
+            } else if (!strcmp(environment_name, "Gridworld")) {
+                real pit_value = -1.0 * (1.0 - randomness) 
+                    + urandom()* randomness;
+                real step_value = -0.1 * (1.0 - randomness) 
+                    + (urandom() - 0.5)* randomness;
+                real goal_value = 1.0 * (1.0 - randomness)
+                    + urandom()* randomness;
+                environment = new Gridworld(maze_name,
+                                            transition_randomness,
+                                            pit_value,
+                                            goal_value,
+                                            step_value);
             } else if (!strcmp(environment_name, "ContextBandit")) { 
                 environment = new ContextBandit(n_actions, 3, 4, rng);
             } else if (!strcmp(environment_name, "OneDMaze")) { 
@@ -426,6 +437,8 @@ int main (int argc, char** argv) {
         // {{{ Create data for demonstrations
         std::vector<Vector> demonstrator_value;
         logmsg("Creating data for demonstrations.\n");
+        fflush(stdout);
+
         for (uint d = 0; d  < n_demonstrations; ++d) {
             DiscreteEnvironment* environment = environments[d];
             Vector V = AddDemonstration(episode_steps,
@@ -438,6 +451,8 @@ int main (int argc, char** argv) {
         } // for d
         // }}} demo data
 
+        logmsg("Evaluating.\n");
+        fflush(stdout);
 
         // {{{ Evaluate methods
         Statistics run_statistics = EvaluateAlgorithm(demonstrations,
@@ -493,21 +508,35 @@ Statistics EvaluateAlgorithm (Demonstrations<int, int>& demonstrations,
 
     Statistics statistics;
     statistics.ep_stats.reserve(n_demonstrations); 
+
+    // =================================== //
+    // ||   T R A I N   M O D E L S     || //
+    // =================================== //
     
+    double start_time;
+
     // ------- Population model ------ //
+    logmsg("Training PPRB\n"); fflush(stdout);
+    start_time = GetCPU();
     PopulationPolicyRewardBelief pprb(1.0, gamma, *base_mdp);
     pprb.setAccuracy(accuracy);
     pprb.MonteCarloSampler(demonstrations, sampler.n_chain_samples);
     std::vector<FixedDiscretePolicy*> pprb_policies = pprb.getPolicies();
-    
+    printf("%f # T_PPRB\n", GetCPU() - start_time);
+
     // -------- MWAL -------- //
+    logmsg("Training MWAL\n"); fflush(stdout);
+    start_time = GetCPU();
     DiscreteMDP* computation_mdp = environments[0]->getMDP();
     MWAL mwal(n_states, n_actions, gamma);
     mwal.CalculateFeatureCounts(demonstrations);
-    mwal.Compute(*computation_mdp, gamma, 0.0001);//, iterations);
+    mwal.Compute(*computation_mdp, gamma, accuracy);//, iterations);
+    printf("%f # T_MWAL\n", GetCPU() - start_time);
     delete computation_mdp;
     
     // ----- PRB: Policy | Reward Belief ------ //
+    logmsg("Training SPRB\n"); fflush(stdout);
+    start_time = GetCPU();
     PolicyRewardBelief sprb(1.0, gamma, *base_mdp);
     if (sampler.type == METROPOLIS) {
         logmsg("Metropolis sampler: %d %d\n", sampler.n_chain_samples, sampler.n_chains);
@@ -518,15 +547,20 @@ Statistics EvaluateAlgorithm (Demonstrations<int, int>& demonstrations,
         logmsg("Monte Carlo sampler: %d %d\n", sampler.n_chain_samples, sampler.n_chains);
         sprb.MonteCarloSampler(demonstrations, sampler.n_chain_samples);
     } 
-    
+    printf("%f # T_SPRB\n", GetCPU() - start_time);
     DiscretePolicy* sprb_policy = sprb.getPolicy();
     
     // -------- imitator -------- //
+    logmsg("Training IMIT\n"); fflush(stdout);
+    start_time = GetCPU();
+    printf("%f # T_IMIT\n", GetCPU() - start_time);
     FixedDiscretePolicy imitating_policy(n_states, n_actions,
                                          demonstrations);
 
 
-    printf ("# V_IMIT\n");
+    // =================================== //
+    // ||    T E S T   M O D E L S      || //
+    // =================================== //
 
     statistics.DV.Resize(N_COMPARISONS);
     for (int i=0; i<N_COMPARISONS; ++i) {
@@ -584,6 +618,8 @@ Statistics EvaluateAlgorithm (Demonstrations<int, int>& demonstrations,
         statistics.DV(1) += (V_opt - mwal_evaluator.V).L1Norm();
         statistics.DV(2) += (V_opt - sprb_evaluator.V).L1Norm();
         statistics.DV(3) += (V_opt - pprb_evaluator.V).L1Norm();
+        fflush(stdout);
+        fflush(stderr);
     }
     statistics.DV /= (real) n_demonstrations;
 
@@ -594,6 +630,8 @@ Statistics EvaluateAlgorithm (Demonstrations<int, int>& demonstrations,
             statistics.DV(2),
             statistics.DV(3));
 #endif        
+    fflush(stdout);
+    fflush(stderr);
 
     delete base_mdp;
     delete sprb_policy;
