@@ -635,7 +635,9 @@ Statistics EvaluateAlgorithm (Demonstrations<int, int>& demonstrations,
 
     delete base_mdp;
     delete sprb_policy;
-
+    for (int d=0; d<n_demonstrations; ++d) {
+        delete pprb_policies[d];
+    }
     return statistics;
 }
 
