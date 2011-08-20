@@ -89,15 +89,20 @@ void PopulationPolicyRewardBelief::MonteCarloSampler(Demonstrations<int, int>&D,
     ExponentialDistribution softmax_hyperprior(eta);
     ExponentialDistribution reward_hyperprior(1.0);
     for (int iter=0; iter<n_iterations; ++iter) {
+        //printf("Iter :%d\n", iter);
+        //fflush(stdout);
         real lambda = 1.0 / softmax_hyperprior.generate();
         ExponentialDistribution softmax_prior(lambda);
         Vector reward_prior_parameters (n_states * n_actions);
         for (int i=0; i<reward_prior_parameters.Size(); ++i) {
             reward_prior_parameters(i) = reward_hyperprior.generate();
+            //printf("%d\n", i);fflush(stdout);
         }
         DirichletRewardBelief reward_prior(n_states, n_actions, reward_prior_parameters);
 
         for (int d=0; d<n_demonstrations; ++d) {
+            //printf ("%d demo\n", d);
+            fflush(stdout);
             Matrix reward = reward_prior.sampleMatrix(); 
             real beta = softmax_prior.generate();
             //printf ("%f %f %f # ETA BETA\n", eta, lambda, beta);

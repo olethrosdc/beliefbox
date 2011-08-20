@@ -1,6 +1,6 @@
 #! /bin/bash
 
-samples=10000
+samples=1000
 gamma=0.95
 n_steps=100
 accuracy=0.1
