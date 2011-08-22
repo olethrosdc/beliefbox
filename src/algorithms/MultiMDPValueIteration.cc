@@ -163,8 +163,11 @@ void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
         if (max_iter > 0) {
             max_iter--;
         }
+        //V.print(stdout);
+        //pV.print(stdout);
         Delta = abs(V - pV).Sum();
-		printf("D:%f i:%d\n", Delta, max_iter);
+        pV = V;
+		//printf("D:%f i:%d\n", Delta, max_iter);
     } while(Delta >= threshold && max_iter != 0);
 	
 }
@@ -218,6 +221,8 @@ void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_it
         Delta = abs(V - pV).Sum();
         n_iter++;
 		//printf("%f\n", Delta);
+        //V.print(stdout);
+        //pV.print(stdout);
     } while(Delta >= threshold && max_iter != 0);
     //printf("Exiting at d:%f, n:%d\n", Delta, n_iter);	
 }
