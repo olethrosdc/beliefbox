@@ -474,8 +474,6 @@ int main (int argc, char** argv)
                 MVI.ComputeStateValues(threshold, max_iter);
                 FixedDiscretePolicy* mean_policy = MVI.getPolicy();
 
-
-
                 // Do MMVI
                 std::vector<const DiscreteMDP*> mdp_samples(n_samples);
                 Vector w(n_samples);                
@@ -486,7 +484,6 @@ int main (int argc, char** argv)
                 MultiMDPValueIteration MMVI(w, mdp_samples, gamma);
                 MMVI.ComputeStateActionValues(threshold, max_iter);
                 FixedDiscretePolicy* mmvi_policy = MMVI.getPolicy();
-
 
                 // sample-mean MDP policy
                 const DiscreteMDP* const sample_mean_mdp

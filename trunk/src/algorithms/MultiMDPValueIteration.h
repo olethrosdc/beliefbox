@@ -42,6 +42,7 @@ public:
     Matrix action_counts;
     int n_mdps; ///< The number of MDPs
     std::vector<Vector> V_mu; ///< the MDPs individual value functions
+    std::vector<Matrix> Q_mu; ///< the MDPs individual value functions
     real Delta;
     MultiMDPValueIteration(const Vector& w,
                            const std::vector<const DiscreteMDP*>& mdp_list_,
