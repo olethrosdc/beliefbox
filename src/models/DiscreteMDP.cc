@@ -87,6 +87,46 @@ DiscreteMDP::MDP(const MDP<int,int>& mdp)
 }
 
 
+DiscreteMDP::MDP (const std::vector<const MDP<int,int>*> &mdp_list,
+                  const Vector& w)
+    : n_states(mdp_list[0]->n_states),
+      n_actions(mdp_list[0]->n_actions),
+      P(n_states * n_actions, n_states),
+      next_states(mdp_list[0]->next_states),
+      reward_distribution(n_states, n_actions)
+{
+    int n_mdps = mdp_list.size();
+    for (int i=0; i<n_mdps; ++i) {
+        if (n_states != mdp_list[i]->n_states) {
+            Serror("Number of states don't match\n");
+            exit(-1);
+        }
+        if (n_actions != mdp_list[i]->n_actions) {
+            Serror("Number of actions don't match\n");
+            exit(-1);
+        }
+    }
+
+    assert(w.Sum() == 1.0);
+
+    for (int i=0; i<n_states; ++i) {
+        for (int a=0; a<n_actions; ++a) {
+            for (int j=0; j<n_states; ++j) {
+                real p_ija = 0.0;
+                for (int m=0; m<n_mdps; ++m) {
+                    p_ija += w(m) * mdp_list[m]->getTransitionProbability(i, a, j);
+                }
+                setTransitionProbability(i, a, j, p_ija);
+            }
+            real r_ia = 0.0;
+            for (int m=0; m<n_mdps; ++m) {
+                r_ia += w(m) * mdp_list[m]->getExpectedReward(i, a);
+            }
+            setFixedReward(i, a, r_ia);
+        }
+    }    
+}
+
 DiscreteMDP::~MDP()
 {
 }

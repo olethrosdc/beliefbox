@@ -52,6 +52,8 @@ public:
                   real** initial_transitions = NULL);
 	//Distribution** initial_rewards = NULL);
     MDP<int,int> (const MDP<int,int>& mdp);
+    MDP<int,int> (const std::vector<const MDP<int,int>*> &mdp_list,
+                  const Vector& w);
 
     inline int getNStates() const
     {

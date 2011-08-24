@@ -86,16 +86,18 @@ real MultiMDPValueIteration::ComputeStateActionValueForSingleMDP(int mu, int s, 
 {
     Vector& V_i = V_mu[mu];
     const DiscreteMDP* mdp = mdp_list[mu];
-    real Q_mu_sa = mdp->getExpectedReward(s,a);
+    real Q_mu_sa = 0.0; 
     const DiscreteStateSet& next = mdp->getNextStates(s, a);
     for (DiscreteStateSet::iterator i=next.begin();
          i!=next.end();
          ++i) {
         int s2 = *i;
         real P = mdp->getTransitionProbability(s, a, s2);
-        real R = gamma * V_i(s2);
-        Q_mu_sa += P * R;
+        real V2 = V_i(s2);
+        Q_mu_sa += P * V2;
     } 
+    real r_sa = mdp->getExpectedReward(s,a);
+    Q_mu_sa = r_sa + gamma * Q_mu_sa;
     return Q_mu_sa;
 }
 
@@ -117,9 +119,9 @@ real MultiMDPValueIteration::ComputeStateActionValueForSingleMDP(int mu, int s, 
 real MultiMDPValueIteration::ComputeActionValueForMDPs(int s, int a)
 {
     real Q_sa = 0;
-    for (int i=0; i<n_mdps; ++i) {
-        real Q_mu_sa = ComputeStateActionValueForSingleMDP(i, s, a);
-        Q_sa += w(i) * Q_mu_sa;
+    for (int mu=0; mu<n_mdps; ++mu) {
+        real Q_mu_sa = ComputeStateActionValueForSingleMDP(mu, s, a);
+        Q_sa += w(mu) * Q_mu_sa;
     } 
     return Q_sa;
 }
@@ -153,12 +155,12 @@ void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
             }
             V(s) = Q_a_max;
         }
-        for (int i=0; i<n_mdps; ++i) {
-            Vector tmpV = V_mu[i];
+        for (int mu=0; mu<n_mdps; ++mu) {
+            Vector tmpV = V_mu[mu];
             for (int s=0; s<n_states; s++) {
-                tmpV(s) = ComputeStateActionValueForSingleMDP(i, s, a_max[s]);
+                tmpV(s) = ComputeStateActionValueForSingleMDP(mu, s, a_max[s]);
             }
-            V_mu[i] = tmpV;
+            V_mu[mu] = tmpV;
         }
         if (max_iter > 0) {
             max_iter--;
@@ -167,7 +169,7 @@ void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
         //pV.print(stdout);
         Delta = abs(V - pV).Sum();
         pV = V;
-		//printf("D:%f i:%d\n", Delta, max_iter);
+		printf("D:%f i:%d\n", Delta, max_iter);
     } while(Delta >= threshold && max_iter != 0);
 	
 }
@@ -184,13 +186,13 @@ void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
 
 void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 {
-         //Vector pV(V.size());
-        //Vector dV(V.size());
+    action_counts.Resize(n_states, n_actions);
+    action_counts.Clear();
+
     int n_iter = 0;
     do {
         pV = V;
         Delta = 0.0;
-
         // Find the  best average action at the current stage.
         std::vector<int> a_max(n_states); 
         for (int s=0; s<n_states; s++) {
@@ -205,7 +207,11 @@ void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_it
                 Q(s,a) = Q_sa;
             }
             V(s) = Q_a_max;
+            //printf ("%d ", a_max[s]);
+            action_counts(s, a_max[s]) += 1.0;
+            printf ("%f ", V(s));
         }
+        //printf ("# opt_act\n");
 
         // Calculate the value of each MDP for the current best average action
         for (int i=0; i<n_mdps; ++i) {
@@ -220,17 +226,18 @@ void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_it
         }
         Delta = abs(V - pV).Sum();
         n_iter++;
-		//printf("%f\n", Delta);
+		printf("%f # delta\n", Delta);
         //V.print(stdout);
         //pV.print(stdout);
     } while(Delta >= threshold && max_iter != 0);
-    //printf("Exiting at d:%f, n:%d\n", Delta, n_iter);	
+    printf("Exiting at delta :%f, iter :%d\n", Delta, n_iter);	
 }
 
 /// Get the policy that is optimal for the mixed MDP.
 FixedDiscretePolicy* MultiMDPValueIteration::getPolicy()
 {
     FixedDiscretePolicy* policy = new FixedDiscretePolicy(n_states, n_actions);
+#if 0
     for (int s=0; s<n_states; s++) {
         real max_Qa = getValue(s, 0);
         int argmax_Qa = 0;
@@ -247,6 +254,16 @@ FixedDiscretePolicy* MultiMDPValueIteration::getPolicy()
         }
         (*p)[argmax_Qa] = 1.0;
     }
+#else
+    for (int s=0; s<n_states; s++) {
+        Vector c = action_counts.getRow(s);
+        c /= c.Sum();
+        Vector* p = policy->getActionProbabilitiesPtr(s);
+        for (int a=0; a<n_actions; a++) { 
+            (*p)[a] = c(a);
+        }
+    }
+#endif
     return policy;
 }
 
