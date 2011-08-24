@@ -15,23 +15,42 @@
 
 #include "DiscreteMDP.h"
 #include "Distribution.h"
+#include "Environment.h"
+
 #include <string>
 #include <vector>
 
 /// The inventory management task.
-class InventoryManagement {
+class InventoryManagement : public DiscreteEnvironment {
 protected:
     int period; ///< This is the period (number of steps) between orders
     int max_items; ///< This is the maximum number of items that can be stocked
     real demand; ///< This is the probability that an item will be bought at each step
     real margin; ///< this is the ratio (greater than 1) of the retail value of the item versus the order cost
-    std::vector<SingularDistribution*> dist; ///< container for the reward distributions
-    DiscreteMDP* mdp; ///< points to the MDP
+    //std::vector<SingularDistribution*> dist; ///< container for the reward distributions
+    DiscreteMDP* local_mdp; ///< points to the MDP
 
 public:
     InventoryManagement(int period_, int max_items_, real demand_, real margin_);
     ~InventoryManagement();
-    DiscreteMDP* getMDP() {return mdp;}
+    DiscreteMDP* getMDP() const;
+   
+    virtual void Reset() 
+    {
+        state = 1;
+    }
+
+    virtual bool Act(const int action) 
+    {
+        reward = local_mdp->Act(action);
+        state = local_mdp->getState();
+        return true;
+    }
+    
+    /// Return a full MDP model of the environment. 
+    /// This may not be possible for some environments
+    /// The MDP is required to be freed by the user!
+ 
 };
 
 #endif

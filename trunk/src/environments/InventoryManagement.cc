@@ -30,8 +30,12 @@ InventoryManagement::InventoryManagement(int period_,
     assert (margin >= 1);
     assert (demand >= 0 && demand <= 1);
     assert (period > 0);
+    local_mdp = getMDP();
+}
 
-    mdp = new DiscreteMDP(n_states, n_actions, NULL);
+DiscreteMDP* InventoryManagement::getMDP() const
+{
+    DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL);
 
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
@@ -64,7 +68,5 @@ InventoryManagement::InventoryManagement(int period_,
 
 InventoryManagement::~InventoryManagement()
 {
-    for (int i=0; i<dist.size(); i++) {
-        delete dist[i];
-    }
+    delete local_mdp;
 }

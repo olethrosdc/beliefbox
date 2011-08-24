@@ -282,6 +282,15 @@ int main (int argc, char** argv)
             environment = new OptimisticTask (0.1, 0.01);
         } else if (!strcmp(environment_name, "RiverSwim")) { 
             environment = new RiverSwim();
+        } else if (!strcmp(environment_name, "Inventory")) { 
+            int period = 30;
+            int max_items = 100;
+            real demand = 0.1;
+            real margin = 1.1;
+            environment = new InventoryManagement(period,
+                                                  max_items,
+                                                  demand,
+                                                  margin);
         } else if (!strcmp(environment_name, "MountainCar")) { 
             MountainCar continuous_mountain_car;
             continuous_mountain_car.setRandomness(randomness);
@@ -448,22 +457,24 @@ int main (int argc, char** argv)
         if (model) {
 #if 1
             if (discrete_mdp) {
-                int n_samples = 10;
+                int n_samples = max_samples;
 
                 real threshold = 10e-6; //0;
                 int max_iter = 1;
                 if (gamma < 1.0) {
-                    max_iter = 10.0 * log(threshold * (1 - gamma)) / log(gamma);
+                    max_iter = 10 * log(threshold * (1 - gamma)) / log(gamma);
                 } else {
                     max_iter = 1.0 / threshold;
                 }
-                printf ("# using %f epsilon, %d iter\n", threshold, max_iter);
+                printf ("# using %f epsilon, %d iter, %d samples\n", threshold, max_iter, n_samples);
 
                 // mean MDP policy
                 const DiscreteMDP* const mean_mdp = discrete_mdp->getMeanMDP();
                 ValueIteration MVI(mean_mdp, gamma);
                 MVI.ComputeStateValues(threshold, max_iter);
                 FixedDiscretePolicy* mean_policy = MVI.getPolicy();
+
+
 
                 // Do MMVI
                 std::vector<const DiscreteMDP*> mdp_samples(n_samples);
@@ -476,9 +487,18 @@ int main (int argc, char** argv)
                 MMVI.ComputeStateActionValues(threshold, max_iter);
                 FixedDiscretePolicy* mmvi_policy = MMVI.getPolicy();
 
+
+                // sample-mean MDP policy
+                const DiscreteMDP* const sample_mean_mdp
+                    = new DiscreteMDP(mdp_samples, w);
+                ValueIteration SMVI(sample_mean_mdp, gamma);
+                SMVI.ComputeStateValues(threshold, max_iter);
+                FixedDiscretePolicy* sample_mean_policy = SMVI.getPolicy();
+
                 // evaluate
                 Vector hV(n_states);
                 Vector hL(n_states);
+                Vector hS(n_states);
                 Vector hU(n_states);
                 Vector Delta(n_samples);
                 for (int i=0; i<n_samples; ++i) {
@@ -487,6 +507,10 @@ int main (int argc, char** argv)
                     // mean policy
                     PolicyEvaluation mean_PE(mean_policy, sample_mdp, gamma);
                     mean_PE.ComputeStateValues(threshold, max_iter);
+
+                    // mean policy
+                    PolicyEvaluation sample_mean_PE(sample_mean_policy, sample_mdp, gamma);
+                    sample_mean_PE.ComputeStateValues(threshold, max_iter);
                     
                     // multi-MDP polichy
                     PolicyEvaluation mmvi_PE(mmvi_policy, sample_mdp, gamma);
@@ -498,6 +522,7 @@ int main (int argc, char** argv)
 
                     for (int s=0; s<n_states; ++s) {
                         hV[s] += mean_PE.getValue(s);
+                        hS[s] += sample_mean_PE.getValue(s);
                         hL[s] += mmvi_PE.getValue(s);
                         hU[s] += upper_VI.getValue(s);
                     }
@@ -508,6 +533,7 @@ int main (int argc, char** argv)
                 for (int s=0; s<n_states; ++s) {
                     hV[s] *= inv_n;
                     hL[s] *= inv_n;
+                    hS[s] *= inv_n;
                     hU[s] *= inv_n;
 
                     printf ("%f %f %f %d # hV hM hU state\n",
@@ -518,13 +544,16 @@ int main (int argc, char** argv)
                 }
                 real invS = 1.0 / (real) n_states;
 
-                printf ("%f %f %f  # Bounds\n",
+                printf ("%f %f %f %f  # Bounds\n",
                         hV.Sum() * invS,
+                        hS.Sum() * invS,
                         hL.Sum() * invS,
                         hU.Sum() * invS);
                 // clean up
                 delete mean_mdp;
                 delete mean_policy;
+                delete sample_mean_mdp;
+                delete sample_mean_policy;
                 delete mmvi_policy;
 
                 for (int i=0; i<n_samples; ++i) {

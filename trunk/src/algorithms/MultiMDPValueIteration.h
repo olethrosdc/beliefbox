@@ -39,6 +39,7 @@ public:
     Matrix Q; ///< actual q-value
     Matrix dQ; ///< delta q-value
     Matrix pQ; ///< previous q-value
+    Matrix action_counts;
     int n_mdps; ///< The number of MDPs
     std::vector<Vector> V_mu; ///< the MDPs individual value functions
     real Delta;
