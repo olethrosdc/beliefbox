@@ -62,9 +62,12 @@ void MultiMDPValueIteration::Reset()
         }
     }
     V_mu.resize(n_mdps);
+    Q_mu.resize(n_mdps);
     for (int i=0; i<n_mdps; ++i) {
         V_mu[i].Resize(n_states);
         V_mu[i].Clear();
+        Q_mu[i].Resize(n_states, n_actions);
+        Q_mu[i].Clear();
     }
 }
 
@@ -98,6 +101,7 @@ real MultiMDPValueIteration::ComputeStateActionValueForSingleMDP(int mu, int s, 
     } 
     real r_sa = mdp->getExpectedReward(s,a);
     Q_mu_sa = r_sa + gamma * Q_mu_sa;
+    Q_mu[mu](s,a) = Q_mu_sa;
     return Q_mu_sa;
 }
 
@@ -137,8 +141,6 @@ real MultiMDPValueIteration::ComputeActionValueForMDPs(int s, int a)
  */
 void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
 {
-        //Vector pV(V.size());
-        //Vector dV(V.size());
     pV = V;
     do {
         Delta = 0.0;
@@ -158,7 +160,7 @@ void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
         for (int mu=0; mu<n_mdps; ++mu) {
             Vector tmpV = V_mu[mu];
             for (int s=0; s<n_states; s++) {
-                tmpV(s) = ComputeStateActionValueForSingleMDP(mu, s, a_max[s]);
+                tmpV(s) = Q_mu[mu](s, a_max[s]);
             }
             V_mu[mu] = tmpV;
         }
