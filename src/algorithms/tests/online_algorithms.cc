@@ -483,6 +483,7 @@ int main (int argc, char** argv)
                 }
                 MultiMDPValueIteration MMVI(w, mdp_samples, gamma);
                 MMVI.ComputeStateActionValues(threshold, max_iter);
+                //MMVI.ComputeStateValues(threshold, max_iter);
                 FixedDiscretePolicy* mmvi_policy = MMVI.getPolicy();
 
                 // sample-mean MDP policy
@@ -495,6 +496,7 @@ int main (int argc, char** argv)
                 // evaluate
                 Vector hV(n_states);
                 Vector hL(n_states);
+                Vector hL_nonstationary(n_states);
                 Vector hS(n_states);
                 Vector hU(n_states);
                 Vector Delta(n_samples);
@@ -521,6 +523,7 @@ int main (int argc, char** argv)
                         hV[s] += mean_PE.getValue(s);
                         hS[s] += sample_mean_PE.getValue(s);
                         hL[s] += mmvi_PE.getValue(s);
+                        hL_nonstationary[s] += MMVI.getValue(s);
                         hU[s] += upper_VI.getValue(s);
                     }
                 }                
@@ -530,21 +533,24 @@ int main (int argc, char** argv)
                 for (int s=0; s<n_states; ++s) {
                     hV[s] *= inv_n;
                     hL[s] *= inv_n;
+                    hL_nonstationary[s] *= inv_n;
                     hS[s] *= inv_n;
                     hU[s] *= inv_n;
 
-                    printf ("%f %f %f %d # hV hM hU state\n",
+                    printf ("%f %f %f %f %d # hV hM V_xi hU state\n",
                             hV[s],
                             hL[s], 
+                            hL_nonstationary[s],
                             hU[s],
                             s);
                 }
                 real invS = 1.0 / (real) n_states;
 
-                printf ("%f %f %f %f  # Bounds\n",
+                printf ("%f %f %f %f %f  # Bounds\n",
                         hV.Sum() * invS,
                         hS.Sum() * invS,
                         hL.Sum() * invS,
+                        hL_nonstationary.Sum() * invS,
                         hU.Sum() * invS);
                 // clean up
                 delete mean_mdp;
@@ -687,7 +693,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
     }
     printf(" %f %f # RUN_REWARD\n", total_reward, discounted_reward);
-#if 1
+#if 0
     real sse = 0.0;
     for (int i=0; i<n_states; i++) {
         for (int a=0; a<n_actions; a++) {
