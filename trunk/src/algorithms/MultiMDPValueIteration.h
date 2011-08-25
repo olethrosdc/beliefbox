@@ -33,16 +33,16 @@ public:
     real gamma;
     int n_states;
     int n_actions;
-    Vector V; ///< actual value
-    Vector dV;///< actual delta value
-    Vector pV; ///< previous value
-    Matrix Q; ///< actual q-value
-    Matrix dQ; ///< delta q-value
-    Matrix pQ; ///< previous q-value
+    Vector V_xi; ///< actual value
+    Vector dV_xi;///< actual delta value
+    Vector pV_xi; ///< previous value
+    Matrix Q_xi; ///< actual q-value
+    Matrix dQ_xi; ///< delta q-value
+    Matrix pQ_xi; ///< previous q-value
     Matrix action_counts;
     int n_mdps; ///< The number of MDPs
-    std::vector<Vector> V_mu; ///< the MDPs individual value functions
-    std::vector<Matrix> Q_mu; ///< the MDPs individual value functions
+    std::vector<Vector> V; ///< the MDPs individual value functions
+    std::vector<Matrix> Q; ///< the MDPs individual value functions
     real Delta;
     MultiMDPValueIteration(const Vector& w,
                            const std::vector<const DiscreteMDP*>& mdp_list_,
@@ -56,12 +56,12 @@ public:
     {
         assert(state>=0 && state < n_states);
         assert(action>=0 && action < n_actions);
-        return Q(state,action);
+        return Q_xi(state,action);
     }
     inline real getValue (int state)
     {
         assert(state>=0 && state < n_states);
-        return V(state);
+        return V_xi(state);
     }
     FixedDiscretePolicy* getPolicy();
     void setMDPList(const std::vector<const DiscreteMDP*>& mdp_list_)

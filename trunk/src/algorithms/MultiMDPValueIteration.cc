@@ -45,29 +45,29 @@ MultiMDPValueIteration::MultiMDPValueIteration(const Vector& w_,
 /// Reset
 void MultiMDPValueIteration::Reset()
 {
-    V.Resize(n_states);
-    dV.Resize(n_states);
-    pV.Resize(n_states);
-    Q.Resize(n_states, n_actions);
-    dQ.Resize(n_states, n_actions);
-    pQ.Resize(n_states, n_actions);
+    V_xi.Resize(n_states);
+    dV_xi.Resize(n_states);
+    pV_xi.Resize(n_states);
+    Q_xi.Resize(n_states, n_actions);
+    dQ_xi.Resize(n_states, n_actions);
+    pQ_xi.Resize(n_states, n_actions);
     for (int s=0; s<n_states; s++) {
-        V(s) = 0.0;
-        dV(s) = 0.0;
-        pV(s) = 0.0;
+        V_xi(s) = 0.0;
+        dV_xi(s) = 0.0;
+        pV_xi(s) = 0.0;
         for (int a=0; a<n_actions; a++) {
-            Q(s,a) = 0.0;
-            dQ(s,a) = 0.0;
-            pQ(s,a) = 0.0;
+            Q_xi(s,a) = 0.0;
+            dQ_xi(s,a) = 0.0;
+            pQ_xi(s,a) = 0.0;
         }
     }
-    V_mu.resize(n_mdps);
-    Q_mu.resize(n_mdps);
+    V.resize(n_mdps);
+    Q.resize(n_mdps);
     for (int i=0; i<n_mdps; ++i) {
-        V_mu[i].Resize(n_states);
-        V_mu[i].Clear();
-        Q_mu[i].Resize(n_states, n_actions);
-        Q_mu[i].Clear();
+        V[i].Resize(n_states);
+        V[i].Clear();
+        Q[i].Resize(n_states, n_actions);
+        Q[i].Clear();
     }
 }
 
@@ -87,7 +87,7 @@ MultiMDPValueIteration::~MultiMDPValueIteration()
  */
 real MultiMDPValueIteration::ComputeStateActionValueForSingleMDP(int mu, int s, int a)
 {
-    Vector& V_i = V_mu[mu];
+    Vector& V_i = V[mu];
     const DiscreteMDP* mdp = mdp_list[mu];
     real Q_mu_sa = 0.0; 
     const DiscreteStateSet& next = mdp->getNextStates(s, a);
@@ -101,7 +101,7 @@ real MultiMDPValueIteration::ComputeStateActionValueForSingleMDP(int mu, int s, 
     } 
     real r_sa = mdp->getExpectedReward(s,a);
     Q_mu_sa = r_sa + gamma * Q_mu_sa;
-    Q_mu[mu](s,a) = Q_mu_sa;
+    Q[mu](s,a) = Q_mu_sa;
     return Q_mu_sa;
 }
 
@@ -144,35 +144,79 @@ real MultiMDPValueIteration::ComputeActionValueForMDPs(int s, int a)
  */
 void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
 {
-    pV = V;
+    pV_xi = V_xi;
+    int n_iter = 0;
+
+    logmsg ("Runnign ComputeStateValues with epsilon: %f, iter: %d, gamma: %f", threshold, max_iter, gamma);
     do {
+        // Calculate Q_{mu,t}(s,a) from V_mu(s)
         for (int mu=0; mu<n_mdps; ++mu) {
-            real Q_msa = 0.0;
-            DiscreteMDP* mdp = mdp_list[mu];
+            const DiscreteMDP* mdp = mdp_list[mu];
             for (int s=0; s<n_states; ++s) {
                 for (int a=0; a<n_actions; ++a) {
                     real R_sa = mdp->getExpectedReward(s, a);
+                    real Q_msa = 0.0;
                     for (int s2=0; s2<n_states; ++s2) {
                         real P = mdp->getTransitionProbability(s, a, s2);
-                        real V2 = V_mu[mu](s2);
+                        real V2 = V[mu](s2);
                         Q_msa += P * V2;
                     }
-                    Q_mu[mu](s, a) = R_sa + gamma * Q_msa;
+                    Q[mu](s, a) = R_sa + gamma * Q_msa;
+                    //printf ("Q_%d(%d, %d) = %f = %f + %f * %f\n",
+                    //mu, s, a, Q[mu](s,a),
+                    //R_sa, gamma, Q_msa);
                 }
             }
             
         }
+
+        // calculate Q_{xi, t}(s,a)
+        for (int s=0; s<n_states; ++s) {
+            for (int a=0; a<n_actions; ++a) {
+                Q_xi(s,a) = 0.0;
+                for (int mu=0; mu<n_mdps; ++mu) {
+                    Q_xi(s,a) += w(mu) * Q[mu](s,a);
+                }
+                //printf ("Q_xi(%d, %d) = %f\n", s, a, Q_xi(s,a));
+            }
+        }
+        
+
+        // Calculate a_t^*(s), V_{xi, t}(s)
+        std::vector<int> a_max(n_states);         
+        for (int s=0; s<n_states; ++s) {
+            a_max[s] = 0;
+            real Q_max = Q_xi(s,0);
+            for (int a=1; a<n_actions; ++a) {
+                if (Q_max < Q_xi(s, a)) {
+                    Q_max = Q_xi(s, a);
+                    a_max[s] = a;
+                }
+            }
+            V_xi(s) = Q_max;
+            //printf ("V_xi(%d) = %f\n", s, V_xi(s));
+        }
+
+        // Calculate V_{mu, t}(s)
+        for (int mu=0; mu<n_mdps; ++mu) {
+            for (int s=0; s<n_states; ++s) {
+                V[mu](s) = Q[mu](s, a_max[s]);
+            }
+        }
+
+
         Delta = 0.0;
         if (max_iter > 0) {
             max_iter--;
         }
         //V.print(stdout);
         //pV.print(stdout);
-        Delta = abs(V - pV).Sum();
-        pV = V;
-		printf("D:%f i:%d\n", Delta, max_iter);
+        Delta = abs(V_xi - pV_xi).Sum();
+        pV_xi = V_xi;
+		//printf("%f # delta\n", Delta);
+        n_iter++;
     } while(Delta >= threshold && max_iter != 0);
-	
+    logmsg("Exiting at delta :%f, iter :%d\n", Delta, n_iter);		
 }
 
 
@@ -187,12 +231,16 @@ void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
 
 void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 {
+#if 1
+    ComputeStateValues(threshold, max_iter);
+#else
+    // this implementation fails!
     action_counts.Resize(n_states, n_actions);
     action_counts.Clear();
 
     int n_iter = 0;
     do {
-        pV = V;
+        pV_xi = V_xi;
         Delta = 0.0;
         // Find the  best average action at the current stage.
         std::vector<int> a_max(n_states); 
@@ -205,40 +253,41 @@ void MultiMDPValueIteration::ComputeStateActionValues(real threshold, int max_it
                     a_max[s] = a;
                     Q_a_max = Q_sa;
                 }
-                Q(s,a) = Q_sa;
+                Q_xi(s,a) = Q_sa;
             }
-            V(s) = Q_a_max;
+            V_xi(s) = Q_a_max;
             //printf ("%d ", a_max[s]);
             action_counts(s, a_max[s]) += 1.0;
-            printf ("%f ", V(s));
+            //printf ("%f ", V_xi(s));
         }
         //printf ("# opt_act\n");
 
         // Calculate the value of each MDP for the current best average action
         for (int i=0; i<n_mdps; ++i) {
-            Vector tmpV = V_mu[i];
+            Vector tmpV = V[i];
             for (int s=0; s<n_states; s++) {
                 tmpV(s) = ComputeStateActionValueForSingleMDP(i, s, a_max[s]);
             }
-            V_mu[i] = tmpV;
+            V[i] = tmpV;
         }
         if (max_iter > 0) {
             max_iter--;
         }
-        Delta = abs(V - pV).Sum();
+        Delta = abs(V_xi - pV_xi).Sum();
         n_iter++;
-		printf("%f # delta\n", Delta);
+		//printf("%f # delta\n", Delta);
         //V.print(stdout);
         //pV.print(stdout);
     } while(Delta >= threshold && max_iter != 0);
-    printf("Exiting at delta :%f, iter :%d\n", Delta, n_iter);	
+    logmsg("Exiting at delta :%f, iter :%d\n", Delta, n_iter);	
+#endif
 }
 
 /// Get the policy that is optimal for the mixed MDP.
 FixedDiscretePolicy* MultiMDPValueIteration::getPolicy()
 {
     FixedDiscretePolicy* policy = new FixedDiscretePolicy(n_states, n_actions);
-#if 0
+#if 1
     for (int s=0; s<n_states; s++) {
         real max_Qa = getValue(s, 0);
         int argmax_Qa = 0;
