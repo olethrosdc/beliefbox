@@ -131,7 +131,10 @@ real MultiMDPValueIteration::ComputeActionValueForMDPs(int s, int a)
 }
 
 /*** Compute the current value.
-     
+
+     This is an alternative implementation with no helper function calls.
+     Should work the same.
+
      First, we require the calculation of the optimal policy for all
      states for the current step.  This is given by:
      
@@ -143,27 +146,23 @@ void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
 {
     pV = V;
     do {
-        Delta = 0.0;
-        std::vector<int> a_max(n_states);
-        for (int s=0; s<n_states; s++) {
-            real Q_a_max = -RAND_MAX;
-            a_max[s] = 0;
-            for (int a=0; a<n_actions; a++) {
-                real Q_sa = ComputeActionValueForMDPs(s, a);
-                if (a==0 || Q_a_max < Q_sa) {
-                    a_max[s] = a;
-                    Q_a_max = Q_sa;
+        for (int mu=0; mu<n_mdps; ++mu) {
+            real Q_msa = 0.0;
+            DiscreteMDP* mdp = mdp_list[mu];
+            for (int s=0; s<n_states; ++s) {
+                for (int a=0; a<n_actions; ++a) {
+                    real R_sa = mdp->getExpectedReward(s, a);
+                    for (int s2=0; s2<n_states; ++s2) {
+                        real P = mdp->getTransitionProbability(s, a, s2);
+                        real V2 = V_mu[mu](s2);
+                        Q_msa += P * V2;
+                    }
+                    Q_mu[mu](s, a) = R_sa + gamma * Q_msa;
                 }
             }
-            V(s) = Q_a_max;
+            
         }
-        for (int mu=0; mu<n_mdps; ++mu) {
-            Vector tmpV = V_mu[mu];
-            for (int s=0; s<n_states; s++) {
-                tmpV(s) = Q_mu[mu](s, a_max[s]);
-            }
-            V_mu[mu] = tmpV;
-        }
+        Delta = 0.0;
         if (max_iter > 0) {
             max_iter--;
         }
