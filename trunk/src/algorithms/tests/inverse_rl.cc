@@ -1,5 +1,4 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
 // copyright (c) 2010-2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
@@ -595,7 +594,7 @@ int main (int argc, char** argv)
     }
     DV_var /= (real) n_runs;
     DV_var.printf(stdout); printf("# DV_VAR\n");
-    printf("# SMAX IMIT MWAL MWGR PRB RBP # LEGEND\n");
+    printf("# SMAX IMIT MWAL MWGR PRB RPB # DV_LEGEND\n");
     std::cout << "# Done" << std::endl;
 
 
