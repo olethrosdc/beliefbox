@@ -358,8 +358,7 @@ int main (int argc, char** argv)
         //Gridworld* g2 = gridworld;
         if (!strcmp(algorithm_name, "Oracle")) {
             algorithm = NULL;
-        }
-        if (!strcmp(algorithm_name, "Sarsa")) { 
+        } else if (!strcmp(algorithm_name, "Sarsa")) { 
             algorithm = new Sarsa(n_states,
                                   n_actions,
                                   gamma,
