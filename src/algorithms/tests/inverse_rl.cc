@@ -94,6 +94,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 							  int n_episodes,
 							  uint n_steps,
                               OnlineAlgorithm<int,int>* algorithm,
+                              real epsilon,
                               DiscreteEnvironment* environment,
                               real gamma,
                               int iterations,
@@ -119,7 +120,7 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
   --maze_name:         (Gridworld) file name for the maze\n\
   --epsilon:           use epsilon-greedy with randomness in [0,1]\n\
   --n_chains:          number of chains [>0]\n\
-  --n_chains_samples:  length of each chain [>0]\n\
+  --n_chain_samples:  length of each chain [>0]\n\
   --Metropolis:        use Metropolis MCMC sampler\n\
   --MonteCarlo:        use plain MonteCarlo sampler\n\
   --accuracy:          estimation accuracy\n\
@@ -145,7 +146,7 @@ int main (int argc, char** argv)
     uint episode_steps = 1000;
     uint grid_size = 4;
     uint maze_width = 4;
-	Sampler sampler = {INVALID, 10000, 10};
+	Sampler sampler = {INVALID, 2, 10000};
 	real accuracy = 1e-3;
     const char * algorithm_name = "QLearning";
     const char * environment_name = NULL;
@@ -271,6 +272,14 @@ int main (int argc, char** argv)
     setRandomSeed(34987235);
 
 
+    if (sampler.type == METROPOLIS) {
+        logmsg("Metropolis sampler: ");
+    } else if (sampler.type == MONTE_CARLO) {
+        logmsg("Monte Carlo sampler: ");
+    } else {
+        logmsg("INVALID sampler: ");
+    }
+    logmsg(" samples/chain: %d, chains: %d\n", sampler.n_chain_samples, sampler.n_chains);
     
     RandomNumberGenerator* rng;
     
@@ -480,6 +489,7 @@ int main (int argc, char** argv)
 													  n_episodes,
 													  n_steps,
 													  algorithm,
+                                                      epsilon,
 													  environment,
 													  gamma,
                                                       iterations,
@@ -612,6 +622,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 							  int n_episodes,
 							  uint n_steps,
 							  OnlineAlgorithm<int, int>* algorithm,
+                              real epsilon, 
 							  DiscreteEnvironment* environment,
 							  real gamma,
                               int iterations,
@@ -624,7 +635,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
     const DiscreteMDP* mdp = environment->getMDP(); 
     ValueIteration value_iteration(mdp, gamma);
     value_iteration.ComputeStateValues(accuracy);
-    FixedSoftmaxPolicy softmax_policy(value_iteration.Q, 1.0);
+    FixedSoftmaxPolicy softmax_policy(value_iteration.Q, 1.0 / epsilon);
 
     if (!mdp) {
         Serror("The environment must support the creation of an MDP\n");
