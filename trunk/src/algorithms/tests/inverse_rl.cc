@@ -778,7 +778,6 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("# V_OPT\n");
         
         // -------- softmax -------- //
-        FixedSoftmaxPolicy softmax_policy(VI.Q, 1.0);
         printf ("Softmax policy:\n---------------\n");
         softmax_policy.Show();
         PolicyEvaluation smax_evaluator(&softmax_policy, mdp, gamma);
