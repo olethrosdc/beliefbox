@@ -14,29 +14,31 @@
 
 int main (void)
 {
-    DirichletDistribution dirichlet(2);
+    int N = 4;
+    DirichletDistribution dirichlet(N);
 	Vector pre = dirichlet.GetParameters();
-	Vector data(2);
+	Vector data(N);
+    Vector theta(N);
+    for (int i=0; i<N; ++i) {
+        theta(i) = urandom();
+    }
+    theta /= theta.Sum();
+    MultinomialDistribution P(theta);
 
-    real actual_probability = 0.7;
     int c = 100;
     for (int t=0; t<10000; t++) {
-        if (urandom() < actual_probability) {
-            data[0] = 1.0;
-            data[1] = 0.0;
-        } else {
-            data[0] = 0.0;
-            data[1] = 1.0;
-        }            
+        Vector x = P.generate();
 
-        dirichlet.update(&data);
+        dirichlet.update(&x);
 
         Vector post = dirichlet.GetParameters();
         Vector gen = dirichlet.generate();
         c--;
         if (c == 0) {
-            for (int i=0; i<2; i++) {
-                printf ("%d %f %f %f %f\n", i, pre[i], data[i], post[i], gen[i]);
+            for (int i=0; i<N; i++) {
+                printf ("%d %f %f %f %f\n",
+                        i, pre[i]/pre.Sum(),
+                        theta[i], post[i]/post.Sum(), gen[i]);
             }
             c = 100;
         }
