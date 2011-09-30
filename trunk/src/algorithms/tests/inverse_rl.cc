@@ -878,7 +878,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
         delete mdp;
         
     }
-    
+    delete mdp;
+
     return statistics;
 }
 

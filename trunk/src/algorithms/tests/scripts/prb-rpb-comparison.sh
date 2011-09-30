@@ -1,6 +1,6 @@
 outdir=$HOME/results/inverse_rl/Chain/
 runs=100
-for samples in 2000 5000 10000
+for samples in 10000
 do
     for n_steps in 10 100 1000 10000
     do
