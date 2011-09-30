@@ -259,5 +259,8 @@ RewardPolicyBelief::~RewardPolicyBelief()
 	for (uint i=0; i<policies.size(); ++i) {
 		delete policies[i];
 	}	
+    for (uint i=0; i<rewards.size(); ++i) {
+        delete rewards[i];
+    }
 }
 
