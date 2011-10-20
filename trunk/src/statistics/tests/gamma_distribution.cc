@@ -30,10 +30,10 @@ int main (int argc, char** argv)
     int T = 1000;
 
 	std::vector<real> x(T);    
-	real p = 0.0;
-	//GammaDistribution gamma_source(1.0, 1.0);
+	real p = 1.0;
+	GammaDistribution gamma_source(1.0, 1.0);
 	NormalDistribution normal_source(-3.0, 1.0);
-	BetaDistribution gamma_source(1.0, 1.0);
+	//BetaDistribution gamma_source(5.0, 2.0);
 	for (int t=0; t<T; ++t) {
 		if (urandom() < p) {
 			x[t] = gamma_source.generate();
@@ -42,10 +42,11 @@ int main (int argc, char** argv)
 		}
 		//printf ("%f #data\n", x[t]);
 	}
+    
 	Vector posterior = Test(x, T, number_of_samples);
-    printf("# posterior (lognorm, exp, gamma)\n");
+    printf("# posterior (lognorm, exp, gamma, beta, tree)\n");
 	exp(posterior).print(stdout);
-    printf("# log posterior (lognorm, exp, gamma)\n");
+    printf("# log posterior (lognorm, exp, gamma, beta, tree)\n");
     posterior.print(stdout);
 
 #else
@@ -95,6 +96,8 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
     for (int t=0; t<T; ++t) {
         y[t] = x[t];
     }
+    real min_x = Min(x);
+    real max_x = Max(x);
     real log_norm_pdf = normal_prior.LogLikelihoodLogNormal(z, K);
 
     real a = 1;
@@ -109,8 +112,8 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
     
     Vector lower_bound(1);
     Vector upper_bound(1);
-    lower_bound(0) = 0.0;
-    upper_bound(0) = 0.02;
+    lower_bound(0) = min_x - 0.5;
+    upper_bound(0) = max_x + 0.5;
     ContextTreeKDTree kd_tree (2, 128, lower_bound, upper_bound);
     real log_kd_tree = 0;
     for (int t=0; t<T; ++t) {
@@ -123,11 +126,12 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
         log_kd_tree += log_p;
         printf ("%f %f\n", x[t], log_p);
     }
-    for (real X = lower_bound(0); X<=upper_bound(0); X+= 0.00001) {
+    for (real X = lower_bound(0); X<=upper_bound(0); X+= 0.001) {
         Vector v(1);
         v(0) = X;
-        real px = kd_tree.pdf(v);
-        printf ("%f %f # PDF\n", X, px);
+        real p_tree = kd_tree.pdf(v);
+        
+        printf ("%f %f # PDF\n", X, p_tree);
     }
     int n_c = 5;
     Vector log_P (n_c);
