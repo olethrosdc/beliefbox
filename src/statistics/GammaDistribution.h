@@ -52,6 +52,7 @@ public:
     virtual ~GammaDistributionUnknownShapeScale(); ///< destructor
     virtual void calculatePosterior(real x); ///< calculate posterior from an observation
     virtual real Observe(real x); ///< observe, return posterior..
+    virtual Vector posterior_pdf(std::vector<real>& y, std::vector<real>& x, int K) const; 
     virtual real pdf (real x) const; ///< pdf
     /// observe sequence, return likelihood
     /// A number of samples must be specified

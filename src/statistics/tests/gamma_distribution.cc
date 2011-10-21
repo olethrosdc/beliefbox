@@ -24,43 +24,26 @@ Vector Test(std::vector<real>& x, int T, int K);
 int main (int argc, char** argv)
 {
 
+    if (argc != 4) {
+        fprintf(stderr, "Usage: gamma_distribution scaling N_samples filename\n");
+        exit(-1);
+    }
     real scaling = atof(argv[1]);
     int number_of_samples = atoi(argv[2]);
-#if 0
-    int T = 1000;
+    char* fname = argv[3];
+        
 
-	std::vector<real> x(T);    
-	real p = 1.0;
-	GammaDistribution gamma_source(1.0, 1.0);
-	NormalDistribution normal_source(-3.0, 1.0);
-	//BetaDistribution gamma_source(5.0, 2.0);
-	for (int t=0; t<T; ++t) {
-		if (urandom() < p) {
-			x[t] = gamma_source.generate();
-		} else {
-			x[t] = exp(normal_source.generate());
-		}
-		//printf ("%f #data\n", x[t]);
-	}
-    
-	Vector posterior = Test(x, T, number_of_samples);
-    printf("# posterior (lognorm, exp, gamma, beta, tree)\n");
-	exp(posterior).print(stdout);
-    printf("# log posterior (lognorm, exp, gamma, beta, tree)\n");
-    posterior.print(stdout);
-
-#else
     Matrix data;
-    ReadFloatDataASCII(data, "./weights_raw.dat");
+    if (!ReadFloatDataASCII(data, fname)) {
+        Serror("No data read from file %s\n", fname);
+        exit(-1);
+    }
     int T = data.Rows();
     std::vector<real> x(T);    
     for (int t=0; t<T; ++t) {
         x[t] = data(t, 0) * scaling; // + 0.1*urandom(); // maybe add a bit of noise
     }
-    //real S = Max(x);
-    //for (int t=0; t<T; ++t) {
-    //x[t] /= S;
-    //}
+
     for (int k=T; k<=T; ++k) {
         int t = k * k;
         if (t > T) {
@@ -71,9 +54,6 @@ int main (int argc, char** argv)
             break;
         }
     }
-
-#endif
-
 
     return 0;
 }
@@ -124,8 +104,9 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
             log_p = -40;
         }
         log_kd_tree += log_p;
-        printf ("%f %f\n", x[t], log_p);
+        //printf ("%f %f %f\n", x[t], log_p);
     }
+    #if 0
     for (real X = lower_bound(0); X<=upper_bound(0); X+= 0.001) {
         Vector v(1);
         v(0) = X;
@@ -133,6 +114,7 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
         
         printf ("%f %f # PDF\n", X, p_tree);
     }
+#endif
     int n_c = 5;
     Vector log_P (n_c);
     log_P(0) = log_norm_pdf;
@@ -143,7 +125,6 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
     Vector log_prior (n_c);
     for (int i=0; i<n_c; ++i) {
         log_prior(i) = log(1.0/(real) n_c);
-        
     }
     Vector log_posterior = log_prior + log_P;
     log_posterior -= log_posterior.logSum();
