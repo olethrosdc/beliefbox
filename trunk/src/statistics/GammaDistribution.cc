@@ -126,6 +126,49 @@ real GammaDistributionUnknownShapeScale::pdf (real x) const
     return 0.0;
 }
 
+/// Get the posterior pdf at y, given data x!
+Vector GammaDistributionUnknownShapeScale::posterior_pdf(std::vector<real>& y, std::vector<real>& x, int K) const
+{
+    //real t = (real) T;
+    ExponentialDistribution Exp(lambda);
+    real log_likelihood = LOG_ZERO;
+    std::vector<GammaDistribution*> marginal_gammas(K);
+    Vector likelihoods(K);
+    for (int k=0; k<K; ++k) {
+        real alpha = Exp.generate();
+        //GammaDistribution prior_gamma(mu + t * alpha, nu + S);
+        GammaDistribution prior_gamma(mu, nu);
+        real beta = prior_gamma.generate();
+        marginal_gammas[k] = new GammaDistribution(alpha, beta);
+        real log_p = 0.0;
+        int n = x.size();
+        for (int i=0; i<n; ++i) {
+            log_p += marginal_gammas[k]->log_pdf(x[i]);
+        }
+        likelihoods(k) = log_p;
+        log_likelihood = logAdd(log_likelihood, log_p);
+    }
+    likelihoods -= log_likelihood;
+    Vector Pr(K);
+    Pr = exp(likelihoods - log_likelihood);
+    int N = y.size();
+    Vector P_y_x(N);
+    for (int t=0; t<N; ++t) {
+        P_y_x(t) = 0;
+        for (int k=0; k<K; ++k) {
+            real P_x_k = marginal_gammas[k]->pdf(y[t]);
+            P_y_x(t) += P_x_k * Pr(k);
+        }
+    }
+
+    for (int k=0; k<K; ++k) {
+        delete marginal_gammas[k];
+    }
+    
+    return P_y_x;
+}
+
+
 real GammaDistributionUnknownShapeScale::LogLikelihood(std::vector<real>& x, int K) const
 {
     //real t = (real) T;
@@ -147,6 +190,7 @@ real GammaDistributionUnknownShapeScale::LogLikelihood(std::vector<real>& x, int
     log_likelihood -= log(K);
     return log_likelihood;
 }
+
 
 real GammaDistributionUnknownShapeScale::generate() const
 {
