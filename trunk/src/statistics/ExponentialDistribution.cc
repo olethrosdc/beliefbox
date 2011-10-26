@@ -116,7 +116,7 @@ real GammaExponentialPrior::generate() const
 real GammaExponentialPrior::LogLikelihood(const std::vector<real>& x,
                                           int n_iterations) const
 {
-#if 0
+#if 1
     real log_likelihood = 0;
     for (int iter = 0; iter < n_iterations; ++iter) {
         real lambda = gamma_prior.generate();
@@ -125,13 +125,16 @@ real GammaExponentialPrior::LogLikelihood(const std::vector<real>& x,
     }
     log_likelihood -= log(n_iterations);
 #endif
+
     real alpha = gamma_prior.alpha;
     real beta = gamma_prior.beta;
 
     real l2 = 0;
     for (int i=0; i<(int) x.size(); ++i) {
         l2 += logGamma(alpha + 1) - logGamma(alpha) + alpha * log(beta) - (alpha + 1) * log(beta + x[i]);
+        alpha += 1.0;
+        beta += x[i];
     }
     //printf ("%f %f #gamma log likelihood\n", log_likelihood, l2);
-    return l2;//log_likelihood;
+    return l2; //log_likelihood;
 }

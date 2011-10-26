@@ -60,13 +60,16 @@ int main (int argc, char** argv)
 
 Vector Test(std::vector<real>& x_orig, int T, int K)
 {
+
+    real alpha = 1.0;
+
     std::vector<real> x(T); // x is the set of truncated data
     for (int t=0; t<T; ++t) {
         x[t] = x_orig[t];
     }
     //printf ("Running test for T = %d\n", T);
     //printf ("=======================\n\n");
-    NormalUnknownMeanPrecision normal_prior;
+    NormalUnknownMeanPrecision normal_prior(alpha, alpha);
     //real log_norm_pdf = 0;
     std::vector<real> z(T); // x is the set of logarithmic data
     for (int t=0; t<T; ++t) {
@@ -80,14 +83,13 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
     real max_x = Max(x);
     real log_norm_pdf = normal_prior.LogLikelihoodLogNormal(z, K);
 
-    real a = 1;
-    GammaDistributionUnknownShapeScale gamma_prior(a, a, a);
+    GammaDistributionUnknownShapeScale gamma_prior(alpha, alpha, alpha);
     real log_gamma_pdf =  gamma_prior.LogLikelihood(x, K);
 
-    GammaExponentialPrior exponential_prior(a, a);
+    GammaExponentialPrior exponential_prior(alpha, alpha);
     real log_exp_pdf = exponential_prior.LogLikelihood(x, K);
 
-    BetaDistributionMCPrior beta_prior(a, a);
+    BetaDistributionMCPrior beta_prior(alpha, alpha);
     real log_beta_pdf = beta_prior.LogLikelihood(x, K);
     
     Vector lower_bound(1);
@@ -132,6 +134,7 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
     Vector posterior = exp(log_posterior);
     log_posterior.print(stdout); printf("# Posterior (norm, exp, gamma, beta, tree)\n");
 
+    return log_posterior;
     NormalDistribution ML_normal;
     GammaDistribution ML_gamma;
     ExponentialDistribution ML_exp;
