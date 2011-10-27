@@ -26,7 +26,7 @@
     
     A multivariate t distribution with \f$n\f$ degrees of freedom,
     location vector \f$\mu \in R^k\f$ and precision matrix
-    \f$T \in R^{k \times k}\f$ has a density defined for all \f$x \in \mathbb{R}^k\f$.
+    \f$T \in R^{k \times k}\f$ has a density defined for all \f$x \in R^k\f$.
     \f[
     f(x \mid n, \mu, T) = c\left[1 + \frac{1}{n} (x-\mu)'T(x-\mu)\right]^{-(n+k)/2},
     \f]
