@@ -132,9 +132,8 @@ Vector Test(std::vector<real>& x_orig, int T, int K)
     log_posterior -= log_posterior.logSum();
     
     Vector posterior = exp(log_posterior);
-    log_posterior.print(stdout); printf("# Posterior (norm, exp, gamma, beta, tree)\n");
+    printf("# Posterior (norm, exp, gamma, beta, tree) #");  log_posterior.print(stdout); 
 
-    return log_posterior;
     NormalDistribution ML_normal;
     GammaDistribution ML_gamma;
     ExponentialDistribution ML_exp;
