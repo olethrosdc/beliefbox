@@ -66,7 +66,7 @@ int ReadClassData(Matrix& data, std::vector<int>& labels, const char* fname)
             exit(-1);
 	}
     
-    printf("# horizon: %d, columns: %d\n", T, columns);
+    //printf("# horizon: %d, columns: %d\n", T, columns);
     data.Resize(T, columns - 1);
     labels.resize(T);
 
@@ -121,7 +121,7 @@ int ReadFloatDataASCII(Matrix& data, const char* fname, int tmpT)
 	if (tmpT > 0) {
 		T = std::min<int>(T, tmpT);
 	}
-    printf("# horizon: %d, columns: %d\n", T, columns);
+    //printf("# horizon: %d, columns: %d\n", T, columns);
     data.Resize(T, columns);
 
 
