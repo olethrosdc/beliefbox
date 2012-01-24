@@ -198,6 +198,8 @@ int Graph::kConnectivity(int i, int j, int* C)
     int k = 0;
     if (G[j]) {
         printf ("Err\n");
+        delete [] G;
+        delete [] dist;
         return 0;
     }
     CalculateDistances (dist, j, G);

@@ -55,7 +55,7 @@ PolicyEvaluation::~PolicyEvaluation()
 */
 void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
 {
-    
+    assert(policy);
     int n_iter = 0;
     do {
         Delta = 0.0;

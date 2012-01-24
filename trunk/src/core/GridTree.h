@@ -53,6 +53,10 @@ struct GridTree
     int n_dimensions;
     GridTree(Vector& lower_bound, Vector& upper_bound);
     std::vector<int> getInterval(Vector& x);
+    ~GridTree()
+    {
+        delete roor;
+    }
 };
 
 

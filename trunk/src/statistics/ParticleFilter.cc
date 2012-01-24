@@ -49,6 +49,7 @@ void ParticleFilter::SetNumberOfEstimates(int n_estimates)
     
 void ParticleFilter::Reset()
 {
+    assert(prior);
 	real a = 1.0f/(real) N;
 	//printf ("Generating: ");
 	for (int i=0; i<N; i++) {
