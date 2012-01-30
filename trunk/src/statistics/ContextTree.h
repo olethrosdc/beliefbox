@@ -30,8 +30,8 @@ public:
 	// public classes
 	struct Node
 	{
-        int n_branches;
-        int n_outcomes;
+        int n_branches; ///< The number of symbols we condition on
+        int n_outcomes; ///< The number of symbols to predict
         int depth; ///< depth
         Node* prev; ///< previous node
         std::vector<Node*> next; ///< pointers to next nodes
