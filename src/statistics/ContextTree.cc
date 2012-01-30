@@ -80,27 +80,29 @@ real ContextTree::Node::Observe(Ring<int>& history,
 #if 1
     // P-BVMM
     // use a modified PPM -- best for many outcomes
-    real S = alpha.Sum();
-    real Z = 0;
-    int zeros = 0;
+    real S = alpha.Sum(); // total number of observations
+    real Z = 0; // total prior mass for observed values
+    int zeros = 0; // number of unobserved values
     for (int i=0; i<n_outcomes; ++i) {
         if (alpha(i) > 0) {
-            Z += prior_alpha;
+            Z += prior_alpha; 
         } else {
             zeros++;
         }
     }
     if (zeros == n_outcomes) {
+        // case 1: observed nothing yet
         for (int i=0; i<n_outcomes; ++i) {
             if (alpha(i) == 0) {
                 P(i) = 1.0 / (real) n_outcomes;
             }
         }
     } else {
-        real iSZ = 1.0 / (S + Z);
-        P = (alpha) * iSZ;
+        // case 2: observed some things
+        real iSZ = 1.0 / (S + Z); // S + Z is the total alpha for observed values
+        P = (alpha) * iSZ; // Pr of seeing the i-th symbol if you know you are going to see a previsouly seen symbol
         
-        real P_rest = 1.0 - P.Sum();
+        real P_rest = 1.0 - P.Sum(); // Remaining mass
         
         if (zeros > 0) {
             for (int i=0; i<n_outcomes; ++i) {
@@ -117,13 +119,13 @@ real ContextTree::Node::Observe(Ring<int>& history,
 #if 0
     // aka: I-BVMM -- best for many outcomes
     real S = alpha.Sum();
-    real N = 0;
+    real N = 0; // N is the number of symbols
     for (int i=0; i<n_outcomes; ++i) {
         if (alpha(i)) {
             N += 1;
         }
     }
-    real Z = (1 + N) * prior_alpha + S;
+    real Z = (1 + N) * prior_alpha + S; // total dirichlet mass
     P = (alpha + prior_alpha) / Z;
     real n_zero_outcomes = n_outcomes - N;
     if (n_zero_outcomes > 0) {
