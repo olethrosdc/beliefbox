@@ -55,7 +55,7 @@ struct GridTree
     std::vector<int> getInterval(Vector& x);
     ~GridTree()
     {
-        delete roor;
+        delete root;
     }
 };
 

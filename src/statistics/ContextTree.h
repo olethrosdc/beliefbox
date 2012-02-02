@@ -30,6 +30,7 @@ public:
 	// public classes
 	struct Node
 	{
+        int N_obs; ///< total number of observations
         int n_branches; ///< The number of symbols we condition on
         int n_outcomes; ///< The number of symbols to predict
         int depth; ///< depth
