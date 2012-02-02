@@ -13,7 +13,8 @@
 
 ContextTree::Node::Node(int n_branches_,
 						int n_outcomes_)
-	: n_branches(n_branches_),
+	: N_obs(0),
+      n_branches(n_branches_),
 	  n_outcomes(n_outcomes_),
 	  depth(0),
 	  prev(NULL),
@@ -29,7 +30,8 @@ ContextTree::Node::Node(int n_branches_,
 
 /// Make a node for K symbols at nominal depth d
 ContextTree::Node::Node(ContextTree::Node* prev_)
-	: n_branches(prev_->n_branches),
+	: N_obs(0),
+      n_branches(prev_->n_branches),
 	  n_outcomes(prev_->n_outcomes),
 	  depth(prev_->depth + 1),
 	  prev(prev_),
@@ -70,12 +72,15 @@ real ContextTree::Node::Observe(Ring<int>& history,
 
     // Standard
 #if 0
-    real S = alpha.Sum();
+    real S = (real) N_obs; //xalpha.Sum();
     real Z = 1.0 / (prior_alpha * (real) n_outcomes + S);
     P = (alpha + prior_alpha) * Z;
-    P /= P.Sum();
+    
+    //printf("%f\n", P.Sum());//P.print(stdout);
+    //P /= P.Sum();
     //P[y] = (alpha[y] + prior_alpha) * Z;
 #endif
+
 
 #if 1
     // P-BVMM
@@ -180,6 +185,8 @@ real ContextTree::Node::Observe(Ring<int>& history,
 		}
 		total_probability = next[k]->Observe(history, x, y, total_probability);
 	}
+
+    N_obs++;
 
 	return total_probability;
 }
