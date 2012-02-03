@@ -116,6 +116,7 @@ int main(int argc, char** argv)
     real logsum = 0;
     real log2 = log(2);
     real acc = 0;
+    real hit = 0;
 	for (int t=0; t<T; ++t) {
 		int y = data[t];
         p[t] = tree->Observe(x, y);

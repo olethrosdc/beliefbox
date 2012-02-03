@@ -123,7 +123,7 @@ real ContextTree::Node::Observe(Ring<int>& history,
 
 #if 0
     // aka: I-BVMM -- best for many outcomes
-    real S = alpha.Sum();
+    real S = alpha.Sum(); // = N_obs
     real N = 0; // N is the number of symbols
     for (int i=0; i<n_outcomes; ++i) {
         if (alpha(i)) {
@@ -170,7 +170,8 @@ real ContextTree::Node::Observe(Ring<int>& history,
 
     // Go deeper when there has been at least one observations
     // node. 
-    real threshold = sqrt((real) depth);//2;
+    //real threshold = sqrt((real) depth);//2;
+    real threshold = log((real) depth);//2;
 
     // Always go deepr, no matter what
     //real threshold = 0; 
