@@ -11,6 +11,9 @@
 
 #include "ContextTree.h"
 
+//#define DEFAULT_PRIOR (1.0 / sqrt((real) n_outcomes))
+#define DEFAULT_PRIOR (1.0 / (real) n_outcomes)
+
 ContextTree::Node::Node(int n_branches_,
 						int n_outcomes_)
 	: N_obs(0),
@@ -19,7 +22,7 @@ ContextTree::Node::Node(int n_branches_,
 	  depth(0),
 	  prev(NULL),
 	  next(n_branches),
-	  P(n_outcomes), alpha(n_outcomes), prior_alpha(0.5),
+	  P(n_outcomes), alpha(n_outcomes), prior_alpha(DEFAULT_PRIOR),
       w(1), log_w(0), log_w_prior(0)
 {
 	for (int i=0; i<n_outcomes; ++i) {
@@ -38,7 +41,7 @@ ContextTree::Node::Node(ContextTree::Node* prev_)
 	  next(n_branches),
 	  P(n_outcomes),
 	  alpha(n_outcomes),
-	  prior_alpha(0.5),
+	  prior_alpha(DEFAULT_PRIOR),
 	  log_w(0),
 	  log_w_prior(prev_->log_w_prior - log(2))
 	  //log_w_prior( - log(10))
@@ -82,7 +85,7 @@ real ContextTree::Node::Observe(Ring<int>& history,
 #endif
 
 
-#if 1
+#if 0
     // P-BVMM
     // use a modified PPM -- best for many outcomes
     real S = alpha.Sum(); // total number of observations
@@ -121,7 +124,7 @@ real ContextTree::Node::Observe(Ring<int>& history,
 #endif
 
 
-#if 0
+#if 1
     // aka: I-BVMM -- best for many outcomes
     real S = alpha.Sum(); // = N_obs
     real N = 0; // N is the number of symbols
