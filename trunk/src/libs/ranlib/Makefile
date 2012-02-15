@@ -9,7 +9,7 @@ all: ${SOLIBRARY}
 
 ${SOLIBRARY}: ${OBJECTS}
 	@cp ranlib.h $(INCS_EXPORT)
-	${CC} -shared -o ${SOLIBRARY} ${OBJECTS} ${LDFALGS} ${LIBSPATH} ${DEBUG_LIBS}
+	${CC} -shared -o ${SOLIBRARY} ${OBJECTS} ${LDFALGS} ${LIBSPATH} ${DEBUG_LIBS} -I/usr/include/c++/4.5/ -I/usr/include/c++/4.5/x86_64-linux-gnu/
 	cp ${SOLIBRARY} $(LIBS_EXPORT)
 	@$(AR) $(LIBSMPL) $(OBJECTS)
 

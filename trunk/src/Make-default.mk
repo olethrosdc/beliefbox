@@ -3,11 +3,11 @@
 
 PACKAGES = core algorithms geometry models statistics environments
 # Compiler and Linker
-CC = g++
-CXX = g++
-LD = g++
+CC = clang++
+CXX = clang++
+LD = clang++
 AR = ar -rus
-DEP = g++ -MM -D__DEPEND__
+DEP = clang++ -MM -D__DEPEND__
 
 
 # Libraries
@@ -25,8 +25,8 @@ MYINCS = -I$(INCS_EXPORT)
 DBG_OPT=OPT
 
 # Add -pg flag for profiling
-CFLAGS_DBG = -fPIC -g -Wall -DUSE_DOUBLE -pipe
-CFLAGS_OPT = -fPIC -g -O3 -Wall -DUSE_DOUBLE -DNDEBUG -pipe #-pg
+CFLAGS_DBG = -fPIC -g -Wall -DUSE_DOUBLE -I/usr/include/c++/4.5/ -I/usr/include/c++/4.5/x86_64-linux-gnu/
+CFLAGS_OPT = -fPIC -g -O3 -Wall -DUSE_DOUBLE -DNDEBUG -I/usr/include/c++/4.5/ -I/usr/include/c++/4.5/x86_64-linux-gnu/ #-pg
 #CFLAGS_DBG = -fPIC -g -Wall -pipe -pg
 #CFLAGS_OPT = -fPIC -g -O3 -Wall -DNDEBUG -pipe -pg
 CFLAGS=$(CFLAGS_$(DBG_OPT))
@@ -53,7 +53,7 @@ LIBSMPLXX = $(LIBS_DIR)/libsmpl++.a
 LIBS = -L$(LIBS_DIR) $(MYLIBS) #-lgd
 EXPORTED_LIBS = -lranlib
 MAIN_LIB = -lsmpl
-INCS := -I$(SMPL_DIR)/core $(MYINCS)
+INCS := -I/usr/include/c++/4.5/ -I/usr/include/c++/4.5/x86_64-linux-gnu/ -I$(SMPL_DIR)/core $(MYINCS)
 INCS += $(foreach f,$(PACKAGES),-I$(SMPL_DIR)/$(f))
 
 # -lnjamd -lefence - add either for debugging
