@@ -112,10 +112,10 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
     for (int i=0; i<n_reward_samples; ++i) {
         DiscreteSpaceRewardDistribution* R_sa = new DiscreteSpaceRewardDistribution(n_states, n_actions);
         Vector R = reward_prior.generate();
-        int i = 0;
+        int j = 0;
         for (int s=0; s<n_states; ++s) {
-            for (int a=0; a<n_actions; ++a, ++i) {
-                R_sa->setFixedReward(s, a, R(i)); 
+            for (int a=0; a<n_actions; ++a, ++j) {
+                R_sa->setFixedReward(s, a, R(j)); 
             }
         }
         rewards.push_back(R_sa);
