@@ -25,8 +25,8 @@ MYINCS = -I$(INCS_EXPORT)
 DBG_OPT=OPT
 
 # Add -pg flag for profiling
-CFLAGS_DBG = -fPIC -g -Wall -DUSE_DOUBLE -I/usr/include/c++/4.5/ -I/usr/include/c++/4.5/x86_64-linux-gnu/
-CFLAGS_OPT = -fPIC -g -O3 -Wall -DUSE_DOUBLE -DNDEBUG -I/usr/include/c++/4.5/ -I/usr/include/c++/4.5/x86_64-linux-gnu/ #-pg
+CFLAGS_DBG = -fPIC -g -Wall -DUSE_DOUBLE -I/usr/include/c++/4.4/ -I/usr/include/c++/4.4/x86_64-linux-gnu/
+CFLAGS_OPT = -fPIC -g -O3 -Wall -DUSE_DOUBLE -DNDEBUG -I/usr/include/c++/4.4/ -I/usr/include/c++/4.4/x86_64-linux-gnu/ #-pg
 #CFLAGS_DBG = -fPIC -g -Wall -pipe -pg
 #CFLAGS_OPT = -fPIC -g -O3 -Wall -DNDEBUG -pipe -pg
 CFLAGS=$(CFLAGS_$(DBG_OPT))
