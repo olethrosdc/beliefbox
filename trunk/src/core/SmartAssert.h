@@ -85,7 +85,7 @@ public:
 };
 
 /// Make an assertion
-static Assert make_assert (bool flag) {
+Assert make_assert (bool flag) {
 	return Assert(flag);
 }
 
