@@ -49,7 +49,7 @@ public:
         return V(state);
     }
     FixedDiscretePolicy* getPolicy();
+    
 };
-
 #endif
 
