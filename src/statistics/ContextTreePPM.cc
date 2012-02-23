@@ -147,14 +147,14 @@ real ContextTreePPM::Node::Observe(Ring<int>& history,
 	alpha[y]++;
 
     real threshold = 1;//(real) n_outcomes;
-    real S_next = 0;
+    //real S_next = 0;
 	if (x != history.end() && S >  threshold) {
 		int k = *x;
 		++x;
 		if (!next[k]) {
 			next[k] = new Node(this);
-		} else {
-            S_next = next[k]->TotalObservations();
+            //} else {
+            //S_next = next[k]->TotalObservations();
         }
 		total_probability = next[k]->Observe(history, x, y, total_probability, &P);
 	}

@@ -185,6 +185,7 @@ int DiscreteDistribution::generate(const std::vector<real>& x)
     real d=urandom();
     real sum = 0.0;
     int n = x.size();
+    assert(n > 0);
     for (int i=0; i<n; i++) {
         sum += x[i];
         if (d < sum) {

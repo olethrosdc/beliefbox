@@ -68,7 +68,7 @@ void OptimisticValueIteration::ComputeStateValues(real epsilon, real threshold, 
         for (int s=0; s<n_states; s++) {
             //real v = V[s];
             real Q_a_max = -RAND_MAX;
-            int a_max = 0;
+            //int a_max = 0;
             for (int a=0; a<n_actions; a++) {
                 real S = 0.0;
 
@@ -97,7 +97,7 @@ void OptimisticValueIteration::ComputeStateValues(real epsilon, real threshold, 
                 //real R = mdp->getExpectedReward(s, a) + gamma*max_U - baseline;
                 
                 if (a==0 || Q_a_max < S) {
-                    a_max = a;
+                    //a_max = a;
                     Q_a_max = S;
                 }
             }
