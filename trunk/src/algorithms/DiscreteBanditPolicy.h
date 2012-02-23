@@ -201,7 +201,7 @@ class PFVPIPolicy : public DiscreteBanditPolicy
     PFActionValueEstimate* estimator;
     real gamma;
     int n_samples;
-    PFVPIPolicy(int n_actions, PFActionValueEstimate* estimator, real gamma);
+    PFVPIPolicy(int n_actions, PFActionValueEstimate* estimator, real gamma, int n_samples);
     /// Reset
     virtual void Reset();
     virtual void Observe(int a, real r);

@@ -218,7 +218,7 @@ PopulationVPIPolicy::PopulationVPIPolicy(int n_actions, PopulationEstimate* esti
 
 
 /// A new Particle Filter VPI policy
-PFVPIPolicy::PFVPIPolicy(int n_actions, PFActionValueEstimate* estimator, real gamma)
+PFVPIPolicy::PFVPIPolicy(int n_actions, PFActionValueEstimate* estimator, real gamma, int n_samples)
 {
     this->n_actions = n_actions;
     this->estimator = estimator;

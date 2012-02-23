@@ -2,13 +2,13 @@
 // $Id: Vector.c,v 1.1 2006/11/07 18:03:35 cdimitrakakis Exp cdimitrakakis $
 
 #include "Vector.h"
-#include "SmartAssert.h"
 #include "Matrix.h"
 
 #include <exception>
 #include <stdexcept>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
 
 Vector Vector::Unity(int N_, enum BoundsCheckingStatus check)
 {
@@ -36,8 +36,8 @@ int DeleteVector (Vector* vector)
 void CopyVector (Vector* const lhs, const Vector * const rhs)
 {
     int n = lhs->n;
-    SMART_ASSERT(lhs && rhs)(lhs)(rhs);
-    SMART_ASSERT(n == rhs->n)(lhs->n)(rhs->n);
+    assert(lhs && rhs);
+    assert(n == rhs->n);
     for (int i=0; i<n; i++) {
         lhs->x[i] = rhs->x[i];
     }
@@ -464,8 +464,8 @@ void Vector::Clear()
 void Vector::Resize(int N_)
 { 
     n = N_;
-    if (n>maxN) {
-        if (n==0) {
+    if (n > maxN) {
+        if (maxN == 0) {
             x = (real*) malloc (sizeof(real)*n);
         } else {
             x = (real*) realloc(x, sizeof(real)*n);
@@ -479,9 +479,9 @@ void Vector::Resize(int N_)
 /// It is safe to use identical handles for all arguments.
 void Add (const Vector* lhs, const Vector* rhs, Vector* res)
 {
-    SMART_ASSERT(lhs && rhs  && res);
+    assert(lhs && rhs  && res);
     int n=lhs->n;
-    SMART_ASSERT((n==rhs->n)&&(n==res->n));
+    assert((n==rhs->n)&&(n==res->n));
     for (int i=0; i<n; i++) {
         res->x[i] = lhs->x[i] + rhs->x[i];
     }
@@ -491,9 +491,9 @@ void Add (const Vector* lhs, const Vector* rhs, Vector* res)
 /// It is safe to use identical handles for all arguments.
 void Sub (const Vector* lhs, const Vector* rhs, Vector* res)
 {
-    SMART_ASSERT(lhs && rhs  && res);
+    assert(lhs && rhs  && res);
     int n=lhs->n;
-    SMART_ASSERT((n==rhs->n)&&(n==res->n));
+    assert((n==rhs->n)&&(n==res->n));
     for (int i=0; i<n; i++) {
         res->x[i] = lhs->x[i] - rhs->x[i];
     }
@@ -504,9 +504,9 @@ void Sub (const Vector* lhs, const Vector* rhs, Vector* res)
 /// It is safe to use identical handles for all arguments.
 void Mul (const Vector* lhs, const Vector* rhs, Vector* res)
 {
-    SMART_ASSERT(lhs && rhs  && res);
+    assert(lhs && rhs  && res);
     int n=lhs->n;
-    SMART_ASSERT((n==rhs->n)&&(n==res->n));
+    assert((n==rhs->n)&&(n==res->n));
     for (int i=0; i<n; i++) {
         res->x[i] = lhs->x[i] * rhs->x[i];
     }
@@ -516,9 +516,9 @@ void Mul (const Vector* lhs, const Vector* rhs, Vector* res)
 /// It is safe to use identical handles for all arguments.
 void Div (const Vector* lhs, const Vector* rhs, Vector* res)
 {
-    SMART_ASSERT(lhs && rhs  && res);
+    assert(lhs && rhs  && res);
     int n=lhs->n;
-    SMART_ASSERT((n==rhs->n)&&(n==res->n));
+    assert((n==rhs->n)&&(n==res->n));
     for (int i=0; i<n; i++) {
         res->x[i] = lhs->x[i] / rhs->x[i];
     }
@@ -528,9 +528,9 @@ void Div (const Vector* lhs, const Vector* rhs, Vector* res)
 /// If all vectors are column vectors, this is \f$x=a' b\f$.
 real Product (const Vector* const lhs, const Vector* const rhs)
 {
-    SMART_ASSERT(lhs && rhs);
+    assert(lhs && rhs);
     int n=lhs->n;
-    SMART_ASSERT(n==rhs->n);
+    assert(n==rhs->n);
     real res = 0.0;
     for (int i=0; i<n; i++) {
         res += lhs->x[i] * rhs->x[i];
@@ -543,10 +543,10 @@ real Product (const Vector* const lhs, const Vector* const rhs)
 /// If all vectors are column vectors, this is \f$x=a b'\f$.
 void Product (const Vector* lhs, const Vector* rhs, Matrix* res)
 {
-    SMART_ASSERT(lhs && rhs  && res);
+    assert(lhs && rhs  && res);
     int n=lhs->n;
-    SMART_ASSERT((n==rhs->n)&&(n==res->Columns()))(n)(rhs->n)(res->Columns());
-    SMART_ASSERT (n==res->Rows())(n)(res->Rows());
+    assert((n==rhs->n)&&(n==res->Columns()));
+    assert (n==res->Rows());
     for (int i=0; i<n; i++) { // columns
         for (int j=0; j<n; j++) { //rows
             (*res)(i,j) = lhs->x[j] * rhs->x[i];
@@ -559,7 +559,7 @@ void Product (const Vector* lhs, const Vector* rhs, Matrix* res)
 real Product (const Vector& lhs, const Vector& rhs)
 {
     int n=lhs.n;
-    SMART_ASSERT(n==rhs.n);
+    assert(n==rhs.n);
     real res = 0.0;
     for (int i=0; i<n; i++) {
         res += lhs.x[i] * rhs.x[i];
@@ -573,8 +573,8 @@ real Product (const Vector& lhs, const Vector& rhs)
 void Product (const Vector& lhs, const Vector& rhs, Matrix& res)
 {
     int n=lhs.n;
-    SMART_ASSERT((n==rhs.n)&&(n==res.Columns()))(n)(rhs.n)(res.Columns());
-    SMART_ASSERT (n==res.Rows())(n)(res.Rows());
+    assert((n==rhs.n)&&(n==res.Columns()));
+    assert (n==res.Rows());
     for (int i=0; i<n; i++) { // columns
         for (int j=0; j<n; j++) { //rows
             res(i,j) = lhs.x[j] * rhs.x[i];
