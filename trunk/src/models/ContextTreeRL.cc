@@ -147,14 +147,14 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
     //real log_w_prev = log_w;
     //real log_w2 = log_w  + log(p_observations) - log(total_probability);    
     log_w = log(w * p_observations / total_probability) - log_w_prior;
-    assert(!isnan(log_w));
+    assert(!std::isnan(log_w));
     //log_w = log_w + log(p_observations / total_probability) - log_w_prior;
 
     assert(log_w + log_w_prior <= 0);
     //assert(log_w2 + log_w_prior <= 0);
 
-    assert(!isnan(log_w));
-    if (isnan(log_w)) {
+    assert(!std::isnan(log_w));
+    if (std::isnan(log_w)) {
         fprintf(stderr, "Warning: log_w at depth %d is nan! log_w=%f, w = %f, p = %f, p(x) = %f, p(z) = %f, p(r)=%f, prior = %f, z = %d, r = %f \n", depth, log_w, w, p_observations, P[z], p_reward, total_probability, log_w_prior, z, r);
         P.print(stderr);
         log_w = -2;
@@ -172,16 +172,16 @@ real ContextTreeRL::Node::Observe(Ring<int>& history,
         }
         total_probability = next[k]->Observe(history, x, z, r, total_probability, active_contexts);
         w_prod = next[k]->w_prod; ///< for post facto context probabilities
-        assert(!isnan(total_probability));
-        assert(!isnan(w_prod));
+        assert(!std::isnan(total_probability));
+        assert(!std::isnan(w_prod));
     }
 
     // Auxilliary calculation for context
     context_probability = w * w_prod;
     w_prod *= (1 - w);
 
-    assert(!isnan(w_prod));
-    assert(!isnan(context_probability));
+    assert(!std::isnan(w_prod));
+    assert(!std::isnan(context_probability));
 
     return total_probability;
 }
@@ -195,19 +195,19 @@ real ContextTreeRL::Node::QValue(Ring<int>& history,
 {
     w = exp(log_w_prior + log_w); 
     real Q_next = Q * w + (1 - w) * Q_prev;
-    if (isnan(Q_prev)) {
+    if (std::isnan(Q_prev)) {
         fprintf(stderr, "Warning: at depth %d, Q_prev is nan\n", depth);
         Q_prev = 0;
     }
-    if (isnan(Q)) {
+    if (std::isnan(Q)) {
         fprintf(stderr, "Warning: at depth %d, Q is nan\n", depth);
         Q = 0;
     }
-    if (isnan(Q_next)) {
+    if (std::isnan(Q_next)) {
         fprintf(stderr, "Warning: at depth %d, Q_next is nan\n", depth);
         Q_next = 0;
     }
-    if (isnan(w)) {
+    if (std::isnan(w)) {
         fprintf(stderr, "Warning: at depth %d, w is nan\n", depth);
         w = 0.5;
     }
@@ -314,8 +314,8 @@ int ContextTreeRL::NChildren()
 real ContextTreeRL::QLearning(real step_size, real gamma, int observation, real reward)
 {
     real Q_prev = root->QValue(history, history.begin(), 0); ///< previous prediction 
-    //assert(!isnan(Q_prev));
-    if (isnan(Q_prev)) {
+    //assert(!std::isnan(Q_prev));
+    if (std::isnan(Q_prev)) {
         Q_prev = 0;
         fprintf(stderr, "Warning: Q_prev is nan\n");
     }
@@ -360,7 +360,7 @@ real ContextTreeRL::Sarsa(real step_size,
 						  real reward)
 {
     real Q_prev = root->QValue(history, history.begin(), 0);
-    //assert(!isnan(Q_prev));
+    //assert(!std::isnan(Q_prev));
 
     real max_Q = -INF;    
     real Q_next = 0;

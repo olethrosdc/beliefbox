@@ -176,8 +176,8 @@ real ContinuousContextTreeRL::Node::Observe(Vector& x, Vector& y, real reward, r
         }
 		total_probability = next[k]->Observe(x, y, reward, total_probability, active_contexts);
 		w_prod = next[k]->w_prod; 
-        assert(!isnan(total_probability));
-        assert(!isnan(w_prod));
+        assert(!std::isnan(total_probability));
+        assert(!std::isnan(w_prod));
     }
 
 
@@ -185,8 +185,8 @@ real ContinuousContextTreeRL::Node::Observe(Vector& x, Vector& y, real reward, r
     context_probability = w * w_prod;
     w_prod *= (1 - w);
 
-    assert(!isnan(w_prod));
-    assert(!isnan(context_probability));
+    assert(!std::isnan(w_prod));
+    assert(!std::isnan(context_probability));
 
     return total_probability;
 }
@@ -198,19 +198,19 @@ real ContinuousContextTreeRL::Node::QValue(Vector& x,
     w = exp(log_w_prior + log_w); 
     real Q_next = Q * w + (1 - w) * Q_prev;
 	printf ("%f -(%f,%f)-> %f\n", Q_prev, Q, w, Q_next);
-    if (isnan(Q_prev)) {
+    if (std::isnan(Q_prev)) {
         fprintf(stderr, "Warning: at depth %d, Q_prev is nan\n", depth);
         Q_prev = 0;
     }
-    if (isnan(Q)) {
+    if (std::isnan(Q)) {
         fprintf(stderr, "Warning: at depth %d, Q is nan\n", depth);
         Q = 0;
     }
-    if (isnan(Q_next)) {
+    if (std::isnan(Q_next)) {
         fprintf(stderr, "Warning: at depth %d, Q_next is nan\n", depth);
         Q_next = 0;
     }
-    if (isnan(w)) {
+    if (std::isnan(w)) {
         fprintf(stderr, "Warning: at depth %d, w is nan\n", depth);
         w = 0.5;
     }
@@ -242,7 +242,7 @@ real ContinuousContextTreeRL::QLearning(real step_size, real gamma, Vector& y, r
 {
 	real Q_prev = root->QValue(current_state_action, 0);
 
-    if (isnan(Q_prev)) {
+    if (std::isnan(Q_prev)) {
         Q_prev = 0;
         fprintf(stderr, "Warning: Q_prev is nan\n");
     }

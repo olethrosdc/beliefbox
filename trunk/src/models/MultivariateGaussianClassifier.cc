@@ -43,7 +43,7 @@ Vector& MultivariateGaussianClassifier::Output(const Vector& x)
 {
     for (int i=0; i<n_classes; ++i) {
         output(i) = class_distribution[i]->log_pdf(x);
-        if (isnan(output(i))) {
+        if (std::isnan(output(i))) {
             Serror("Output %d is nan", i);
             output.print(stdout);
             class_distribution[i]->Show();
@@ -54,7 +54,7 @@ Vector& MultivariateGaussianClassifier::Output(const Vector& x)
     output -= S;
     for (int i=0; i<n_classes; ++i) {
         output(i) = exp(output(i));
-        if (isnan(output(i))) {
+        if (std::isnan(output(i))) {
             Serror("Output %d is nan", i);
             output.print(stdout);
             class_distribution[i]->Show();

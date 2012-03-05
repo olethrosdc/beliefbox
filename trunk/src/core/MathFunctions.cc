@@ -154,7 +154,7 @@ real logAdd(real x, real y)
 
     real minusdif = y - x;
 #ifdef DEBUG
-    if (isnan(minusdif))
+    if (std::isnan(minusdif))
         fprintf (stderr, "LogAdd: minusdif (%f) y (%f) or x (%f) is nan",minusdif,y,x);
 #endif
     if (minusdif < MINUS_LOG_THRESHOLD)
@@ -170,7 +170,7 @@ real logSub(real x, real y)
 
     real minusdif = y - x;
 #ifdef DEBUG
-    if (isnan(minusdif))
+    if (std::isnan(minusdif))
         fprintf(stderr, "LogSub: minusdif (%f) y (%f) or x (%f) is nan",minusdif,y,x);
 #endif
     if (x == y)

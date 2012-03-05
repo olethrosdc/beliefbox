@@ -738,7 +738,7 @@ int MakeDecision(BeliefTree<ContextBanditBelief>& new_tree,
                 U_bound = Mean(node->U);
                 real d = (real) (1+node->depth);
                 real gd = pow(gamma, d);
-                if (isnan(U_bound)) {
+                if (std::isnan(U_bound)) {
                     U_bound = INF;
                 }
                 L_bound *= gd;

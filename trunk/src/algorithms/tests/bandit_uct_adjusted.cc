@@ -804,7 +804,7 @@ int MakeDecision(ExpansionMethod expansion_method,
                     U_bound = Mean(node_set[s]->U);
                     real d = (real) (1+node_set[s]->depth);
                     real gd = pow(gamma, d);
-                    if (isnan(U_bound)) {
+                    if (std::isnan(U_bound)) {
                         U_bound = INF;
                     }
                     L_bound *= gd;
