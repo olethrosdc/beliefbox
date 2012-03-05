@@ -177,7 +177,7 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
 
     // adapt parameters
     log_w  += log(P_local) - log(total_probability);
-    assert(!isnan(log_w));
+    assert(!std::isnan(log_w));
 
 #if 0
     w = exp(log_w);
@@ -222,8 +222,8 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
         }
 		total_probability = next[k]->Observe(x, y, reward, total_probability, active_contexts);
 		w_prod = next[k]->w_prod; 
-        assert(!isnan(total_probability));
-        assert(!isnan(w_prod));
+        assert(!std::isnan(total_probability));
+        assert(!std::isnan(w_prod));
     }
 
 
@@ -231,8 +231,8 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
     context_probability = w * w_prod;
     w_prod *= (1 - w);
 	//printf("P(c_%d)= %f\n", depth, context_probability);
-    assert(!isnan(w_prod));
-    assert(!isnan(context_probability));
+    assert(!std::isnan(w_prod));
+    assert(!std::isnan(context_probability));
 
     return total_probability;
 }
@@ -249,10 +249,10 @@ real ContinuousStateContextTreeRL::Node::QValue(const Vector& x,
     //w = exp(log_w); 
     real Q_next = Q * w + (1 - w) * Q_prev;
 	//printf ("%f -(%f,%f)-> %f\n", Q_prev, Q, w, Q_next);
-    assert (!isnan(Q_prev));
-    assert (!isnan(Q));
-    assert (!isnan(Q_next));
-    assert (!isnan(w));
+    assert (!std::isnan(Q_prev));
+    assert (!std::isnan(Q));
+    assert (!std::isnan(Q_next));
+    assert (!std::isnan(w));
 
     int k;
     if ( x[splitting_dimension] < mid_point) {
@@ -294,7 +294,7 @@ real ContinuousStateContextTreeRL::QLearning(real step_size, real gamma,
 
 	real Q_prev = QValue(current_state, current_action);
 
-    assert (!isnan(Q_prev));
+    assert (!std::isnan(Q_prev));
 
     real td_err = 0;
     real dQ_i = reward + gamma * max_Q - Q_prev; 
@@ -350,7 +350,7 @@ real ContinuousStateContextTreeRL::Sarsa(real epsilon,
 	
 	real Q_prev = QValue(current_state, current_action);
 	// printf ("Q_prev: %f, max Q: %f, E Q: %f\n", Q_prev, EQ, Q_max);
-    assert (!isnan(Q_prev));
+    assert (!std::isnan(Q_prev));
 
     real td_err = 0;
     real dQ_i = reward + gamma * EQ - Q_prev; 

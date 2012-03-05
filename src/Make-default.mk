@@ -3,11 +3,11 @@
 
 PACKAGES = core algorithms geometry models statistics environments
 # Compiler and Linker
-CC = clang
-CXX = clang++
-LD = clang++
+CC = g++
+CXX = g++
+LD = g++
 AR = ar -rus
-DEP = clang++ -MM -D__DEPEND__
+DEP = g++ -MM -D__DEPEND__
 
 
 # Libraries
@@ -26,7 +26,7 @@ DBG_OPT=OPT
 
 # Add -pg flag for profiling
 CFLAGS_DBG = -fPIC -g -Wall -DUSE_DOUBLE 
-CFLAGS_OPT = --analyze -fcatch-undefined-behavior -fPIC -g -O3 -Wall -DUSE_DOUBLE -DNDEBUG
+CFLAGS_OPT = -fPIC -g -O3 -Wall -DUSE_DOUBLE -DNDEBUG
 #CFLAGS_DBG = -fPIC -g -Wall -pipe -pg
 #CFLAGS_OPT = -fPIC -g -O3 -Wall -DNDEBUG -pipe -pg
 CFLAGS=$(CFLAGS_$(DBG_OPT))

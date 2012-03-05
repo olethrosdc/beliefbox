@@ -137,7 +137,7 @@ void Evaluate(char* fname, DiscreteBanditPolicy& policy, int n_actions)
         double total_time = time_per_episode * (double) n_episodes;
         double remaining_time = total_time - (double) elapsed_time;
         double percent_complete = 100.0f * elapsed_time/total_time;
-        if (isnan(percent_complete) || percent_complete<0) {
+        if (std::isnan(percent_complete) || percent_complete<0) {
             percent_complete = 100.0f * (double) (episode+1) / (double) n_episodes;
         }
         printf ("Completion %d%%. Time: %d elapsed, %d total, %d remaining.\n",

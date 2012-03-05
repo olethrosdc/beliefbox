@@ -154,7 +154,7 @@ real KNNModel::GetExpectedActionValue(Vector& x, int action, int K, real b)
         sum += optimism;
     }
     Q /= sum;
-    if (isnan(Q)) {
+    if (std::isnan(Q)) {
         Q = 0.0;
     }
     return Q;
@@ -223,7 +223,7 @@ void KNNModel::UpdateValue(TrajectorySample& start_sample,
             Vector y = sample->s2 + (start_sample.s - sample->s) * alpha;
             real w =  rbf.Evaluate(sample->s);
             real Qa_i = (sample->r + gamma*GetExpectedValue(y, K, b));
-            if (isnan(Qa_i)) {
+            if (std::isnan(Qa_i)) {
                 Qa_i = 0.0;
             }
             //printf ("%f (%f) ", Qa_i, w);
@@ -238,7 +238,7 @@ void KNNModel::UpdateValue(TrajectorySample& start_sample,
     }
 
     real new_V = Max(&Q);
-    if (isnan(new_V)) {
+    if (std::isnan(new_V)) {
         new_V = 0.0;
     }
     start_sample.dV = fabs(start_sample.V - new_V);

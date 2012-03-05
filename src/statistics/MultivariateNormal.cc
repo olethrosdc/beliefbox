@@ -145,7 +145,7 @@ real MultivariateNormalUnknownMeanPrecision::Observe(const Vector& x)
 real MultivariateNormalUnknownMeanPrecision::pdf(const Vector& x) const
 {
     real p = p_x_mr.pdf(x);
-    if (isnan(p)) {
+    if (std::isnan(p)) {
         p_x_mr.Show();
     }
     return p;
@@ -155,7 +155,7 @@ real MultivariateNormalUnknownMeanPrecision::pdf(const Vector& x) const
 real MultivariateNormalUnknownMeanPrecision::log_pdf(const Vector& x) const
 {
     real log_p = p_x_mr.log_pdf(x);
-    if (isnan(log_p)) {
+    if (std::isnan(log_p)) {
         p_x_mr.Show();
     }
     return log_p;

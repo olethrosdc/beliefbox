@@ -55,7 +55,7 @@ real ExponentialDistribution::setMaximumLikelihoodParameters(const std::vector<r
 	real LL = 0;
 	for (uint i=0; i != x.size(); ++i) {
 		real log_p = log_pdf(x[i]);
-		assert(!isnan(log_p));
+		assert(!std::isnan(log_p));
 		//	assert(log_p > -1e6);
 		LL += log_p;
 		//printf("LL, p:  %f %f %f\n", LL, log_p, x[i]);

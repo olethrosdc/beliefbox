@@ -130,7 +130,7 @@ real DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
             forward_belief(t, s) = PrX(s, observations[t]) * B_next[s];
             sum += forward_belief(t,s);
         }
-        assert (!isnan(sum));
+        assert (!std::isnan(sum));
         assert (sum > 0);
         real invsum = 1.0 / sum;
         for (int s=0; s<n_states; ++s) {
