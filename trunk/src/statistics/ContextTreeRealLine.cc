@@ -56,7 +56,7 @@ ContextTreeRealLine::Node::Node(ContextTreeRealLine::Node* prev_,
       //log_w_prior( - log(10))
 {
     SMART_ASSERT(lower_bound < upper_bound)(lower_bound)(upper_bound)(depth);
-    if (std::isnan(lower_bound) || isnan(upper_bound)) {
+    if (std::isnan(lower_bound) || std::isnan(upper_bound)) {
         new_bound = 0;
     } else {
         new_bound = (lower_bound + upper_bound) / 2;
