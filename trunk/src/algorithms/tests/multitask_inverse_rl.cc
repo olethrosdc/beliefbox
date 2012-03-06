@@ -362,7 +362,7 @@ int main (int argc, char** argv) {
 
 
     for (uint run=0; run<n_runs; ++run) {
-        logmsg("Run %d\n", 0);
+        logmsg("Run %d\n", run);
 
         Demonstrations<int, int> demonstrations;
         std::vector<DiscreteEnvironment*> tasks(n_tasks);
