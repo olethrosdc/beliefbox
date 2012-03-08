@@ -21,7 +21,17 @@
 #include <vector>
 
 
+/** Context bandit
+    
+    In this MDP, the probability of the next state does not depend on
+    the previous or the previous action. It is in fact drawn from a
+    stochastically generated multinomial distribution.
+    
+    The rewards are randomly initialised, so that each state-action
+    combination has a reward distribution of either Normal(-1,1), or
+    Normal(1,1), but it is not known which.
 
+ */
 class ContextBandit : public DiscreteEnvironment
 {
 protected:
@@ -51,7 +61,6 @@ public:
     {
         return mdp;
     }
-    real getMean(int action);
     virtual const char* Name()
     {
         return "Context Bandit";

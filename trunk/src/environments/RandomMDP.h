@@ -19,8 +19,20 @@
 #include <string>
 #include <vector>
 
-
-
+/** Random MDP
+    
+    Creates an MDP with the given number of states and actions.
+    There are three types of staes: goal states, pit states, and normal states.
+    The goal and pit states always go to an absorbing terminal state.
+    You can set the reward for each type of state, but they are always deterministic.
+    
+    The transition are random, in a way that depends on the randomness
+    parameter. When randomness = 1, then all transitions are equally
+    probably.  When randomness = 0, the the MDP is deterministic, with
+    each action taking you to one and only one state.
+ 
+    
+ */
 class RandomMDP : public DiscreteEnvironment
 {
 protected:
