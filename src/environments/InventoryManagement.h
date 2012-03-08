@@ -21,6 +21,7 @@
 #include <vector>
 
 /// The inventory management task.
+/// Described in Puterman, Chapter 3.
 class InventoryManagement : public DiscreteEnvironment {
 protected:
     int period; ///< This is the period (number of steps) between orders

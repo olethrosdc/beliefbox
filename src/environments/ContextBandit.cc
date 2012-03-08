@@ -33,8 +33,7 @@ ContextBandit::ContextBandit(uint n_actions_,
     for (uint s=0; s<n_states; ++s) {
         for (uint a=0; a<n_actions; a++) {
             state = s;
-            real mu = getMean(a);
-            if (mu > 0) {
+            if (urandom < 0.5) {
                 mdp->setRewardDistribution(s, a, positive_reward);
             } else {
                 mdp->setRewardDistribution(s, a, negative_reward);
@@ -63,44 +62,6 @@ void ContextBandit::Reset()
     reward = 0;
 }
 
-real ContextBandit::getMean(int action)
-{
-    int f0 = state & 3;
-    int f1 = (state >> 2) & 3;
-    int f2 = (state >> 4) & 3;
-   	real mean;
-
-	if (f1==0)
-	{
-		if (f2 == 0)
-		{
-			mean = 1;
-		}
-		else
-		{
-			mean = -1;
-		}
-	}
-	else
-	{
-		if (f0 % 2)
-		{
-			mean = 1;
-		}
-		else
-		{
-			mean = -1;
-		}
-	}
-
-    //printf ("%d %f # STATE MEAN\n", state, mean);
-	if (action)   // a = 0 or a = 1
-	{
-		mean = -mean;
-	}
-
-    return mean;
-}
 
 /// returns true if the action succeeds, false if we are in a terminal state
 bool ContextBandit::Act(int action)
