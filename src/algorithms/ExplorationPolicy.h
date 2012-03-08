@@ -43,7 +43,7 @@ public:
     EpsilonGreedy(int n_actions_, real epsilon_) :
         n_actions(n_actions_), epsilon(epsilon_), Q(NULL)
     {
-	assert(n_actions > 0);
+        assert(n_actions > 0);
         assert(epsilon >= 0 && epsilon <= 1);
     }
 
@@ -68,19 +68,20 @@ public:
 
     virtual int SelectAction() 
     {
-	if (urandom() < epsilon) {
-	    return (int) floor(urandom(0.0, n_actions));
-	}
-	int argmax = 0;
-	real max = (*Q)(state, argmax);
-	for (int a=1; a<n_actions; ++a) {
-	    real Qsa = (*Q)(state, a);
-	    if (Qsa > max) {
-		max = Qsa;
-		argmax = a;
-	    }
-	}
-	return argmax;
+        if (urandom() < epsilon) {
+            return (int) floor(urandom(0.0, n_actions));
+        }
+
+        int argmax = 0;
+        real max = (*Q)(state, argmax);
+        for (int a=1; a<n_actions; ++a) {
+            real Qsa = (*Q)(state, a);
+            if (Qsa > max) {
+                max = Qsa;
+                argmax = a;
+            }
+        }
+        return argmax;
     }
     virtual void Observe(real reward, int state)
     {
@@ -107,8 +108,8 @@ public:
     SoftmaxPolicy(int n_actions_, real beta_) :
         n_actions(n_actions_), beta(beta_), Q(NULL)
     {
-	assert(n_actions > 0);
-	assert(beta >= 0);
+        assert(n_actions > 0);
+        assert(beta >= 0);
     }
 
     virtual ~SoftmaxPolicy()
@@ -168,8 +169,8 @@ public:
     MaxSoftmaxPolicy(int n_actions_, real beta_, real epsilon_) :
         n_actions(n_actions_), beta(beta_), epsilon(epsilon_), Q(NULL)
     {
-	assert(n_actions > 0);
-	assert(beta >= 0);
+        assert(n_actions > 0);
+        assert(beta >= 0);
     }
 
     virtual ~MaxSoftmaxPolicy()

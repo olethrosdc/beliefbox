@@ -81,7 +81,7 @@ real Sarsa::Observe (real reward, int next_state, int next_action)
     real p_R = 0.0;
     real TD = 0.0;
     if (state >= 0 && action >= 0) {
-        p_R = Q(state, action); // predicted return
+        real p_R = Q(state, action); // predicted return
         TD = n_R - p_R;
     
 
@@ -110,7 +110,9 @@ real Sarsa::Observe (real reward, int next_state, int next_action)
 int Sarsa::Act(real reward, int next_state)
 {
     exploration_policy->Observe(reward, next_state);
-    int next_action = exploration_policy->SelectAction();//Q, next_state);
+    int next_action = exploration_policy->SelectAction();
     Observe(reward, next_state, next_action);
+    //printf ("Sarsa: %f %d %d\n", reward, next_state, next_action);
+    //Q.print(stdout);
     return next_action;
 }

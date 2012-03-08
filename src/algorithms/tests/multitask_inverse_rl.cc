@@ -150,7 +150,7 @@ static const char* const environment_names_list = "{MountainCar, ContextBandit, 
 
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-  --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}\n\
+  --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, InventoryManagement}\n\
   --n_states:          number of states (usually there is no need to specify it)\n\
   --n_actions:         number of actions (usually there is no need to specify it)\n\
   --gamma:             reward discounting in [0,1]\n\
@@ -408,6 +408,8 @@ int main (int argc, char** argv) {
                                                   1.0 * (1.0 - randomness) + urandom()*randomness);
             } else if (!strcmp(environment_name, "Optimistic")) { 
                 environment = new OptimisticTask (0.1 * (1.0 - randomness) + urandom() * randomness, 0.01 * (1.0 - randomness) + urandom() * randomness);
+            } else if (!strcmp(environment_name, "InventoryManagement")) { 
+                environment = new InventoryManagement (0.5, n_states, 0.1, 1.1);
             } else {
                 fprintf(stderr, "Uknown environment %s\n", environment_name);
             }
