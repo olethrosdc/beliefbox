@@ -31,6 +31,7 @@
 #include "DiscreteMDPCollection.h"
 #include "ContextBanditCollection.h"
 #include "HQLearning.h"
+#include "TdBma.h"
 
 // -- Discrete environments -- //
 #include "RandomMDP.h"
@@ -86,7 +87,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
                               real gamma);
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:   {QLearning, Model, Sarsa, Sampling}\n\
+    --algorithm:   {QLearning, Model, Sarsa, Sampling, TdBma}\n\
     --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim}\n\
     --n_states:    number of states (usually there is no need to specify it)\n\
     --n_actions:   number of actions (usually there is no need to specify it)\n\
@@ -111,9 +112,9 @@ int main (int argc, char** argv)
     real lambda = 0.9;
     real alpha = 0.1;
     real randomness = 0.01;
-    real pit_value = 0.0;
+    real pit_value = -10.0;
     real goal_value = 1.0;
-    real step_value = 0.00;
+    real step_value = -1.0;
     real epsilon = 0.01;
     uint n_runs = 1000;
     uint n_episodes = 1000;
@@ -125,7 +126,7 @@ int main (int argc, char** argv)
     const char * environment_name = "Gridworld";
 
 
-    int max_samples = 4;
+    int max_samples = 2;
     char* maze_name = NULL;
     {
         // options
@@ -146,7 +147,7 @@ int main (int argc, char** argv)
                 {"multi-sample", no_argument, 0, 0}, //8
                 {"maze_name", required_argument, 0, 0}, //9
                 {"epsilon", required_argument, 0, 0}, //10
-                {"maze_width", required_argument, 0, 0}, //11 - deprecated
+                {"alpha", required_argument, 0, 0}, //11 
                 {"algorithm", required_argument, 0, 0}, //12
                 {"environment", required_argument, 0, 0}, //13
                 {"grid_size", required_argument, 0, 0}, //14
@@ -179,7 +180,7 @@ int main (int argc, char** argv)
                 case 8: printf("multi-sample not implented; ignored\n"); break;
                 case 9: maze_name = optarg; break;
                 case 10: epsilon = atof(optarg); break; 
-                case 11: maze_width = atoi(optarg); break; // deprecated
+                case 11: alpha = atof(optarg); break; 
                 case 12: algorithm_name = optarg; break;
                 case 13: environment_name = optarg; break;
                 case 14: grid_size = atoi(optarg); break;
@@ -430,11 +431,18 @@ int main (int argc, char** argv)
                                          collection,
                                          rng,
                                          false);
+
+        } else if(!strcmp(algorithm_name, "TdBma")) {
+			algorithm = new TdBma(n_states,
+                                  n_actions,
+                                  gamma,
+                                  lambda,
+                                  alpha,
+                                  exploration_policy);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
         }
 
-        
         //std::cerr << "run : " << run << std::endl;
         Statistics run_statistics = EvaluateAlgorithm(episode_steps,
                                                       n_episodes,
@@ -455,7 +463,7 @@ int main (int argc, char** argv)
             statistics.n_runs[i]++;
         }
         if (model) {
-#if 1
+#if 0
             if (discrete_mdp) {
                 int n_samples = max_samples;
 
@@ -719,8 +727,6 @@ Statistics EvaluateAlgorithm (int episode_steps,
             episode, n_steps,
             (int) statistics.ep_stats.size(),
             (int) statistics.reward.size());
-
-
 
     return statistics;
 }

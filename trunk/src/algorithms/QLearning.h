@@ -62,7 +62,6 @@ public:
     {
     }
     virtual void Reset();
-    virtual real Observe (int action, int next_state, real reward);
     virtual real Observe (real reward, int next_state, int next_action);
     virtual int Act(real reward, int next_state);
 	/// Get value of state-action
