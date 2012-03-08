@@ -69,7 +69,9 @@ public:
     virtual int SelectAction() 
     {
         if (urandom() < epsilon) {
-            return (int) floor(urandom(0.0, n_actions));
+            int action =  (int) floor(urandom(0.0, n_actions));
+            //printf("returning random action %d\n", action);
+            return action;
         }
 
         int argmax = 0;

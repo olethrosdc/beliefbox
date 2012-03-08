@@ -690,9 +690,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
         discount *= gamma;
 
         int action = algorithm->Act(reward, state);
-		action = 1;
         if (0) {
-            printf ("%d %d %f\n", state, action, reward);
+            printf ("%d %d %f # state-action-reward\n", state, action, reward);
         }
         action_ok = environment->Act(action);
         current_time++;
