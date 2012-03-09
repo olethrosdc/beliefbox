@@ -11,9 +11,9 @@ lambda=0.0
 samples=1
 randomness=0
 
-for algorithm in TdBma Sarsa QLearning # Model Sampling
+for algorithm in TdBma Sarsa QLearning Model #Sampling
 do
-    ./bin/online_algorithms --algorithm $algorithm --environment RandomMDP --maze_name $HOME/projects/beliefbox/dat/maze0 --n_runs $N_RUNS --n_steps $N_STEPS --alpha $alpha --epsilon $epsilon --gamma $gamma --lambda $lambda --max_samples $samples --randomness $randomness >$algorithm.out
+    ./bin/online_algorithms --algorithm $algorithm --environment ContextBandit --n_runs $N_RUNS --n_steps $N_STEPS --alpha $alpha --epsilon $epsilon --gamma $gamma --lambda $lambda --max_samples $samples --randomness $randomness >$algorithm.out
     grep PAYOFF $algorithm.out > $algorithm.payoff
     grep EPISODE $algorithm.out > $algorithm.episode
     grep REWARD $algorithm.out > $algorithm.reward

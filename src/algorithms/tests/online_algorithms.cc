@@ -121,7 +121,6 @@ int main (int argc, char** argv)
     uint n_steps = 100000;
     uint episode_steps = 1000;
     uint grid_size = 4;
-    uint maze_width = 4;
     const char * algorithm_name = "QLearning";
     const char * environment_name = "Gridworld";
 
@@ -274,7 +273,7 @@ int main (int argc, char** argv)
         } else if (!strcmp(environment_name, "Gridworld")) { 
             environment = new Gridworld(maze_name, randomness, pit_value, goal_value, step_value);
         } else if (!strcmp(environment_name, "ContextBandit")) { 
-            environment = new ContextBandit(n_actions, 3, 4, rng);
+            environment = new ContextBandit(n_states, n_actions, rng);
         } else if (!strcmp(environment_name, "OneDMaze")) { 
             environment = new OneDMaze(n_states, rng);
         } else if (!strcmp(environment_name, "Chain")) { 
@@ -700,7 +699,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
     }
     printf(" %f %f # RUN_REWARD\n", total_reward, discounted_reward);
-#if 0
+#if 1
     real sse = 0.0;
     for (int i=0; i<n_states; i++) {
         for (int a=0; a<n_actions; a++) {

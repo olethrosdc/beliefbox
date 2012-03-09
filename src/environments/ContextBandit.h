@@ -35,15 +35,11 @@
 class ContextBandit : public DiscreteEnvironment
 {
 protected:
-    uint n_states;
-    uint n_actions;
-    uint terminal_state;
     RandomNumberGenerator* rng;
 public:
-    ContextBandit(uint n_actions,
-                  uint n_features,
-                  uint values_per_feature,
-                  RandomNumberGenerator* rng);
+    ContextBandit(uint n_states_,
+                  uint n_actions_,
+                  RandomNumberGenerator* rng_);
     virtual ~ContextBandit()
     {
         for (uint i=0; i<rewards.size(); ++i) {
