@@ -33,7 +33,7 @@ ContextBandit::ContextBandit(uint n_actions_,
     for (uint s=0; s<n_states; ++s) {
         for (uint a=0; a<n_actions; a++) {
             state = s;
-            if (urandom < 0.5) {
+            if (urandom() < 0.5) {
                 mdp->setRewardDistribution(s, a, positive_reward);
             } else {
                 mdp->setRewardDistribution(s, a, negative_reward);
@@ -66,15 +66,7 @@ void ContextBandit::Reset()
 /// returns true if the action succeeds, false if we are in a terminal state
 bool ContextBandit::Act(int action)
 {
-    real sigma = 2.0;
-    normal.setVariance(sigma*sigma);
-
-    normal.setMean(getMean(action));
-
-    reward = normal.generate();
-    //printf("reward: %f\n", reward);
-    state = (int) rng->discrete_uniform(n_states);
-
+    reward = mdp->Act(action);
 
     return true;  // we continue
 }
