@@ -71,7 +71,7 @@ DiscreteSpaceRewardDistribution::DiscreteSpaceRewardDistribution(int n_states_, 
 		R[i] = NULL;
 	}
 	ER.Clear();
-    //printf ("%d %d %d %d\n", n_states, n_actions, R.size(), ER.Size());
+    dbgmsg ("Reward distribution: %d %d %d %d\n", n_states, n_actions, R.size(), ER.Size());
 }
 
 /// Copy constructor. Do not actually copy anything!

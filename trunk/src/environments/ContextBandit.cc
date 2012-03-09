@@ -13,31 +13,24 @@
 #include "ContextBandit.h"
 
 
-ContextBandit::ContextBandit(uint n_actions_,
-                             uint n_features,
-                             uint values_per_feature,
-                             RandomNumberGenerator* rng): n_actions(n_actions_)
+ContextBandit::ContextBandit(uint n_states_,
+                             uint n_actions_,
+                             RandomNumberGenerator* rng_)
+    : DiscreteEnvironment(n_states_, n_actions_),
+      rng(rng_)
 { 
     printf ("Making bandit!\n");
-    this->rng = rng;
-    // this bandit is binary
-    n_states = (int) round(pow(values_per_feature, n_features));
-    NormalDistribution* positive_reward = new NormalDistribution(1.0, 1.0);
-    NormalDistribution* negative_reward = new NormalDistribution(-1.0, 1.0);
-    rewards.push_back(positive_reward);
-    rewards.push_back(negative_reward);
-
     mdp = new DiscreteMDP (n_states, n_actions, NULL);
-
+    assert(rng);
+    state = 0;
+    reward = 0;
     // setup rewards
     for (uint s=0; s<n_states; ++s) {
         for (uint a=0; a<n_actions; a++) {
-            state = s;
-            if (urandom() < 0.5) {
-                mdp->setRewardDistribution(s, a, positive_reward);
-            } else {
-                mdp->setRewardDistribution(s, a, negative_reward);
-            }
+            NormalDistribution* reward_dist
+                = new NormalDistribution(urandom(), 1.0);
+            mdp->setRewardDistribution(s, a, reward_dist);
+            //rewards.push_back(reward_dist);
         }
     }
 
@@ -67,6 +60,5 @@ void ContextBandit::Reset()
 bool ContextBandit::Act(int action)
 {
     reward = mdp->Act(action);
-
     return true;  // we continue
 }

@@ -61,7 +61,6 @@ protected:
 	Vector ER; ///< expected reward
     inline int getID (int s, int a) const
     {
-        
         assert(s>=0 && s<n_states);
         assert(a>=0 && a<n_actions);
         return s*n_actions + a;
