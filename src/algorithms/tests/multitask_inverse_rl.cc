@@ -470,6 +470,8 @@ int main (int argc, char** argv) {
         }
     } // for runs
     
+    printf("# Exiting\n");
+
     return 0;
 }
  

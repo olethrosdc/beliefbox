@@ -49,7 +49,19 @@ public:
         return V(state);
     }
     FixedDiscretePolicy* getPolicy();
-    
+    inline Matrix getValues() const
+    {
+        return Q;
+    }
+    inline Matrix getStateValues() const
+    {
+        return V;
+    }
+    inline Vector getValues(int s) const
+    {
+        assert(s >= 0 && s < n_states);
+        return Q.getRow(s);
+    }
 };
 #endif
 

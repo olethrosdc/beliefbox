@@ -77,6 +77,10 @@ public:
     {
         return Q;
     }
+    const Matrix* getQMatrixPointer()
+    {
+        return &Q;
+    }
 };
 
 #endif
