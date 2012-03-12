@@ -394,7 +394,7 @@ int main (int argc, char** argv) {
                                             goal_value,
                                             step_value);
             } else if (!strcmp(environment_name, "ContextBandit")) { 
-                environment = new ContextBandit(n_actions, 3, 4, rng);
+                environment = new ContextBandit(n_states, n_actions, rng);
             } else if (!strcmp(environment_name, "OneDMaze")) { 
                 environment = new OneDMaze(n_states, rng);
             } else if (!strcmp(environment_name, "MountainCar")) { 
