@@ -19,7 +19,7 @@ ContextBandit::ContextBandit(uint n_states_,
     : DiscreteEnvironment(n_states_, n_actions_),
       rng(rng_)
 { 
-    printf ("Making bandit!\n");
+    logmsg ("Making bandit with %d states, %d actions\n", n_states, n_actions);
     mdp = new DiscreteMDP (n_states, n_actions, NULL);
     assert(rng);
     state = 0;
@@ -30,7 +30,7 @@ ContextBandit::ContextBandit(uint n_states_,
             NormalDistribution* reward_dist
                 = new NormalDistribution(urandom(), 1.0);
             mdp->setRewardDistribution(s, a, reward_dist);
-            //rewards.push_back(reward_dist);
+            rewards.push_back(reward_dist);
         }
     }
 
@@ -45,6 +45,7 @@ ContextBandit::ContextBandit(uint n_states_,
         }
     }
     mdp->Check();
+    Reset();
 }
 
 
@@ -53,6 +54,7 @@ void ContextBandit::Reset()
 {
     state = (int) rng->discrete_uniform(n_states);
     reward = 0;
+    mdp->setState(state);
 }
 
 
@@ -60,5 +62,27 @@ void ContextBandit::Reset()
 bool ContextBandit::Act(int action)
 {
     reward = mdp->Act(action);
+    state = mdp->getState();
     return true;  // we continue
 }
+
+
+ContextBandit::~ContextBandit()
+{
+    for (uint i=0; i<rewards.size(); ++i) {
+        delete rewards[i];
+    }
+    delete mdp;
+}
+
+DiscreteMDP* ContextBandit::getMDP() const
+{
+    return new DiscreteMDP(*mdp);
+}
+
+const char* ContextBandit::Name()
+{
+    return "Context Bandit";
+}
+
+

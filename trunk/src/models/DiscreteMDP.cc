@@ -32,9 +32,7 @@ DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
     //real p = 1.0 / (real) n_states;
     if (initial_transitions) {
         for (int i=0; i<N; i++) {
-            //P[i] = &P_data[i*n_states];
             for (int j=0; j<n_states; j++) {
-                //P[i][j] = initial_transitions[i][j];
 				P(i,j) = initial_transitions[i][j];
             }
         } 
@@ -265,6 +263,7 @@ bool DiscreteMDP::Check() const
             }
         }
     }
+    dbgmsg("MDP Check, %d states, %d actions: %d\n", n_states, n_actions, flag);
     return flag;
 }
 #endif

@@ -28,7 +28,7 @@ public:
     {}
     virtual void Observe(real reward, int state) = 0;
     virtual int SelectAction() = 0;
-    virtual void setValueMatrix(Matrix* Q) = 0;
+    virtual void setValueMatrix(const Matrix* Q) = 0;
     virtual DiscretePolicy* getFixedPolicy() = 0;
 };
 
@@ -38,7 +38,7 @@ protected:
     int n_actions;
     real epsilon;
     int state;
-    Matrix* Q;
+    const Matrix* Q;
 public:
     EpsilonGreedy(int n_actions_, real epsilon_) :
         n_actions(n_actions_), epsilon(epsilon_), Q(NULL)
@@ -61,7 +61,7 @@ public:
         assert(epsilon >= 0 && epsilon <= 1);
         return epsilon;
     }
-    virtual void setValueMatrix(Matrix* Q_)
+    virtual void setValueMatrix(const Matrix* Q_)
     {
         Q = Q_;
     }
@@ -105,7 +105,7 @@ protected:
     int n_actions;
     real beta;
     int state;
-    Matrix* Q;
+    const Matrix* Q;
 public:
     SoftmaxPolicy(int n_actions_, real beta_) :
         n_actions(n_actions_), beta(beta_), Q(NULL)
@@ -128,7 +128,7 @@ public:
         assert(beta >= 0);
         return beta;
     }
-    virtual void setValueMatrix(Matrix* Q_)
+    virtual void setValueMatrix(const Matrix* Q_)
     {
         Q = Q_;
     }
@@ -166,7 +166,7 @@ protected:
     real beta;
 	real epsilon;
     int state;
-    Matrix* Q;
+    const Matrix* Q;
 public:
     MaxSoftmaxPolicy(int n_actions_, real beta_, real epsilon_) :
         n_actions(n_actions_), beta(beta_), epsilon(epsilon_), Q(NULL)
@@ -199,7 +199,7 @@ public:
         assert(epsilon >= 0 && epsilon <=1);
         return epsilon;
     }
-    virtual void setValueMatrix(Matrix* Q_)
+    virtual void setValueMatrix(const Matrix* Q_)
     {
         Q = Q_;
     }

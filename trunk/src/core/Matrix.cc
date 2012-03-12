@@ -865,7 +865,7 @@ Vector Matrix::RowMax() const
 }
 
 
-Vector Matrix::getColumn(int c)
+Vector Matrix::getColumn(int c) const
 {
     Vector column(rows);
     for (int i=0; i<rows; i++) {
@@ -874,7 +874,7 @@ Vector Matrix::getColumn(int c)
     return column;
 }
 
-Vector Matrix::getRow(int r)
+Vector Matrix::getRow(int r) const
 {
     Vector row(columns);
     for (int i=0; i<columns; i++) {

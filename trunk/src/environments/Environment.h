@@ -61,9 +61,9 @@ public:
     /// absorbing state.
     virtual bool Act(const A action) = 0;
     
-    /// Return a full MDP model of the environment. 
-    /// This may not be possible for some environments
-    /// The MDP is required to be freed by the user!
+    /// Return a full MDP model of the environment.  This may not be
+    /// possible for some environments.  The MDP is required to be
+    /// freed by the user!
     virtual MDP<S, A>* getMDP() const
     {
         return NULL;

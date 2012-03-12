@@ -115,8 +115,8 @@ public:
     void Cholesky(Matrix& chol, real epsilon = ACCURACY_LIMIT);
     void Clear();
     void Transpose();
-    Vector getColumn(int c);
-    Vector getRow(int r);
+    Vector getColumn(int c) const;
+    Vector getRow(int r) const;
     void setColumn(int c, Vector& x);
     void setRow(int r, Vector& x);
     void SortRow(int r);

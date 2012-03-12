@@ -144,20 +144,12 @@ FixedDiscretePolicy* ValueIteration::getPolicy()
 {
     FixedDiscretePolicy* policy = new FixedDiscretePolicy(n_states, n_actions);
     for (int s=0; s<n_states; s++) {
-        real max_Qa = getValue(s, 0);
-        int argmax_Qa = 0;
-        for (int a=1; a<n_actions; a++) {
-            real Qa = getValue(s, a);
-            if (Qa > max_Qa) {
-                max_Qa = Qa;
-                argmax_Qa = a;
-            }
-        }
+        int argmax_Qa = ArgMax(Q.getRow(s));
         Vector* p = policy->getActionProbabilitiesPtr(s);
         for (int a=0; a<n_actions; a++) { 
-            (*p)[a] = 0.0;
+            (*p)(a) = 0.0;
         }
-        (*p)[argmax_Qa] = 1.0;
+        (*p)(argmax_Qa) = 1.0;
     }
     return policy;
 }

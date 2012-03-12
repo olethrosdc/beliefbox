@@ -40,27 +40,20 @@ public:
     ContextBandit(uint n_states_,
                   uint n_actions_,
                   RandomNumberGenerator* rng_);
-    virtual ~ContextBandit()
-    {
-        for (uint i=0; i<rewards.size(); ++i) {
-            delete rewards[i];
-        }
-        delete mdp;
-    }
+    virtual ~ContextBandit();
+
     /// put the environment in its natural state
     virtual void Reset();
     
     /// returns true if the action succeeds
     virtual bool Act(int action);
 
-    virtual DiscreteMDP* getMDP() const
-    {
-        return mdp;
-    }
-    virtual const char* Name()
-    {
-        return "Context Bandit";
-    }
+    /// Get the MDP
+    virtual DiscreteMDP* getMDP() const;
+
+    /// Get the name of the environment
+    virtual const char* Name();
+
 protected:
     NormalDistribution normal;
     DiscreteMDP* mdp;
