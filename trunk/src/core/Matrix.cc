@@ -807,6 +807,7 @@ Matrix forward_substitution(const Matrix& L, const Matrix& B)
             Y(i,c) = (B(i, c) - s) / L(i,i);
         }
     }
+    return Y;
 }
 
 /// Get the sum of column c
