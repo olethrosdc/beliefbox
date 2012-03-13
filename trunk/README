@@ -1,9 +1,8 @@
 1. Introduction
 ---------------
 
-The project's main aim is to support a Bayesian
-
-framework for reinforcement learning.
+The project's main aim is to support a Bayesian framework for
+reinforcement learning.
 
 Directories:
 
@@ -51,6 +50,12 @@ I. (optionally) make clean
 II. make
 
 III. For example programs named blah.cc do: make blah
+
+For example: 
+
+cd src/algorithms/tests
+make online_algorithms
+./bin/online_algorithms
 
 
 3. TODO
