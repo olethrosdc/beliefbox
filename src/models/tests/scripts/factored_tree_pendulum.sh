@@ -1,8 +1,8 @@
 model_name=BVMM
 n_iter=10
 T=100000
-depth=1
-env_rand=0.01;
+depth=16
+env_rand=0.1;
 environment=Pendulum
 for act_rand in 0.0 #0 0.1 #0.1 0.01 0
 do

@@ -137,8 +137,8 @@ ContinuousStateContextTreeRL::Node::~Node()
 	y is the next observation
 	r is the next reward
 */
-real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
-												 const Vector& y,
+real ContinuousStateContextTreeRL::Node::Observe(const Vector& x_t,
+												 const Vector& y_t,
 												 real reward, real probability,
 												 ContextList& active_contexts)
 {
@@ -147,13 +147,14 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
     real fudge = MIN_PRECISION;
     // the local distribution
     //real prior_normal = exp(log_prior_normal);
-    real P_tree = local_density->Observe(y);
-    real P_normal = normal_density->Observe(y);
+    real P_tree = local_density->Observe(y_t);
+    real P_normal = normal_density->Observe(y_t);
     real P_local =  prior_normal * P_normal + (1 - prior_normal) * P_tree;
     //log_prior_normal += log(P_normal) - log(P_local);
     if (P_local > fudge) {
         prior_normal *= P_normal / P_local;
     } else {
+		Swarning("Local probability too small: %f. Setting to %f\n", P_local, fudge);
         P_local = fudge;
     }
     //printf ("%f %f = %f -> %f\n", P_tree, P_normal, P_local, prior_normal);
@@ -191,13 +192,14 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
 
     // Which interval is the x lying at
     int k;
-    if ( x[splitting_dimension] < mid_point) {
+    if ( x_t[splitting_dimension] < mid_point) {
         k = 0;
     } else {
         k = 1;
     }
 
-    real threshold = sqrt((real) depth);
+    real threshold = 1.0 + (real) depth; 
+	// real threshold  = sqrt((real) depth);
     S++;
 #if 0
     std::cout << depth << ": P(y|h_k)=" << P_local
@@ -220,7 +222,7 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
                 next[k] = new Node(this, new_bound_x, upper_bound_x);
             }
         }
-		total_probability = next[k]->Observe(x, y, reward, total_probability, active_contexts);
+		total_probability = next[k]->Observe(x_t, y_t, reward, total_probability, active_contexts);
 		w_prod = next[k]->w_prod; 
         assert(!std::isnan(total_probability));
         assert(!std::isnan(w_prod));
@@ -242,7 +244,7 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x,
 	This is quite simple. Maintain local Q-values at each node, then
 	mix the q-values by propagation.
  */
-real ContinuousStateContextTreeRL::Node::QValue(const Vector& x,
+real ContinuousStateContextTreeRL::Node::QValue(const Vector& x_t,
 												real Q_prev)
 {
 	
@@ -255,14 +257,14 @@ real ContinuousStateContextTreeRL::Node::QValue(const Vector& x,
     assert (!std::isnan(w));
 
     int k;
-    if ( x[splitting_dimension] < mid_point) {
+    if ( x_t[splitting_dimension] < mid_point) {
         k = 0;
     } else {
         k = 1;
     }
 	
 	if (next[k]) {
-        Q_next = next[k]->QValue(x, Q_next);
+        Q_next = next[k]->QValue(x_t, Q_next);
     } 
 
     return Q_next;

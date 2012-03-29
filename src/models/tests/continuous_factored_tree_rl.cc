@@ -381,7 +381,7 @@ bool EvaluateGeneral(Environment<Vector, int>& environment,
 			td_error = factored_predictor->QLearning(0.1, discount_factor);
 			break;
 		case SARSA:
-			td_error = factored_predictor->Sarsa(0.1, discount_factor, epsilon);
+			td_error = factored_predictor->Sarsa(0.01, discount_factor, epsilon);
 			break;
 		}
         

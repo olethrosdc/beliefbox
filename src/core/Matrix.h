@@ -117,8 +117,8 @@ public:
     void Transpose();
     Vector getColumn(int c) const;
     Vector getRow(int r) const;
-    void setColumn(int c, Vector& x);
-    void setRow(int r, Vector& x);
+    void setColumn(int c, const Vector& x);
+    void setRow(int r, const Vector& x);
     void SortRow(int r);
     void SortColumn(int r);
     int Rows() const;
