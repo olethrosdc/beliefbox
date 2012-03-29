@@ -885,7 +885,7 @@ Vector Matrix::getRow(int r) const
 }
 
 
-void Matrix::setColumn(int c, Vector& x)
+void Matrix::setColumn(int c, const Vector& x)
 {
     assert(columns == x.Size());
     for (int i=0; i<rows; i++) {
@@ -893,7 +893,7 @@ void Matrix::setColumn(int c, Vector& x)
     }
 }
 
-void Matrix::setRow(int r, Vector& x)
+void Matrix::setRow(int r, const Vector& x)
 {
     assert(columns == x.Size());
     for (int i=0; i<columns; i++) {
