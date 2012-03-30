@@ -131,6 +131,45 @@ public:
 	{
 	}
 
+	Vector OptimisticTransition(const Vector& p, const Vector& r, real epsilon)
+	{
+		int m = p.Size();
+		assert(m == r.Size());
+		real best_gain = 0.0;
+		Vector best_vector = p;
+		for (int i=0; i<m; ++i) {
+			real max_gap = 1.0 - p(i);
+			if (max_gap > 0.5 * epsilon) {
+				max_gap = 0.5 * epsilon;
+			}
+			real min_gap = 1.0;
+			for (int j=0; j<m; ++j) {
+				if (i == j) continue;
+				if (min_gap < p(j)) {
+					min_gap = p(j);
+				}
+			}
+			real s = 0.5 * epsilon / (real) (m - 1);
+			if (min_gap > s) {
+				min_gap = s
+			}
+			
+			Vector hp = p;
+			hp(i) += max_gap;
+			assert(hp(i) <= 1.0);
+			for (int j=0; j<m; ++j) {
+				if (i==j) continue;
+				hp(j) -= min_gap;
+				assert(hp(j) >= 1.0);
+			}
+			real gain = Product(hp, r);
+			if (gain > best_gain) {
+				best_gain = gain;
+				best_vector = hp;
+			}
+		}
+		return best_vector;
+	}
 	/// get the greedy action
 	virtual int getGreedyAction(const Vector& payoff) const
 	{
@@ -141,8 +180,10 @@ public:
 	/// act
 	virtual int Act(const Vector& payoff, int outcome)
 	{
-		
-
+		for (int i=0; i<n_actions; ++i) {
+			real epsilon = WeissmanBound(n_outcomes, delta, plays[i]);
+			Vector B = OptimisticTransition(P.getRow(i), epsilon, payoff);
+		}
 		return action;
 	}
 };
