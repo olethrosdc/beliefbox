@@ -15,6 +15,7 @@
 #include "Dirichlet.h"
 #include "Sarsa.h"
 #include "MersenneTwister.h"
+#include "Bounds.h"
 
 class ObjectiveBanditPolicy
 {
@@ -80,17 +81,18 @@ public:
 	/// act
 	virtual int Act(const Vector& payoff, int outcome)
 	{
-		if (rng.uniform() < epsilon) {
-			action = rng.discrete_uniform(n_actions);
-		}
-
+		// use previous action
 		if (action >= 0 && outcome >= 0) {
 			N(action, outcome)++;
 			Vector p = N.getRow(action);
 			P.setRow(action, p / p.Sum());
 		}
-		action = getGreedyAction(payoff);
 
+		if (rng.uniform() < epsilon) {
+			action = rng.discrete_uniform(n_actions);
+		} else {
+			action = getGreedyAction(payoff);
+		}
 		return action;
 	}
 };
@@ -137,6 +139,7 @@ public:
 		assert(m == r.Size());
 		real best_gain = 0.0;
 		Vector best_vector = p;
+		//printf("P: "); p.print(stdout);
 		for (int i=0; i<m; ++i) {
 			real max_gap = 1.0 - p(i);
 			if (max_gap > 0.5 * epsilon) {
@@ -145,23 +148,26 @@ public:
 			real min_gap = 1.0;
 			for (int j=0; j<m; ++j) {
 				if (i == j) continue;
-				if (min_gap < p(j)) {
+				if (min_gap > p(j)) {
 					min_gap = p(j);
 				}
 			}
-			real s = 0.5 * epsilon / (real) (m - 1);
+			real u = 0.5 * epsilon;
+			real s = u / (real) (m - 1);
 			if (min_gap > s) {
-				min_gap = s
+				min_gap = s;
 			}
-			
 			Vector hp = p;
 			hp(i) += max_gap;
 			assert(hp(i) <= 1.0);
 			for (int j=0; j<m; ++j) {
 				if (i==j) continue;
 				hp(j) -= min_gap;
-				assert(hp(j) >= 1.0);
+				assert(hp(j) >= 0.0);
 			}
+			//			printf ("%f %f %f %f\n", max_gap, min_gap, max_gap + (real) (m-1)*min_gap, epsilon);
+			//printf("H: "); hp.print(stdout);
+			hp /= hp.Sum();
 			real gain = Product(hp, r);
 			if (gain > best_gain) {
 				best_gain = gain;
@@ -170,6 +176,7 @@ public:
 		}
 		return best_vector;
 	}
+
 	/// get the greedy action
 	virtual int getGreedyAction(const Vector& payoff) const
 	{
@@ -180,10 +187,27 @@ public:
 	/// act
 	virtual int Act(const Vector& payoff, int outcome)
 	{
+		// use previous action to update probabilities
+		if (action >= 0 && outcome >= 0) {
+			N(action, outcome)++;
+			Vector p = N.getRow(action);
+			P.setRow(action, p / p.Sum());
+		}
+
+		// choose next action
+		real u_max = - 1;
+		T++;
+		delta = 1.0 / (real) T;
 		for (int i=0; i<n_actions; ++i) {
 			real epsilon = WeissmanBound(n_outcomes, delta, plays[i]);
-			Vector B = OptimisticTransition(P.getRow(i), epsilon, payoff);
+			Vector B = OptimisticTransition(P.getRow(i), payoff, epsilon);
+			real u = Product(B, payoff);
+			if (u > u_max) {
+				u_max = u;
+				action = i;
+			}
 		}
+
 		return action;
 	}
 };
@@ -194,18 +218,18 @@ struct RegretPair
 	real worst;
 };
 
-RegretPair getRegret(const Matrix& P, const EpsilonGreedyObjectiveBandit& policy)
+RegretPair getRegret(const Matrix& P, const ObjectiveBanditPolicy* policy)
 {
 	RegretPair regret;
 	regret.average = 0.0;
 	regret.worst = 0.0;
 	//int n_actions = policy.n_actions;
-	int n_outcomes = policy.n_outcomes;
+	int n_outcomes = policy->n_outcomes;
 
 	for (int i=0; i<n_outcomes; ++i) {
 		Vector payoff(n_outcomes);
 		payoff(i) = 1.0;
-		int action = policy.getGreedyAction(payoff);
+		int action = policy->getGreedyAction(payoff);
 		const Vector& r_payoff = payoff;
 		Vector U = P * r_payoff;
 		real delta = Max(U) - U(action);
@@ -217,7 +241,11 @@ RegretPair getRegret(const Matrix& P, const EpsilonGreedyObjectiveBandit& policy
 }
 
 
-
+enum Method {
+	UNDEFINED = 0x0,
+	EPSILON_GREEDY,
+	WEISSMAN_UCB
+};
 
 int main (int argc, char** argv)
 {
@@ -225,27 +253,30 @@ int main (int argc, char** argv)
     srand48(1228517343);
 	MersenneTwisterRNG rng;
 	rng.manualSeed(1228517343);
+	setRandomSeed(1228517343);
     //RandomNumberFile rng("./dat/r1e7.bin");
 	int n_actions = 4;
 	int n_outcomes = 4;
 	int horizon = 1000;
 	int n_experiments = 10;
 	real epsilon = 0.0;
+	Method method = UNDEFINED;
 
-	if (argc <= 5) {
-		fprintf(stderr, "arguments: n_actions n_outcomes horizon n_runs epsilon\n");
+	if (argc <= 6) {
+		fprintf(stderr, "arguments: n_actions n_outcomes horizon n_runs method epsilon \n method 1: epsilon-greedy \n method 2: weissman_ucb");
 		exit(-1);
 	}
 	n_actions = atoi(argv[1]);
 	n_outcomes = atoi(argv[2]);
 	horizon = atoi(argv[3]);
 	n_experiments = atoi(argv[4]);
-	epsilon = atof(argv[5]);
-
+	method = (Method) atoi(argv[5]);
+	epsilon = atof(argv[6]);
+	
 	Vector worst_case(horizon);
 	Vector average_case(horizon);
 
-
+	
 
     for (int experiment=0; experiment<n_experiments; experiment++) {
 
@@ -254,12 +285,24 @@ int main (int argc, char** argv)
 		for (int i=0; i<n_actions; ++i) {
 			P_sa.setRow(i, prior.generate());
 		}
-		EpsilonGreedyObjectiveBandit policy(n_actions, n_outcomes, rng, epsilon);
+		ObjectiveBanditPolicy* policy = NULL;
+		switch (method) {
+		case EPSILON_GREEDY:
+			policy = new EpsilonGreedyObjectiveBandit(n_actions, n_outcomes, rng, epsilon);
+			break;
+		case WEISSMAN_UCB:
+			policy = new WeissmanObjectiveBandit(n_actions, n_outcomes, rng);
+			break;
+		default:
+			fprintf(stderr, "Unknown method %d\n", method);
+			exit(-1);
+		}	
 		real reward = 0.0;
 		int outcome = -1;
         for (int t=0; t<horizon; t++) {
 			Vector payoff = prior.generate();
-            int action = policy.Act(payoff, outcome);
+            int action = policy->Act(payoff, outcome);
+			//printf ("%d ", action);	payoff.print(stdout);
 			outcome = DiscreteDistribution::generate(P_sa.getRow(action));
 			reward = payoff(outcome);
 			RegretPair regret =  getRegret(P_sa, policy);
