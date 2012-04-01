@@ -4,9 +4,9 @@ exc=$HOME/projects/beliefbox/src/algorithms/tests/bin/pareto_ucb
 actions=16
 outcomes=4
 horizon=100000
-runs=1000
+runs=10
 
-for actions in 2 4 8 16 32 64 128 256
+for actions in 2 4 8 16 32 64 128
 do
 	resdir=$HOME/results/pareto_ucb/${actions}A_${outcomes}S_${horizon}T_WUCB/
 	mkdir -p $resdir
