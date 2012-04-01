@@ -440,7 +440,7 @@ int main (int argc, char** argv)
         for (int t=0; t<horizon; t++) {
 			Vector payoff = prior.generate();
             int action = policy->Act(payoff, outcome);
-			printf ("%d ", action);	payoff.print(stdout);
+			//printf ("%d ", action);	payoff.print(stdout);
 			outcome = DiscreteDistribution::generate(P_sa.getRow(action));
 			reward = payoff(outcome);
 			RegretPair regret =  getRegret(P_sa, policy);
