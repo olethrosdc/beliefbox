@@ -16,6 +16,7 @@
 #include "Sarsa.h"
 #include "MersenneTwister.h"
 #include "Bounds.h"
+#include <algorithm>
 
 class ObjectiveBanditPolicy
 {
@@ -102,6 +103,12 @@ class WeissmanObjectiveBandit : public ObjectiveBanditPolicy
 {
 protected:
 	int action;
+    typedef std::pair<real, int> mypair;
+    bool comparator (const mypair& l, const mypair& r)
+    {
+        return l.first < r.first;
+    }
+    
 public:
 	Matrix N; ///< incidence matrix
 	Matrix P; ///< probability matrix
@@ -131,11 +138,44 @@ public:
 
 	virtual ~WeissmanObjectiveBandit()
 	{
-	}
+}	
 
+    /** Return an optimistic transition vector.
+        
+        The return value, \f$v^*\f$, must be such that
+        \f[
+        q^* \in \arg \max \{ r' q : \|p - v\|_1 \leq \epsilon \}.
+        \f]
+     */
 	Vector OptimisticTransition(const Vector& p, const Vector& r, real epsilon)
 	{
 		int m = p.Size();
+#if 1
+        std::vector<mypair> q(m);
+        for (int i=0; i<m; ++i) {
+            q[i].first = p(i);
+            q[i].second = i;
+        }
+        std::sort(q.begin(), q.end());
+        Vector v = p;
+        bool flag = true;
+        while (epsilon > 0.0 && flag) {
+            flag = false;
+            for (int i=0; i>m; ++i) {
+                for (int j=m-1; j>=i; --j) {
+                    int t_i = q[i].second;
+                    int t_j = q[j].second;
+                    real min_gap = v(t_i);
+                    real max_gap = 1.0 - v(t_j);
+                    real gap = std::min(std::min(0.5*epsilon, min_gap), max_gap);
+                    v(t_j) += gap;
+                    v(t_i) -= gap;
+                    epsilon -= 2.0 * gap;
+                }
+            }
+        }
+        return v;
+#else
 		assert(m == r.Size());
 		real best_gain = 0.0;
 		Vector best_vector = p;
@@ -175,7 +215,9 @@ public:
 			}
 		}
 		return best_vector;
+#endif
 	}
+
 
 	/// get the greedy action
 	virtual int getGreedyAction(const Vector& payoff) const
@@ -190,6 +232,7 @@ public:
 		// use previous action to update probabilities
 		if (action >= 0 && outcome >= 0) {
 			N(action, outcome)++;
+            plays[action]++;
 			Vector p = N.getRow(action);
 			P.setRow(action, p / p.Sum());
 		}
@@ -199,7 +242,96 @@ public:
 		T++;
 		delta = 1.0 / (real) T;
 		for (int i=0; i<n_actions; ++i) {
-			real epsilon = WeissmanBound(n_outcomes, plays[i], delta);
+            real u = 1.0;
+            if (plays[i] > 0) {
+                real epsilon = WeissmanBound(n_outcomes, plays[i], delta);
+                Vector B = OptimisticTransition(P.getRow(i), payoff, epsilon);
+                u = Product(B, payoff);
+            } 
+            if (u > u_max) {
+                u_max = u;
+                action = i;
+			}
+		}
+
+		return action;
+	}
+};
+
+
+class HoeffdingObjectiveBandit : public ObjectiveBanditPolicy
+{
+protected:
+	int action;
+public:
+	Matrix N; ///< incidence matrix
+	Matrix P; ///< probability matrix
+	real delta; ///< randomness
+	int T; ///< number of time-steps
+	std::vector<int> plays; ///< number of plays
+	HoeffdingObjectiveBandit(int n_actions_,
+							int n_outcomes_,
+							RandomNumberGenerator& rng_)
+		: ObjectiveBanditPolicy(n_actions_, n_outcomes_, rng_),
+		  action(-1),
+		  N(n_actions, n_outcomes),
+		  P(n_actions, n_outcomes),
+		  delta(1.0),
+		  T(0),
+		  plays(n_actions)
+	{
+		real p = 1.0 / (real) n_outcomes;
+		for (int i=0; i<n_actions; ++i) {
+			plays[i] = 0;
+			for (int j=0; j<n_outcomes; ++j) {
+				N(i,j) = 0.5;
+				P(i,j) = p;
+			}
+		}
+	}
+
+	virtual ~HoeffdingObjectiveBandit()
+	{
+	}
+
+    /// Here we have no constraints, so we just add epsilon to all the bits.
+	Vector OptimisticTransition(const Vector& p, const Vector& r, real epsilon)
+	{		
+        int m = p.Size();
+        Vector hp = p + epsilon;
+        for (int i=0; i<m; ++i) {
+            if (hp(i) > 1.0) {
+                hp(i) = 1.0;
+            }
+        }
+		return hp;
+	}
+
+
+	/// get the greedy action
+	virtual int getGreedyAction(const Vector& payoff) const
+	{
+		const Matrix& rP = P;
+		return ArgMax(rP * payoff);
+	}
+
+	/// act
+	virtual int Act(const Vector& payoff, int outcome)
+	{
+		// use previous action to update probabilities
+		if (action >= 0 && outcome >= 0) {
+            plays[action]++;
+			N(action, outcome)++;
+			Vector p = N.getRow(action);
+			P.setRow(action, p / p.Sum());
+		}
+
+		// choose next action
+		real u_max = - 1;
+		T++;
+		delta = 1.0 / (real) T;
+		for (int i=0; i<n_actions; ++i) {
+			real epsilon = HoeffdingBound(n_outcomes, plays[i], delta);
 			Vector B = OptimisticTransition(P.getRow(i), payoff, epsilon);
 			real u = Product(B, payoff);
 			if (u > u_max) {
@@ -211,6 +343,8 @@ public:
 		return action;
 	}
 };
+
+
 
 struct RegretPair
 {
@@ -244,7 +378,8 @@ RegretPair getRegret(const Matrix& P, const ObjectiveBanditPolicy* policy)
 enum Method {
 	UNDEFINED = 0x0,
 	EPSILON_GREEDY,
-	WEISSMAN_UCB
+	WEISSMAN_UCB, 
+    HOEFFDING_UCB
 };
 
 int main (int argc, char** argv)
@@ -293,6 +428,9 @@ int main (int argc, char** argv)
 		case WEISSMAN_UCB:
 			policy = new WeissmanObjectiveBandit(n_actions, n_outcomes, rng);
 			break;
+		case HOEFFDING_UCB:
+			policy = new HoeffdingObjectiveBandit(n_actions, n_outcomes, rng);
+			break;
 		default:
 			fprintf(stderr, "Unknown method %d\n", method);
 			exit(-1);
@@ -302,7 +440,7 @@ int main (int argc, char** argv)
         for (int t=0; t<horizon; t++) {
 			Vector payoff = prior.generate();
             int action = policy->Act(payoff, outcome);
-			//printf ("%d ", action);	payoff.print(stdout);
+			printf ("%d ", action);	payoff.print(stdout);
 			outcome = DiscreteDistribution::generate(P_sa.getRow(action));
 			reward = payoff(outcome);
 			RegretPair regret =  getRegret(P_sa, policy);
