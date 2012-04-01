@@ -199,7 +199,7 @@ public:
 		T++;
 		delta = 1.0 / (real) T;
 		for (int i=0; i<n_actions; ++i) {
-			real epsilon = WeissmanBound(n_outcomes, delta, plays[i]);
+			real epsilon = WeissmanBound(n_outcomes, plays[i], delta);
 			Vector B = OptimisticTransition(P.getRow(i), payoff, epsilon);
 			real u = Product(B, payoff);
 			if (u > u_max) {
