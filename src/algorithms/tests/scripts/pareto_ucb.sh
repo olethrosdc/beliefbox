@@ -3,7 +3,7 @@
 exc=$HOME/projects/beliefbox/src/algorithms/tests/bin/pareto_ucb
 actions=16
 outcomes=4
-horizon=100000
+horizon=1000000
 runs=10
 
 for actions in 2 4 8 16 32 64 128
