@@ -240,7 +240,8 @@ public:
 		// choose next action
 		real u_max = - 1;
 		T++;
-		delta = 1.0 / (real) T;
+		//delta = 0.1;
+        delta = 1.0 / (real) T;
 		for (int i=0; i<n_actions; ++i) {
             real u = 1.0;
             if (plays[i] > 0) {
@@ -329,6 +330,7 @@ public:
 		// choose next action
 		real u_max = - 1;
 		T++;
+        //delta = 0.02;
 		delta = 1.0 / (real) T;
 		for (int i=0; i<n_actions; ++i) {
 			real epsilon = HoeffdingBound(n_outcomes, plays[i], delta);
