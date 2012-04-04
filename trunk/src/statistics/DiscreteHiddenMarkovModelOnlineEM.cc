@@ -262,13 +262,12 @@ Vector DiscreteHiddenMarkovModelOnlineEM::getPrediction()
     }
 
     Vector v(n_observations);
-    for (int i=0; i<n_states; ++i) {
+    for (int k=0; k<n_observations; ++k) {
         real sum = 0;
-        for (int k=0; k<n_observations; ++k) {
+        for (int i=0; i<n_states; ++i) {
             sum += p(i) * PrX(i, k);
         }
-        v(i) = sum;
+        v(k) = sum;
     }
-
     return v;
 }

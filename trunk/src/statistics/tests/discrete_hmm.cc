@@ -60,10 +60,10 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
     DiscreteHiddenMarkovModelPF hmm_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_rep_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
         //DiscreteHiddenMarkovModelPF_ISReplaceLowestExact hmm_rep_ex_pf(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
-    DiscreteHiddenMarkovModelOnlineEM hmm_rep_ex_pf(hmm->getNStates(), hmm->getNObservations());    
+    DiscreteHiddenMarkovModelOnlineEM hmm_online_em(hmm->getNStates(), hmm->getNObservations());    
     
 
-   DiscreteHiddenMarkovModelEM hmm_pf_mixture(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng, 1);
+   DiscreteHiddenMarkovModelEM hmm_em(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng, 1);
 
     DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichlet hmm_pf_rep_mixture(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
     DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichletExact hmm_pf_rep_ex_mixture(threshold, stationarity, hmm->getNStates(), hmm->getNObservations(), n_particles);
@@ -96,11 +96,11 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
         // --- particle filter with replacement ---
         PredictAndAdapt(hmm_rep_pf, x, t, pf_rep_stats);
 
-        // --- particle filter with replacement ---
-        PredictAndAdapt(hmm_rep_ex_pf, x, t, pf_rep_ex_stats);
+        // --- Online EM ---
+        PredictAndAdapt(hmm_online_em, x, t, pf_rep_ex_stats);
 
-        // --- grid particle filter mixture ---
-        PredictAndAdapt(hmm_pf_mixture, x, t, pf_mix_stats);
+        // --- EM ---
+        PredictAndAdapt(hmm_em, x, t, pf_mix_stats);
 
         // --- particle filter mixture with replacement---
         PredictAndAdapt(hmm_pf_rep_mixture, x, t, pf_rep_mix_stats);
