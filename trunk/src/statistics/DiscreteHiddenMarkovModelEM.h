@@ -57,10 +57,12 @@ public:
         EM_algo->Observe(x);
         T++;
         if (T > 1) {
-            ret = EM_algo->Iterate(n_iter);
-            Matrix& Ps = hmm->getBelief();
-            int t = Ps.Rows();
-            B = Ps.getRow(t - 1);
+            for (int i=0; i<1; ++i) {
+                ret = EM_algo->Iterate(n_iter);
+                Matrix& Ps = hmm->getBelief();
+                int t = Ps.Rows();
+                B = Ps.getRow(t - 1);
+            }
         }
         return ret;
     }

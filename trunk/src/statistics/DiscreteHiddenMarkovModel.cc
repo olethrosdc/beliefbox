@@ -105,7 +105,9 @@ real DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
     // initialise the first belief
     Vector B_prev(n_states);
     B_prev[0]= 1.0;
-        
+    for (int src=1; src<n_states; ++src) {
+        B_prev(src) = 0.0;
+    }
     // calculate forward pass
     for (int t=0; t<T; ++t) {
         //b(s') = sum_i b(s',s=i) = sum_i p(s'|s=i) b(s=i)
@@ -124,7 +126,7 @@ real DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
             }
         }
 
-        //b'(s') = p(x'|s') b(s') / sum_i b(x',s'=i) 
+        //b(s'|x') = p(x'|s') b(s') / sum_i b(x',s'=i) 
         real sum = 0.0;
         for (int s=0; s<n_states; ++s) {
             forward_belief(t, s) = PrX(s, observations[t]) * B_next[s];
@@ -152,22 +154,21 @@ real DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
 
         // P(s|x^T) = sum_j P(s,s'=j | x^T)
         //          = sum_j P(s|s'=j,x^T) P(s'=j|x^T)
+        // so this first calculates
+        // P(s_t = k| s_{t+1} = j, x^T) 
+        // = P(s_t = k | s_{t+1} = j, x^t)
+        // = P_{kj} b_t(s_t = k) / \sum_i P_{ij} b_t(s_t = i)
         for (int j=0; j<n_states; ++j) {
             real sum = 0.0;
             for (int k=0; k<n_states; ++k) {
                 MB(k, j) = PrS(k, j) * forward_belief(t, k);
                 sum += MB(k, j);
             }
-            if (sum == 0) {
-                real inv = 1.0 / (real) n_states;
-                for (int k=0; k<n_states; ++k) {
-                    MB(k, j) = inv;
-                }
-            } else {                
-                real invsum = 1.0 / sum;
-                for (int k=0; k<n_states; ++k) {
-                    MB(k, j) *= invsum;
-                }
+            assert (!std::isnan(sum));
+            assert (sum > 0);
+            real invsum = 1.0 / sum;
+            for (int k=0; k<n_states; ++k) {
+                MB(k, j) *= invsum;
             }
         }
         
@@ -180,6 +181,7 @@ real DiscreteHiddenMarkovModel::Expectation(std::vector<int>& observations, Matr
             }
             sum += backward_belief(t, k);
         }
+        assert(fabs(sum - 1.0) < 1e-6);
     }
 
     real log_likelihood = 0;
