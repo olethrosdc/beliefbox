@@ -62,7 +62,7 @@ public:
         }
 		void SetIndex(int i)
 		{
-			assert(i >=0 && i < length);
+			assert(length == 0 || (i >=0 && i < length));
 			index = i;
 		}
 		int GetIndex()

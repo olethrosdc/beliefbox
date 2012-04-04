@@ -22,6 +22,8 @@
 #include "EasyClock.h"
 #include "Dirichlet.h"
 #include "RandomDevice.h"
+#include "MersenneTwister.h"
+
 #include <ctime>
 struct ErrorStatistics
 {
@@ -53,7 +55,8 @@ int main (int argc, char** argv)
     int n_iter = 100;
     //real stationarity = 0.99;
     
-    setRandomSeed(time(NULL));
+    setRandomSeed(98234239846);//time(NULL));
+
 
     if (argc > 1) {
         T = atoi(argv[1]);
@@ -93,8 +96,10 @@ int main (int argc, char** argv)
     ErrorStatistics hmm_is_pf_error(T);
     ErrorStatistics hmm_em_error(T);
     ErrorStatistics hmm_pf_mix_error(T);
-    RandomDevice random_device(false);
-    
+    //RandomDevice random_device(false);
+    MersenneTwisterRNG random_device;
+    random_device.manualSeed(209482335097);
+
     for (int iter=0; iter<n_iter; iter++) {
         //real stationarity = 0.9;
         real true_stationarity = 0.5 + 0.5*urandom();
@@ -115,7 +120,7 @@ int main (int argc, char** argv)
 
         real hmm_threshold = 0.5;
         real hmm_stationarity = 0.5;
-        int hmm_particles = 128;
+        int hmm_particles =  128;
         DiscreteHiddenMarkovModelPF hmm_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
         DiscreteHiddenMarkovModelPF_ISReplaceLowest hmm_is_pf(hmm_threshold, hmm_stationarity, n_mc_states, n_observations, hmm_particles);
         DiscreteHiddenMarkovModelEM hmm_em(n_mc_states, n_observations, hmm_stationarity, &random_device, 1);
@@ -146,18 +151,19 @@ int main (int argc, char** argv)
         }
         
         estimated_hmm_ptr->Show();
-        int max_iter = 256;
+        int max_iter = 1000;//256; //16384; //4096; //256;
         real log_likelihood = LOG_ZERO;
         for (int iter=0; iter<max_iter; ++iter) {
             real log_likelihood2 = EM_algo.Iterate(1);
             printf("%f # log likelihood \n", log_likelihood2);
-            if (log_likelihood2 - log_likelihood < 0.0001) {
+            if (0) { //log_likelihood2 - log_likelihood < 0) { 
                 break;
             }
             log_likelihood = log_likelihood2;
         }
         estimated_hmm_ptr->Show();
-            hmm->Show();
+        hmm->Show();
+        printf ("# HMM estimation complete. Online prediction starting\n");
         for (int t=0; t<T; ++t) {
             int observation = data[t];
 
@@ -166,6 +172,7 @@ int main (int argc, char** argv)
                 oracle_error.loss[t] += 1.0;
             }
 
+#if 0
             int bmc_prediction = bmc.predict();
             if (bmc_prediction != observation) {
                 bmc_error.loss[t] += 1.0;
@@ -175,27 +182,28 @@ int main (int argc, char** argv)
             if (bpsr_prediction != observation) {
                 bpsr_error.loss[t] += 1.0;
             }
-
+#endif
             int hmm_pf_prediction = hmm_pf.predict();
             if (hmm_pf_prediction != observation) {
                 hmm_pf_error.loss[t] += 1.0;
             }
 
+#if 0
             int hmm_is_pf_prediction = hmm_is_pf.predict();
             if (hmm_is_pf_prediction != observation) {
                 hmm_is_pf_error.loss[t] += 1.0;
             }
-
+#endif
             int hmm_em_prediction = hmm_em.predict();
             if (hmm_em_prediction != observation) {
                 hmm_em_error.loss[t] += 1.0;
             }
-
+#if 1
             int hmm_pf_mix_prediction = oracle_em.predict();
             if (hmm_pf_mix_prediction != observation) {
                 hmm_pf_mix_error.loss[t] += 1.0;
             }
-            
+#endif       
             double start_time, end_time;
 
             start_time = GetCPU();
@@ -203,36 +211,40 @@ int main (int argc, char** argv)
             end_time = GetCPU();
             oracle_time += end_time - start_time;
 
-            start_time = end_time;
+#if 0
+            start_time = GetCPU();
             bmc.ObserveNextState(observation);
             end_time = GetCPU();
             bmc_time += end_time - start_time;
 
-            start_time = end_time;;
+
+            start_time = GetCPU();
             bpsr.ObserveNextState(observation);                               
             end_time = GetCPU();
             bpsr_time += end_time - start_time;
-
-            start_time = end_time;;
+#endif
+            start_time = GetCPU();
             hmm_pf.Observe(observation);                               
             end_time = GetCPU();
             hmm_pf_time += end_time - start_time;
 
-            start_time = end_time;;
+#if 0
+            start_time = GetCPU();
             hmm_is_pf.Observe(observation);                               
             end_time = GetCPU();
             hmm_is_pf_time += end_time - start_time;
-
-            start_time = end_time;;
+#endif
+            start_time = GetCPU();
             hmm_em.Observe(observation);                               
             end_time = GetCPU();
             hmm_em_time += end_time - start_time;
 
-            start_time = end_time;;
+            start_time = GetCPU();
             oracle_em.Observe(observation);                               
             end_time = GetCPU();
             hmm_pf_mix_time += end_time - start_time;
         }
+        printf ("#  Online prediction Complete\n");
 
         double end_time = GetCPU();
         elapsed_time += end_time - initial_time;
@@ -242,7 +254,7 @@ int main (int argc, char** argv)
         delete estimated_hmm_ptr;
     }
 
-    printf ("# Time -- Oracle: %f, HMM PF: %f, HMM IS PF: %f, HMM PF EX: %f, HMM PF MIX: %f, BHMC: %f, BPSR: %f\n", 
+    printf ("# Time -- Oracle: %f, HMM PF: %f, HMM IS PF: %f, HMM PF EX: %f, EM ORACLE: %f, BHMC: %f, BPSR: %f\n", 
             oracle_time, hmm_pf_time, hmm_is_pf_time, hmm_em_time, hmm_pf_mix_time, bmc_time, bpsr_time);
 
     real inv_iter = 1.0 / (real) n_iter;
@@ -258,7 +270,7 @@ int main (int argc, char** argv)
     print_result("hmm_pf.error", hmm_pf_error);
     print_result("hmm_is_pf.error", hmm_is_pf_error);
     print_result("hmm_em.error", hmm_em_error);
-    print_result("hmm_pf_mix.error", hmm_pf_mix_error);
+    print_result("oracle_em.error", hmm_pf_mix_error);
     print_result("oracle.error", oracle_error);
     print_result("bmc.error", bmc_error);
     print_result("bpsr.error", bpsr_error);

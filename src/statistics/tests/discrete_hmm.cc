@@ -89,24 +89,26 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 
         // --- belief state given true model ---
         PredictAndAdapt(hmm_belief_state, x, t, observation_stats);
-        
+
+#if 0        
         // --- grid particle filter ---
         PredictAndAdapt(hmm_pf, x, t, pf_stats);
 
         // --- particle filter with replacement ---
         PredictAndAdapt(hmm_rep_pf, x, t, pf_rep_stats);
-
+#endif
         // --- Online EM ---
         PredictAndAdapt(hmm_online_em, x, t, pf_rep_ex_stats);
 
         // --- EM ---
         PredictAndAdapt(hmm_em, x, t, pf_mix_stats);
-
+#if 0
         // --- particle filter mixture with replacement---
         PredictAndAdapt(hmm_pf_rep_mixture, x, t, pf_rep_mix_stats);
 
         // --- particle filter mixture with replacement exact belief---
         PredictAndAdapt(hmm_pf_rep_ex_mixture, x, t, pf_rep_ex_mix_stats);
+#endif
     }
 
     // add mixture statistics
@@ -221,12 +223,12 @@ int main(int argc, char** argv)
     Vector pf_rep_top = pf_rep_stats.TopPercentile(percentile);
     Vector pf_rep_bottom = pf_rep_stats.BottomPercentile(percentile);
 
-    pf_rep_ex_stats.Sort();
+    pf_rep_ex_stats.Sort(); // Online EM
     Vector pf_rep_ex_mean = pf_rep_ex_stats.Mean();
     Vector pf_rep_ex_top = pf_rep_ex_stats.TopPercentile(percentile);
     Vector pf_rep_ex_bottom = pf_rep_ex_stats.BottomPercentile(percentile);
 
-    pf_mix_stats.Sort();
+    pf_mix_stats.Sort(); // EM
     Vector pf_mix_mean = pf_mix_stats.Mean();
     Vector pf_mix_top = pf_mix_stats.TopPercentile(percentile);
     Vector pf_mix_bottom = pf_mix_stats.BottomPercentile(percentile);
@@ -249,8 +251,8 @@ int main(int argc, char** argv)
                 hmm_bottom[t], hmm_mean[t], hmm_top[t],
                 pf_bottom[t], pf_mean[t], pf_top[t],
                 pf_rep_bottom[t], pf_rep_mean[t], pf_rep_top[t],
-                pf_rep_ex_bottom[t], pf_rep_ex_mean[t], pf_rep_ex_top[t],
-                pf_mix_bottom[t], pf_mix_mean[t], pf_mix_top[t], 
+                pf_rep_ex_bottom[t], pf_rep_ex_mean[t], pf_rep_ex_top[t], // EM
+                pf_mix_bottom[t], pf_mix_mean[t], pf_mix_top[t],  // MIX
                 pf_rep_mix_bottom[t], pf_rep_mix_mean[t], pf_rep_mix_top[t], 
                 pf_rep_ex_mix_bottom[t], pf_rep_ex_mix_mean[t], pf_rep_ex_mix_top[t]);
     }
