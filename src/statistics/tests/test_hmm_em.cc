@@ -41,28 +41,36 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
 {
     RandomDevice rng(false);
     DiscreteHiddenMarkovModelStateBelief hmm_belief_state(hmm);
-    //DiscreteHiddenMarkovModel* estimated_hmm_ptr = MakeRandomDiscreteHMM(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng);
-    //DiscreteHiddenMarkovModel& estimated_hmm = *estimated_hmm_ptr;
+    DiscreteHiddenMarkovModel* estimated_hmm_ptr = MakeRandomDiscreteHMM(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng);
+    DiscreteHiddenMarkovModel& estimated_hmm = *estimated_hmm_ptr;
 
-    //ExpectationMaximisation<DiscreteHiddenMarkovModel, int> EM_algo(estimated_hmm);
-    DiscreteHiddenMarkovModelEM EM_hmm(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng, n_em_iter);
+    ExpectationMaximisation<DiscreteHiddenMarkovModel, int> EM_algo(estimated_hmm);
+    //DiscreteHiddenMarkovModelEM EM_hmm(hmm->getNStates(), hmm->getNObservations(), stationarity, &rng, n_em_iter);
     std::vector<int> s(T);
     for (int t=0; t<T; ++t) {
         // generate next observation 
         int x = hmm->generate();
         s[t] = hmm->getCurrentState();
+
+        // oracle
         int oracle_x = hmm_belief_state.predict();
         real oracle_loss = 0;
         if (oracle_x != x) {
             oracle_loss = 1;
         }
+        real oracle_accuracy = hmm_belief_state.getPrediction()(x);
+
+        // EM HMM
         int em_hmm_x = EM_hmm.predict();
         real em_hmm_loss = 0;
         if (em_hmm_x != x) {
             em_hmm_loss = 1;
         }
-        oracle_state_stats.SetValue(t, oracle_loss);
-        em_state_stats.SetValue(t, em_hmm_loss);
+        real em_hmm_accuracy = EM_hmm.getPrediction()(x);
+
+        // save stats
+        oracle_state_stats.SetValue(t, oracle_accuracy);
+        em_state_stats.SetValue(t, em_hmm_accuracy);
         
         //EM_algo.Observe(x);
         //if (t > 0) {
@@ -79,7 +87,7 @@ void TestBelief (DiscreteHiddenMarkovModel* hmm,
     //        em_state_stats.SetValue(t, belief(t, s[t]));
         //printf ("%d %f\n", t, belief(t, s[t]));
     //}
-    //delete estimated_hmm_ptr;
+    delete estimated_hmm_ptr;
 }
 
 
@@ -134,7 +142,7 @@ int main(int argc, char** argv)
         real true_stationarity = 0.5 + 0.5 * urandom();
         oracle_state_stats.SetSequence(i);
         em_state_stats.SetSequence(i);
-        fprintf (stderr, "Iter: %d / %d\n", i + 1, n_iter);
+        //fprintf (stderr, "Iter: %d / %d\n", i + 1, n_iter);
         DiscreteHiddenMarkovModel* hmm = MakeRandomDiscreteHMM(n_states,  n_observations, true_stationarity, &random_device);
         TestBelief(hmm, T, threshold, stationarity, n_em_iter, oracle_state_stats, em_state_stats);
         delete hmm;

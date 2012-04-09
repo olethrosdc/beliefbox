@@ -49,4 +49,7 @@ public:
 
 };
 
+Vector MultinomialDeviation(const Vector& p, const int j, const real c);
+
+
 #endif
