@@ -142,4 +142,43 @@ real MultinomialDistribution::pdf(const Vector& x) const
 	return exp(log_density);
 }
 
+/** Multinomial Deviation.
 
+    Given a vector \f$p \in S^n\f$, an index \f$j \in N_n\f$, and a scalar \f$c \in R \f$, return the solution of:
+    \f[
+    \max \{\sign(c) (q_j - p_j) \mid q \in S^n, \|p - q\|_1 \leq |c|\}
+    \]
+*/
+Vector MultinomialDeviation(const Vector& p, const int j, const real c)
+{
+    int n = p.Size();
+    assert (n > 1);
+    assert (approx_eq(p.Sum(), 1.0));
+    assert (Min(p) >= 0.0 && Max(p) <= 1.0);
+    
+    real d_j = 0.5 * c;
+    
+    if (c > 0.0) {
+        d_j = std::min(1 - p(j), d_j);
+    } else {
+        d_j = std::max(-p(j), d_j);
+    }
+    real d_rest = -d_j / (real) (n-1);
+    Vector q(n);
+    q +=  d_rest;
+    q(j) = d_j;
+    q += p;
+    real s = 0.0;
+    for (int i=0; i<n; ++i) {
+        if (q(i) < 0.0) {
+            q(i) = 0.0;
+        }
+        s += q(i);
+    } 
+
+    if (s > 1.0) {
+        q /= s;
+    }
+
+    return q;
+}
