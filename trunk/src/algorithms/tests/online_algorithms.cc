@@ -87,20 +87,22 @@ Statistics EvaluateAlgorithm (int episode_steps,
                               real gamma);
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:   {QLearning, Model, Sarsa, Sampling, TdBma}\n\
-    --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim}\n\
-    --n_states:    number of states (usually there is no need to specify it)\n\
-    --n_actions:   number of actions (usually there is no need to specify it)\n\
-    --gamma:       reward discounting in [0,1]\n\
-    --lambda:      eligibility trace parameter (for some algorithms)\n\
-    --randomness:  environment randomness\n\
-    --n_runs:      maximum number of runs\n\
-    --n_episodes:  maximum number of episodes (ignored if < 0)\n\
+    --algorithm:    {QLearning, Model, Sarsa, Sampling, TdBma}\n\
+    --environment:  {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim}\n\
+    --n_states:     number of states (usually there is no need to specify it)\n\
+    --n_actions:    number of actions (usually there is no need to specify it)\n\
+    --gamma:        reward discounting in [0,1]\n\
+    --lambda:       eligibility trace parameter (for some algorithms)\n\
+    --randomness:   environment randomness\n\
+    --n_runs:       maximum number of runs\n\
+    --n_episodes:   maximum number of episodes (ignored if < 0)\n\
     --episode_steps:     maximum number of steps in each episode (ignored if <0)\n\
-    --n_steps:     maximum number of total steps\n\
-    --grid_size:   number of grid intervals for discretised environments\n\
-    --maze_name:   (Gridworld) file name for the maze\n\
-    --epsilon:     use epsilon-greedy with randomness in [0,1]\n\
+    --n_steps:      maximum number of total steps\n\
+    --grid_size:    number of grid intervals for discretised environments\n\
+    --maze_name:    (Gridworld) file name for the maze\n\
+    --epsilon:      use epsilon-greedy with randomness in [0,1]\n\
+    --upper_bound:  use upper bound of sampled MDPs rather than lower bound\n\
+    --reward_prior: {Beta, Gaussian}\n\
 \n";
 
 
@@ -114,18 +116,20 @@ int main (int argc, char** argv)
     real randomness = 0.01;
     real pit_value = -10.0;
     real goal_value = 1.0;
-    real step_value = -1.0;
+    real step_value = -0.1;
     real epsilon = 0.01;
     uint n_runs = 1000;
     uint n_episodes = 1000;
     uint n_steps = 100000;
     uint episode_steps = 1000;
     uint grid_size = 4;
+    bool use_upper_bound = false;
+    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
+
     const char * algorithm_name = "QLearning";
     const char * environment_name = "Gridworld";
 
-
-    int max_samples = 2;
+    int max_samples = 1;
     char* maze_name = NULL;
     {
         // options
@@ -152,6 +156,8 @@ int main (int argc, char** argv)
                 {"grid_size", required_argument, 0, 0}, //14
                 {"randomness", required_argument, 0, 0}, //15
                 {"episode_steps", required_argument, 0, 0}, //16
+                {"upper_bound", no_argument, 0, 0}, //17
+                {"reward_prior", required_argument, 0, 0}, //18
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -185,6 +191,17 @@ int main (int argc, char** argv)
                 case 14: grid_size = atoi(optarg); break;
                 case 15: randomness = atof(optarg); break;
                 case 16: episode_steps = atoi(optarg); break;
+                case 17: use_upper_bound = true; break;
+                case 18: 
+                    if (!strcmp(optarg, "Beta")) {
+                        reward_prior = DiscreteMDPCounts::BETA;
+                    } else if (!strcmp(optarg, "Normal")) {
+                        reward_prior = DiscreteMDPCounts::NORMAL;
+                    } else {
+                        Serror("Unknown distribution type %s\n", optarg);
+                        exit(-1);
+                    }
+                    break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -358,7 +375,7 @@ int main (int argc, char** argv)
                                            alpha,
                                            exploration_policy);
         } else if (!strcmp(algorithm_name, "Model")) {
-            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states);
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states, reward_prior);
             model= (MDPModel*) discrete_mdp;
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
@@ -367,7 +384,7 @@ int main (int argc, char** argv)
                                          model,
                                          rng);
         } else if (!strcmp(algorithm_name, "Sampling")) {
-            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states);
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states, reward_prior);
             model= (MDPModel*) discrete_mdp;
             algorithm = new SampleBasedRL(n_states,
                                           n_actions,
@@ -375,7 +392,8 @@ int main (int argc, char** argv)
                                           epsilon,
                                           model,
                                           rng,
-                                          max_samples);
+                                          max_samples,
+                                          use_upper_bound);
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
                 new ContextBanditGaussian(n_states,

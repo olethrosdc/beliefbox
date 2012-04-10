@@ -28,10 +28,19 @@
  */
 class DiscreteMDPCounts : public MDPModel
 {
+public:
+    enum RewardFamily {
+        UNDEFINED=0x0,
+        BETA,
+        NORMAL
+    };
 protected:
     std::vector<DirichletDistribution> P; ///< Vector of Dirichlet distributions on P
-    std::vector<BetaDistribution> ER; ///< Vector of estimators on ER.
+    std::vector<ConjugatePrior*> ER; ///< Vector of estimators on ER.
+    //std::vector<BetaDistribution> ER; ///< Vector of estimators on ER.
+    //std::vector<NormalUnknownMeanPrecision> ER; ///< Vector of estimators on ER.
     DiscreteMDP mean_mdp; ///< a model of the mean MDP
+    RewardFamily reward_family; ///< reward family to be used
     int N;
     int getID (int s, int a) const
     {
@@ -41,7 +50,7 @@ protected:
     }
     Vector getDirichletParameters (int s, int a) const;
 public:
-    DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count= 0.5, int init_reward_count = 0, real init_reward = 0.0);
+    DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count= 0.5, RewardFamily reward_family=BETA);
     virtual ~DiscreteMDPCounts();
     virtual void AddTransition(int s, int a, real r, int s2);
     virtual real GenerateReward (int s, int a) const;

@@ -13,7 +13,7 @@
 #include "MDPModel.h"
 #include "Distribution.h"
 #include "Random.h"
-
+#include "SingularDistribution.h"
 #include <iostream>
 
 DiscreteMDP* MDPModel::CreateMDP()

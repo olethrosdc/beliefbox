@@ -22,9 +22,11 @@
    \arg init_reward_count the prior number of counts for the reward.  This should be used in conjuction with the prior reward average to bias the rewards.
    \arg The prior reward average. This can be used to bias the average to some particular value.
  */
-DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count, int init_reward_count, real init_reward) :
+DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count, RewardFamily reward_family_)
+    : 
     MDPModel(n_states, n_actions),
-    mean_mdp(n_states, n_actions, NULL)
+    mean_mdp(n_states, n_actions, NULL),
+    reward_family(reward_family_)
 {
     mdp_dbg("Creating DiscreteMDPCounts with %d states and %d actions\n",  n_states, n_actions);
     N = n_states * n_actions;
@@ -32,11 +34,19 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_tra
     ER.resize(N);
     for (int i=0; i<N; ++i) {
         P[i].resize(n_states, init_transition_count);
-		//        ER[i].Reset(init_reward, init_reward_count);
-		ER[i].beta = 1.0;
-		ER[i].alpha = 1.0;
+        switch(reward_family) {
+        case BETA:
+            ER[i] = new BetaDistribution();
+            break;
+        case NORMAL:
+            ER[i] = new NormalUnknownMeanPrecision();
+            break;
+        default:
+            Serror("Unknown distribution family %d\n", reward_family);
+        }
     }
 }
+
 
 DiscreteMDPCounts::~DiscreteMDPCounts()
 {
@@ -83,7 +93,7 @@ void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
     int ID = getID (s, a);
     //printf ("(%d, %d) [%.2f] -> %d\n", s, a, r, s2);
     P[ID].Observe(s2);
-    ER[ID].Observe(r);
+    ER[ID]->Observe(r);
 
     Vector C =  P[ID].GetMean();
     real expected_reward = getExpectedReward(s,a);
@@ -102,7 +112,7 @@ void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
 /// Generate a reward from the marginal distribution 
 real DiscreteMDPCounts::GenerateReward (int s, int a) const
 {
-    return ER[getID (s, a)].generate();
+    return ER[getID (s, a)]->generate();
 }
 
 /// Generate a transition from the marginal distribution
@@ -134,7 +144,7 @@ Vector DiscreteMDPCounts::getTransitionProbabilities (int s, int a) const
 
 real DiscreteMDPCounts::getExpectedReward (int s, int a) const
 {
-    return ER[getID (s,a)].getMean();
+    return ER[getID (s,a)]->getMean();
 }
 
 void DiscreteMDPCounts::Reset()

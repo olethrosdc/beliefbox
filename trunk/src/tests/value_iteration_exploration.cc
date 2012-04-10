@@ -17,6 +17,7 @@
 #include "Distribution.h"
 #include "Vector.h"
 #include "EasyClock.h"
+#include "SingularDistribution.h"
 #include <ctime>
 #include <cstdlib>
 

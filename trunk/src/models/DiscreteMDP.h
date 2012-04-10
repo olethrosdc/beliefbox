@@ -13,7 +13,9 @@
 #ifndef DISCRETE_MDP_H
 #define DISCRETE_MDP_H
 
+#ifndef NDEBUG
 #include "SmartAssert.h"
+#endif
 #include "MDP.h"
 #include "Distribution.h"
 #include "RewardDistribution.h"

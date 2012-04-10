@@ -16,8 +16,8 @@
 
 
 /// This constructor makes a random set 
-DiscreteMDPAggregate::DiscreteMDPAggregate (int n_aggregated_states, int n_states, int n_actions, int init_transition_count, int init_reward_count, real init_reward) :
-    DiscreteMDPCounts(n_states, n_actions, init_transition_count,  init_reward_count,  init_reward)
+DiscreteMDPAggregate::DiscreteMDPAggregate (int n_aggregated_states, int n_states, int n_actions, int init_transition_count) :
+    DiscreteMDPCounts(n_states, n_actions, init_transition_count)
 
 {
     mdp_dbg("Creating DiscreteMDPAggregate from %d states to %d sets and %d actions\n",  n_aggregated_states, n_states, n_actions);
@@ -28,8 +28,8 @@ DiscreteMDPAggregate::DiscreteMDPAggregate (int n_aggregated_states, int n_state
     BuildRandomAggregate();
 }
 
-DiscreteMDPAggregate::DiscreteMDPAggregate (Gridworld& gridworld, int n_aggregated_states, int n_states, int n_actions, int init_transition_count, int init_reward_count, real init_reward) :
-    DiscreteMDPCounts(n_states, n_actions, init_transition_count,  init_reward_count,  init_reward)
+DiscreteMDPAggregate::DiscreteMDPAggregate (Gridworld& gridworld, int n_aggregated_states, int n_states, int n_actions, int init_transition_count) 
+ : DiscreteMDPCounts(n_states, n_actions, init_transition_count)
 {
     mdp_dbg("Creating DiscreteMDPAggregate from %d states to %d sets and %d actions\n",  n_aggregated_states, n_states, n_actions);
     this->n_aggregated_states = n_aggregated_states;

@@ -12,6 +12,7 @@
 
 #include "Gridworld.h"
 #include "Distribution.h"
+#include "SingularDistribution.h"
 #include <string>
 #include <iostream>
 #include <fstream>

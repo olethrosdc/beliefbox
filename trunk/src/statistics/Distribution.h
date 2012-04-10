@@ -93,27 +93,12 @@ class ConjugatePrior : public ParametricDistribution
 public:
     ConjugatePrior() {}
     virtual ~ConjugatePrior() {}
-    virtual void calculatePosterior(real x) = 0; ///< calculate posterior from an observation
-    virtual real Observe(real x) = 0; ///< observe, return posterior..
+    /// Calculate posterior from some observation x.
+    virtual void calculatePosterior(real x) = 0; 
+    /// Observe a value, calculate posterior, return prior marginal
+    /// likelihood of x.
+    virtual real Observe(real x) = 0; 
 };
-
-/// \brief Singular distribution.
-/// Special case.
-class SingularDistribution : public ParametricDistribution
-{
-public:
-    real m;
-    SingularDistribution() {m =0.0f;}
-    SingularDistribution(real m);
-    virtual ~SingularDistribution() {}
-    virtual void setVariance (real var) {}; ///< ignore variance
-    virtual void setMean (real mean); ///< set the mean
-    virtual real getMean () const;
-    virtual real getVariance() const;
-    virtual real generate() const;
-    virtual real pdf(real x) const;
-};
-
 
 
 class BernoulliDistribution : public ParametricDistribution

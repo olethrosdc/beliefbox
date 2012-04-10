@@ -13,6 +13,7 @@
 
 #include "ParticleFilter.h"
 #include "ActionValueEstimate.h"
+#include "SingularDistribution.h"
 #include <cstdio>
 #include <cstdlib>
 

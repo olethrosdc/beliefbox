@@ -52,38 +52,6 @@ real UniformDistribution::pdf(real x) const
     return 0.0f;
 }
 
-SingularDistribution::SingularDistribution(real m)
-{
-    this->m = m;
-}
-
-void SingularDistribution::setMean(real mean)
-{
-    m = mean;
-}
-
-real SingularDistribution::getMean() const
-{
-	return m;
-}
-
-real SingularDistribution::getVariance() const
-{
-    return 0.0;
-}
-
-real SingularDistribution::generate() const
-{
-    return m;
-}
-real SingularDistribution::pdf(real x) const
-{
-        if (x==m) {
-            return 1.0f;
-        } else {
-            return 0.0f;
-        }
-}
 
 
 BernoulliDistribution::BernoulliDistribution(real p)
