@@ -147,7 +147,7 @@ void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
     pV_xi = V_xi;
     int n_iter = 0;
 
-    logmsg ("Runnign ComputeStateValues with epsilon: %f, iter: %d, gamma: %f", threshold, max_iter, gamma);
+    //logmsg ("Runnign ComputeStateValues with epsilon: %f, iter: %d, gamma: %f", threshold, max_iter, gamma);
     do {
         // Calculate Q_{mu,t}(s,a) from V_mu(s)
         for (int mu=0; mu<n_mdps; ++mu) {
@@ -216,7 +216,7 @@ void MultiMDPValueIteration::ComputeStateValues(real threshold, int max_iter)
 		//printf("%f # delta\n", Delta);
         n_iter++;
     } while(Delta >= threshold && max_iter != 0);
-    logmsg("Exiting at delta :%f, iter :%d\n", Delta, n_iter);		
+    //logmsg("Exiting at delta :%f, iter :%d\n", Delta, n_iter);		
 }
 
 

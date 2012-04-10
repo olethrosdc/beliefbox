@@ -18,7 +18,8 @@ SampleBasedRL::SampleBasedRL(int n_states_,
                              real epsilon_,
                              MDPModel* model_,
                              RandomNumberGenerator* rng_,
-                             int max_samples_)
+                             int max_samples_,
+                             bool use_upper_bound_)
     : n_states(n_states_),
       n_actions(n_actions_),
       gamma(gamma_),
@@ -28,7 +29,8 @@ SampleBasedRL::SampleBasedRL(int n_states_,
       rng(rng_),
       T(0),
       update_interval(1),
-      next_update()
+      next_update(0),
+      use_upper_bound(use_upper_bound_)
 {
     printf("# Starting Sample-Based-RL with %d samples, update interval %d\n",
            max_samples, update_interval);
@@ -38,26 +40,29 @@ SampleBasedRL::SampleBasedRL(int n_states_,
     Vector w(max_samples);
     real w_i = 1.0 / (real) max_samples;
     mdp_list.resize(max_samples);
+    value_iteration.resize(max_samples);
     printf("# Generating mean MDP\n");
     //mdp_list[0] = model->getMeanMDP();
     for (int i=0; i<max_samples; ++i) {
         printf("# Generating sampled MDP\n");
         mdp_list[i] = model->generate();
         w[i] = w_i;
+        value_iteration[i] = new ValueIteration(mdp_list[i], gamma);
     }
 
     printf ("# Setting up MultiMPDValueIteration\n");
-    value_iteration = new MultiMDPValueIteration(w, mdp_list, gamma);
+    multi_value_iteration = new MultiMDPValueIteration(w, mdp_list, gamma);
     printf ("# Testing MultiMPDValueIteration\n");
-    value_iteration->ComputeStateActionValues(0,1);
+    multi_value_iteration->ComputeStateActionValues(0,1);
     tmpQ.resize(n_actions);
 }
 SampleBasedRL::~SampleBasedRL()
 {
     for (int i=0; i<max_samples; ++i) {
         delete mdp_list[i];
+        delete value_iteration[i];
     }
-    delete value_iteration;
+    delete multi_value_iteration;
 }
 void SampleBasedRL::Reset()
 {
@@ -107,21 +112,35 @@ int SampleBasedRL::Act(real reward, int next_state)
         for (int i=0; i<max_samples; ++i) {
             delete mdp_list[i];
             mdp_list[i] = model->generate();
-            //printf("# sample model %d\n", i);
-            //mdp_list[i]->ShowModel();
         }
-        value_iteration->setMDPList(mdp_list);
-        value_iteration->ComputeStateActionValues(0.001, 1000);
+        if (use_upper_bound) {
+            for (int i=0; i<max_samples; ++i) {
+                value_iteration[i]->setMDP(mdp_list[i]);
+                value_iteration[i]->ComputeStateActionValues(0.001, 1000);
+            }
+        } else {
+            multi_value_iteration->setMDPList(mdp_list);
+            multi_value_iteration->ComputeStateActionValues(0.001, 1000);
+        }
     }
-    
-    // update values
-    value_iteration->setMDPList(mdp_list);
-    value_iteration->ComputeStateActionValues(0, 1);
-    for (int i=0; i<n_actions; i++) {
-        tmpQ[i] = value_iteration->getValue(next_state, i);
-        //printf ("Q[%d] = %f ", i, tmpQ[i]);
+
+    // update values    
+    if (use_upper_bound) {
+        for (int j=0; j<max_samples; ++j) {
+            value_iteration[j]->setMDP(mdp_list[j]);
+            value_iteration[j]->ComputeStateActionValues(0, 1);
+            for (int i=0; i<n_actions; i++) {
+                tmpQ[i] = UpperBound(next_state, i);
+            }
+        }
+    } else {
+        multi_value_iteration->setMDPList(mdp_list);
+        multi_value_iteration->ComputeStateActionValues(0, 1);
+        for (int i=0; i<n_actions; i++) {
+            tmpQ[i] = LowerBound(next_state, i);
+        }
     }
-    
+
     int next_action;
     // choose action
     if (urandom()<epsilon) {

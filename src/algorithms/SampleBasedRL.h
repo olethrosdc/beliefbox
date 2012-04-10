@@ -21,6 +21,7 @@
 #include "OnlineAlgorithm.h"
 #include "MDPModel.h"
 #include "MultiMDPValueIteration.h"
+#include "ValueIteration.h"
 #include <vector>
 
 /// \ingroup ReinforcementLearning
@@ -47,13 +48,15 @@ protected:
     int action; ///< current action
     MDPModel* model;
     std::vector<const DiscreteMDP*> mdp_list;
-    MultiMDPValueIteration* value_iteration;
+    std::vector<ValueIteration*> value_iteration;
+    MultiMDPValueIteration* multi_value_iteration;
     std::vector<real> tmpQ;
     int max_samples;
     RandomNumberGenerator* rng;
     int T;
     int update_interval;
     int next_update;
+    bool use_upper_bound;
 public:
     SampleBasedRL(int n_states_,
                   int n_actions_,
@@ -61,7 +64,8 @@ public:
                   real epsilon_,
                   MDPModel* model_,
                   RandomNumberGenerator* rng_,
-                  int max_samples_ = 1);
+                  int max_samples_ = 1,
+                  bool use_upper_bound_ = false);
     virtual ~SampleBasedRL();
     virtual void Reset();
     /// Full observation
@@ -72,9 +76,28 @@ public:
     /// it calls Observe as a side-effect.
     virtual int Act(real reward, int next_state);
 
+
     virtual real getValue (int state, int action)
     {
-        return value_iteration->getValue(state, action);
+        if (use_upper_bound) {
+            return UpperBound(state, action);
+        } else {
+            return LowerBound(state, action);
+        }
+    }
+
+    inline real UpperBound(int state, int action)
+    {
+        real Q = 0.0;
+        for (int i=0; i<max_samples; i++) {
+            Q += value_iteration[i]->getValue(state, action);
+        }
+        return Q / (real) max_samples;
+    }
+
+    inline real LowerBound(int state, int action)
+    {
+        return multi_value_iteration->getValue(state, action);
     }
     
 };

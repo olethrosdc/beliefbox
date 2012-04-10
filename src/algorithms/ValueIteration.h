@@ -40,6 +40,10 @@ public:
     void Reset();
     void ComputeStateValues(real threshold, int max_iter=-1);
     void ComputeStateActionValues(real threshold, int max_iter=-1);
+    inline void setMDP(const DiscreteMDP* mdp_)
+    {
+        mdp = mdp_;
+    }
     inline real getValue (int state, int action)
     {
         return Q(state, action);
