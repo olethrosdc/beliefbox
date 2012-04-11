@@ -98,6 +98,8 @@ public:
     /// Observe a value, calculate posterior, return prior marginal
     /// likelihood of x.
     virtual real Observe(real x) = 0; 
+    /// get marginal_pdf
+    virtual real marginal_pdf(real x) const  = 0;
 };
 
 
