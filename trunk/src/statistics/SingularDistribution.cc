@@ -10,6 +10,7 @@
  ***************************************************************************/
 
 #include "SingularDistribution.h"
+#include "NormalDistribution.h"
 
 SingularDistribution::SingularDistribution(real m)
 {
@@ -44,16 +45,28 @@ real SingularDistribution::pdf(real x) const
         }
 }
 
-UnknownSingularDistribution::UnknownSingularDistribution(const Distribution& prior_) 
+UnknownSingularDistribution::UnknownSingularDistribution()
+    : prior(new NormalDistribution()),
+      observed(false)
+{
+}
+
+UnknownSingularDistribution::UnknownSingularDistribution(const Distribution* prior_) 
     : prior(prior_),
       observed(false)
 {}
 
+UnknownSingularDistribution::~UnknownSingularDistribution()
+{
+    delete prior;
+}
 void UnknownSingularDistribution::calculatePosterior(real x)
 {
     if (observed) {
         return;
     } 
+    Q.m = x;
+    observed = true;
 }
 
 real UnknownSingularDistribution::Observe(real x)
@@ -61,7 +74,30 @@ real UnknownSingularDistribution::Observe(real x)
     if (observed) {
         return Q.pdf(x);
     }
-    real p = prior.pdf(x);
+    real p = prior->pdf(x);
     Q.m = x;
+    observed = true;
     return p;
+}
+
+real UnknownSingularDistribution::pdf(real x) const
+{
+    if (observed) {
+        return Q.pdf(x);
+    }
+    real p = prior->pdf(x);
+    return p;
+}
+
+real UnknownSingularDistribution::marginal_pdf(real x) const
+{
+    return pdf(x);
+}
+
+real UnknownSingularDistribution::generate() const
+{
+    if (observed) {
+        return Q.m;
+    }
+    return prior->generate();
 }

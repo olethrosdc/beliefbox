@@ -12,6 +12,8 @@
 
 #include "DiscreteMDPCounts.h"
 #include "Random.h"
+#include "SingularDistribution.h"
+
 #include <stdexcept>
 
 /** Create a counting model of an MDP.
@@ -40,6 +42,9 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_tra
             break;
         case NORMAL:
             ER[i] = new NormalUnknownMeanPrecision();
+            break;
+        case FIXED:
+            ER[i] = new UnknownSingularDistribution();
             break;
         default:
             Serror("Unknown distribution family %d\n", reward_family);

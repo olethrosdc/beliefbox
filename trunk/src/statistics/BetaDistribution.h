@@ -48,6 +48,7 @@ public:
         return *this;
     }
 
+    virtual real marginal_pdf(real x) const;
     virtual real pdf(real x) const;
     real log_pdf(real x) const;
     virtual void calculatePosterior(real x);
@@ -58,12 +59,7 @@ public:
     virtual real generate();
 	real generate() const;
     virtual real generateMarginal();
-    real Observe(real x)
-    {
-        real p = (x * (alpha) + (1 - x) * beta) / (alpha + beta);
-        calculatePosterior(x);
-        return p;
-    }
+    real Observe(real x);
     real setMaximumLikelihoodParameters(const std::vector<real>& x,
                                         int n_iterations);
 };

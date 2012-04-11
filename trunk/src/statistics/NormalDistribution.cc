@@ -132,14 +132,18 @@ real NormalDistributionUnknownMean::generate() const
     
   TODO Check that the marginal likelihood is correctly calculated
 */
-real NormalDistributionUnknownMean::pdf(real x) const
+real NormalDistributionUnknownMean::marginal_pdf(real x) const
 {
 
     real mean = mu_n / tau_n;
     real sigma = 1.0 / tau_n + 1.0 / tau;
     real d = (mean - x )/sigma;
     return exp(-0.5 * d*d)/(sqrt(2.0 * M_PI) * sigma);
-    //return prior.pdf(x);
+}
+
+real NormalDistributionUnknownMean::pdf(real x) const
+{
+    return prior.pdf(x);
 }
 
 void NormalDistributionUnknownMean::calculatePosterior(real x)
@@ -191,22 +195,30 @@ void NormalUnknownMeanPrecision::Reset()
 NormalUnknownMeanPrecision::~NormalUnknownMeanPrecision()
 {
 }
+
 real NormalUnknownMeanPrecision::generate()
 {
-    Serror("Fix me!\n");
-    return mu_n;
+    return prior.generate();
 }
+
+/// Generate from the posterior. Uses the ranlib implementation
 real NormalUnknownMeanPrecision::generate() const
 {
-    Serror("Fix me!\n");
-    return mu_n;
+    return prior.generate();
 }
 
 real NormalUnknownMeanPrecision::Observe(real x)
 {
-    real p = pdf(x);
+    real p = marginal_pdf(x);
     calculatePosterior(x);
     return p;
+}
+
+real NormalUnknownMeanPrecision::pdf(real x) const
+{
+    real d = (x - mu_n);
+    real ln_p = 0.5 * log(tau_n / (2.0 * M_PI)) - 0.5 * tau_n * d * d;
+    return exp(ln_p);
 }
 /** The marginal pdf of the observations.
     
@@ -220,7 +232,7 @@ real NormalUnknownMeanPrecision::Observe(real x)
     \f]
     where \f$E_\xi m = \int m d\xi(m) \f$, \f$E_\xi r = \int r d\xi(r) \f$.
 */
-real NormalUnknownMeanPrecision::pdf(real x) const
+real NormalUnknownMeanPrecision::marginal_pdf(real x) const
 {
     return p_x_mr.pdf(x);
 }
@@ -263,6 +275,10 @@ void NormalUnknownMeanPrecision::calculatePosterior(real x)
 
     p_x_mr.setMean(mu_n);
     p_x_mr.setVariance(beta_n / alpha_n);
+
+    prior.setMean(mu_n);
+    prior.setVariance(1.0 / tau_n);
+
 }
 
 /** Get the log-likelihood of some observations */

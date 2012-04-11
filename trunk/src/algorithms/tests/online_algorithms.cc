@@ -197,6 +197,8 @@ int main (int argc, char** argv)
                         reward_prior = DiscreteMDPCounts::BETA;
                     } else if (!strcmp(optarg, "Normal")) {
                         reward_prior = DiscreteMDPCounts::NORMAL;
+                    } else if (!strcmp(optarg, "Fixed")) {
+                        reward_prior = DiscreteMDPCounts::FIXED;
                     } else {
                         Serror("Unknown distribution type %s\n", optarg);
                         exit(-1);
@@ -717,7 +719,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
     }
     printf(" %f %f # RUN_REWARD\n", total_reward, discounted_reward);
-#if 1
+#if 0
     real sse = 0.0;
     for (int i=0; i<n_states; i++) {
         for (int a=0; a<n_actions; a++) {

@@ -38,12 +38,17 @@ public:
 class UnknownSingularDistribution : public ConjugatePrior
 {
 public:
-    const Distribution& prior;
+    const Distribution* prior;
     bool observed;
     SingularDistribution Q;
-    UnknownSingularDistribution(const Distribution& prior_);
+    UnknownSingularDistribution();
+    UnknownSingularDistribution(const Distribution* prior_);
+    virtual ~UnknownSingularDistribution();
     virtual void calculatePosterior(real x);
     virtual real Observe(real x);
+    virtual real pdf(real x) const;
+    virtual real marginal_pdf(real x) const;
+    virtual real generate() const;
 };
 
 #endif

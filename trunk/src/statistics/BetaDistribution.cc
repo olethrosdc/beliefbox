@@ -106,6 +106,18 @@ real BetaDistribution::generateMarginal()
 	}
 }
 
+real BetaDistribution::marginal_pdf(real x) const
+{
+   return (x * (alpha) + (1 - x) * beta) / (alpha + beta);
+}
+
+real BetaDistribution::Observe(real x)
+{
+    real p = marginal_pdf(x);
+    calculatePosterior(x);
+    return p;
+}
+
 real BetaDistribution::setMaximumLikelihoodParameters(const std::vector<real>& x,
                                     int n_iterations)
 {

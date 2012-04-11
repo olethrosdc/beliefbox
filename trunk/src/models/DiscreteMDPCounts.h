@@ -32,7 +32,8 @@ public:
     enum RewardFamily {
         UNDEFINED=0x0,
         BETA,
-        NORMAL
+        NORMAL,
+        FIXED
     };
 protected:
     std::vector<DirichletDistribution> P; ///< Vector of Dirichlet distributions on P
