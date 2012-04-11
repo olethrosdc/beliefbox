@@ -102,14 +102,14 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --maze_name:    (Gridworld) file name for the maze\n\
     --epsilon:      use epsilon-greedy with randomness in [0,1]\n\
     --upper_bound:  use upper bound of sampled MDPs rather than lower bound\n\
-    --reward_prior: {Beta, Gaussian}\n\
+    --reward_prior: {Beta, Gaussian, Fixed}\n\
 \n";
 
 
 int main (int argc, char** argv)
 {
-    int n_actions = 4;
-    int n_states = 4;
+    int n_actions = 2;
+    int n_states = 5;
     real gamma = 0.9;
     real lambda = 0.9;
     real alpha = 0.1;
@@ -118,7 +118,7 @@ int main (int argc, char** argv)
     real goal_value = 1.0;
     real step_value = -0.1;
     real epsilon = 0.01;
-    uint n_runs = 1000;
+    uint n_runs = 10;
     uint n_episodes = 1000;
     uint n_steps = 100000;
     uint episode_steps = 1000;
@@ -127,7 +127,7 @@ int main (int argc, char** argv)
     enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
 
     const char * algorithm_name = "QLearning";
-    const char * environment_name = "Gridworld";
+    const char * environment_name = "Chain";
 
     int max_samples = 1;
     char* maze_name = NULL;
