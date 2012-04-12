@@ -243,7 +243,7 @@ real NormalUnknownMeanPrecision::marginal_pdf(real x) const
     real delta = x - mu_n;
     real g = 1.0 + delta * delta / scale;
     real log_p = log_c - (0.5 * (1.0 + n)) * log(g);
-    
+    return exp(log_p);
     //return p_x_mr.pdf(x);
 }
 
