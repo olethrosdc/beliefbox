@@ -60,7 +60,7 @@ class MultivariateNormal : public VectorDistribution
     actually a generalised student-t distribution, but here we are
     hacking it as a normal.
  */
-class MultivariateNormalUnknownMeanPrecision
+class MultivariateNormalUnknownMeanPrecision : public Distribution
 {
 protected:
     int n_dim;
@@ -89,8 +89,10 @@ public:
     virtual ~MultivariateNormalUnknownMeanPrecision();
     virtual Vector generate();
     virtual Vector generate() const;
+    /// This is the probability of a particular Multi-Variate Nromal
+    virtual real pdf(const Vector& mean, const Matrix& precision) const;
     /// Note that this the marginal likelihood!
-    virtual real pdf(const Vector& x) const;
+    virtual real marginal_pdf(const Vector& x) const;
     /// The marginal log-likelihood
     virtual real log_pdf(const Vector& x) const;
     virtual const Vector& getMean() const;

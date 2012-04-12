@@ -125,9 +125,16 @@ Vector MultivariateNormalUnknownMeanPrecision::generate() const
 
 real MultivariateNormalUnknownMeanPrecision::Observe(const Vector& x)
 {
-    real p = pdf(x);
+    real p = marginal_pdf(x);
     calculatePosterior(x);
     return p;
+}
+
+
+/// This is the probability of a particular Multi-Variate Nromal
+virtual real pdf(const Vector& mean, const Matrix& precision) const
+{
+    
 }
 
 /** The marginal pdf of the observations.
@@ -142,7 +149,29 @@ real MultivariateNormalUnknownMeanPrecision::Observe(const Vector& x)
     \f]
     where \f$E_\xi m = \int m d\xi(m) \f$, \f$E_\xi r = \int r d\xi(r) \f$.
 */
-real MultivariateNormalUnknownMeanPrecision::pdf(const Vector& x) const
+real MultivariateNormalUnknownMeanPrecision::marginal_pdf(const Vector& x) const
+{
+    real p = p_x_mr.pdf(x);
+    if (std::isnan(p)) {
+        p_x_mr.Show();
+    }
+    return p;
+}
+
+
+/** The marginal pdf of the observations.
+    
+    Instead of calculating the actual marginal:
+    \f[
+    \xi(x) = \int f(x \mid m, r) \, d\xi(m, r),
+    \f]
+    we calculate:
+    \f[
+    \xi(x) = f(x \mid E_\xi m, E_\xi r),
+    \f]
+    where \f$E_\xi m = \int m d\xi(m) \f$, \f$E_\xi r = \int r d\xi(r) \f$.
+*/
+real MultivariateNormalUnknownMeanPrecision::marginal_pdf(const Vector& x) const
 {
     real p = p_x_mr.pdf(x);
     if (std::isnan(p)) {
