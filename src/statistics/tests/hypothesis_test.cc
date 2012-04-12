@@ -24,8 +24,40 @@ void TestData(std::vector<real>& data,
 int main (int argc, char** argv)
 {
     BetaDistribution beta;
-    NormalUnknownMeanPrecision beta;
-    
+    NormalUnknownMeanPrecision normal;
+    UnknownSingularDistribution fixed;
+
+    int N = 1024;
+
+    std::vector<real> data(N);
+    for (int i=0; i<N; ++i) {
+        data[i] = 0.5;
+    }
+    printf ("Beta\n");
+    TestData(data, beta);
+    printf ("Normal\n");
+    TestData(data, normal);
+    printf ("Fixed\n");
+    TestData(data, fixed);
 };
 
+
+void TestData(std::vector<real>& data,
+              ConjugatePrior& prior)
+{
+    int N = data.size();
+    real log_p = 0;
+    for (int i=0; i<N; ++i) {
+        log_p += log(prior.Observe(data[i]));
+    }
+    
+    printf("%f # log likelihood\n", log_p);
+
+    for (int i=0; i<8; ++i) {
+        printf ("%f ", prior.generate());
+    }
+    printf ("# generated data\n");
+}
+
 #endif
+

@@ -12,6 +12,7 @@
 #include "NormalDistribution.h"
 #include "ExponentialDistribution.h"
 #include "Random.h"
+#include "SpecialFunctions.h"
 
 // Taken from numerical recipes in C
 real NormalDistribution::generate() const
@@ -234,7 +235,16 @@ real NormalUnknownMeanPrecision::pdf(real x) const
 */
 real NormalUnknownMeanPrecision::marginal_pdf(real x) const
 {
-    return p_x_mr.pdf(x);
+    real mu = mu_n;
+    real scale = beta_n * (tau_n + 1.0) / (alpha_n * tau_n);
+    real n = (2.0 * alpha_n);
+    real log_c = logGamma(0.5 * (n + 1.0)) - logGamma(0.5*n)
+        - 0.5 * log(n * M_PI * scale);
+    real delta = x - mu_n;
+    real g = 1.0 + delta * delta / scale;
+    real log_p = log_c - (0.5 * (1.0 + n)) * log(g);
+    
+    //return p_x_mr.pdf(x);
 }
 
 

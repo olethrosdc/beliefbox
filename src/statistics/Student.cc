@@ -60,7 +60,7 @@ real Student::log_pdf(const Vector& x) const
     Vector delta = x - mu;
     real g = 1 + Mahalanobis2(delta, T, delta) / (real) n;
     real log_c = logGamma(0.5 * (n + k)) - logGamma(0.5 * n)
-        + 0.5 * det - (0.5 * k)*log(n*M_PI);
+        + 0.5 * det - (0.5 * k)*log(n*M_PI); // something is maybe missing here
     real log_p = log_c - (0.5 * (n + k)) * log(g);
     return log_p;
 }
