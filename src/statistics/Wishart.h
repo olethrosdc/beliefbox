@@ -1,5 +1,5 @@
 /* -*- Mode: C++; -*- */
-// copyright (c) 2004-2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2012 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -11,21 +11,22 @@
 #ifndef WISHART_H
 #define WISHART_H
 
-
 #include "Distribution.h"
 
 /// Wishart probability distribution
-class Wishart : public VectorDistribution
+class Wishart : public AbstractDistribution<Matrix>
 {
 public:
     Wishart();
     virtual ~Wishart();
-    virtual void generate(T& x) const;
-    virtual T generate() const;
-    virtual real pdf(const T& x) const =0;
-    virtual real log_pdf(const T& x) const
+    virtual void generate(Matrix& x) const;
+    virtual Matrix generate() const;
+    virtual real pdf(const Matrix& x) const =0;
+    virtual real log_pdf(const Matrix& x) const
     {
         return log(pdf(x));
     }
 
 };
+
+#endif

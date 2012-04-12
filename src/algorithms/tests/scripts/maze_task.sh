@@ -36,7 +36,7 @@ do
     do
         for bound in lower upper
         do
-            time ${exc} --gamma $gamma --lambda $lambda --randomness $random --n_runs $n_runs --n_episodes $n_episodes --n_steps $n_steps --algorithm ${model} --environment $environment --reward_prior Fixed --maze_name $maze >${model}${s}_${bound}.out &
+            time ${exc} --gamma $gamma --lambda $lambda --randomness $random --n_runs $n_runs --n_episodes $n_episodes --n_steps $n_steps --algorithm ${model} --environment $environment --reward_prior Normal --maze_name $maze >${model}${s}_${bound}.out &
             
             time ${exc} --gamma $gamma --lambda $lambda --randomness $random --n_runs $n_runs --n_episodes $n_episodes --n_steps $n_steps --algorithm ${model} --environment $environment --maze_name --maze>${model}${s}_${bound}.out &
         done
