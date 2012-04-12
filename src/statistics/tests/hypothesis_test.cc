@@ -27,11 +27,11 @@ int main (int argc, char** argv)
     NormalUnknownMeanPrecision normal;
     UnknownSingularDistribution fixed;
 
-    int N = 1024;
+    int N = 16;
 
     std::vector<real> data(N);
     for (int i=0; i<N; ++i) {
-        data[i] = 0.5;
+        data[i] = 1.0;
     }
     printf ("Beta\n");
     TestData(data, beta);
