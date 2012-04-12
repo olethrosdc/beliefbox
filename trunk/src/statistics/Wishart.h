@@ -1,5 +1,5 @@
 /* -*- Mode: C++; -*- */
-// copyright (c) 2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2004-2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -8,24 +8,24 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
-#ifdef MAKE_MAIN
-#include "Random.h"
-#include <vector>
-#include "EasyClock.h"
-#include "NormalDistribution.h"
-#include "SingularDistribution.h"
-#include "BetaDistribution.h"
+#ifndef WISHART_H
+#define WISHART_H
 
 
-void TestData(std::vector<real>& data,
-                    ConjugatePrior& prior);
+#include "Distribution.h"
 
-int main (int argc, char** argv)
+/// Wishart probability distribution
+class Wishart : public VectorDistribution
 {
-    BetaDistribution beta;
-    NormalUnknownMeanPrecision beta;
-    
-};
+public:
+    Wishart();
+    virtual ~Wishart();
+    virtual void generate(T& x) const;
+    virtual T generate() const;
+    virtual real pdf(const T& x) const =0;
+    virtual real log_pdf(const T& x) const
+    {
+        return log(pdf(x));
+    }
 
-#endif
+};
