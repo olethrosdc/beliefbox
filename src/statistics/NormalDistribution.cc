@@ -223,15 +223,7 @@ real NormalUnknownMeanPrecision::pdf(real x) const
 }
 /** The marginal pdf of the observations.
     
-    Instead of calculating the actual marginal:
-    \f[
-    \xi(x) = \int f(x \mid m, r) \, d\xi(m, r),
-    \f]
-    we calculate:
-    \f[
-    \xi(x) = f(x \mid E_\xi m, E_\xi r),
-    \f]
-    where \f$E_\xi m = \int m d\xi(m) \f$, \f$E_\xi r = \int r d\xi(r) \f$.
+    This is a student-t distribution.
 */
 real NormalUnknownMeanPrecision::marginal_pdf(real x) const
 {

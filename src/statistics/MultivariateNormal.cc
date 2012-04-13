@@ -74,7 +74,7 @@ void MultivariateNormal::Show()  const
 }
 //----------------- Multivariate Unknown mean and precision -----------------------//
 MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
-    : n_dim(1), marginal(1),  bx_n(n_dim), M_2n(n_dim, n_dim)
+    : n_dim(1), marginal_mean(1), marginal(1), bx_n(n_dim), M_2n(n_dim, n_dim)
 {
     mu_0 = 0.0;
     tau_0 = 1.0;
@@ -85,6 +85,7 @@ MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
 
 MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(const Vector& mu, const real tau, const real alpha, const Matrix& T) 
     : n_dim(mu.Size()),
+      marginal_mean(n_dim),
       marginal(n_dim),
       mu_0(mu),
       tau_0(tau),
@@ -98,9 +99,9 @@ MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(c
 }
 void MultivariateNormalUnknownMeanPrecision::Reset()
 {
-    marginal.setDegrees(alpha_0 - (real) n_dim + 1.0);
-    marginal.setLocation(mu_0);
-    marginal.setPrecision((alpha_0 - (real) n_dim + 1.0) * T_0.Inverse());
+    marginal_mean.setDegrees(alpha_0 - (real) n_dim + 1.0);
+    marginal_mean.setLocation(mu_0);
+    marginal_mean.setPrecision((alpha_0 - (real) n_dim + 1.0) * T_0.Inverse());
     n = 0;
     sum = 0.0;
     tau_n = tau_0;
@@ -126,7 +127,7 @@ Vector MultivariateNormalUnknownMeanPrecision::generate() const
 
 real MultivariateNormalUnknownMeanPrecision::Observe(const Vector& x)
 {
-    real p = marginal_pdf(x);
+    real p = marginal_mean_pdf(x);
     calculatePosterior(x);
     return p;
 }
