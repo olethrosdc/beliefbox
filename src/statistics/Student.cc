@@ -73,6 +73,13 @@ void Student::Show() const
     printf("# Student parameters\n");
     printf("#   degrees: %d\n", n);
     printf("#  location: "); mu.print(stdout);
-    printf("# precision: \n"); T.print(stdout);
+    printf("# precision: "); T.print(stdout);
+    printf("# --\n");
         
+}
+
+real Student::generate() const
+{
+    Serror("Not implemented\n");
+    return 0;
 }
