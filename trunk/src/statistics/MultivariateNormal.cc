@@ -127,7 +127,7 @@ Vector MultivariateNormalUnknownMeanPrecision::generate() const
 
 real MultivariateNormalUnknownMeanPrecision::Observe(const Vector& x)
 {
-    real p = marginal_mean_pdf(x);
+    real p = marginal_pdf(x);
     calculatePosterior(x);
     return p;
 }
