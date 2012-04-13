@@ -15,7 +15,7 @@
 Wishart::Wishart()
     : k(1),
       n(1),
-      V(Matrix::Unity(1))
+      V(Matrix::Unity(1,1))
 {
     
 }

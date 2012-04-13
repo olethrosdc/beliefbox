@@ -12,6 +12,7 @@
 #define WISHART_H
 
 #include "Distribution.h"
+#include "Matrix.h"
 
 /// Wishart probability distribution
 class Wishart : public AbstractDistribution<Matrix>
@@ -21,7 +22,7 @@ public:
     real n; ///< degrees of freedom
     Matrix V; ///< scale matrix
     Wishart();
-    Wishart(real& n_, Matrix& V_);
+    Wishart(real n_, const Matrix& V_);
     virtual ~Wishart();
     virtual void generate(Matrix& x) const;
     virtual Matrix generate() const;
