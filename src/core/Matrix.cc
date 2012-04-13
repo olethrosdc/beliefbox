@@ -46,6 +46,21 @@ Matrix Transpose(const Matrix& rhs)
     return tmp;
 }
 
+bool Matrix::isSymmetric() const
+{
+    if (rows != columns)
+        return false;
+
+    for (int i=0; i<rows; ++i)  {
+        for (int j=i+1; j<columns; ++j) {
+            if ((*this)(i,j) != (*this)(j,i)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 #ifdef REFERENCE_ACCESS
 void Matrix::MakeReferences() {
     x_list = (real**) malloc(rows * sizeof(real*));
@@ -481,8 +496,7 @@ Vector operator* (const Matrix& lhs, const Vector& rhs)
     return v;
 }
 
-
-real Matrix::det()
+real Matrix::det() const
 {
     if (isTriangular()) {
         return compute_det_triangular();
@@ -494,7 +508,7 @@ real Matrix::det()
 
 }
 
-bool Matrix::isTriangular()
+bool Matrix::isTriangular() const
 {
     if (rows != columns) {
         throw std::domain_error("only square matrices can be triangular");
@@ -505,7 +519,7 @@ bool Matrix::isTriangular()
     return false;
 }
 
-bool Matrix::isUpperTriangular()
+bool Matrix::isUpperTriangular() const
 {
     if (rows != columns) {
         return false;
@@ -521,7 +535,7 @@ bool Matrix::isUpperTriangular()
         
 }
 
-bool Matrix::isLowerTriangular()
+bool Matrix::isLowerTriangular() const
 {
     if (rows != columns) {
         throw std::domain_error("only square matrices can be triangular");
@@ -535,9 +549,9 @@ bool Matrix::isLowerTriangular()
     return true;
 }
 
-real Matrix::compute_det_triangular()
+real Matrix::compute_det_triangular() const
 {
-    Matrix& A = *this;
+    const Matrix& A = *this;
     real det = A(0,0);
     for (int i=1; i<rows; ++i) {
         det *= A(i,i);
@@ -604,7 +618,7 @@ real Matrix::gaussian_elimination_forward(real epsilon)
     return (real) det;
 }
 
-/** For matrix X=AB, find matrices A, B.
+/** For matrix X=AB, find matrices A, B, using in-place elimination.
   
   The matrices A, B are returned in a std::vector<Matrix>.
 
@@ -693,7 +707,7 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
     Do a Cholesky decomposition, after adding epsilon * I to the
     matrix. The original matrix is unchanged.
 */
-Matrix Matrix::Cholesky(real epsilon)
+Matrix Matrix::Cholesky(real epsilon) const
 {
     int n = Rows();
     assert (n == Columns());
@@ -712,7 +726,7 @@ Matrix Matrix::Cholesky(real epsilon)
     Can be safely called with chol = *this; however then the lower triangular
     part of the matrix must be cleared by the user. (TODO?).
 */
-void Matrix::Cholesky(Matrix& chol, real epsilon)
+void Matrix::Cholesky(Matrix& chol, real epsilon) const
 {
     int n = Rows();
     assert (n == Columns());
@@ -749,7 +763,7 @@ void Matrix::Cholesky(Matrix& chol, real epsilon)
     \f]
     by dynamic programming.
  */
-Matrix Matrix::Inverse(Matrix& L, Matrix& U)
+Matrix Matrix::Inverse(const Matrix& L, const Matrix& U) const
 {
     int n = L.Rows();
     assert(L.Columns() == n);
@@ -811,7 +825,7 @@ Matrix forward_substitution(const Matrix& L, const Matrix& B)
 }
 
 /// Get the sum of column c
-real Matrix::ColumnSum(int c)
+real Matrix::ColumnSum(int c) const
 {
     real sum = 0.0;
     for (int i=0; i<rows; i++) {
@@ -821,7 +835,7 @@ real Matrix::ColumnSum(int c)
 }
 
 /// Get the sum of column r
-real Matrix::RowSum(int r)
+real Matrix::RowSum(int r) const
 {
     real sum = 0.0;
     for (int i=0; i<columns; i++) {

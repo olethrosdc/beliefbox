@@ -16,6 +16,7 @@
 #include <vector>
 #include "EasyClock.h"
 #include "NormalDistribution.h"
+#include "MultivariateNormal.h"
 #include "BetaDistribution.h"
 
 
@@ -42,8 +43,8 @@ int main (int argc, char** argv)
         Serror("variance should be >= 0\n");
         exit(-1);
     }
-    //BetaDistribution distribution2(2*Beta,Alpha);
-    NormalDistribution distribution(mean, sqrt(variance));
+
+    NormalDistribution generating_distribution(mean, sqrt(variance));
 
 	Vector lower_bound(2);
 	Vector upper_bound(2);
@@ -60,30 +61,39 @@ int main (int argc, char** argv)
     real alpha = 1.0;
     MultivariateNormal multivariate_normal(mu, S);
 
-    distribution.Show();
-    multivariate_normal.Show();
+    //generating_distribution.Show();
+    //multivariate_normal.Show();
+#if 0
     for (real x=-10; x<10; x+=0.01) {
         Vector X(1);
         X(0) = x;
         printf ("%f %f %f #X\n",
                 x,
-                distribution.pdf(x),
+                generating_distribution.pdf(x),
                 multivariate_normal.pdf(X));
     }
+#endif
+
     MultivariateNormalUnknownMeanPrecision normal_wishart(mu, tau, alpha, S);
     NormalUnknownMeanPrecision normal_gamma(mu(0), tau);
 
     int randomise = urandom()*100;
     for (int i=0; i<randomise; i++) {
-        distribution.generate();
+        generating_distribution.generate();
     }
+    real sum_log_ng = 0.0;
+    real sum_log_nw = 0.0;
     for (int t=0; t<T; ++t) {
         Vector x(1);
-		x(0) = distribution.generate();
-        normal_gamma.Observe(x(0));
-        normal_wishart.Observe(x);
+		x(0) = generating_distribution.generate();
+        real p_ng = normal_gamma.Observe(x(0));
+        real p_nw = normal_wishart.Observe(x);
+        printf ("%f %f %f\n", p_ng, p_nw, generating_distribution.pdf(x(0)));
+        sum_log_ng += log(p_ng);
+        sum_log_nw += log(p_nw);
     }
-#if 1
+    printf ("# Log sum: %f %f\n", sum_log_ng, sum_log_nw);
+#if 0
     for (real x=-10; x<10; x+=0.1) {
         Vector v(1);
         v(0) = x;
@@ -91,7 +101,7 @@ int main (int argc, char** argv)
                 x,
                 normal_wishart.pdf(v),
                 normal_gamma.pdf(x),
-                distribution.pdf(x));
+                generating_distribution.pdf(x));
 		printf(" #Y\n");
 	}
     normal_gamma.Show();

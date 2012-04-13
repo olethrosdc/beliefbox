@@ -16,8 +16,8 @@
 /// Default constructor.
 ///
 /// Initialises location to zero and precision to identity.
-Student::Student(const int degrees, const int dimension) 
-    : n(degrees),
+Student::Student(const int dimension) 
+    : n(1),
       k(dimension),
       mu(k),
       T(Matrix::Unity(k, k))
@@ -58,17 +58,21 @@ void Student::setPrecision(const Matrix& precision)
 real Student::log_pdf(const Vector& x) const
 {
     Vector delta = x - mu;
-    real g = 1 + Mahalanobis2(delta, T, delta) / (real) n;
-    real log_c = logGamma(0.5 * (n + k)) - logGamma(0.5 * n)
-        + 0.5 * det - (0.5 * k)*log(n*M_PI); // something is maybe missing here
-    real log_p = log_c - (0.5 * (n + k)) * log(g);
+    real degree = (real) n;
+    real g = 1 + Mahalanobis2(delta, T, delta) / degree;
+    real log_c = logGamma(0.5 * (degree + k))
+        + 0.5 * log(det)
+        - logGamma(0.5 * degree)
+        - (0.5 * k)*log(n*M_PI); // something is maybe missing here
+    real log_p = log_c - (0.5 * (degree + k)) * log(g);
     return log_p;
 }
 
-void Student::Show()
+void Student::Show() const
 {
-    printf("n: %d\n", n);
-    printf("mu: "); mu.print(stdout);
-    printf("T: \n"); T.print(stdout);
+    printf("# Student parameters\n");
+    printf("#   degrees: %d\n", n);
+    printf("#  location: "); mu.print(stdout);
+    printf("# precision: \n"); T.print(stdout);
         
 }

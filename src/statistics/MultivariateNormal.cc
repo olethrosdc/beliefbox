@@ -74,7 +74,7 @@ void MultivariateNormal::Show()  const
 }
 //----------------- Multivariate Unknown mean and precision -----------------------//
 MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
-    : n_dim(1), p_x_mr(1),  bx_n(n_dim), M_2n(n_dim, n_dim)
+    : n_dim(1), marginal(1),  bx_n(n_dim), M_2n(n_dim, n_dim)
 {
     mu_0 = 0.0;
     tau_0 = 1.0;
@@ -85,7 +85,7 @@ MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
 
 MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(const Vector& mu, const real tau, const real alpha, const Matrix& T) 
     : n_dim(mu.Size()),
-      p_x_mr(n_dim),
+      marginal(n_dim),
       mu_0(mu),
       tau_0(tau),
       mu_n(n_dim),
@@ -98,8 +98,9 @@ MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision(c
 }
 void MultivariateNormalUnknownMeanPrecision::Reset()
 {
-    p_x_mr.setMean(mu_0);
-    p_x_mr.setAccuracy(T_0);
+    marginal.setDegrees(alpha_0 - (real) n_dim + 1.0);
+    marginal.setLocation(mu_0);
+    marginal.setPrecision((alpha_0 - (real) n_dim + 1.0) * T_0.Inverse());
     n = 0;
     sum = 0.0;
     tau_n = tau_0;
@@ -154,9 +155,9 @@ real MultivariateNormalUnknownMeanPrecision::pdf(const Vector& mean) const
 */
 real MultivariateNormalUnknownMeanPrecision::marginal_pdf(const Vector& x) const
 {
-    real p = p_x_mr.pdf(x);
+    real p = marginal.pdf(x);
     if (std::isnan(p)) {
-        p_x_mr.Show();
+        marginal.Show();
     }
     return p;
 
@@ -164,13 +165,8 @@ real MultivariateNormalUnknownMeanPrecision::marginal_pdf(const Vector& x) const
 }
 real MultivariateNormalUnknownMeanPrecision::log_pdf(const Vector& x) const
 {
-    real log_p = p_x_mr.log_pdf(x);
-    if (std::isnan(log_p)) {
-        p_x_mr.Show();
-    }
-    return log_p;
-
-
+    Serror("Not Implemented\n");
+    return 0.0;
 }
 
 
@@ -214,23 +210,24 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(const Vector& x)
     alpha_n += 1.0;
     // T_n = T_0 + M_2n + delta_mean*delta_mean' * tau_0 * n / tau_n;
     Product(&delta_mean, &delta_mean, &T_n);
-    T_n = T_0 + M_2n + T_n * (tau_0 * n / (tau_0 + n));
+    T_n = T_0 + M_2n + T_n * tau_0 * n / tau_n;
     
     Matrix InvT = T_n.Inverse();
-    p_x_mr.setMean(mu_n);
-    p_x_mr.setAccuracy(n * InvT);
+    marginal.setDegrees(alpha_n - (real) n_dim + 1.0);
+    marginal.setLocation(mu_n);
+    marginal.setPrecision(tau_n * (alpha_n - (real) n_dim + 1.0) * InvT);
+    //    p_x_mr.setMean(mu_n);
+    //    p_x_mr.setAccuracy(n * InvT);
 }
 
 
 void MultivariateNormalUnknownMeanPrecision::Show() 
 {
-    printf("Norma-Wishart - ");
-    /*
-      printf("Conditional normal mean: ");  mu_n.print(stdout);
-    printf("Conditional normal scaling: %f\n", tau_n);
-    printf("Wishart Degrees: %f\n", alpha_n);
-    printf("Wishart Precision: \n");  T_n.print(stdout);
-    */
-    printf("Normal-Wishart Predictive Marginal:\n");
-    p_x_mr.Show();
+    printf("# Norma-Wishart - ");
+    printf("# Conditional normal mean: ");  mu_n.print(stdout);
+    printf("# Conditional normal scaling: %f\n", tau_n);
+    printf("# Wishart Degrees: %f\n", alpha_n);
+    printf("# Wishart Precision: \n");  T_n.print(stdout);
+    printf("# Normal-Wishart Predictive Marginal:\n");
+    marginal.Show();
 }
