@@ -17,7 +17,11 @@
 class Wishart : public AbstractDistribution<Matrix>
 {
 public:
+    int k; ///< dimensionality
+    real n; ///< degrees of freedom
+    Matrix V; ///< scale matrix
     Wishart();
+    Wishart(real& n_, Matrix& V_);
     virtual ~Wishart();
     virtual void generate(Matrix& x) const;
     virtual Matrix generate() const;
