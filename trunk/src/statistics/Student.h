@@ -55,6 +55,7 @@ public:
         return exp(log_pdf(x));
     }
     void Show() const;
+    real generate() const;
 };
 
 /*@}*/

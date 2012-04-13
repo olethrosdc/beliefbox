@@ -64,8 +64,8 @@ class MultivariateNormalUnknownMeanPrecision : public VectorDistribution
 {
 protected:
     int n_dim; ///< number of dimensions
-    Student marginal_mean; ///< 
-    Student marginal;
+    Student marginal_mean; ///< the marginal distribution of m
+    Student marginal; ///< the marginal distribution of x
 public:
     // Parameters for m | R = r ~ Normal(\mu, \tau r)
     // where r is a given precision matrix
@@ -100,7 +100,7 @@ public:
     /// Note that this the marginal likelihood!
     virtual real marginal_pdf(const Vector& x) const;
     /// The marginal log-likelihood
-    virtual real log_pdf(const Vector& x) const;
+    virtual real log_pdf(const Vector& mean) const;
     virtual const Vector& getMean() const;
     virtual void calculatePosterior(const Vector& x);
     virtual real Observe(const Vector& x);

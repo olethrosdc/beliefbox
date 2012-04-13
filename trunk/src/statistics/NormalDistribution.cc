@@ -149,7 +149,6 @@ real NormalDistributionUnknownMean::pdf(real x) const
 
 void NormalDistributionUnknownMean::calculatePosterior(real x)
 {
-    //    sum += x;
     n++;
     mu_n += tau * x;
     tau_n += tau;
@@ -165,6 +164,7 @@ real NormalDistributionUnknownMean::getMean() const
 
 //------------------- Unknown mean and precision -------------------------//
 NormalUnknownMeanPrecision::NormalUnknownMeanPrecision()
+    : marginal(1), marginal_mean(1)
 {
     mu_0 = 0;
     tau_0 = 1;
@@ -174,7 +174,7 @@ NormalUnknownMeanPrecision::NormalUnknownMeanPrecision()
 }
 
 NormalUnknownMeanPrecision::NormalUnknownMeanPrecision(real mu_0_, real tau_0_)
-    : mu_0(mu_0_), tau_0(tau_0_)
+    : marginal(1), marginal_mean(1), mu_0(mu_0_), tau_0(tau_0_)
 {
     alpha_0 = 1;
     beta_0 = 1;
@@ -182,8 +182,6 @@ NormalUnknownMeanPrecision::NormalUnknownMeanPrecision(real mu_0_, real tau_0_)
 }
 void NormalUnknownMeanPrecision::Reset()
 {
-    p_x_mr.setMean(mu_0);
-    p_x_mr.setVariance(1.0 / (tau_0 * tau_0));
     n = 0;
     sum = 0.0;
     tau_n = tau_0;
@@ -192,6 +190,20 @@ void NormalUnknownMeanPrecision::Reset()
     beta_n = beta_0;
     M_2n = 0;
     bx_n = 0;
+
+    Matrix InvT(1);
+    InvT(0,0) = 1.0 / beta_n;
+    Vector mean(1);
+    mean(0) = mu_n;
+
+    marginal_mean.setDegrees(alpha_n);
+    marginal_mean.setLocation(mean);
+    marginal_mean.setPrecision(tau_n * (alpha_n) * InvT);
+
+    marginal.setDegrees(alpha_n);
+    marginal.setLocation(mean);
+    marginal.setPrecision((tau_n / (tau_n + 1.0)) * alpha_n  * InvT );
+
 }
 NormalUnknownMeanPrecision::~NormalUnknownMeanPrecision()
 {
@@ -199,13 +211,13 @@ NormalUnknownMeanPrecision::~NormalUnknownMeanPrecision()
 
 real NormalUnknownMeanPrecision::generate()
 {
-    return prior.generate();
+    return marginal_mean.generate();
 }
 
 /// Generate from the posterior. Uses the ranlib implementation
 real NormalUnknownMeanPrecision::generate() const
 {
-    return prior.generate();
+    return marginal.generate();
 }
 
 real NormalUnknownMeanPrecision::Observe(real x)
@@ -217,26 +229,40 @@ real NormalUnknownMeanPrecision::Observe(real x)
 
 real NormalUnknownMeanPrecision::pdf(real x) const
 {
-    real d = (x - mu_n);
-    real ln_p = 0.5 * log(tau_n / (2.0 * M_PI)) - 0.5 * tau_n * d * d;
-    return exp(ln_p);
+    //real d = (x - mu_n);
+    //real ln_p = 0.5 * log(tau_n / (2.0 * M_PI)) - 0.5 * tau_n * d * d;
+    //return exp(ln_p);
+    return marginal_mean.pdf(x);
+
 }
+
+real NormalUnknownMeanPrecision::log_pdf(real x) const
+{
+    return marginal_mean.log_pdf(x);
+}
+
+
 /** The marginal pdf of the observations.
     
     This is a student-t distribution.
 */
 real NormalUnknownMeanPrecision::marginal_pdf(real x) const
 {
+#if 1
     real mu = mu_n;
     real scale = beta_n * (tau_n + 1.0) / (alpha_n * tau_n);
     real n = (2.0 * alpha_n);
+
     real log_c = logGamma(0.5 * (n + 1.0)) - logGamma(0.5*n)
-        - 0.5 * log(n * M_PI * scale);
+        - 0.5 * log(n * M_PI / scale);
     real delta = x - mu_n;
-    real g = 1.0 + delta * delta / scale;
+    real g = 1.0 + delta * delta / (n * scale);
     real log_p = log_c - (0.5 * (1.0 + n)) * log(g);
     return exp(log_p);
-    //return p_x_mr.pdf(x);
+#else
+    //marginal.Show();
+    return marginal.pdf(x);
+#endif
 }
 
 
@@ -273,14 +299,20 @@ void NormalUnknownMeanPrecision::calculatePosterior(real x)
     tau_n += 1.0;
 
     alpha_n += 0.5;
-    beta_n = beta_0 + 0.5 * (M_2n + tau_0*n*delta_mean*delta_mean/(tau_0 + rn));
+    beta_n = beta_0 + 0.5 * (M_2n + tau_0 * n * delta_mean*delta_mean/tau_n);
+    
+    Matrix InvT(1);
+    InvT(0,0) = 1.0 / beta_n;
+    Vector mean(1);
+    mean(0) = mu_n;
 
-    p_x_mr.setMean(mu_n);
-    p_x_mr.setVariance(beta_n / alpha_n);
+    marginal_mean.setDegrees(2.0 * alpha_n);
+    marginal_mean.setLocation(mean);
+    marginal_mean.setPrecision(tau_n * alpha_n  * InvT);
 
-    prior.setMean(mu_n);
-    prior.setVariance(1.0 / tau_n);
-
+    marginal.setDegrees(2.0 * alpha_n);
+    marginal.setLocation(mean);
+    marginal.setPrecision(tau_n * alpha_n * InvT / (tau_n + 1.0));
 }
 
 /** Get the log-likelihood of some observations */
@@ -331,6 +363,6 @@ real NormalUnknownMeanPrecision::LogLikelihoodLogNormal(const std::vector<real>&
 void NormalUnknownMeanPrecision::Show() const
 {
     printf("Normal-Gamma - ");
-    p_x_mr.Show();
+    
 }
 

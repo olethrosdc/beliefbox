@@ -93,19 +93,12 @@ int main (int argc, char** argv)
         sum_log_nw += log(p_nw);
     }
     printf ("# Log sum: %f %f\n", sum_log_ng, sum_log_nw);
-#if 0
-    for (real x=-10; x<10; x+=0.1) {
-        Vector v(1);
-        v(0) = x;
-        printf ("%f %f %f %f",
-                x,
-                normal_wishart.pdf(v),
-                normal_gamma.pdf(x),
-                generating_distribution.pdf(x));
-		printf(" #Y\n");
-	}
-    normal_gamma.Show();
-    normal_wishart.Show();
+#if 1
+    for (int t=0; t<10; ++t) {
+        printf ("%f %f\n",
+                normal_gamma.generate(),
+                normal_gamma.generate());
+    }
 #endif
     return 0;
 }

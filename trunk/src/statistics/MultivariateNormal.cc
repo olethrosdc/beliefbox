@@ -101,7 +101,11 @@ void MultivariateNormalUnknownMeanPrecision::Reset()
 {
     marginal_mean.setDegrees(alpha_0 - (real) n_dim + 1.0);
     marginal_mean.setLocation(mu_0);
-    marginal_mean.setPrecision((alpha_0 - (real) n_dim + 1.0) * T_0.Inverse());
+    marginal_mean.setPrecision(tau_0 * (alpha_0 - (real) n_dim + 1.0) * T_0.Inverse());
+
+    marginal.setDegrees(alpha_0 - (real) n_dim + 1.0);
+    marginal.setLocation(mu_0);
+    marginal.setPrecision((tau_0 / (tau_0 + 1.0)) * (alpha_0 - (real) n_dim + 1.0) * T_0.Inverse());
     n = 0;
     sum = 0.0;
     tau_n = tau_0;
@@ -136,38 +140,23 @@ real MultivariateNormalUnknownMeanPrecision::Observe(const Vector& x)
 /// This is the probability of a particular Multi-Variate Nromal
 real MultivariateNormalUnknownMeanPrecision::pdf(const Vector& mean) const
 {
-    Serror("Not implemented\n");
-    return 0;
+    return marginal_mean.pdf(mean);
 }
 
 
 
-/** The marginal pdf of the observations.
-    
-    Instead of calculating the actual marginal:
-    \f[
-    \xi(x) = \int f(x \mid m, r) \, d\xi(m, r),
-    \f]
-    we calculate:
-    \f[
-    \xi(x) = f(x \mid E_\xi m, E_\xi r),
-    \f]
-    where \f$E_\xi m = \int m d\xi(m) \f$, \f$E_\xi r = \int r d\xi(r) \f$.
+/** The marginal pdf for observation x.
 */
 real MultivariateNormalUnknownMeanPrecision::marginal_pdf(const Vector& x) const
 {
     real p = marginal.pdf(x);
-    if (std::isnan(p)) {
-        marginal.Show();
-    }
+    assert (!std::isnan(p));
     return p;
-
-
 }
-real MultivariateNormalUnknownMeanPrecision::log_pdf(const Vector& x) const
+
+real MultivariateNormalUnknownMeanPrecision::log_pdf(const Vector& mean) const
 {
-    Serror("Not Implemented\n");
-    return 0.0;
+    return marginal_mean.log_pdf(mean);
 }
 
 
@@ -214,9 +203,14 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(const Vector& x)
     T_n = T_0 + M_2n + T_n * tau_0 * n / tau_n;
     
     Matrix InvT = T_n.Inverse();
+    marginal_mean.setDegrees(alpha_n - (real) n_dim + 1.0);
+    marginal_mean.setLocation(mu_n);
+    marginal_mean.setPrecision(tau_n * (alpha_n - (real) n_dim + 1.0) * InvT);
+
     marginal.setDegrees(alpha_n - (real) n_dim + 1.0);
     marginal.setLocation(mu_n);
-    marginal.setPrecision(tau_n * (alpha_n - (real) n_dim + 1.0) * InvT);
+    marginal.setPrecision((tau_n / (tau_n + 1.0)) * (alpha_n - (real) n_dim + 1.0) * InvT );
+
     //    p_x_mr.setMean(mu_n);
     //    p_x_mr.setAccuracy(n * InvT);
 }
