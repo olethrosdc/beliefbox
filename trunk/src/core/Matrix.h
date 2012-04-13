@@ -94,25 +94,27 @@ public:
         \f]
         by dynamic programming.
     */
-    Matrix Inverse_LU(real epsilon = ACCURACY_LIMIT)
+    Matrix Inverse_LU(real epsilon = ACCURACY_LIMIT) const
     {
         real det;
-        std::vector<Matrix> A = LUDecomposition(det, epsilon);
+        Matrix tmp(*this);
+        std::vector<Matrix> A = tmp.LUDecomposition(det, epsilon);
         return Inverse(A[0], A[1]);
     }
     
-    Matrix Inverse(Matrix& L, Matrix& U);
-    bool isTriangular();
-    bool isUpperTriangular();
-    bool isLowerTriangular();
-    real det();
-    real ColumnSum(int c);
-    real RowSum(int r);
-    real compute_det_triangular();
+    Matrix Inverse(const Matrix& L, const Matrix& U) const;
+    bool isSymmetric() const;
+    bool isTriangular() const;
+    bool isUpperTriangular() const;
+    bool isLowerTriangular() const;
+    real det() const;
+    real ColumnSum(int c) const;
+    real RowSum(int r) const;
+    real compute_det_triangular() const;
     real gaussian_elimination_forward(real epsilon = ACCURACY_LIMIT);
     std::vector<Matrix> LUDecomposition(real& determinant, real epsilon = ACCURACY_LIMIT);
-    Matrix Cholesky(real epsilon = ACCURACY_LIMIT);
-    void Cholesky(Matrix& chol, real epsilon = ACCURACY_LIMIT);
+    Matrix Cholesky(real epsilon = ACCURACY_LIMIT) const;
+    void Cholesky(Matrix& chol, real epsilon = ACCURACY_LIMIT) const;
     void Clear();
     void Transpose();
     Vector getColumn(int c) const;

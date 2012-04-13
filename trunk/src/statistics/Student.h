@@ -37,14 +37,13 @@
 */
 class Student
 {
- protected:
+public:
     int n; ///< Degrees of freedom
     const int k; ///< Dimensionality
     Vector mu; ///< location
     Matrix T; ///< precision
     real det; ///< precision determinant
- public:
-    Student(const int degrees, const int dimension);
+    Student(const int dimension);
     Student(const int degrees, const Vector& location, const Matrix& precision);
     void setDegrees(const int degrees);
     void setLocation(const Vector& location);
@@ -55,7 +54,7 @@ class Student
     {
         return exp(log_pdf(x));
     }
-    void Show();
+    void Show() const;
 };
 
 /*@}*/

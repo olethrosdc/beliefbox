@@ -58,21 +58,22 @@ class MultivariateNormal : public VectorDistribution
 
     The predictive posterior distribution \f$\xi_n(x_{n+1})\f$ is
     actually a generalised student-t distribution, but here we are
-    hacking it as a normal.
+    hacking it as a normal. (Fixing it now)
  */
 class MultivariateNormalUnknownMeanPrecision : public VectorDistribution
 {
 protected:
     int n_dim;
-    MultivariateNormal p_x_mr; ///< \f$\xi(x) = \int f(x | m, r) \, d\xi(m ,r)\f$  
+    Student marginal;
 public:
-    // paramters for \xi(m | r) = f(m | \mu, \tau r)
+    // Parameters for m | R = r ~ Normal(\mu, \tau r)
+    // where r is a given precision matrix
     Vector mu_0; ///< prior mean
     real tau_0; ///< prior accuracy
     Vector mu_n; ///< current mean
     real tau_n; ///< current accuracy
 
-    // parameters for \xi(r) = g(r | \alpha, \beta)
+    // parameters for \xi(r) = Wishart(r | \alpha, T)
     real alpha_0; ///< prior alpha
     Matrix T_0; ///< prior T
     real alpha_n; ///< posterior alpha
