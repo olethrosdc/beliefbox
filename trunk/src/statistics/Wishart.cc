@@ -13,8 +13,21 @@
 #include "Matrix.h"
 
 Wishart::Wishart()
+    : k(1),
+      n(1),
+      V(Matrix::Unity(1))
 {
+    
 }
+
+Wishart::Wishart(real n_, const Matrix& V_)
+    : k(V_.Rows()),
+      n(n_),
+      V(V_)
+{
+    assert(V.Rows() == V.Columns());
+}
+
 Wishart::~Wishart()
 {
     Serror("Not implemented\n");
