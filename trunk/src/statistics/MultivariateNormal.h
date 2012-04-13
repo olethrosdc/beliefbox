@@ -56,14 +56,15 @@ class MultivariateNormal : public VectorDistribution
     is \f$\xi_0(m \mid r) = f(m \mid \mu_0, \tau_0 r)\f$ and the marginal of
     the precision is \f$\xi_0(r) = g(r \mid \alpha_0, T_0)\f$. 
 
-    The predictive posterior distribution \f$\xi_n(x_{n+1})\f$ is
-    actually a generalised student-t distribution, but here we are
-    hacking it as a normal. (Fixing it now)
+    The predictive posterior distribution \f$\xi_n(x_{n+1})\f$, as
+    well as the marginal mean distributions are actually both
+    student-t distributions.
  */
 class MultivariateNormalUnknownMeanPrecision : public VectorDistribution
 {
 protected:
-    int n_dim;
+    int n_dim; ///< number of dimensions
+    Student marginal_mean; ///< 
     Student marginal;
 public:
     // Parameters for m | R = r ~ Normal(\mu, \tau r)
