@@ -18,6 +18,7 @@
 #include "Ring.h"
 #include "ContextTreeKDTree.h"
 #include "MultivariateNormal.h"
+#include "MultivariateNormalUnknownMeanPrecision.h"
 
 
 /** Context tree non-parametric conditional density estimation on \f$R^n \times R^m\f$.

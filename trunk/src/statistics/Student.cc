@@ -12,12 +12,15 @@
 
 #include "Student.h"
 #include "SpecialFunctions.h"
+#include "MultivariateNormal.h"
+#include "ranlib.h"
 
 /// Default constructor.
 ///
 /// Initialises location to zero and precision to identity.
 Student::Student(const int dimension) 
-    : n(1),
+    : sampler(new MultivariateNormal(dimension)),
+      n(1),
       k(dimension),
       mu(k),
       T(Matrix::Unity(k, k))
@@ -26,12 +29,18 @@ Student::Student(const int dimension)
 
 /// Constructor
 Student::Student(const int degrees, const Vector& location, const Matrix& precision)
-    : n(degrees),
+    : sampler(new MultivariateNormal(mu.Size())),
+      n(degrees),
       k(mu.Size()),
       mu(location),
       T(precision)
 {
     T.LUDecomposition(det);
+}
+
+Student::~Student()
+{
+    delete sampler;
 }
 
 /// Set the degrees
@@ -78,8 +87,18 @@ void Student::Show() const
         
 }
 
-real Student::generate() const
+/** Generate a sample.
+
+    Simply draw use a normal and a chi^2 variate dude!
+*/
+Vector Student::generate() const
 {
-    Serror("Not implemented\n");
-    return 0;
+    sampler->setAccuracy(T);
+    Vector v = sampler->generate();
+    real z = genchi((real) n);
+    //v.print(stdout);
+    //printf ("%f -> ", z);
+    v /= z;
+    //v.print(stdout);
+    return mu + v;
 }

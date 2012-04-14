@@ -12,6 +12,7 @@
 // NOTE: This should use ConditionalKDContextTree
 
 
+#include "MultivariateNormalUnknownMeanPrecision.h"
 #include "ContinuousStateContextTreeRL.h"
 #include "BetaDistribution.h"
 #include <cmath>
