@@ -17,6 +17,8 @@
 #include "Matrix.h"
 #include "Vector.h"
 
+class MultivariateNormal;
+
 /**
    \ingroup StatisticsGroup
  */
@@ -37,6 +39,8 @@
 */
 class Student
 {
+private:
+    MultivariateNormal* sampler;
 public:
     int n; ///< Degrees of freedom
     const int k; ///< Dimensionality
@@ -45,6 +49,7 @@ public:
     real det; ///< precision determinant
     Student(const int dimension);
     Student(const int degrees, const Vector& location, const Matrix& precision);
+    virtual ~Student();
     void setDegrees(const int degrees);
     void setLocation(const Vector& location);
     void setPrecision(const Matrix& precision);
@@ -55,7 +60,7 @@ public:
         return exp(log_pdf(x));
     }
     void Show() const;
-    real generate() const;
+    Vector generate() const;
 };
 
 /*@}*/

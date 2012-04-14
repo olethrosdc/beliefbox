@@ -14,6 +14,7 @@
 
 #include "ContinuousContextTreeRL.h"
 #include "BetaDistribution.h"
+#include "MultivariateNormalUnknownMeanPrecision.h"
 #include <cmath>
 
 #include "Random.h"

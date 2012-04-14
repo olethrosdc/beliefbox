@@ -17,6 +17,7 @@
 #include "EasyClock.h"
 #include "NormalDistribution.h"
 #include "MultivariateNormal.h"
+#include "MultivariateNormalUnknownMeanPrecision.h"
 #include "BetaDistribution.h"
 
 
@@ -33,10 +34,6 @@ int main (int argc, char** argv)
     }
 
     real mean = atof(argv[2]);
-    if (mean < 0) {
-        Serror("mean should be >= 0\n");
-        exit(-1);
-    }
 
     real variance = atof(argv[3]);
     if (variance < 0) {
@@ -93,11 +90,11 @@ int main (int argc, char** argv)
         sum_log_nw += log(p_nw);
     }
     printf ("# Log sum: %f %f\n", sum_log_ng, sum_log_nw);
-#if 0
+#if 1
     for (int t=0; t<10; ++t) {
-        printf ("%f %f\n",
+        printf ("x_%d %f %f\n", t,
                 normal_gamma.generate(),
-                normal_gamma.generate());
+                normal_wishart.generate()(0));
     }
 #endif
     return 0;

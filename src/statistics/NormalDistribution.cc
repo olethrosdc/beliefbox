@@ -214,13 +214,13 @@ NormalUnknownMeanPrecision::~NormalUnknownMeanPrecision()
 
 real NormalUnknownMeanPrecision::generate()
 {
-    return marginal_mean.generate();
+    return marginal_mean.generate()(0);
 }
 
 /// Generate from the posterior. Uses the ranlib implementation
 real NormalUnknownMeanPrecision::generate() const
 {
-    return marginal.generate();
+    return marginal.generate()(0);
 }
 
 real NormalUnknownMeanPrecision::Observe(real x)
