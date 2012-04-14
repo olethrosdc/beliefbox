@@ -55,8 +55,8 @@ int main (int argc, char** argv)
     //ContextTreeKDTree pdf(2, max_depth, lower_bound, upper_bound);
     Vector mu(1);
     Matrix S = Matrix::Unity(1,1);
-    S(0,0) = 1.0 / variance;
-    mu(0) = 1;
+    S(0,0) = 1.0;
+    mu(0) = 1.23456789;
     real tau = 1.0;
     real alpha = 1.0;
     MultivariateNormal multivariate_normal(mu, S);
@@ -93,7 +93,7 @@ int main (int argc, char** argv)
         sum_log_nw += log(p_nw);
     }
     printf ("# Log sum: %f %f\n", sum_log_ng, sum_log_nw);
-#if 1
+#if 0
     for (int t=0; t<10; ++t) {
         printf ("%f %f\n",
                 normal_gamma.generate(),

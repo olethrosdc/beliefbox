@@ -167,9 +167,9 @@ NormalUnknownMeanPrecision::NormalUnknownMeanPrecision()
     : marginal(1), marginal_mean(1)
 {
     mu_0 = 0;
-    tau_0 = 1;
-    alpha_0 = 1;
-    beta_0 = 1;
+    tau_0 = 1.0;
+    alpha_0 = 1.0;
+    beta_0 = 1.0;
     Reset();
 }
 
@@ -191,20 +191,23 @@ void NormalUnknownMeanPrecision::Reset()
     M_2n = 0;
     bx_n = 0;
 
+
     Matrix InvT(1);
-    InvT(0,0) = 1.0 / beta_n;
+    InvT(0,0) = 1.0 / beta_0;
     Vector mean(1);
-    mean(0) = mu_n;
+    mean(0) = mu_0;
 
-    marginal_mean.setDegrees(alpha_n);
+    marginal_mean.setDegrees(alpha_0);
     marginal_mean.setLocation(mean);
-    marginal_mean.setPrecision(tau_n * (alpha_n) * InvT);
+    marginal_mean.setPrecision(tau_0 * alpha_0 * InvT);
 
-    marginal.setDegrees(alpha_n);
+    marginal.setDegrees(alpha_0);
     marginal.setLocation(mean);
-    marginal.setPrecision((tau_n / (tau_n + 1.0)) * alpha_n  * InvT );
+    marginal.setPrecision((tau_0 / (tau_0 + 1.0)) * alpha_0 * InvT);
 
+    //printf ("Univariate location: %f\n", mu_0);
 }
+
 NormalUnknownMeanPrecision::~NormalUnknownMeanPrecision()
 {
 }
@@ -232,13 +235,13 @@ real NormalUnknownMeanPrecision::pdf(real x) const
     //real d = (x - mu_n);
     //real ln_p = 0.5 * log(tau_n / (2.0 * M_PI)) - 0.5 * tau_n * d * d;
     //return exp(ln_p);
-    return marginal_mean.pdf(x);
+    return marginal_mean.pdf(Vector(x));
 
 }
 
 real NormalUnknownMeanPrecision::log_pdf(real x) const
 {
-    return marginal_mean.log_pdf(x);
+    return marginal_mean.log_pdf(Vector(x));
 }
 
 
@@ -248,21 +251,9 @@ real NormalUnknownMeanPrecision::log_pdf(real x) const
 */
 real NormalUnknownMeanPrecision::marginal_pdf(real x) const
 {
-#if 1
-    real mu = mu_n;
-    real scale = beta_n * (tau_n + 1.0) / (alpha_n * tau_n);
-    real n = (2.0 * alpha_n);
-
-    real log_c = logGamma(0.5 * (n + 1.0)) - logGamma(0.5*n)
-        - 0.5 * log(n * M_PI / scale);
-    real delta = x - mu_n;
-    real g = 1.0 + delta * delta / (n * scale);
-    real log_p = log_c - (0.5 * (1.0 + n)) * log(g);
-    return exp(log_p);
-#else
+    //printf ("# Univariate ");
     //marginal.Show();
-    return marginal.pdf(x);
-#endif
+    return marginal.pdf(Vector(x));
 }
 
 
@@ -298,21 +289,27 @@ void NormalUnknownMeanPrecision::calculatePosterior(real x)
     mu_n = mu_n * gamma + (1 - gamma) * x;
     tau_n += 1.0;
 
-    alpha_n += 0.5;
-    beta_n = beta_0 + 0.5 * (M_2n + tau_0 * n * delta_mean*delta_mean/tau_n);
+    alpha_n += 1.0;
+    beta_n = beta_0 +  M_2n + delta_mean*delta_mean * tau_0 * rn / tau_n;
     
+
+
     Matrix InvT(1);
     InvT(0,0) = 1.0 / beta_n;
     Vector mean(1);
     mean(0) = mu_n;
 
-    marginal_mean.setDegrees(2.0 * alpha_n);
+    //printf ("# U: %f %f %f %f %f\n", tau_n, alpha_n, InvT(0,0), M_2n, mu_n);
+
+    marginal_mean.setDegrees(alpha_n);
     marginal_mean.setLocation(mean);
     marginal_mean.setPrecision(tau_n * alpha_n  * InvT);
 
-    marginal.setDegrees(2.0 * alpha_n);
+    marginal.setDegrees(alpha_n);
     marginal.setLocation(mean);
-    marginal.setPrecision(tau_n * alpha_n * InvT / (tau_n + 1.0));
+    marginal.setPrecision((tau_n / (tau_n + 1.0)) * alpha_n  * InvT );
+
+    //marginal.Show();
 }
 
 /** Get the log-likelihood of some observations */

@@ -140,8 +140,8 @@ public:
 class NormalUnknownMeanPrecision: public ConjugatePrior
 {
 protected:
-    Student marginal_mean;
     Student marginal;
+    Student marginal_mean;
 public:
     // paramters for \xi(m | r) = f(m | \mu, \tau r)
     real mu_0; ///< prior mean

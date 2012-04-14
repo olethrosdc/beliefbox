@@ -65,6 +65,28 @@ Vector::Vector(int N_, enum BoundsCheckingStatus check)
     checking_bounds = check;
 }
 
+Vector::Vector(uint N_, enum BoundsCheckingStatus check)
+{
+    n = N_;
+    maxN = n;
+    if (n==0) {
+        x = NULL;
+    } else {
+        x = (real*) calloc(n, sizeof(real));
+    }
+    checking_bounds = check;
+}
+
+Vector::Vector(real z, enum BoundsCheckingStatus check)
+{
+    n = 1;
+    maxN = n;
+    x = (real*) calloc(n, sizeof(real));
+    x[0] = z;
+    checking_bounds = check;
+}
+
+
 /** Copy from an array.
     TODO replace assignment with memcopy
 */
@@ -100,6 +122,7 @@ Vector::Vector (const Vector& rhs)
     }
     checking_bounds = rhs.checking_bounds;
 }
+
 
 /// Destructor
 Vector::~Vector()

@@ -59,9 +59,9 @@ void RolloutState::ExtendAllRollouts(const int T)
 /// See OOP (Bubeck et al) for better bounds.
 int RolloutState::BestEmpiricalAction(real delta)
 {
-    Vector Q_U(environment->getNActions()); // Upper bound on Q
-    Vector Q_L(environment->getNActions()); // Lower bound on Q
-    Vector N(environment->getNActions()); // number of times action was played
+    Vector Q_U((int) environment->getNActions()); // Upper bound on Q
+    Vector Q_L((int) environment->getNActions()); // Lower bound on Q
+    Vector N((int) environment->getNActions()); // number of times action was played
     real log_gamma = log(gamma);
 	for (uint i=0; i<rollouts.size(); ++i) {
         Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];
@@ -109,9 +109,9 @@ int RolloutState::BestEmpiricalAction(real delta)
 /// See OOP (Bubeck et al) for better bounds.
 int RolloutState::BestHighProbabilityAction(real delta)
 {
-    Vector Q_U(environment->getNActions()); // Upper bound on Q
-    Vector Q_L(environment->getNActions()); // Lower bound on Q
-    Vector N(environment->getNActions()); // number of times action was played
+    Vector Q_U((int) environment->getNActions()); // Upper bound on Q
+    Vector Q_L((int) environment->getNActions()); // Lower bound on Q
+    Vector N((int) environment->getNActions()); // number of times action was played
     real log_gamma = log(gamma);
 	for (uint i=0; i<rollouts.size(); ++i) {
         Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];
@@ -182,9 +182,9 @@ Vector RolloutState::SampleFromPolicy()
 /// of other actions they dominate.
 std::pair<Vector, bool> RolloutState::BestGroupAction(real delta)
 {
-    Vector Q_U(environment->getNActions()); // Upper bound on Q
-    Vector Q_L(environment->getNActions()); // Lower bound on Q
-    Vector N(environment->getNActions()); // number of times action was played
+    Vector Q_U((int) environment->getNActions()); // Upper bound on Q
+    Vector Q_L((int) environment->getNActions()); // Lower bound on Q
+    Vector N((int) environment->getNActions()); // number of times action was played
     real log_gamma = log(gamma);
 	for (uint i=0; i<rollouts.size(); ++i) {
         Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];
@@ -250,9 +250,9 @@ std::pair<Vector, bool> RolloutState::BestGroupAction(real delta)
 void RolloutState::Bootstrap(KDTree<RolloutState>& tree,
                              real L)
 {
-    Vector Q_U(environment->getNActions()); // Upper bound on Q
-    Vector Q_L(environment->getNActions()); // Lower bound on Q
-    Vector N(environment->getNActions()); // number of times action was played
+    Vector Q_U((int) environment->getNActions()); // Upper bound on Q
+    Vector Q_L((int) environment->getNActions()); // Lower bound on Q
+    Vector N((int) environment->getNActions()); // number of times action was played
     real log_gamma = log(gamma);
 	for (uint i=0; i<rollouts.size(); ++i) {
         Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];

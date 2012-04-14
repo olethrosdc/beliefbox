@@ -40,7 +40,7 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
       gamma(gamma_),
 	  mdp(mdp_),
 	  rewards(rewards_),
-	  P_rewards(rewards.size())
+	  P_rewards((int) rewards.size())
 {
 	assert(n_states == mdp.getNStates());
 	assert(n_actions == mdp.getNActions());

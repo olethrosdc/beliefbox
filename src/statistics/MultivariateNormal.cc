@@ -74,11 +74,12 @@ void MultivariateNormal::Show()  const
 }
 //----------------- Multivariate Unknown mean and precision -----------------------//
 MultivariateNormalUnknownMeanPrecision::MultivariateNormalUnknownMeanPrecision()
-    : n_dim(1), marginal_mean(1), marginal(1), bx_n(n_dim), M_2n(n_dim, n_dim)
+    : n_dim(1), marginal_mean(1), marginal(1),
+      mu_0(1), bx_n(n_dim), M_2n(n_dim, n_dim)
 {
-    mu_0 = 0.0;
+    mu_0(0) = 0.0;
     tau_0 = 1.0;
-    alpha_0 = 1;
+    alpha_0 = 1.0;
     T_0 = Matrix::Unity(1,1);
     Reset();
 }
@@ -114,6 +115,9 @@ void MultivariateNormalUnknownMeanPrecision::Reset()
     T_n = T_0;
     M_2n.Clear();
     bx_n.Clear();
+    
+    //mu_0.print(stdout);
+    //marginal.Show();
 }
 MultivariateNormalUnknownMeanPrecision::~MultivariateNormalUnknownMeanPrecision()
 {
@@ -149,9 +153,9 @@ real MultivariateNormalUnknownMeanPrecision::pdf(const Vector& mean) const
 */
 real MultivariateNormalUnknownMeanPrecision::marginal_pdf(const Vector& x) const
 {
-    real p = marginal.pdf(x);
-    assert (!std::isnan(p));
-    return p;
+    //printf ("# Multivariate ");
+     //marginal.Show();   
+    return marginal.pdf(x);
 }
 
 real MultivariateNormalUnknownMeanPrecision::log_pdf(const Vector& mean) const
@@ -197,12 +201,15 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(const Vector& x)
     real gamma = (rn - 1) * irn;
     mu_n = mu_n * gamma + x * (1 - gamma);
     tau_n += 1.0;
+
     alpha_n += 1.0;
-    // T_n = T_0 + M_2n + delta_mean*delta_mean' * tau_0 * n / tau_n;
     Product(&delta_mean, &delta_mean, &T_n);
-    T_n = T_0 + M_2n + T_n * tau_0 * n / tau_n;
-    
+    T_n = T_0 + M_2n + T_n * tau_0 * rn / tau_n;
+
     Matrix InvT = T_n.Inverse();
+
+    //printf ("# M: %f %f %f %f %f\n", tau_n, alpha_n, InvT(0,0), M_2n(0,0), mu_n(0));
+
     marginal_mean.setDegrees(alpha_n - (real) n_dim + 1.0);
     marginal_mean.setLocation(mu_n);
     marginal_mean.setPrecision(tau_n * (alpha_n - (real) n_dim + 1.0) * InvT);
@@ -211,6 +218,7 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(const Vector& x)
     marginal.setLocation(mu_n);
     marginal.setPrecision((tau_n / (tau_n + 1.0)) * (alpha_n - (real) n_dim + 1.0) * InvT );
 
+    //marginal.Show();
     //    p_x_mr.setMean(mu_n);
     //    p_x_mr.setAccuracy(n * InvT);
 }
