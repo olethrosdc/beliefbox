@@ -16,15 +16,32 @@
 int main(int argc, char** argv)
 {
     
-    Vector x(4);
-    for (uint i=0; i<x.Size(); ++i) {
+    {
+        Vector x(4);
+        for (uint i=0; i<x.Size(); ++i) {
         x(i) = i;
+        }
+        x.print(stdout);
+        x *= 2;
+        x.print(stdout);
+        x = 3;
+        x.print(stdout);
     }
-    x.print(stdout);
-    x *= 2;
-    x.print(stdout);
-    x = 3;
-    x.print(stdout);
+
+    {
+        real n = 3.0;
+        Vector w(n);
+        w.print(stdout);
+    }
+
+    {
+        int n = 3;
+        Vector w(n);
+        w.print(stdout);
+
+    }
+
+
     return 0;
 }
 

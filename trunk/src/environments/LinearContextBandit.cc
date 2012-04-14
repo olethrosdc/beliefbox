@@ -21,8 +21,8 @@ LinearContextBandit::LinearContextBandit(uint n_actions_,
 	  var(n_actions),
       G(n_states, n_states),
       rng(rng_),
-      U_x(n_states),
-      L_x(n_states)
+      U_x((int) n_states),
+      L_x((int) n_states)
 { 
     state.Resize(n_states);
 
@@ -59,7 +59,7 @@ LinearContextBandit::~LinearContextBandit()
 
 void LinearContextBandit::GenerateContext()
 {
-    Vector y(n_states);
+    Vector y((int) n_states);
     for (uint j=0; j<n_states; ++j) {
         y(j) = urandom(-1,1);
     }
