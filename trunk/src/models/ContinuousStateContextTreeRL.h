@@ -18,6 +18,7 @@
 #include "Vector.h"
 #include "BetaDistribution.h"
 #include "MultivariateNormal.h"
+#include "MultivariateNormalUnknownMeanPrecision.h"
 #include "ContextTreeKDTree.h"
 
 /** A continuous context tree implementation.
