@@ -51,7 +51,7 @@ Matrix Wishart::generate() const
  */
 real Wishart::log_pdf(const Matrix& X) const
 {
-    assert(x.isSymmetric());
+    assert(X.isSymmetric());
     static real log_2 = log(2.0);
     static real log_pi = log(M_PI);
 

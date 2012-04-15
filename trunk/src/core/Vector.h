@@ -43,7 +43,7 @@ public:
     explicit Vector (int N_, enum BoundsCheckingStatus check = CHECK_BOUNDS);
     explicit Vector (uint N_, enum BoundsCheckingStatus check = CHECK_BOUNDS);
     static Vector Unity(int N_, enum BoundsCheckingStatus check = CHECK_BOUNDS);
-    explicit Vector (real x, enum BoundsCheckingStatus check = CHECK_BOUNDS));
+    explicit Vector (real x, enum BoundsCheckingStatus check = CHECK_BOUNDS);
 #endif
 
     Vector (const Vector& rhs);
