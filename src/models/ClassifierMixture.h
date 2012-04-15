@@ -72,8 +72,8 @@ public:
         : n_inputs(n_inputs_),
           n_classes(n_classes_),
           classifiers(classifiers_),
-		  P(classifiers.size()),
-		  w(classifiers.size()),
+		  P((int) classifiers.size()),
+		  w((int) classifiers.size()),
           output(n_classes)		  
     {
 		real w_prior = 1.0 / (real) w.Size();
