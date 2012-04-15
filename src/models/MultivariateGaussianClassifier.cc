@@ -21,7 +21,7 @@ MultivariateGaussianClassifier::MultivariateGaussianClassifier(int n_inputs_, in
 {
     Vector mu(n_inputs);
     real tau = 1.0;
-    real alpha = 1.0;
+    real alpha = (real) n_inputs; //1.0;
     Matrix T(Matrix::Unity(n_inputs, n_inputs));
     
     for (int i=0; i<n_classes; ++i) {
