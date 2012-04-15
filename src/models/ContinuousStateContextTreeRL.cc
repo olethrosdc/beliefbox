@@ -56,7 +56,7 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
 	mean.print(stdout);
 	tree.lower_bound_x.print(stdout);
 	tree.upper_bound_x.print(stdout);
-	normal_density = new MultivariateNormalUnknownMeanPrecision(mean, 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
+	normal_density = new MultivariateNormalUnknownMeanPrecision(mean, 1.0, (real) y_dim, Matrix::Unity(y_dim, y_dim));
     log_prior_normal = log(NORMAL_PRIOR);
     prior_normal = NORMAL_PRIOR;
 }
@@ -114,7 +114,7 @@ ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL::Node* pre
 										  tree.lower_bound_x,
 										  tree.upper_bound_x);
     int y_dim = tree.upper_bound_x.Size();
-	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_x + tree.lower_bound_x)*0.5 , 1.0, 1.0, Matrix::Unity(y_dim, y_dim));
+	normal_density = new MultivariateNormalUnknownMeanPrecision((tree.upper_bound_x + tree.lower_bound_x)*0.5 , 1.0, (real) y_dim, Matrix::Unity(y_dim, y_dim));
     log_prior_normal = log(NORMAL_PRIOR);
     prior_normal = NORMAL_PRIOR;
 }
