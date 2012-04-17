@@ -418,9 +418,10 @@ int main (int argc, char** argv)
     for (int experiment=0; experiment<n_experiments; experiment++) {
 
 		Matrix P_sa(n_actions, n_outcomes);
-		DirichletDistribution prior(n_outcomes);
+		DirichletDistribution outcome_prior(n_outcomes);
+		DirichletDistribution payoff_prior(n_outcomes);
 		for (int i=0; i<n_actions; ++i) {
-			P_sa.setRow(i, prior.generate());
+			P_sa.setRow(i, outcome_prior.generate());
 		}
 		ObjectiveBanditPolicy* policy = NULL;
 		switch (method) {
@@ -440,7 +441,7 @@ int main (int argc, char** argv)
 		real reward = 0.0;
 		int outcome = -1;
         for (int t=0; t<horizon; t++) {
-			Vector payoff = prior.generate();
+			Vector payoff = payoff_prior.generate();
             int action = policy->Act(payoff, outcome);
 			//printf ("%d ", action);	payoff.print(stdout);
 			outcome = DiscreteDistribution::generate(P_sa.getRow(action));
