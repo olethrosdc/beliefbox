@@ -10,33 +10,32 @@
  ***************************************************************************/
 
 #include "TdBma.h"
-#include "NormalDistribution.h"
 
-TdBma::TdBma(int n_states_,
-	int n_actions_,
-	real gamma_,
-	real lambda_,
-	real alpha_,
+TdBma::TdBma(const int n_states_,
+	const int n_actions_,
+	const real gamma_,
+	const real lambda_,
+	const real alpha_,
 	VFExplorationPolicy* exploration_policy_,
-	real initial_value_,
-	real baseline_)
-	: n_states(n_states_),
-	n_actions(n_actions_),
-	gamma(gamma_),
+	const real initial_value_,
+	const real baseline_)
+	: N_STATES(n_states_),
+	N_ACTIONS(n_actions_),
+	ALPHA(alpha_),
+	GAMMA(gamma_),
 	lambda(lambda_),
-	alpha(alpha_),
 	exploration_policy(exploration_policy_),
-	initial_value(initial_value_),
-	baseline(baseline_),
+	INITIAL_VALUE(initial_value_),
+	BASELINE(baseline_),
 	Q(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
 	N(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
 	Means(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
 	Variances(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
 	Deviations(n_states_, n_actions_, Matrix::CHECK_BOUNDS)
 {
-	assert(lambda >= 0 && lambda <= 1);
-	assert(alpha >= 0 && alpha <= 1);
-	assert(gamma >= 0 && gamma <= 1);
+	make_assert(ALPHA >= 0 && ALPHA <= 1);
+	make_assert(GAMMA >= 0 && GAMMA <= 1);
+	make_assert(lambda >= 0 && lambda <= 1);
 
 	Reset();
 
@@ -50,16 +49,16 @@ void TdBma::Reset()
 	state = -1;
 	action = -1;
 
-	T = 20;
+	T = (int) (log(N_STATES) / log(N_ACTIONS));
 	t = 0;
 
 	//episode();
 
-	for(int s = 0; s < n_states; s++)
+	for(int s = 0; s < N_STATES; s++)
 	{
-		for(int a = 0; a < n_actions; a++)
+		for(int a = 0; a < N_ACTIONS; a++)
 		{
-			Q(s, a) = initial_value;
+			Q(s, a) = INITIAL_VALUE;
 			N(s, a) = 0.0;
 			Means(s, a) = 0.0;
 			Variances(s, a) = 0.0;
@@ -68,7 +67,9 @@ void TdBma::Reset()
 
 }
 
-real TdBma::Observe(int state, int action, real reward, int next_state, int next_action)
+/// Full TD-MB observation (no eligibility traces)
+
+real TdBma::Observe(const int state, const int action, const real reward, const int next_state, const int next_action)
 {
 	// o If the episode is finished (episode = T steps),
 	//   use it to refine the estimate Q
@@ -82,7 +83,7 @@ real TdBma::Observe(int state, int action, real reward, int next_state, int next
 		real r, nr = reward;
 
 		// - BMA return and next BMA return
-		real rBma, nrBma = nr;
+		real rBma = nr, nrBma = rBma;
 
 		// - Q-values for each method (TD and MC)
 		real qTd, qMc;
@@ -99,7 +100,7 @@ real TdBma::Observe(int state, int action, real reward, int next_state, int next
 		while(!episode.empty())
 		{
 			// o Get the state, action and reward of this step
-			pair< pair< int, int >, real > sar = episode.back();
+			const pair< pair< int, int >, real > sar = episode.back();
 			s = sar.first.first;
 			a = sar.first.second;
 			r = sar.second;
@@ -110,12 +111,12 @@ real TdBma::Observe(int state, int action, real reward, int next_state, int next
 			if(t < T)
 			{
 				// - Compute the Q-values for TD and MC methods
-				qTd = nr + gamma * Q(ns, na);
-				qMc = nr + gamma * nrBma;
+				qTd = nr + GAMMA * Q(ns, na);
+				qMc = nr + GAMMA * nrBma;
 
 				// - Compute lambda
 				// The normal distribution N(μ, σ^2)
-				NormalDistribution nd(Means(s, a), Deviations(s, a));
+				const NormalDistribution nd(Means(s, a), Deviations(s, a));
 				nMc = pow(nd.pdf(qMc), N(s, a));
 				nTd = pow(nd.pdf(qTd), N(s, a));
 				lambda = nMc / (nMc + nTd);
@@ -126,7 +127,7 @@ real TdBma::Observe(int state, int action, real reward, int next_state, int next
 
 
 			// o Update the action-value function Q
-			Q(s, a) = Q(s, a) + alpha * (rBma - Q(s, a));
+			Q(s, a) += ALPHA * (rBma - Q(s, a));
 
 
 			// o Update μ, σ sufficient statistics (Knuth, 1998)
@@ -167,7 +168,7 @@ real TdBma::Observe(int state, int action, real reward, int next_state, int next
 	return Q(next_state, next_action);
 }
 
-real TdBma::Observe(real reward, int next_state, int next_action)
+real TdBma::Observe(const real reward, const int next_state, const int next_action)
 {
 	if(state >= 0)
 	{
@@ -180,7 +181,10 @@ real TdBma::Observe(real reward, int next_state, int next_action)
 	return Q(next_state, next_action);
 }
 
-int TdBma::Act(real reward, int next_state)
+/// Get an action using the current exploration policy.
+/// It calls Observe as a side-effect.
+
+int TdBma::Act(const real reward, const int next_state)
 {
 	exploration_policy->Observe(reward, next_state);
 	int next_action = exploration_policy->SelectAction();
