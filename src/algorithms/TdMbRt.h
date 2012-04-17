@@ -36,56 +36,53 @@ class TdMbRt : public OnlineAlgorithm<int, int>
 {
 
 protected:
-	const int n_states; ///< number of states
-	const int n_actions; ///< number 
+	const int N_STATES; ///< number of states
+	const int N_ACTIONS; ///< number of actions
 
-	real alpha; ///< learning rate 
-	real gamma; ///< discount factor
-	real lambda; ///< eligibility trace decay rate
+	const real ALPHA; ///< learning rate 
+	const real GAMMA; ///< discount factor
+	const real DEFAULT_LAMBDA; ///< default eligibility trace decay rate
 
 	VFExplorationPolicy* exploration_policy; ///< exploration policy
-	real initial_value; ///< initial value for Q values
-	real baseline; ///< baseline reward
+	const real INITIAL_VALUE; ///< initial value for Q values
+	const real BASELINE; ///< baseline reward
 
 	Matrix Q; ///< values of all states and actions
 
 	Matrix E; ///< eligibility traces for all states and actions
-	Matrix LAMBDA; ///< variable lambda
-	map < pair<int, int>, vector<int> > TRIALS; ///< counts the number of outcomes
+	Matrix LAMBDA; ///< eligibility trace decay rate for a state and an action
 	Matrix N; ///< counts the number of trials
-	real lambdaParameter;
-
-	int t, T;
-	vector< pair< pair< int, int >, double > > episode; ///< vector of ((state, action), reward)
+	const real U; ///< Dirichlet parameter
+	map < pair<int, int>, vector<int> > TRIALS; ///< counts the number of outcomes
 
 	int state; ///< current state
 	int action; ///< current action
 
 
 public:
-	TdMbRt(int n_states_,
-		int n_actions_,
-		real gamma_,
-		real lambda_,
-		real alpha_,
-		VFExplorationPolicy* exploration_policy_,
-		real initial_value_ = 0.0,
-		real baseline_ = 0.0);
+	TdMbRt(const int n_states_,
+		const int n_actions_,
+		const real gamma_,
+		const real lambda_,
+		const real alpha_,
+		VFExplorationPolicy * const exploration_policy_,
+		const real initial_value_ = 0.0,
+		const real baseline_ = 0.0);
 	virtual ~TdMbRt();
 
 	virtual void Reset();
 
-	/// Full TD-MB observation (no eligibility traces)
-	virtual real Observe(int state, int action, real reward, int next_state, int next_action);
+	/// Full TD-MB observation
+	virtual real Observe(const int state, const int action, const real reward, const int next_state, const int next_action);
 
 	/// Partial TD-MB observation (can be used with eligibility traces)
-	virtual real Observe(real reward, int next_state, int next_action);
+	virtual real Observe(const real reward, const int next_state, const int next_action);
 
 	/// Get an action using the current exploration policy.
 	/// It calls Observe as a side-effect.
-	virtual int Act(real reward, int next_state);
+	virtual int Act(const real reward, const int next_state);
 
-	virtual real getValue(int state, int action)
+	virtual real getValue(const int state, const int action)
 	{
 		return Q(state, action);
 	}

@@ -23,24 +23,27 @@
 #include "DiscretePolicy.h"
 #include "ExplorationPolicy.h"
 #include "Matrix.h"
+#include "NormalDistribution.h"
 #include "OnlineAlgorithm.h"
 
 
 using namespace std;
 
+
 class TdBma : public OnlineAlgorithm<int, int>
 {
-protected:
-	const int n_states; ///< number of states
-	const int n_actions; ///< number 
 
-	real gamma; ///< discount factor
+protected:
+	const int N_STATES; ///< number of states
+	const int N_ACTIONS; ///< number 
+
+	const real ALPHA; ///< learning rate 
+	const real GAMMA; ///< discount factor
 	real lambda; ///< eligibility trace decay rate
-	real alpha; ///< learning rate 
 
 	VFExplorationPolicy* exploration_policy; ///< exploration policy
-	real initial_value; ///< initial value for Q values
-	real baseline; ///< baseline reward
+	const real INITIAL_VALUE; ///< initial value for Q values
+	const real BASELINE; ///< baseline reward
 
 	Matrix Q;
 
@@ -57,32 +60,33 @@ protected:
 
 
 public:
-	TdBma(int n_states_,
-			int n_actions_,
-			real gamma_,
-			real lambda_,
-			real alpha_,
-			VFExplorationPolicy* exploration_policy_,
-			real initial_value_ = 0.0,
-			real baseline_ = 0.0);
+	TdBma(const int n_states_,
+		const int n_actions_,
+		const real gamma_,
+		const real lambda_,
+		const real alpha_,
+		VFExplorationPolicy* exploration_policy_,
+		const real initial_value_ = 0.0,
+		const real baseline_ = 0.0);
 	virtual ~TdBma();
 
 	virtual void Reset();
 
 	/// Full TD-BMA observation (no eligibility traces)
-	virtual real Observe(int state, int action, real reward, int next_state, int next_action);
+	virtual real Observe(const int state, const int action, const real reward, const int next_state, const int next_action);
 
 	/// Partial TD-BMA observation (can be used with eligibility traces)
-	virtual real Observe(real reward, int next_state, int next_action);
+	virtual real Observe(const real reward, const int next_state, const int next_action);
 
 	/// Get an action using the current exploration policy.
-	/// it calls Observe as a side-effect.
-	virtual int Act(real reward, int next_state);
+	/// It calls Observe as a side-effect.
+	virtual int Act(const real reward, const int next_state);
 
-	virtual real getValue(int state, int action) {
+	virtual real getValue(const int state, const int action)
+	{
 		return Q(state, action);
 	}
 };
 
 
-#endif
+#endif	/* TD_BMA_H */

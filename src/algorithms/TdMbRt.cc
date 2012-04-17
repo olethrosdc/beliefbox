@@ -13,32 +13,31 @@
 
 #include "TdMbRt.h"
 
-TdMbRt::TdMbRt(int n_states_,
-	int n_actions_,
-	real gamma_,
-	real lambda_,
-	real alpha_,
-	VFExplorationPolicy* exploration_policy_,
-	real initial_value_,
-	real baseline_)
-	: n_states(n_states_),
-	n_actions(n_actions_),
-	gamma(gamma_),
-	lambda(lambda_),
-	alpha(alpha_),
+TdMbRt::TdMbRt(const int n_states_,
+	const int n_actions_,
+	const real gamma_,
+	const real lambda_,
+	const real alpha_,
+	VFExplorationPolicy * const exploration_policy_,
+	const real initial_value_,
+	const real baseline_)
+	: N_STATES(n_states_),
+	N_ACTIONS(n_actions_),
+	ALPHA(alpha_),
+	GAMMA(gamma_),
+	DEFAULT_LAMBDA(lambda_),
 	exploration_policy(exploration_policy_),
-	initial_value(initial_value_),
-	baseline(baseline_),
+	INITIAL_VALUE(initial_value_),
+	BASELINE(baseline_),
 	Q(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
 	E(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
 	LAMBDA(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
-	N(n_states_, n_actions_, Matrix::CHECK_BOUNDS)
+	N(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
+	U(0.5)
 {
-	assert(alpha >= 0 && alpha <= 1);
-	assert(gamma >= 0 && gamma <= 1);
-	assert(lambda >= 0 && lambda <= 1);
-
-	lambdaParameter = 0.5;
+	make_assert(ALPHA >= 0 && ALPHA <= 1);
+	make_assert(GAMMA >= 0 && GAMMA <= 1);
+	make_assert(DEFAULT_LAMBDA >= 0 && DEFAULT_LAMBDA <= 1);
 
 	Reset();
 
@@ -52,21 +51,18 @@ void TdMbRt::Reset()
 	state = -1;
 	action = -1;
 
-	T = n_states;
-	t = 0;
-
 	//episode();
 
-	for(int s = 0; s < n_states; ++s)
+	for(int s = 0; s < N_STATES; ++s)
 	{
-		for(int a = 0; a < n_actions; ++a)
+		for(int a = 0; a < N_ACTIONS; ++a)
 		{
-			Q(s, a) = initial_value;
+			Q(s, a) = INITIAL_VALUE;
 
 			E(s, a) = 0.0;
-			LAMBDA(s, a) = lambda;
+			LAMBDA(s, a) = DEFAULT_LAMBDA;
 
-			vector<int> sa_trials(n_states, 0);
+			vector<int> sa_trials(N_STATES, 0);
 			pair<int, int> sa(s, a);
 			TRIALS[sa] = sa_trials;
 
@@ -76,18 +72,18 @@ void TdMbRt::Reset()
 
 }
 
-/// Full TD-MB observation (no eligibility traces)
+/// Full TD-MB observation
 
-real TdMbRt::Observe(int state, int action, real reward, int next_state, int next_action)
+real TdMbRt::Observe(const int state, const int action, const real reward, const int next_state, const int next_action)
 {
 	// o Compututation
 
 	// - Delta
-	real delta = reward + gamma * Q(next_state, next_action) - Q(state, action);
+	const real DELTA = reward + GAMMA * Q(next_state, next_action) - Q(state, action);
 
 	// - Lambda
-	pair<int, int> sa(state, action);
-	vector<int> trials = TRIALS[sa];
+	const pair<int, int> SA(state, action);
+	vector<int> trials = TRIALS[SA];
 
 	trials[next_state] += 1;
 	N(state, action) += 1;
@@ -95,7 +91,7 @@ real TdMbRt::Observe(int state, int action, real reward, int next_state, int nex
 	const int TOTAL = N(state, action);
 	int n, min = __INT_MAX__, max = 0;
 
-	for(int s = 0; s < n_states; ++s)
+	for(int s = 0; s < N_STATES; ++s)
 	{
 		n = trials[s];
 		if(n < min)
@@ -107,15 +103,15 @@ real TdMbRt::Observe(int state, int action, real reward, int next_state, int nex
 			max = n;
 		}
 	}
-	LAMBDA(state, action) = (max + lambdaParameter) / (TOTAL * (1 + lambdaParameter))
-		- (min + lambdaParameter) / (TOTAL * (1 + lambdaParameter));
+	LAMBDA(state, action) = (max + U) / (TOTAL * (1 + U))
+		- (min + U) / (TOTAL * (1 + U));
 
 
-	// o Update
+	// o Updates
 
-	for(int s = 0; s < n_states; ++s)
+	for(int s = 0; s < N_STATES; ++s)
 	{
-		for(int a = 0; a < n_actions; ++a)
+		for(int a = 0; a < N_ACTIONS; ++a)
 		{
 			// - Eligibility traces
 			if(s == state)
@@ -136,15 +132,15 @@ real TdMbRt::Observe(int state, int action, real reward, int next_state, int nex
 			} else
 			{
 				#ifdef REPLACING_TRACES
-				E(s, a) = gamma * LAMBDA(s, a) * E(s, a);
+				E(s, a) *= GAMMA * LAMBDA(s, a);
 				#endif
 			}
 
 			// - Action-value function
-			Q(s, a) = Q(s, a) + alpha * E(s, a) * delta;
+			Q(s, a) += ALPHA * E(s, a) * DELTA;
 
 			#ifndef REPLACING_TRACES
-			E(s, a) = gamma * LAMBDA(s, a) * E(s, a);
+			E(s, a) *= GAMMA * LAMBDA(s, a);
 			#endif
 		}
 	}
@@ -154,7 +150,7 @@ real TdMbRt::Observe(int state, int action, real reward, int next_state, int nex
 
 /// Partial TD-MB observation (can be used with eligibility traces)
 
-real TdMbRt::Observe(real reward, int next_state, int next_action)
+real TdMbRt::Observe(const real reward, const int next_state, const int next_action)
 {
 	if(state >= 0)
 	{
@@ -170,10 +166,10 @@ real TdMbRt::Observe(real reward, int next_state, int next_action)
 /// Get an action using the current exploration policy.
 /// It calls Observe as a side-effect.
 
-int TdMbRt::Act(real reward, int next_state)
+int TdMbRt::Act(const real reward, const int next_state)
 {
 	exploration_policy->Observe(reward, next_state);
-	int next_action = exploration_policy->SelectAction();
+	const int next_action = exploration_policy->SelectAction();
 	Observe(reward, next_state, next_action);
 	return next_action;
 }
