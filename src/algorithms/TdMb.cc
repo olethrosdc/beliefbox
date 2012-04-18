@@ -10,6 +10,7 @@
  ***************************************************************************/
 
 #include "TdMb.h"
+#include "SmartAssert.h"
 
 TdMb::TdMb(const int n_states_,
 	const int n_actions_,

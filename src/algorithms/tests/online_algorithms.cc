@@ -102,7 +102,7 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --maze_name:    (Gridworld) file name for the maze\n\
     --epsilon:      use epsilon-greedy with randomness in [0,1]\n\
     --upper_bound:  use upper bound of sampled MDPs rather than lower bound\n\
-    --reward_prior: {Beta, Gaussian, Fixed}\n\
+    --reward_prior: {Beta, Normal, Fixed}\n\
 \n";
 
 

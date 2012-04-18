@@ -107,7 +107,7 @@ int SampleBasedRL::Act(real reward, int next_state)
     if (T >= next_update) {    
         //printf("# mean model\n");
         //model->ShowModel();
-        update_interval += 1;//(int) (ceil)(1.01*(double) T);
+        //update_interval += T;//(int) (ceil)(1.01*(double) T);
         next_update = T + update_interval;
         for (int i=0; i<max_samples; ++i) {
             delete mdp_list[i];
