@@ -47,6 +47,7 @@ public:
 #endif
 
     Vector (const Vector& rhs);
+    Vector (const std::vector<real>& rhs);
     ~Vector ();
     Vector& operator= (const real& rhs);
     Vector& operator= (const Vector& rhs);
@@ -110,6 +111,15 @@ typedef struct Lattice_ {
     real* x; ///< data
 } Lattice;
 
+template<typename T>
+std::vector<T> convert(const Vector& x)
+{
+    std::vector<T> y(x.Size());
+    for (int i=0; i<x.Size(); ++i) {
+        y[i] = x(i);
+    }
+    return y;
+}
 
 Vector* NewVector (int n);///< make a new vector of length n
 void CopyVector (Vector* const lhs, const Vector * const rhs); ///< Copy one vector to another.

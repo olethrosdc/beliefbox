@@ -12,6 +12,7 @@
 #define REPLACING_TRACES
 
 #include "TdMbRt.h"
+#include "SmartAssert.h"
 
 TdMbRt::TdMbRt(const int n_states_,
 	const int n_actions_,

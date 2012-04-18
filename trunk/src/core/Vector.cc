@@ -123,6 +123,21 @@ Vector::Vector (const Vector& rhs)
     checking_bounds = rhs.checking_bounds;
 }
 
+Vector::Vector (const std::vector<real>& rhs)
+{
+    n = rhs.size();
+    maxN = n;
+    if (n==0) {
+        x = NULL;
+    } else {
+        x = (real*) malloc(sizeof(real)*n);
+        for (int i=0; i<n; i++) {
+            x[i] = rhs[i];
+        }
+    }
+    checking_bounds = NO_CHECK_BOUNDS;
+}
+
 
 /// Destructor
 Vector::~Vector()
