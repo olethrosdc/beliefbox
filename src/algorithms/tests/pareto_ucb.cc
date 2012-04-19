@@ -19,6 +19,7 @@
 #include "ObjectiveGeneralBandit.h"
 #include "ProductDistribution.h"
 #include "GammaDistribution.h"
+#include "BetaDistribution.h"
 #include <algorithm>
 
 struct RegretPair
@@ -53,7 +54,6 @@ RegretPair getRegret(const Matrix& P, const ObjectiveGeneralBandit* policy)
 enum Method {
 	UNDEFINED = 0x0,
 	EPSILON_GREEDY,
-	WEISSMAN_UCB, 
     HOEFFDING_UCB
 };
 
@@ -73,7 +73,7 @@ int main (int argc, char** argv)
 	Method method = UNDEFINED;
 
 	if (argc <= 6) {
-		fprintf(stderr, "arguments: n_actions n_outcomes horizon n_runs method epsilon \n method 1: epsilon-greedy \n method 2: weissman_ucb");
+		fprintf(stderr, "arguments: n_actions n_outcomes horizon n_runs method epsilon \n method 1: epsilon-greedy \n method 2: hoeffding_ucb\n");
 		exit(-1);
 	}
 	n_actions = atoi(argv[1]);
@@ -88,7 +88,7 @@ int main (int argc, char** argv)
 
 
 
-    GammaDistribution outcome_parameter_prior(2, 2);	
+    BetaDistribution outcome_parameter_prior(2, 2);	
 
     for (int experiment=0; experiment<n_experiments; experiment++) {
         
@@ -126,7 +126,7 @@ int main (int argc, char** argv)
                 }
             }
 			reward = Product(payoff, outcome);
-			RegretPair regret =  getRegret(P_sa, policy);
+			RegretPair regret =  getRegret(P_x_a, policy);
 			worst_case(t) += regret.worst;
 			average_case(t) += regret.average;
 		}

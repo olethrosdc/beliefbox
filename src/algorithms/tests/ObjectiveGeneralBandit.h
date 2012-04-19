@@ -43,8 +43,8 @@ public:
 		real p = 1.0 / (real) n_outcomes;
 		for (int i=0; i<n_actions; ++i) {
 			for (int j=0; j<n_outcomes; ++j) {
-				N(i,j) = 0.5;
-				P(i,j) = p;
+				N(i, j) = 0.5;
+				P(i, j) = p;
 			}
 		}
 		assert(epsilon >= 0.0 && epsilon <= 1.0);
@@ -66,8 +66,8 @@ public:
 	{
 		// use previous action
 		if (action >= 0) {
-			N(action, outcome)++;
-			Vector p = N.getRow(action);
+			Vector p = N.getRow(action) + outcome;
+            N.setRow(action, p);
 			P.setRow(action, p / p.Sum());
 		}
 
@@ -143,16 +143,16 @@ public:
 		// use previous action to update probabilities
 		if (action >= 0) {
             plays[action]++;
-			N(action, outcome)++;
-			Vector p = N.getRow(action);
+			Vector p = N.getRow(action) + outcome;
+            N.setRow(action, p);
 			P.setRow(action, p / p.Sum());
 		}
 
 		// choose next action
 		real u_max = - 1;
 		T++;
-        //delta = 0.02;
-		delta = 1.0 / (real) T;
+        delta = 0.1;
+		//delta = 1.0 / (real) T;
 		for (int i=0; i<n_actions; ++i) {
 			real epsilon = HoeffdingBound(n_outcomes, plays[i], delta);
 			Vector B = OptimisticTransition(P.getRow(i), payoff, epsilon);
