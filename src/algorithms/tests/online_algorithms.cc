@@ -100,6 +100,9 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --n_steps:      maximum number of total steps\n\
     --grid_size:    number of grid intervals for discretised environments\n\
     --maze_name:    (Gridworld) file name for the maze\n\
+    --pit_value:    value of falling in a pit (defaults to -1)\n\
+    --goal_value:   value of reaching a goal (defaults to 1)\n\
+    --step_value:   value at each time step (defaults to 0)\n\
     --epsilon:      use epsilon-greedy with randomness in [0,1]\n\
     --upper_bound:  use upper bound of sampled MDPs rather than lower bound\n\
     --reward_prior: {Beta, Normal, Fixed}\n\
@@ -114,9 +117,9 @@ int main (int argc, char** argv)
     real lambda = 0.9;
     real alpha = 0.1;
     real randomness = 0.01;
-    real pit_value = -10.0;
+    real pit_value = -1.0;
     real goal_value = 1.0;
-    real step_value = -0.1;
+    real step_value = 0.0;
     real epsilon = 0.01;
     uint n_runs = 10;
     uint n_episodes = 1000;
@@ -158,6 +161,9 @@ int main (int argc, char** argv)
                 {"episode_steps", required_argument, 0, 0}, //16
                 {"upper_bound", no_argument, 0, 0}, //17
                 {"reward_prior", required_argument, 0, 0}, //18
+                {"goal_value", required_argument, 0, 0}, //19
+                {"step_value", required_argument, 0, 0}, //20
+                {"pit_value", required_argument, 0, 0}, //21
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -204,6 +210,9 @@ int main (int argc, char** argv)
                         exit(-1);
                     }
                     break;
+                case 19: goal_value = atof(optarg); break;
+                case 20: step_value = atof(optarg); break;
+                case 21: pit_value = atof(optarg); break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
