@@ -9,8 +9,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef TD_MB_RT_H
-#define	TD_MB_RT_H
+#ifndef TD_NEO_H
+#define	TD_NEO_H
 
 
 #include <map>
@@ -20,6 +20,7 @@
 
 #include "limits.h"
 #include "real.h"
+#include "SmartAssert.h"
 
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
@@ -32,7 +33,7 @@
 using namespace std;
 
 
-class TdMbRt : public OnlineAlgorithm<int, int>
+class TdNeo : public OnlineAlgorithm<int, int>
 {
 
 protected:
@@ -54,13 +55,38 @@ protected:
 	Matrix N; ///< counts the number of trials
 	const real U; ///< Dirichlet parameter
 	map < pair<int, int>, vector<int> > TRIALS; ///< counts the number of outcomes
+	Matrix MEANS; ///< stores the mean value of every state-action pair
 
 	int state; ///< current state
 	int action; ///< current action
 
+private:
+
+	/// Get the probability from the Dirichlet distribution
+
+	double GetProbability(int i, int n)
+	{
+		make_assert(n != 0 && n >= i);
+		return ((double) (i + U)) / ((double) (n * (1 + U)));
+	}
+
+	/// Get the maximum value of Q(s, a) for state s
+
+	double QMax(int s)
+	{
+		double qMax = 0;
+		for(int a = 0; a < N_ACTIONS; ++a)
+		{
+			if(qMax < Q(s, a))
+			{
+				qMax = Q(s, a);
+			}
+		}
+		return qMax;
+	}
 
 public:
-	TdMbRt(const int n_states_,
+	TdNeo(const int n_states_,
 		const int n_actions_,
 		const real gamma_,
 		const real lambda_,
@@ -68,7 +94,7 @@ public:
 		VFExplorationPolicy * const exploration_policy_,
 		const real initial_value_ = 0.0,
 		const real baseline_ = 0.0);
-	virtual ~TdMbRt();
+	virtual ~TdNeo();
 
 	virtual void Reset();
 
@@ -89,4 +115,4 @@ public:
 };
 
 
-#endif	/* TD_MB_RT_H */
+#endif	/* TD_NEO_H */

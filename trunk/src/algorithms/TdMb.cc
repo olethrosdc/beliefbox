@@ -78,7 +78,7 @@ real TdMb::Observe(const int state, const int action, const real reward, const i
 	// o Compututation
 
 	// - Delta
-	const real DELTA = reward + GAMMA * Q(next_state, next_action) - Q(state, action);
+	const real DELTA = (reward - BASELINE) + GAMMA * Q(next_state, next_action) - Q(state, action);
 
 	// - Lambda
 	const pair<int, int> SA(state, action);
