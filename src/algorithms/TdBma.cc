@@ -133,16 +133,13 @@ real TdBma::Observe(const int state, const int action, const real reward, const 
 
 			// o Update μ, σ sufficient statistics (Knuth, 1998)
 			N(s, a) += 1;
-			delta = r - Means(s, a);
+			delta = rBma - Means(s, a);
 			Means(s, a) += delta / N(s, a);
-			meanSquared = delta * (r - Means(s, a));
+			meanSquared += delta * (rBma - Means(s, a));
 			if(N(s, a) > 1)
 			{
-				Variances(s, a) += meanSquared / N(s, a);
+				Variances(s, a) = meanSquared / N(s, a);
 				Deviations(s, a) = sqrt(Variances(s, a));
-			} else
-			{
-				Variances(s, a) += meanSquared;
 			}
 
 
