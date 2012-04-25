@@ -288,6 +288,11 @@ int main (int argc, char** argv)
     }
     for (uint run=0; run<n_runs; ++run) {
         std::cout << "Run: " << run << " - Creating environment.." << std::endl;
+
+        MountainCar continuous_mountain_car;
+        continuous_mountain_car.setRandomness(randomness);
+        continuous_mountain_car.Reset();
+
         DiscreteEnvironment* environment = NULL;
         if (!strcmp(environment_name, "RandomMDP")) { 
             environment = new RandomMDP (n_actions,
@@ -320,8 +325,6 @@ int main (int argc, char** argv)
                                                   demand,
                                                   margin);
         } else if (!strcmp(environment_name, "MountainCar")) { 
-            MountainCar continuous_mountain_car;
-            continuous_mountain_car.setRandomness(randomness);
             environment = 
                 new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,
                                                          grid_size);
@@ -654,18 +657,6 @@ Statistics EvaluateAlgorithm (int episode_steps,
 {
     std:: cout << "# evaluating..." << environment->Name() << std::endl;
     
-#if 1
-    const DiscreteMDP* mdp = environment->getMDP(); 
-    ValueIteration value_iteration(mdp, gamma);
-    if (!mdp) {
-        Serror("The environment must support the creation of an MDP\n");
-        exit(-1);
-    }
-    std:: cout << "(value iteration)" << std::endl;
-    value_iteration.ComputeStateActionValues(10e-6,-1);
-    int n_states = mdp->getNStates();
-    int n_actions = mdp->getNActions();
-#endif
 
     Statistics statistics;
     statistics.ep_stats.reserve(n_episodes); 
@@ -728,24 +719,39 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
     }
     printf(" %f %f # RUN_REWARD\n", total_reward, discounted_reward);
+
 #if 0
-    real sse = 0.0;
-    for (int i=0; i<n_states; i++) {
-        for (int a=0; a<n_actions; a++) {
-            real V =  value_iteration.getValue(i, a);
-            real hV = algorithm->getValue(i, a);
-            printf ("Q(%d, %d) = %f ~ %f\n", i, a, V, hV);
-            real err = V - hV;
-            sse += err*err;
+    const DiscreteMDP* mdp = environment->getMDP(); 
+    if (!mdp) {
+        Serror("The environment must support the creation of an MDP\n");
+        exit(-1);
+    } else {
+        ValueIteration value_iteration(mdp, gamma);
+        
+        std:: cout << "(value iteration)" << std::endl;
+        value_iteration.ComputeStateActionValues(10e-6,-1);
+        int n_states = mdp->getNStates();
+        int n_actions = mdp->getNActions();
+        real sse = 0.0;
+        for (int i=0; i<n_states; i++) {
+            for (int a=0; a<n_actions; a++) {
+                real V =  value_iteration.getValue(i, a);
+                real hV = algorithm->getValue(i, a);
+                printf ("Q(%d, %d) = %f ~ %f\n", i, a, V, hV);
+                real err = V - hV;
+                sse += err*err;
+            }
         }
+
+        //statistics.ep_stats[episode].mse += sse /((real) (n_states*n_actions));
+        
+        //std::cout << "REAL MODEL\n";
+        //mdp->ShowModel();
+		
+        delete mdp;
     }
-    //statistics.ep_stats[episode].mse += sse /((real) (n_states*n_actions));
 #endif
 
-    //std::cout << "REAL MODEL\n";
-    //mdp->ShowModel();
-		
-    delete mdp;
 	  
     if ((int) statistics.ep_stats.size() != n_episodes) {
         statistics.ep_stats.resize(statistics.ep_stats.size() - 1);
