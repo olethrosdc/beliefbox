@@ -29,6 +29,7 @@ public:
     {
         n_actions = environment.getNActions();
         n_states = grid.getNIntervals();
+        environment.Reset();
     }
 
     virtual ~DiscretisedEnvironment()
