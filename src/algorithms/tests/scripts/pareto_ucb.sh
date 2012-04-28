@@ -1,4 +1,11 @@
 #! /bin/bash
+#PBS -S /bin/bash
+# use one node with 8 cores:
+#PBS -lnodes=1:ppn=8
+# job requires at most 16 hours, 0 minutes
+#     and 0 seconds wallclock time
+#PBS -lwalltime=48:00:00
+# cd to the directory where the program is to be called:
 
 exc=$HOME/projects/beliefbox/src/algorithms/tests/bin/pareto_ucb
 actions=16
