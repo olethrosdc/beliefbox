@@ -273,6 +273,7 @@ int main (int argc, char** argv)
     srand(34987235);
     setRandomSeed(34987235);
     environment_rng->manualSeed(228240153);
+    rng->manualSeed(1361690241);
 
     std::cout << "Starting test program" << std::endl;
     
