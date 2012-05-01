@@ -20,26 +20,35 @@
 #include "real.h"
 #include <vector>
 
+/** A value iteration algorithm for discrete MDPs */
 class ValueIteration
 {
+protected:
+    const DiscreteMDP* mdp; ///< pointer to the MDP
 public:
-    const DiscreteMDP* mdp;
-    real gamma;
-    int n_states;
-    int n_actions;
-    Vector V;
-    Vector dV;
-    Vector pV;
-    Matrix Q;
-    Matrix dQ;
-    Matrix pQ;
+    real gamma; ///< discount factor
+    int n_states; ///< number of states
+    int n_actions; ///< number of actions
+    Vector V; ///< state values
+    Vector dV; ///< difference between state values
+    Vector pV; ///< previous statate value
+    Matrix Q; ///< state-action value
+    Matrix dQ; ///< state-action value difference
+    Matrix pQ; ///< previous state-action values
     real Delta;
     real baseline;
     ValueIteration(const DiscreteMDP* mdp, real gamma, real baseline=0.0);
     ~ValueIteration();
     void Reset();
-    void ComputeStateValues(real threshold, int max_iter=-1);
+    inline void ComputeStateValues(real threshold, int max_iter=-1)
+    {
+        ComputeStateValuesElimination(threshold, max_iter);
+    }
+    void ComputeStateValuesStandard(real threshold, int max_iter=-1);
+    void ComputeStateValuesAsynchronous(real threshold, int max_iter=-1);
+    void ComputeStateValuesElimination(real threshold, int max_iter=-1);
     void ComputeStateActionValues(real threshold, int max_iter=-1);
+    /// Set the MDP to something else
     inline void setMDP(const DiscreteMDP* mdp_)
     {
         mdp = mdp_;

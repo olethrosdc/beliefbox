@@ -68,7 +68,7 @@ int ModelCollectionRL::Act(real reward, int next_state)
         
         mdp_vector[i] = M[i]->getMeanMDP();
 
-        vi_vector[i]->mdp = mdp_vector[i];
+        vi_vector[i]->setMDP(mdp_vector[i]);
         vi_vector[i]->ComputeStateActionValues(0.00, 1);
         for (int a=0; a<n_actions; a++) {
             tmpQ[a] += P[i] * value_iteration->getValue(next_state, a);

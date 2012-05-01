@@ -48,7 +48,7 @@ void ValueIteration::Reset()
         pV(s) = 0.0;
         for (int a=0; a<n_actions; a++) {
             Q(s, a) = 0.0;
-            dQ(s, a) = 0.0;
+            dQ(s, a) = 1.0;
             pQ(s, a) = 0.0;
         }
     }
@@ -64,7 +64,114 @@ ValueIteration::~ValueIteration()
 	or when the given number of max_iter iterations is reached. Setting
 	max_iter to -1 means there is no limit to the number of iterations.
 */
-void ValueIteration::ComputeStateValues(real threshold, int max_iter)
+void ValueIteration::ComputeStateValuesStandard(real threshold, int max_iter)
+{
+    int n_iter = 0;
+    do {
+        Delta = 0.0;
+        pV = V;
+        for (int s=0; s<n_states; s++) {
+            for (int a=0; a<n_actions; a++) {
+                real Q_sa = 0.0;
+                const DiscreteStateSet& next = mdp->getNextStates(s, a);
+                for (DiscreteStateSet::iterator i=next.begin();
+                     i!=next.end();
+                     ++i) {
+                    int s2 = *i;
+                    real P = mdp->getTransitionProbability(s, a, s2);
+                    real R = mdp->getExpectedReward(s, a) - baseline;
+                    Q_sa += P * (R + gamma * pV(s2));
+                }
+                Q(s, a) = Q_sa;
+            }
+            V(s) = Max(Q.getRow(s));
+            Delta += fabs(V(s) - pV(s));
+        }
+        
+        if (max_iter > 0) {
+            max_iter--;
+        }
+        n_iter++;
+    } while(Delta >= threshold && max_iter != 0);
+    //printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
+}
+
+/** Compute state values using value iteration with action elimination.
+
+	The process ends either when the error is below the given threshold,
+	or when the given number of max_iter iterations is reached. Setting
+	max_iter to -1 means there is no limit to the number of iterations.
+
+    The procedure is based on Corollary 6.7.5. in Puterman's "Markov
+    Decision Proceses".
+
+    For each iterate, we calculate the gain for state \f$s\f$:
+    \f[
+    B(s) = \max_a Q(s,a) - V(s) = V'(s) - V(s).
+    \f]
+    If, for some state-action pair \f$s,a\f$, it holds that:
+    \f[
+    \frac{\gamma}{1 - \gamma} \span(B) 
+    <
+    V'(s) - Q(s,a)
+    \f]
+    then action \f$a\f$ is sub-optimal for state \f$s\f$.
+*/
+void ValueIteration::ComputeStateValuesElimination(real threshold, int max_iter)
+{
+    int n_iter = 0;
+    do {
+        Delta = 0.0;
+        pV = V;
+        pQ = Q;
+        for (int s=0; s<n_states; s++) {
+            for (int a=0; a<n_actions; a++) {
+                if (dQ(s,a) < 0) continue;
+                real Q_sa = 0.0;
+                const DiscreteStateSet& next = mdp->getNextStates(s, a);
+                for (DiscreteStateSet::iterator i=next.begin();
+                     i!=next.end();
+                     ++i) {
+                    int s2 = *i;
+                    real P = mdp->getTransitionProbability(s, a, s2);
+                    real R = mdp->getExpectedReward(s, a) - baseline;
+                    Q_sa += P * (R + gamma * pV(s2));
+                }
+                Q(s, a) = Q_sa;
+            }
+            V(s) = Max(Q.getRow(s));
+            dV(s) = V(s) - pV(s);
+            Delta += fabs(dV(s));
+        }
+        
+        real scale = Span(dV) * gamma / (1.0 - gamma);
+        for (int s=0; s<n_states; s++) {
+            for (int a=0; a<n_actions; a++) {
+                if (dQ(s,a) < 0) continue;
+                dQ(s,a) = scale  + Q(s,a) - V(s);
+                //if (dQ(s,a) < 0) {
+                //printf ("State %d: eliminated action %d\n", s, a);
+                //}
+            }
+        }
+        if (max_iter > 0) {
+            max_iter--;
+        }
+        n_iter++;
+    } while(Delta > threshold && max_iter != 0);
+    //printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
+}
+
+
+/** Compute state values using asynchronous value iteration.
+
+	The process ends either when the error is below the given threshold,
+	or when the given number of max_iter iterations is reached. Setting
+	max_iter to -1 means there is no limit to the number of iterations.
+
+    This version updates the current values immediately
+*/
+void ValueIteration::ComputeStateValuesAsynchronous(real threshold, int max_iter)
 {
     int n_iter = 0;
     do {
