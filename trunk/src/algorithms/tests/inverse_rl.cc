@@ -332,7 +332,7 @@ int main (int argc, char** argv)
         } else if (!strcmp(environment_name, "Gridworld")) { 
             environment = new Gridworld(maze_name, randomness);
         } else if (!strcmp(environment_name, "ContextBandit")) { 
-            environment = new ContextBandit(n_actions, 3, 4, rng);
+            environment = new ContextBandit(n_states, n_actions, rng);
         } else if (!strcmp(environment_name, "OneDMaze")) { 
             environment = new OneDMaze(n_states, rng);
         } else if (!strcmp(environment_name, "MountainCar")) { 
