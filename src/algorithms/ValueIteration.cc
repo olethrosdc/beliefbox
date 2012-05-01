@@ -214,6 +214,11 @@ void ValueIteration::ComputeStateValuesAsynchronous(real threshold, int max_iter
 */
 void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 {
+    ComputeStateValuesElimination(threshold, max_iter);
+}
+#if 0
+void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
+{
     int n_iter = 0;
     do {
         Delta = 0.0;
@@ -245,7 +250,7 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
     } while(Delta >= threshold && max_iter != 0);
     //printf("#ValueIteration::ComputeStateActionValues Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
-
+#endif
 /// Create the greedy policy with respect to the calculated value function.
 FixedDiscretePolicy* ValueIteration::getPolicy()
 {
