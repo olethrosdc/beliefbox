@@ -26,7 +26,7 @@ int main (void)
 {
     int period = 30;
     int max_items = 10;
-    real gamma = 0.95;
+    real gamma = 0.99;
     real demand = 0.1;
     real random = 0.1;
     real pit = -100.0;
@@ -37,7 +37,7 @@ int main (void)
     //InventoryManagement inventory_management (period, max_items, demand, margin);
     //const DiscreteMDP* mdp = inventory_management.getMDP();
 
-    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze0a", random, pit, goal, step);
+    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze9", random, pit, goal, step);
     const DiscreteMDP* mdp = grid_world.getMDP();
     
     //RandomMDP random_mdp(32, 32, 0.001, 0.1, 0, 1, &rng, false);
