@@ -26,10 +26,17 @@ Gridworld::Gridworld(const char* fname,
        random(random_), pit_value(pit_), goal_value(goal_), step_value(step_)
 {
     n_actions = 4;
-
+    
     CalculateDimensions(fname);
     n_states = width * height + 1; // plus a terminal state
     terminal_state = n_states - 1;
+
+    logmsg("Gridworld, states: %d, random: %f, pit: %f, goal: %f, step: %f\n",
+           n_states,
+           random,
+           pit_value,
+           goal_value,
+           step_value);
     
     std::ifstream ifs(fname, std::ifstream::in);
     if (!ifs.is_open()) {
@@ -140,17 +147,17 @@ DiscreteMDP* Gridworld::getMDP()  const
         }
     }
 
-#if 0
+
     // then all the other states
-    // Step 1: clear
+#if 0
+    // Step 1: initialise them all to be self-looping
     for (uint s=0; s<n_states -1; s++) {   
         for (uint a=0; a<n_actions; ++a) {
-            for (uint s2=0; s2<terminal_state; s2++) {
-                mdp->setTransitionProbability (s, a, s2, 0.0);
-            }
+            mdp->setTransitionProbability (s, a, s, 1.0);
         }
     }
 #endif
+
     // Step 2: fill
     for (uint x=0; x<width; ++x) {
         for (uint y=0; y<height; ++y) {
@@ -170,15 +177,17 @@ DiscreteMDP* Gridworld::getMDP()  const
             } else if (element == INVALID) {
                 std::cerr << "Invalid element\n";
                 exit(-1);
-            }
+            } 
 
             int num = 4;
+
             // the hardest part is checking walls
             // check whether movement in a particular direction is possible
             bool Nd = true; 
             bool Sd = true;
             bool Wd = true;
             bool Ed = true;
+
             // Collect the types of states of all different directions
             int Es = getState(x + 1, y);
             int Ws = getState(x - 1, y);
@@ -207,7 +216,7 @@ DiscreteMDP* Gridworld::getMDP()  const
             for (uint a=0; a<n_actions; ++a) {
                 if (Ed) {
                     mdp->setTransitionProbability (s, a, Es, theta);
-                }
+                } 
                 if (Wd) {
                     mdp->setTransitionProbability (s, a, Ws, theta);
                 }
@@ -222,24 +231,32 @@ DiscreteMDP* Gridworld::getMDP()  const
                     if (Nd) {
                         mdp->setTransitionProbability (s, a, Ns, 1 - random + theta);
                         //printf("a: %d: %d -> %d\n", a, s, Ns);
+                    } else {
+                        mdp->setTransitionProbability (s, a, s, 1 - random + theta);
                     }
                     break;
                 case SOUTH:
                     if (Sd) {
                         mdp->setTransitionProbability (s, a, Ss, 1 - random + theta);
                         //printf("a: %d: %d -> %d\n", a, s, Ss);
+                    } else {
+                        mdp->setTransitionProbability (s, a, s, 1 - random + theta);
                     }
                     break;
                 case EAST:
                     if (Ed) {
                         mdp->setTransitionProbability (s, a, Es, 1 - random + theta);
                         //printf("a: %d: %d -> %d\n", a, s, Es);
+                    } else {
+                        mdp->setTransitionProbability (s, a, s, 1 - random + theta);
                     }
                     break;
                 case WEST:
                     if (Wd) {
                         mdp->setTransitionProbability (s, a, Ws, 1 - random + theta);
                         //printf("a: %d: %d -> %d\n", a, s, Ws);
+                    } else {
+                        mdp->setTransitionProbability (s, a, s, 1 - random + theta);
                     }
                     break;
                 }
@@ -267,6 +284,7 @@ DiscreteMDP* Gridworld::getMDP()  const
         }
     }
 
+    //mdp->ShowModel();
     mdp->Check();
     return mdp;
 }

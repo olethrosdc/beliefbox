@@ -28,21 +28,21 @@ int main (void)
     int max_items = 10;
     real gamma = 0.95;
     real demand = 0.1;
-    real random = 0.0;
+    real random = 0.1;
     real pit = -100.0;
-    real goal = 0.0;
+    real goal = 1.0;
     real step = -0.1;
 	real margin = 1.1;
     MersenneTwisterRNG rng;
     //InventoryManagement inventory_management (period, max_items, demand, margin);
     //const DiscreteMDP* mdp = inventory_management.getMDP();
 
-    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze3", random, pit, goal, step);
+    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze0a", random, pit, goal, step);
     const DiscreteMDP* mdp = grid_world.getMDP();
     
-    RandomMDP random_mdp(32, 32, 0.001, 0.1, 0, 1, &rng, false);
-    const DiscreteMDP* mdp = random_mdp.getMDP();
-
+    //RandomMDP random_mdp(32, 32, 0.001, 0.1, 0, 1, &rng, false);
+    //const DiscreteMDP* mdp = random_mdp.getMDP();
+    
     //DiscreteChain chain(5);
     //const DiscreteMDP* mdp = chain.getMDP();
 
