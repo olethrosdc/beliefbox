@@ -254,6 +254,7 @@ bool DiscreteMDP::Check() const
             real sum = 0.0;
             for (int s2=0; s2<n_states; s2++) {
                 real p = getTransitionProbability(s, a, s2);
+                //printf ("%d %d : - %f -> %d\n", s, a, p, s2);
                 sum += p;
             }
             assert(fabs(sum - 1.0f) <= threshold);//(s)(a)(sum);
@@ -263,7 +264,7 @@ bool DiscreteMDP::Check() const
             }
         }
     }
-    dbgmsg("MDP Check, %d states, %d actions: %d\n", n_states, n_actions, flag);
+    logmsg("MDP Check, %d states, %d actions: %d\n", n_states, n_actions, flag);
     return flag;
 }
 #endif

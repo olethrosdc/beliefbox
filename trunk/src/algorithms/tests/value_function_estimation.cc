@@ -28,6 +28,7 @@
 #include "DiscreteChain.h"
 //#include "RandomNumberGenerator.h"
 #include "RandomSourceRNG.h"
+#include "MersenneTwister.h"
 /** 
     \file value_function_estimation.cc
 	
@@ -65,7 +66,7 @@ int main (int argc, char** argv)
     int n_steps = 1000;
 
     if (argc != 6) {
-		std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness\n";
+		std::cerr << "Usage: value_function_estimation n_states n_actions gamma lambda randomness\n";
 		return -1;
     }
     n_states = atoi(argv[1]);
@@ -91,8 +92,9 @@ int main (int argc, char** argv)
     //const DiscreteMDP* mdp = environment->getMDP();
     //assert(n_states == mdp->getNStates());
     //assert(n_actions == mdp->getNActions());
-	RandomSourceRNG rng(false);
-    
+	//RandomSourceRNG rng(false);
+	MersenneTwisterRNG rng;
+
     std::cout << "Starting evaluation" << std::endl;
 
     // remember to use n_runs
@@ -130,7 +132,8 @@ int main (int argc, char** argv)
 										 n_actions,
 										 gamma,
 										 epsilon,
-										 mdp_model);
+										 mdp_model,
+                                         &rng);
 
 		}
 
