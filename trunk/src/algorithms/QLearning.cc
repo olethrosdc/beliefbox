@@ -63,10 +63,13 @@ void QLearning::Reset()
 }
 
 /** Observe the current action and resulting next state and reward.
-	
-	@param action \f$a_t\f$
+
+    We only need the next reward, state, and action pair, since the previous 
+    state and action are saved by the algorithm.
+
+	@param reward \f$r_{t+1}\f$	
 	@param next_state \f$s_{t+1}\f$
-	@param reward \f$r_{t+1}\f$
+	@param next_action \f$a_{t+1}\f$
  */
 real QLearning::Observe (real reward, int next_state, int next_action)
 {
