@@ -35,6 +35,7 @@ ModelBasedRL::ModelBasedRL(int n_states_,
 }
 ModelBasedRL::~ModelBasedRL()
 {
+    //mdp->ShowModel();
 	delete mdp;
     delete value_iteration;
 }
@@ -81,11 +82,12 @@ int ModelBasedRL::Act(real reward, int next_state)
         
         // update values
         value_iteration->setMDP(mdp);
-        value_iteration->ComputeStateValues(0,1);
+        value_iteration->ComputeStateValues(1e-6,1);
         for (int i=0; i<n_actions; i++) {
             tmpQ[i] = value_iteration->getValue(next_state, i);
         }
     } else {
+        exit(-1);
         for (int i=0; i<n_actions; i++) {
             tmpQ[i] = model->getExpectedReward(state, i);
         } 
