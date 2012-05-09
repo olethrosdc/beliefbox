@@ -107,7 +107,7 @@ int SampleBasedRL::Act(real reward, int next_state)
     if (T >= next_update) {    
         //printf("# mean model\n");
         //model->ShowModel();
-        //update_interval += T;//(int) (ceil)(1.01*(double) T);
+        update_interval += 1;//(int) (ceil)(1.01*(double) T);
         next_update = T + update_interval;
         for (int i=0; i<max_samples; ++i) {
             delete mdp_list[i];
@@ -116,11 +116,11 @@ int SampleBasedRL::Act(real reward, int next_state)
         if (use_upper_bound) {
             for (int i=0; i<max_samples; ++i) {
                 value_iteration[i]->setMDP(mdp_list[i]);
-                value_iteration[i]->ComputeStateValues(0.001, 1000);
+                value_iteration[i]->ComputeStateValues(1e-6, 1000);
             }
         } else {
             multi_value_iteration->setMDPList(mdp_list);
-            multi_value_iteration->ComputeStateValues(0.001, 1000);
+            multi_value_iteration->ComputeStateValues(1e-6, 1000);
         }
     }
 
@@ -129,16 +129,18 @@ int SampleBasedRL::Act(real reward, int next_state)
         for (int j=0; j<max_samples; ++j) {
             value_iteration[j]->setMDP(mdp_list[j]);
             value_iteration[j]->ComputeStateValues(0, 1);
-            for (int i=0; i<n_actions; i++) {
-                tmpQ[i] = UpperBound(next_state, i);
-            }
         }
+        for (int i=0; i<n_actions; i++) {
+            tmpQ[i] = UpperBound(next_state, i);
+        }
+
     } else {
         multi_value_iteration->setMDPList(mdp_list);
         multi_value_iteration->ComputeStateValues(0, 1);
         for (int i=0; i<n_actions; i++) {
             tmpQ[i] = LowerBound(next_state, i);
         }
+
     }
 
     int next_action;

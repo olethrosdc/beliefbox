@@ -81,6 +81,7 @@ public:
     {
         return &Q;
     }
+    void ClearTraces();
 };
 
 #endif
