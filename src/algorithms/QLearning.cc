@@ -14,10 +14,10 @@
 
 /** Initialise Q-learning.
 	 
-	 As a side-effect, the exploration_policy is initialised with the Q matrix
-	 of this Q-learning instance. Thus, the same exploration policy pointer
-	 cannot be shared among multiple QLearning instances.
- */
+    As a side-effect, the exploration_policy is initialised with the Q matrix
+    of this Q-learning instance. Thus, the same exploration policy pointer
+    cannot be shared among multiple QLearning instances.
+*/
 QLearning::QLearning(int n_states_,
                      int n_actions_,
                      real gamma_,
@@ -54,6 +54,11 @@ void QLearning::Reset()
 {
     state = -1;
     action = -1;
+    ClearTraces();
+}
+
+void QLearning::ClearTraces()
+{
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             el(s,a) = 0.0;
@@ -70,7 +75,7 @@ void QLearning::Reset()
 	@param reward \f$r_{t+1}\f$	
 	@param next_state \f$s_{t+1}\f$
 	@param next_action \f$a_{t+1}\f$
- */
+*/
 real QLearning::Observe (real reward, int next_state, int next_action)
 {
     // select maximising action for the next state
@@ -85,21 +90,32 @@ real QLearning::Observe (real reward, int next_state, int next_action)
 
     real n_R = (reward - baseline) +  gamma*Qa_max; // partially observed return
     real TD = 0.0;
+    real trace_decay = gamma * lambda;
     if (state >= 0 && action >= 0) {
         real p_R = Q(state, action); // predicted return
         TD = n_R - p_R;
-        
-        for (int i=0; i<n_states; ++i) {
-            for (int j=0; j<n_actions; ++j ) {
-                el(i,j) *= lambda;
-            }
-        }
+        real delta = alpha * TD;
+
         el(state, action) = 1;
+
         for (int i=0; i<n_states; ++i) {
             for (int j=0; j<n_actions; ++j ) {
-                Q(i, j) += el(i, j)*alpha*TD;	    
+                Q(i, j) += el(i, j) * delta;	    
             }
         }
+        
+        if (a_max == next_action) {
+            for (int i=0; i<n_states; ++i) {
+                for (int j=0; j<n_actions; ++j ) {
+                    el(i,j) *= trace_decay;
+                }
+            }
+        } else {
+            ClearTraces();
+        }
+
+
+
     }
     state = next_state; // fall back next state;
     action = next_action;
