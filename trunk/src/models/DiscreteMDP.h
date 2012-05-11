@@ -32,7 +32,7 @@ typedef std::set<int>& DiscreteStateSetRef;
 template<>
 class MDP<int, int> {
 protected:
-    int state;
+    int state; ///< current state;
     int n_states; ///< number of states (or dimensionality of state space)
     int n_actions; ///< number of actions (or dimensionality of action space)
     Matrix P; ///< transition distribution
@@ -121,18 +121,22 @@ public:
     real CalculateDiameter() const;
 	inline void setRewardDistribution(int s, int a, Distribution* reward)
 	{
+        assert(s>=0 && s<n_states);
 		reward_distribution.setRewardDistribution(s, a, reward);
 	}
 	inline void addRewardDistribution(int s, int a, Distribution* reward)
 	{
+        assert(s>=0 && s<n_states);
 		reward_distribution.addRewardDistribution(s, a, reward);
 	}
 	inline void addFixedReward(int s, int a, real reward)
 	{
+        assert(s>=0 && s<n_states);
 		reward_distribution.addFixedReward(s, a, reward);
 	}
 	inline void setFixedReward(int s, int a, real reward)
 	{
+        assert(s>=0 && s<n_states);
 		reward_distribution.setFixedReward(s, a, reward);
 	}
 };

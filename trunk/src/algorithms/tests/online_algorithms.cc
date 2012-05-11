@@ -88,7 +88,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
     --algorithm:    {QLearning, Model, Sarsa, Sampling, TdBma}\n\
-    --environment:  {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim}\n\
+    --environment:  {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
     --gamma:        reward discounting in [0,1]\n\
@@ -317,8 +317,8 @@ int main (int argc, char** argv)
         } else if (!strcmp(environment_name, "RiverSwim")) { 
             environment = new RiverSwim();
         } else if (!strcmp(environment_name, "Inventory")) { 
-            int period = 30;
-            int max_items = 100;
+            int period = 2;
+            int max_items = 2;
             real demand = 0.1;
             real margin = 1.1;
             environment = new InventoryManagement(period,

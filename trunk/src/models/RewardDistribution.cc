@@ -70,9 +70,9 @@ DiscreteSpaceRewardDistribution::DiscreteSpaceRewardDistribution(int n_states_, 
     // empty
 	for (uint i=0; i<R.size(); ++i) {
 		R[i] = NULL;
+        ER[i] = 0.0;
 	}
-	ER.Clear();
-    //dbgmsg ("Reward distribution: %d %d %d %d\n", n_states, n_actions, R.size(), ER.Size());
+    dbgmsg ("Reward distribution: %d %d %d %d\n", n_states, n_actions, R.size(), ER.Size());
 }
 
 /// Copy constructor. Do not actually copy anything!

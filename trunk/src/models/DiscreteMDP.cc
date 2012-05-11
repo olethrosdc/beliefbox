@@ -28,7 +28,7 @@ DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
 	  reward_distribution(n_states, n_actions)
 {   
     next_states.resize(N);
-    
+
     //real p = 1.0 / (real) n_states;
     if (initial_transitions) {
         for (int i=0; i<N; i++) {
@@ -46,6 +46,8 @@ DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
             }
         }
     }
+
+    state = 0;
 
 #if 0    
     ER.resize(N);
@@ -123,6 +125,8 @@ DiscreteMDP::MDP (const std::vector<const MDP<int,int>*> &mdp_list,
             setFixedReward(i, a, r_ia);
         }
     }    
+
+    state = 0;
 }
 
 DiscreteMDP::~MDP()

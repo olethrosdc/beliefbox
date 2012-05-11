@@ -73,14 +73,14 @@ int main (void)
 
 #if 1
     
-   for (int iter=0; iter < 100; iter++) {
+   for (int iter=0; iter < 2; iter++) {
        printf ("ITER: %d, V = ", iter);
-       value_iteration.ComputeStateValues(0.00, 1000);
+       value_iteration.ComputeStateValues(0.0, 1);
        FixedDiscretePolicy* vi_policy = value_iteration.getPolicy();
        policy_evaluation.SetPolicy(vi_policy);
-       policy_evaluation.ComputeStateValues(0.0, 1000);
+       policy_evaluation.ComputeStateValues(0.0, 1);
        for (int s=0; s<mdp->getNStates(); s++) {
-           printf ("%.1f (%.1f)",
+           printf ("%.1f (%.1f) ",
                    value_iteration.getValue(s),
                    policy_evaluation.getValue(s));
        }
