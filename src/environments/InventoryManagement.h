@@ -48,11 +48,11 @@ public:
         state = local_mdp->getState();
         return true;
     }
-    
-    /// Return a full MDP model of the environment. 
-    /// This may not be possible for some environments
-    /// The MDP is required to be freed by the user!
- 
+    virtual const char* Name()
+    {
+        return "Inventory management";
+    }
+
 };
 
 #endif

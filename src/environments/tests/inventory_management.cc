@@ -44,6 +44,7 @@ int main(void)
     InventoryManagement inventory_management_A(15, 15, 0.1, 1.1);
     InventoryManagement inventory_management_B(15, 15, 0.2, 1.1);
 
+#if 0
     std::vector<const DiscreteMDP*> mdp_list;
     std::vector<Matrix> Q;
     mdp_list.push_back(inventory_management_A.getMDP());
@@ -51,7 +52,7 @@ int main(void)
     Q.push_back(GetQValues(mdp_list[0], gamma));
     Q.push_back(GetQValues(mdp_list[1], gamma));
 
-    for (real weight = 0; weight<=1; weight+=0.01) {
+    for (real weight = 0; weight<=1; weight+=0.1) {
         Vector w(2);
         w(0) = weight;
         w(1) = 1 - weight;
@@ -60,5 +61,20 @@ int main(void)
                 FrobeniusNorm(Qw - Q[0]),
                 FrobeniusNorm(Qw - Q[1]));
     }
+#endif
+
+#if 1
+    int T = 1000;
+    inventory_management_A.Reset();
+
+    int n_actions = inventory_management_A.getNActions();
+    for (int t=0; t<T; ++t) {
+        int state = inventory_management_A.getState();
+        //int reward = inventory_management_A.getReward();
+        int a = rand()%n_actions;
+        inventory_management_A.Act(a);
+        
+    }
+#endif
     return 0;
 }

@@ -31,16 +31,18 @@ InventoryManagement::InventoryManagement(int period_,
     assert (demand >= 0 && demand <= 1);
     assert (period > 0);
     local_mdp = getMDP();
+    local_mdp->Check();
+    Reset();
 }
 
 DiscreteMDP* InventoryManagement::getMDP() const
 {
     DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL);
-
-    for (int s=0; s<n_states; s++) {
-        for (int a=0; a<n_actions; a++) {
+#if 0
+    for (uint s=0; s<n_states; s++) {
+        for (uint a=0; a<n_actions; a++) {
             int order = a;
-            if (s+a > max_items) {
+            if (s+a > (uint) max_items) {
                 order = max_items - s;
             }
             real expected_reward = - order; // add the order costs first
@@ -48,6 +50,9 @@ DiscreteMDP* InventoryManagement::getMDP() const
             // Calculate the transition probabilities
             int current_stock = s + order;
             real P_empty = 1;
+            for (int s2 = 0; s2<n_states; ++s2) {
+                mdp->setTransitionProbability(s, a, s2, 0.0);
+            }
             for (int d=0; d<current_stock; ++d) {
                 int s2 = current_stock - d;
                 real P =  binomial(period, d)*pow(demand, d)*pow(1-demand, period - d);
@@ -63,7 +68,24 @@ DiscreteMDP* InventoryManagement::getMDP() const
             mdp->setFixedReward(s, a, expected_reward);
         }
     }
+#else
+    for (uint s=0; s<n_states; s++) {
+        for (uint a=0; a<n_actions; a++) {
+            mdp->setFixedReward(s, a, (real) s + 0.1 * (real) a);
+            Vector p(n_states);
+            for (int s2 = 0; s2<n_states; ++s2) {
+                p(s2) = urandom();
+            }
+            p /= p.Sum();
+            for (int s2 = 0; s2<n_states; ++s2) {
+                mdp->setTransitionProbability(s, a, s2, p(s2));
+            }
+        }
+        
+    }
+#endif
     mdp->Check();
+    mdp->ShowModel();
     return mdp;
 }
 
