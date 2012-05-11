@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+
 /// The inventory management task.
 /// Described in Puterman, Chapter 3.
 class InventoryManagement : public DiscreteEnvironment {
