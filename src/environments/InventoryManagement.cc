@@ -23,8 +23,8 @@ InventoryManagement::InventoryManagement(int period_,
                                          real margin_)
     : period(period_), max_items(max_items_), demand(demand_), margin(margin_)
 {
-    int n_actions = max_items + 1;
-    int n_states = max_items + 1;
+    n_actions = max_items + 1;
+    n_states = max_items + 1;
     
     assert (max_items > 1);
     assert (margin >= 1);
@@ -64,6 +64,7 @@ DiscreteMDP* InventoryManagement::getMDP() const
         }
     }
     mdp->Check();
+    return mdp;
 }
 
 InventoryManagement::~InventoryManagement()
