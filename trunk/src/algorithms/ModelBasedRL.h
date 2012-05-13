@@ -47,6 +47,7 @@ protected:
     std::vector<real> tmpQ;
 	RandomNumberGenerator* rng;
     bool use_value_iteration;
+    int total_steps;
 public:
     ModelBasedRL(int n_states_,
                  int n_actions_,

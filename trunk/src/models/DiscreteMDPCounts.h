@@ -37,8 +37,8 @@ public:
         FIXED
     };
 protected:
-    std::vector<DirichletDistribution> P; ///< Vector of Dirichlet distributions on P
-    //std::vector<DirichletFiniteOutcomes> P; ///< Vector of Dirichlet distributions on P
+    //std::vector<DirichletDistribution> P; ///< Vector of Dirichlet distributions on P
+    std::vector<DirichletFiniteOutcomes> P; ///< Vector of Dirichlet distributions on P
     std::vector<ConjugatePrior*> ER; ///< Vector of estimators on ER.
     //std::vector<BetaDistribution> ER; ///< Vector of estimators on ER.
     //std::vector<NormalUnknownMeanPrecision> ER; ///< Vector of estimators on ER.

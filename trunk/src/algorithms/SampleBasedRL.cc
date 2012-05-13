@@ -144,14 +144,17 @@ int SampleBasedRL::Act(real reward, int next_state)
     }
 
     int next_action;
+    real epsilon_t = epsilon / (sqrt((real) T));
+
     // choose action
-    if (urandom()<epsilon) {
+    if (urandom()<epsilon_t) {
         next_action = rng->discrete_uniform(n_actions);
     } else {
         next_action = ArgMax(tmpQ);
     }
     action = next_action;
-
+    //printf("%f %d #epsilon\n", epsilon_t, action);
+    
     return action;
 }
 

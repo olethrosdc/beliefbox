@@ -25,7 +25,8 @@ ModelBasedRL::ModelBasedRL(int n_states_,
       epsilon(epsilon_),
       model(model_),
 	  rng(rng_),
-      use_value_iteration(use_value_iteration_)
+      use_value_iteration(use_value_iteration_),
+      total_steps(0)
 {
     state = -1;
     mdp = model->CreateMDP();
@@ -60,6 +61,7 @@ real ModelBasedRL::Observe (real reward, int next_state, int next_action)
     }
     state = next_state;
     action = next_action;
+    total_steps++;
     return 0.0;
 }
 /// Get an action using the current exploration policy.
@@ -95,15 +97,20 @@ int ModelBasedRL::Act(real reward, int next_state)
     
     // choose action
     int next_action;
-    if (rng->uniform()<epsilon) {
+    real epsilon_t = epsilon / (1.0+ sqrt((real) total_steps));
+    total_steps++;
+    if (rng->uniform()<epsilon_t) {
         next_action = rng->discrete_uniform(n_actions);
         //printf ("\n");
+        //printf ("r ");
     } else {
         next_action = ArgMax(tmpQ);
+        //printf ("m ");
         //printf (" * A = %d\n", next_action);
     }
     action = next_action;
 
+    //printf("%d %f %d #epsilon\n", state, epsilon_t, action);
     return action;
 }
 
