@@ -23,30 +23,28 @@ DirichletDistribution::DirichletDistribution()
 /// Create a Dirichlet with uniform parameters
 DirichletDistribution::DirichletDistribution(int n, real p)
 {
-    this->n = n;
-    a.Resize(n);
-    for (int i=0; i<n; ++i) {
-        a(i) = p;
-    }
-}
+    resize(n, p);}
 
 /// Initialise parameters from a vector
-DirichletDistribution::DirichletDistribution(const Vector& x) : n(x.Size()), a(x)
+DirichletDistribution::DirichletDistribution(const Vector& x) : n(x.Size()), alpha(x)
 {
     for (int i=0; i<n; ++i) {
-        assert(a(i) >= 0);
+        assert(alpha(i) >= 0);
     }
 }
 
+/// Resize the dirichlet distribution, setting all parameters to p.
 void DirichletDistribution::resize(int n, real p)
 {
     this->n = n;
-    a.Resize(n);
+    alpha.Resize(n);
     for (int i=0; i<n; ++i) {
-        a(i) = p;
+        alpha(i) = p;
     }
 }
 
+
+/// Destructor
 DirichletDistribution::~DirichletDistribution()
 {
 }
@@ -59,12 +57,13 @@ Vector DirichletDistribution::generate() const
     return x;
 }
 
+/// Generate a multinomial vector in-place
 void DirichletDistribution::generate(Vector& y) const
 {
         //Vector y(n);
     real sum = 0.0;
     for (int i=0; i<n; i++) {
-        y(i) = gengam(1.0, a(i));
+        y(i) = gengam(1.0, alpha(i));
         sum += y(i);
     }
     real invsum = 1.0 / sum;
@@ -101,32 +100,34 @@ real DirichletDistribution::log_pdf(const Vector& x) const
             return 0.0;
         }
         sum += xi;
-        log_prod += log(xi) * a(i);
+        log_prod += log(xi) * alpha(i);
     }
     if (fabs(sum-1.0f)>0.001) {
         Swarning ("Vector x not a distribution apparently: sum=%f.  Returning 0.\n", sum);
         return 0.0;
     }
-    return log_prod - logBeta(a);
+    return log_prod - logBeta(alpha);
 }
 
-
+/// When there is only one observation, give it directly.
 real DirichletDistribution::Observe(int i)
 {
-    real p = a(i) / a.Sum();
-    a(i) += 1.0;
+    real p = alpha(i) / alpha.Sum();
+    alpha(i) += 1.0;
     return p;
 }
 
+/// Return the parameters
 Vector DirichletDistribution::GetParameters() const
 {
-	return a;
+	return alpha;
 }
 
-Vector DirichletDistribution::GetMean() const
+/// Return the marginal probabilities
+Vector DirichletDistribution::getMarginal() const
 {
-    Vector p = a;
-    real S = a.Sum();
+    Vector p = alpha;
+    real S = alpha.Sum();
     if (S > 0) {
         p /= S;
     } else {
@@ -139,3 +140,4 @@ Vector DirichletDistribution::GetMean() const
     assert(fabs(p.Sum()-1.0) < 0.0001);
 	return p;
 }
+

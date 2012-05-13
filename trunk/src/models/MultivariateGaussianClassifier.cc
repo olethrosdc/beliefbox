@@ -49,7 +49,7 @@ Vector& MultivariateGaussianClassifier::Output(const Vector& x)
             class_distribution[i]->Show();
         }
     }
-    output += log(prior.GetMean());
+    output += log(prior.getMarginal());
     real S = output.logSum();
     output -= S;
     for (int i=0; i<n_classes; ++i) {

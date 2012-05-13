@@ -114,8 +114,8 @@ real ConditionalKDNNClassifier::Node::Observe(const Vector& x, const int y, real
     S++;
 	
 	prior.Observe(y);
-    int most_observed_class = ArgMax(prior.GetMean());
-    //real n_most_observed_class = prior.GetMean()(most_observed_class);
+    int most_observed_class = ArgMax(prior.getMarginal());
+    //real n_most_observed_class = prior.getMarginal()(most_observed_class);
     int second_most_observed_class = -1;
     real n_second_most_observed_class = 0;
     int number_of_observed_classes = 0;

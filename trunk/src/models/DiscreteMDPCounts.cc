@@ -100,7 +100,7 @@ void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
     P[ID].Observe(s2);
     ER[ID]->Observe(r);
 
-    Vector C =  P[ID].GetMean();
+    Vector C =  P[ID].getMarginal();
     real expected_reward = getExpectedReward(s,a);
     mean_mdp.reward_distribution.setFixedReward(s, a, expected_reward);
     for (int s_next=0; s_next<n_states; s_next++) {
@@ -123,7 +123,7 @@ real DiscreteMDPCounts::GenerateReward (int s, int a) const
 /// Generate a transition from the marginal distribution
 int DiscreteMDPCounts::GenerateTransition (int s, int a) const
 {
-    Vector p = P[getID (s,a)].GetMean();
+    Vector p = P[getID (s,a)].getMarginal();
     real d=urandom();
     real sum = 0.0;
     int n_outcomes = p.Size();
@@ -138,13 +138,13 @@ int DiscreteMDPCounts::GenerateTransition (int s, int a) const
 
 real DiscreteMDPCounts::getTransitionProbability (int s, int a, int s2) const
 {
-    Vector p = P[getID (s,a)].GetMean();
+    Vector p = P[getID (s,a)].getMarginal();
     return p[s2];
 }
 
 Vector DiscreteMDPCounts::getTransitionProbabilities (int s, int a) const
 {
-    return P[getID (s,a)].GetMean();
+    return P[getID (s,a)].getMarginal();
 }
 
 real DiscreteMDPCounts::getExpectedReward (int s, int a) const
@@ -189,7 +189,7 @@ DiscreteMDP* DiscreteMDPCounts::generate()
     DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL);
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
-            //Vector C =  P[getID (s,a)].GetMean();
+            //Vector C =  P[getID (s,a)].getMarginal();
             Vector C =  P[getID (s,a)].generate();
             real expected_reward = GenerateReward(s,a);
             mdp->reward_distribution.addFixedReward(s, a, expected_reward);
@@ -226,7 +226,7 @@ void DiscreteMDPCounts::CopyMeanMDP(DiscreteMDP* mdp) const
 
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
-            Vector C =  P[getID (s,a)].GetMean();
+            Vector C =  P[getID (s,a)].getMarginal();
             real expected_reward = getExpectedReward(s,a);
             mdp->reward_distribution.addFixedReward(s, a, expected_reward);
             for (int s2=0; s2<n_states; s2++) {

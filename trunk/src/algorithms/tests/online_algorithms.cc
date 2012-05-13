@@ -127,6 +127,8 @@ int main (int argc, char** argv)
     uint episode_steps = 1000;
     uint grid_size = 4;
     bool use_upper_bound = false;
+    real dirichlet_mass = 0.5;
+
     enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
 
     const char * algorithm_name = "QLearning";
@@ -390,7 +392,9 @@ int main (int argc, char** argv)
                                            alpha,
                                            exploration_policy);
         } else if (!strcmp(algorithm_name, "Model")) {
-            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states, reward_prior);
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
+                                                  dirichlet_mass,
+                                                  reward_prior);
             model= (MDPModel*) discrete_mdp;
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
@@ -399,7 +403,9 @@ int main (int argc, char** argv)
                                          model,
                                          rng);
         } else if (!strcmp(algorithm_name, "Sampling")) {
-            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states, reward_prior);
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
+                                                  dirichlet_mass,
+                                                  reward_prior);
             model= (MDPModel*) discrete_mdp;
             algorithm = new SampleBasedRL(n_states,
                                           n_actions,
