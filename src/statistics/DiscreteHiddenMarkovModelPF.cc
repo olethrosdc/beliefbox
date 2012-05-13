@@ -419,6 +419,8 @@ real DiscreteHiddenMarkovModelPF_ISReplaceLowestDirichletExact::Observe(int x)
 real DiscreteHiddenMarkovModelPF_BootstrapDirichletExact::Observe(int x)
 {
     // TODO Fill in dirichlet bootstrap
+    Serror("Unimplemented\n");
+    return -1;
 }
 
 

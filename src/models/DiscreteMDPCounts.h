@@ -16,6 +16,7 @@
 
 #include "MDPModel.h"
 #include "Dirichlet.h"
+#include "DirichletFiniteOutcomes.h"
 #include "MeanEstimator.h"
 #include "NormalDistribution.h"
 #include "BetaDistribution.h"
@@ -37,6 +38,7 @@ public:
     };
 protected:
     std::vector<DirichletDistribution> P; ///< Vector of Dirichlet distributions on P
+    //std::vector<DirichletFiniteOutcomes> P; ///< Vector of Dirichlet distributions on P
     std::vector<ConjugatePrior*> ER; ///< Vector of estimators on ER.
     //std::vector<BetaDistribution> ER; ///< Vector of estimators on ER.
     //std::vector<NormalUnknownMeanPrecision> ER; ///< Vector of estimators on ER.

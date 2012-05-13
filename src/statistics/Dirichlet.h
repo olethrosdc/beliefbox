@@ -1,5 +1,4 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
 // copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
@@ -25,7 +24,7 @@ class DirichletDistribution : public VectorDistribution
 {
 protected:
     int n; ///< size of multinomial distribution
-    Vector a; ///< size of vector
+    Vector alpha; ///< size of vector
 public:
     DirichletDistribution();
     DirichletDistribution(int n, real p = 1.0);
@@ -37,24 +36,22 @@ public:
     virtual real log_pdf(const Vector& x) const;
     virtual void update(Vector* x)
 	{
-		a += *x;
+		alpha += *x;
 	}
-    /// When there is only one observation, give it directly.
-    real Observe(int i);
+    virtual real Observe(int i);
+    virtual Vector getMarginal() const;
     Vector GetParameters() const;
-    Vector GetMean() const;
     real& Alpha(int i)
     {
-        return a[i];
+        return alpha[i];
     }
     int size() const
     {
         return n;
     }
-    void resize(int n, real p = 0.0);
+    virtual void resize(int n, real p = 0.0);
     
 };
-
 
 #endif
 
