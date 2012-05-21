@@ -125,18 +125,6 @@ Vector* NewVector (int n);///< make a new vector of length n
 void CopyVector (Vector* const lhs, const Vector * const rhs); ///< Copy one vector to another.
 int DeleteVector (Vector* vector); ///< Delete vector
 
-/// Get i-th component of vector v
-inline real GetVal (Vector* v, int i) {
-    assert ((i>=0)&&(i<v->n));
-    return v->x[i];
-}
-
-/// Set i-th component of vector v
-inline void PutVal (Vector* v, int i, real x) {
-    assert ((i>=0)&&(i<v->n));
-    v->x[i] = x;
-}
-
 
 class Matrix;
 
