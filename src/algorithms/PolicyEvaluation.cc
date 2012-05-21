@@ -81,6 +81,8 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
     //printf ("Exiting at delta = %f, after %d iter\n", Delta, n_iter);
 }
 
+
+/// Get the value of a particular state-action pair
 real PolicyEvaluation::getValue (int state, int action) const
 {
     real S = 0.0;
@@ -96,6 +98,8 @@ real PolicyEvaluation::getValue (int state, int action) const
     }
     return S;
 }
+
+
 
 
 

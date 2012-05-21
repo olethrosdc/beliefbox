@@ -12,6 +12,7 @@
 
 #include "DiscretePolicy.h"
 //#include "MDPDistribution.h"
+#include "DiscreteMDP.h"
 
 #include "Random.h"
 #include <cmath>
@@ -200,5 +201,53 @@ FixedSoftmaxPolicy::FixedSoftmaxPolicy (Matrix& Q, real beta)
 
 FixedSoftmaxPolicy::~FixedSoftmaxPolicy()
 {
+}
+
+/** Return a discounted state occupancy Matrix
+
+    Return matrix Phi with
+    \f[
+    \phi_{i,j} = \sum_{t=0}^T \gamma^t P(s_{t} = j \mid s_0 = i).
+    \f]
+ */
+Matrix DiscountedStateOccupancy(DiscreteMDP& mdp,
+                                FixedDiscretePolicy& policy,
+                                real gamma, real epsilon)
+{
+    int n_states = mdp.getNStates();
+    int n_actions = mdp.getNActions();
+    // First calculate the state-state probabilities
+    Matrix P(n_states, n_states); 
+    P.Clear();
+    for (int i=0; i<n_states; ++i) {
+        Vector Pi = policy.getActionProbabilities(i);
+        for (int a=0; a<n_actions; ++a) {
+            real P_a = Pi(a);
+            for (int j=0; j<n_states; ++j) {
+                real p = mdp.getTransitionProbability(i, a, j);
+                P(j, i) += P_a * p;
+            }
+        }
+    }
+    const Matrix& Pc = P;    
+    // Calculate mu If D is a Nx1 matrix, P is a N*N matrix, then PD
+    // is N x 1. We start with D being a singular distribution.
+    int T = (int) (log(epsilon * (1.0 - gamma)) / log(gamma));
+    Matrix Occupancy(n_states, n_states);
+    for (int s=0; s<n_states; ++s) {
+        Vector mu(n_states);
+        real discount = 1;
+        Vector D(n_states);
+        D(s) = 1.0;
+        for (int t=0; t<T; ++t) {
+            mu += D * discount;
+            const Vector& Dc = D;
+            D = Pc * Dc;
+            discount *= gamma;
+        }
+        Occupancy.setRow(s, D);
+    }
+    
+    return Occupancy;
 }
 

@@ -35,6 +35,7 @@ public:
                      real baseline_ = 0.0);
     virtual ~PolicyEvaluation();
     virtual void ComputeStateValues(real threshold, int max_iter=-1);
+    virtual void ComputeStateValuesFeatureExpectation(real threshold, int max_iter=-1);
     inline void SetPolicy(DiscretePolicy* policy_)
     {
         policy = policy_;
@@ -44,6 +45,11 @@ public:
     inline real getValue (int state) const
     {
         return V[state];
+    }
+    inline void setGamma(real gamma_) {
+        assert(gamma >= 0 && gamma <= 1);
+        gamma = gamma_;
+        
     }
 };
 
