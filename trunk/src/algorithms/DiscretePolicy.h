@@ -15,6 +15,7 @@
 #include "AbstractPolicy.h"
 #include "Matrix.h"
 #include "Demonstrations.h"
+#include "DiscreteMDP.h"
 
 /** A policy in a discrete state-action space.
 
@@ -86,6 +87,10 @@ public:
     FixedSoftmaxPolicy (Matrix& Q, real beta);
     virtual ~FixedSoftmaxPolicy();
 };
+
+Matrix DiscountedStateOccupancy(DiscreteMDP& mdp,
+                                FixedDiscretePolicy& policy,
+                                real gamma, real epsilon);
 
 
 #endif
