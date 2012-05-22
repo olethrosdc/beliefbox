@@ -38,7 +38,7 @@ int main (void)
     InventoryManagement inventory_management (period, max_items, demand, margin);
 
     Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", random, pit, goal, step);
-    DiscreteChain chain(3, 0.0);
+    DiscreteChain chain(5);
     RandomMDP random_mdp(2, 8, 0.001, 0.1, 0, 1, &rng, false);
 
     //const DiscreteMDP* mdp = random_mdp.getMDP();

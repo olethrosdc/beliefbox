@@ -107,8 +107,8 @@ void PolicyEvaluation::ComputeStateValuesFeatureExpectation(real threshold, int 
         }
     }
 
-    logmsg("Discounted state occupancy\n");
-    Phi.print(stdout);
+    //logmsg("Discounted state occupancy\n");
+    //Phi.print(stdout);
     V = Phi*rho;
 }
 
