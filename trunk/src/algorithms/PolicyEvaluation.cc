@@ -92,13 +92,17 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
     \f[
     V = \Phi \rho
     \f]
-    
-    BUG: Does not work yet.
  */
 void PolicyEvaluation::ComputeStateValuesFeatureExpectation(real threshold, int max_iter)
 {
     //const DiscreteMDP& mdp_ref = *mdp;
-    Matrix Phi(DiscountedStateOccupancy(*mdp, *policy, gamma, threshold));
+    FeatureMatrix = DiscountedStateOccupancy(*mdp, *policy, gamma, threshold);
+    RecomputeStateValuesFeatureExpectation();
+}
+
+/// Do the calculation without calculating the feature matrix
+void PolicyEvaluation::RecomputeStateValuesFeatureExpectation()
+{
     Vector rho(n_states);
     for (int state = 0; state<n_states; ++state) {
         rho(state) = 0.0;
@@ -106,11 +110,9 @@ void PolicyEvaluation::ComputeStateValuesFeatureExpectation(real threshold, int 
             rho(state) += mdp->getExpectedReward(state, action) * policy->getActionProbability(state, action);
         }
     }
-
-    //logmsg("Discounted state occupancy\n");
-    //Phi.print(stdout);
-    V = Phi*rho;
+    V = FeatureMatrix*rho;
 }
+
 
 
 
