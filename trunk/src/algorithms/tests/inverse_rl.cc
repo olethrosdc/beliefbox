@@ -151,6 +151,7 @@ int main (int argc, char** argv)
     const char * algorithm_name = "QLearning";
     const char * environment_name = NULL;
 
+    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
 
     int max_samples = 4;
     char* maze_name = NULL;
@@ -184,7 +185,8 @@ int main (int argc, char** argv)
                 {"n_chains", required_argument, 0, 0}, //19
                 {"Metropolis", no_argument, 0, 0}, //20
                 {"MonteCarlo", no_argument, 0, 0}, //21
-                {"accuracy", required_argument, 0, 0}, //222
+                {"accuracy", required_argument, 0, 0}, //22
+                {"reward_prior", required_argument, 0, 0}, //23
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -224,6 +226,18 @@ int main (int argc, char** argv)
                 case 20: sampler.type=METROPOLIS; break;
                 case 21: sampler.type=MONTE_CARLO; break;
                 case 22: accuracy = atof(optarg); assert(accuracy > 0); break;
+                case 23: 
+                    if (!strcmp(optarg, "Beta")) {
+                        reward_prior = DiscreteMDPCounts::BETA;
+                    } else if (!strcmp(optarg, "Normal")) {
+                        reward_prior = DiscreteMDPCounts::NORMAL;
+                    } else if (!strcmp(optarg, "Fixed")) {
+                        reward_prior = DiscreteMDPCounts::FIXED;
+                    } else {
+                        Serror("Unknown distribution type %s\n", optarg);
+                        exit(-1);
+                    }
+                    break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -400,7 +414,10 @@ int main (int argc, char** argv)
                                                alpha,
                                                exploration_policy);
         } else if (!strcmp(algorithm_name, "Model")) {
-            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states);
+            discrete_mdp =  new DiscreteMDPCounts(n_states,
+                                                  n_actions,
+                                                  1.0 / (real) n_states,
+                                                  reward_prior);
             model= (MDPModel*) discrete_mdp;
             algorithm = new ModelBasedRL(n_states,
                                          n_actions,
@@ -409,7 +426,10 @@ int main (int argc, char** argv)
                                          model,
 										 rng);
         } else if (!strcmp(algorithm_name, "Sampling")) {
-            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, 1.0 / (real) n_states);
+            discrete_mdp =  new DiscreteMDPCounts(n_states,
+                                                  n_actions,
+                                                  1.0 / (real) n_states,
+                                                  reward_prior);
             model= (MDPModel*) discrete_mdp;
             algorithm = new SampleBasedRL(n_states,
                                           n_actions,
