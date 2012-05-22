@@ -25,7 +25,7 @@ int main (void)
 {
     int period = 20;
     int max_items = 5;
-    real gamma = 0.5;
+    real gamma = 0.95;
     real demand = 0.1;
     real random = 0.0;
     real pit = -100.0;
@@ -38,7 +38,7 @@ int main (void)
     InventoryManagement inventory_management (period, max_items, demand, margin);
 
     Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", random, pit, goal, step);
-    DiscreteChain chain(5);
+    DiscreteChain chain(3, 0.0);
     RandomMDP random_mdp(2, 8, 0.001, 0.1, 0, 1, &rng, false);
 
     //const DiscreteMDP* mdp = random_mdp.getMDP();
@@ -97,8 +97,8 @@ int main (void)
               value_iteration.Delta,
               value_iteration.baseline);
    }
-
-   PolicyEvaluation f_policy_evaluation(policy, mdp, gamma);
+   FixedDiscretePolicy* vi_policy = value_iteration.getPolicy();
+   PolicyEvaluation f_policy_evaluation(vi_policy, mdp, gamma);
    f_policy_evaluation.ComputeStateValuesFeatureExpectation(epsilon, -1);
    for (int s=0; s<mdp->getNStates(); s++) {
        printf ("%f %f %f\n",
