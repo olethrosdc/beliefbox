@@ -32,7 +32,7 @@ protected:
 	DiscreteMDP mdp; ///< the actual MDP (transitions assumed known here)
 	std::vector<DiscreteSpaceRewardDistribution*> rewards; ///< set of reward functions
     int n_policies; ///< number of policy samples required
-	std::vector<DiscretePolicy*> policies; ///< storage for sampled policies from the belief
+	std::vector<FixedDiscretePolicy*> policies; ///< storage for sampled policies from the belief
 	Vector P_rewards; ///< posterior probability of each reward function
     Vector estimated_reward;
 public:
@@ -53,7 +53,7 @@ public:
 
 	virtual ~RewardPolicyBelief();
 	
-	virtual DiscretePolicy* CalculatePosterior(Demonstrations<int, int>& D);
+	virtual FixedDiscretePolicy* CalculatePosterior(Demonstrations<int, int>& D);
 	
 	/// Set number of samples
 	void setNSamples(int n_policies_)

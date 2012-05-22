@@ -17,7 +17,7 @@
 #include <cmath>
 #include <cassert>
 
-PolicyEvaluation::PolicyEvaluation(DiscretePolicy* policy_,
+PolicyEvaluation::PolicyEvaluation(FixedDiscretePolicy* policy_,
                                    const DiscreteMDP* mdp_, 
                                    real gamma_,
                                    real baseline_) 
@@ -80,6 +80,39 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
     } while((Delta >= threshold)  && max_iter != 0);
     //printf ("Exiting at delta = %f, after %d iter\n", Delta, n_iter);
 }
+
+/** Evaluate the policy using a discounted state occupancy matrix.
+
+    First, calculate the matrix:
+    \f[
+    \phi_{i,j} = \sum_t \gamma^t \Pr(s_t = j \mid s_0 = i),
+    \f]
+    where the probabilities depend on the MDP and the policy.
+    Then, if \f$\rho\f$ is the expected reward vector for each state, given the MDP and the policy, the expected utility vector is:
+    \f[
+    V = \Phi \rho
+    \f]
+    
+    BUG: Does not work yet.
+ */
+void PolicyEvaluation::ComputeStateValuesFeatureExpectation(real threshold, int max_iter)
+{
+    //const DiscreteMDP& mdp_ref = *mdp;
+    Matrix Phi(DiscountedStateOccupancy(*mdp, *policy, gamma, threshold));
+    Vector rho(n_states);
+    for (int state = 0; state<n_states; ++state) {
+        rho(state) = 0.0;
+        for (int action = 0; action<n_actions; ++action) {
+            rho(state) += mdp->getExpectedReward(state, action) * policy->getActionProbability(state, action);
+        }
+    }
+
+    logmsg("Discounted state occupancy\n");
+    Phi.print(stdout);
+    V = Phi*rho;
+}
+
+
 
 
 /// Get the value of a particular state-action pair

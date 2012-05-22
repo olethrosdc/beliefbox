@@ -16,30 +16,36 @@
 #include "AverageValueIteration.h"
 #include "Gridworld.h"
 #include "InventoryManagement.h"
+#include "DiscreteChain.h"
 #include "RandomMDP.h"
 #include "DiscretePolicy.h"
 #include "MersenneTwister.h"
 
 int main (void)
 {
-    int period = 30;
-    int max_items = 10;
-    real gamma = 0.9;
+    int period = 20;
+    int max_items = 5;
+    real gamma = 0.5;
     real demand = 0.1;
     real random = 0.0;
     real pit = -100.0;
     real goal = 0.0;
     real step = -0.1;
 	real margin = 1.1;
+    real epsilon = 1e-6;
+
     MersenneTwisterRNG rng;
     InventoryManagement inventory_management (period, max_items, demand, margin);
 
-    //Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", random, pit, goal, step);
+    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", random, pit, goal, step);
+    DiscreteChain chain(5);
     RandomMDP random_mdp(2, 8, 0.001, 0.1, 0, 1, &rng, false);
+
     //const DiscreteMDP* mdp = random_mdp.getMDP();
-    const DiscreteMDP* mdp = inventory_management.getMDP();
+    //const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
-    
+    const DiscreteMDP* mdp = chain.getMDP();
+
     int n_states = mdp->getNStates();
     int n_actions = mdp->getNActions();
     
@@ -52,9 +58,10 @@ int main (void)
         }
     }
 
-    DiscretePolicy* policy = new FixedDiscretePolicy(p);
+    FixedDiscretePolicy* policy = new FixedDiscretePolicy(p);
 
     PolicyEvaluation policy_evaluation(policy, mdp, gamma);
+
     ValueIteration value_iteration(mdp, gamma);
     //AverageValueIteration value_iteration(mdp, false, false);
 
@@ -73,12 +80,12 @@ int main (void)
 
 #if 1
     
-   for (int iter=0; iter < 2; iter++) {
+   for (int iter=0; iter < 1; iter++) {
        printf ("ITER: %d, V = ", iter);
-       value_iteration.ComputeStateValues(0.0, 1);
+       value_iteration.ComputeStateValues(epsilon, -1);
        FixedDiscretePolicy* vi_policy = value_iteration.getPolicy();
        policy_evaluation.SetPolicy(vi_policy);
-       policy_evaluation.ComputeStateValues(0.0, 1);
+       policy_evaluation.ComputeStateValues(epsilon, -1);
        for (int s=0; s<mdp->getNStates(); s++) {
            printf ("%.1f (%.1f) ",
                    value_iteration.getValue(s),
@@ -91,6 +98,14 @@ int main (void)
               value_iteration.baseline);
    }
 
+   PolicyEvaluation f_policy_evaluation(policy, mdp, gamma);
+   f_policy_evaluation.ComputeStateValuesFeatureExpectation(epsilon, -1);
+   for (int s=0; s<mdp->getNStates(); s++) {
+       printf ("%f %f %f\n",
+               value_iteration.getValue(s),
+               policy_evaluation.getValue(s),
+               f_policy_evaluation.getValue(s));       
+   }
 
    //mdp->ShowModel();
    if (1) {

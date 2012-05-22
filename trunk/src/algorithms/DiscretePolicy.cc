@@ -210,8 +210,8 @@ FixedSoftmaxPolicy::~FixedSoftmaxPolicy()
     \phi_{i,j} = \sum_{t=0}^T \gamma^t P(s_{t} = j \mid s_0 = i).
     \f]
  */
-Matrix DiscountedStateOccupancy(DiscreteMDP& mdp,
-                                FixedDiscretePolicy& policy,
+Matrix DiscountedStateOccupancy(const DiscreteMDP& mdp,
+                                const FixedDiscretePolicy& policy,
                                 real gamma, real epsilon)
 {
     int n_states = mdp.getNStates();
@@ -229,10 +229,15 @@ Matrix DiscountedStateOccupancy(DiscreteMDP& mdp,
             }
         }
     }
+
+    logmsg ("Markov chain:\n");
+    P.print(stdout);
+
     const Matrix& Pc = P;    
     // Calculate mu If D is a Nx1 matrix, P is a N*N matrix, then PD
     // is N x 1. We start with D being a singular distribution.
-    int T = (int) (log(epsilon * (1.0 - gamma)) / log(gamma));
+    int T = 1000 + (int) (2.0 * log(epsilon * (1.0 - gamma)) / log(gamma));
+    logmsg("Setting horizon to: %d\n", T);
     Matrix Occupancy(n_states, n_states);
     for (int s=0; s<n_states; ++s) {
         Vector mu(n_states);
@@ -245,7 +250,7 @@ Matrix DiscountedStateOccupancy(DiscreteMDP& mdp,
             D = Pc * Dc;
             discount *= gamma;
         }
-        Occupancy.setRow(s, D);
+        Occupancy.setRow(s, mu);
     }
     
     return Occupancy;
