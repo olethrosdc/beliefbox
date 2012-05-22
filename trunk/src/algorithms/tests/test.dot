@@ -1,9 +1,0 @@
-digraph MDP {
-ranksep=2; rankdir=LR; 
-s0 -> s0 [label = " p=1.00, r=0.2", color=red];
-s0 -> s1 [label = " p=1.00, r=0.0", color=green];
-s1 -> s0 [label = " p=1.00, r=0.2", color=red];
-s1 -> s2 [label = " p=1.00, r=0.0", color=green];
-s2 -> s0 [label = " p=1.00, r=0.2", color=red];
-s2 -> s2 [label = " p=1.00, r=1.0", color=green];
-}
