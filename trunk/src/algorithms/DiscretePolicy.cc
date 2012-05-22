@@ -229,14 +229,14 @@ Matrix DiscountedStateOccupancy(const DiscreteMDP& mdp,
         }
     }
 
-    logmsg ("Markov chain:\n");
-    P.print(stdout);
+    //logmsg ("Markov chain:\n");
+    //P.print(stdout);
 
     const Matrix& Pc = P;    
     // Calculate mu If D is a Nx1 matrix, P is a N*N matrix, then PD
     // is N x 1. We start with D being a singular distribution.
     int T = (int) ceil(log(epsilon * (1.0 - gamma)) / log(gamma));
-    logmsg("Setting horizon to: %d\n", T);
+    //logmsg("Setting horizon to: %d\n", T);
     Matrix Occupancy(n_states, n_states);
     for (int s=0; s<n_states; ++s) {
         Vector mu(n_states);
