@@ -88,8 +88,8 @@ public:
     virtual ~FixedSoftmaxPolicy();
 };
 
-Matrix DiscountedStateOccupancy(DiscreteMDP& mdp,
-                                FixedDiscretePolicy& policy,
+Matrix DiscountedStateOccupancy(const DiscreteMDP& mdp,
+                                const FixedDiscretePolicy& policy,
                                 real gamma, real epsilon);
 
 

@@ -126,7 +126,7 @@ RewardPolicyBelief::RewardPolicyBelief(real lambda_,
 
 
 /// Calculate a posterior over reward functions
-DiscretePolicy* RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
+FixedDiscretePolicy* RewardPolicyBelief::CalculatePosterior(Demonstrations<int, int>& D)
 {
 	real epsilon = 1e-3; ///< minimum precision
 	int max_iter = 1e3; ///< maximum number of iterations

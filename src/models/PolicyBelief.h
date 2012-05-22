@@ -40,8 +40,8 @@ public:
 
     virtual real Update(int state, int action) = 0;
     virtual real CalculatePosterior(Demonstrations<int, int>& D) =0;
-    virtual DiscretePolicy* Sample() const = 0;
-    virtual DiscretePolicy* getExpectedPolicy() const = 0;
+    virtual FixedDiscretePolicy* Sample() const = 0;
+    virtual FixedDiscretePolicy* getExpectedPolicy() const = 0;
 	//virtual real getLogDensity(const DiscretePolicy& policy) const = 0;
 	//virtual real getDensity(const DiscretePolicy& policy) const = 0;
 };
@@ -72,10 +72,10 @@ public:
 
     virtual real Update(int state, int action);
     virtual real CalculatePosterior(Demonstrations<int, int>& D);
-    virtual DiscretePolicy* Sample() const;
-    virtual DiscretePolicy* getExpectedPolicy () const ;
-	virtual real getLogDensity(const DiscretePolicy& policy) const;
-	virtual real getDensity(const DiscretePolicy& policy) const;
+    virtual FixedDiscretePolicy* Sample() const;
+    virtual FixedDiscretePolicy* getExpectedPolicy () const ;
+	virtual real getLogDensity(const FixedDiscretePolicy& policy) const;
+	virtual real getDensity(const FixedDiscretePolicy& policy) const;
 };
 
 

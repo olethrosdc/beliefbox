@@ -17,7 +17,7 @@
 #include <cmath>
 #include <cassert>
 
-AveragePolicyEvaluation::AveragePolicyEvaluation(DiscretePolicy* policy_,
+AveragePolicyEvaluation::AveragePolicyEvaluation(FixedDiscretePolicy* policy_,
                                                  const DiscreteMDP* mdp_, 
                                                  real baseline_) 
     : PolicyEvaluation(policy_, mdp_, 1.0, baseline_)

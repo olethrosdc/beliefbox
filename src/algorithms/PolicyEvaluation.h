@@ -21,7 +21,7 @@
 class PolicyEvaluation
 {
 public:
-    DiscretePolicy* policy;
+    FixedDiscretePolicy* policy;
     const DiscreteMDP* mdp;
     real gamma;
     int n_states;
@@ -29,14 +29,14 @@ public:
     Vector V;
     real Delta;
     real baseline;
-    PolicyEvaluation(DiscretePolicy* policy_,
+    PolicyEvaluation(FixedDiscretePolicy* policy_,
                      const DiscreteMDP* mdp_,
                      real gamma_,
                      real baseline_ = 0.0);
     virtual ~PolicyEvaluation();
     virtual void ComputeStateValues(real threshold, int max_iter=-1);
     virtual void ComputeStateValuesFeatureExpectation(real threshold, int max_iter=-1);
-    inline void SetPolicy(DiscretePolicy* policy_)
+    inline void SetPolicy(FixedDiscretePolicy* policy_)
     {
         policy = policy_;
     }

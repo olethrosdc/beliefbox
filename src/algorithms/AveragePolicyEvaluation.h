@@ -18,7 +18,7 @@
 class AveragePolicyEvaluation : public PolicyEvaluation
 {
 public:
-    AveragePolicyEvaluation(DiscretePolicy* policy_,
+    AveragePolicyEvaluation(FixedDiscretePolicy* policy_,
                             const DiscreteMDP* mdp_,
                             real baseline_ = 0.0);
     virtual ~AveragePolicyEvaluation();
