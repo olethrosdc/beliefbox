@@ -220,9 +220,8 @@ Matrix DiscountedStateOccupancy(const DiscreteMDP& mdp,
     Matrix P(n_states, n_states); 
     P.Clear();
     for (int i=0; i<n_states; ++i) {
-        Vector Pi = policy.getActionProbabilities(i);
         for (int a=0; a<n_actions; ++a) {
-            real P_a = Pi(a);
+            real P_a = policy.getActionProbability(i, a);
             for (int j=0; j<n_states; ++j) {
                 real p = mdp.getTransitionProbability(i, a, j);
                 P(j, i) += P_a * p;
@@ -236,7 +235,7 @@ Matrix DiscountedStateOccupancy(const DiscreteMDP& mdp,
     const Matrix& Pc = P;    
     // Calculate mu If D is a Nx1 matrix, P is a N*N matrix, then PD
     // is N x 1. We start with D being a singular distribution.
-    int T = 1000 + (int) (2.0 * log(epsilon * (1.0 - gamma)) / log(gamma));
+    int T = (int) ceil(log(epsilon * (1.0 - gamma)) / log(gamma));
     logmsg("Setting horizon to: %d\n", T);
     Matrix Occupancy(n_states, n_states);
     for (int s=0; s<n_states; ++s) {
