@@ -806,7 +806,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
         reward_policy_belief.setAccuracy(accuracy);
 
-        DiscretePolicy* rpb_policy = reward_policy_belief.CalculatePosterior(demonstrations);
+        FixedDiscretePolicy* rpb_policy = reward_policy_belief.CalculatePosterior(demonstrations);
         end_time = GetCPU();
         printf("%f # T_RPB\n", end_time - start_time);
         printf ("Posterior policy:\n---------------\n");
@@ -834,7 +834,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 			prb.MonteCarloSampler(demonstrations, sampler.n_chain_samples);
 		} 
 
-        DiscretePolicy* prb_policy = prb.getPolicy();
+        FixedDiscretePolicy* prb_policy = prb.getPolicy();
         end_time = GetCPU();
         printf("%f # T_PRB\n", end_time - start_time);
         printf ("MH sampler policy:\n---------------\n");

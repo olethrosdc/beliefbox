@@ -144,7 +144,6 @@ FixedDiscretePolicy* RewardPolicyBelief::CalculatePosterior(Demonstrations<int, 
 		policies[i] = policy_belief.Sample();
 	}
 
-
 	// -------- calculate probability of each policy -------- //
 	int n_rewards = P_rewards.Size();
 	assert(n_rewards == (int) rewards.size());
@@ -156,6 +155,14 @@ FixedDiscretePolicy* RewardPolicyBelief::CalculatePosterior(Demonstrations<int, 
     mdp.Check();
     //mdp.ShowModel();
     ValueIteration VI(&mdp, gamma);
+
+    // one policy evaluation vector for each policy.
+    std::vector<PolicyEvaluation> PE;
+    for (int j=0; j<n_policies; ++j) {
+        PE.push_back(PolicyEvaluation(policies[j], &mdp, gamma));
+        PE[j].ComputeStateValuesFeatureExpectation(epsilon);
+    }
+
 	printf ("# calculating %d x %d loss matrix\n", n_rewards, n_policies);
 	for (int i=0; i<P_rewards.Size(); ++i) {
 		// Change MDP reward to the i-th reward
@@ -171,11 +178,14 @@ FixedDiscretePolicy* RewardPolicyBelief::CalculatePosterior(Demonstrations<int, 
 		// Calculate the loss for each policy sample
 		for (int j=0; j<n_policies; ++j) {
 			// Calculate value of actual policy;
-			PolicyEvaluation PE(policies[j], &mdp, gamma);
-			PE.ComputeStateValues(epsilon);
-			L(i, j) = VI.getValue(0) - PE.getValue(0);
+			//PolicyEvaluation PE(policies[j], &mdp, gamma);
+			//PE.ComputeStateValues(epsilon);
+            PE[j].mdp = &mdp;
+            PE[j].RecomputeStateValuesFeatureExpectation();
+			L(i, j) = VI.getValue(0) - PE[j].getValue(0);
 			for (int s=0; s<n_states; ++s) {
-				real DV_s = VI.getValue(s) - PE.getValue(s);
+				//real DV_s = VI.getValue(s) - PE.getValue(s);
+				real DV_s = VI.getValue(s) - PE[j].getValue(s);
 				//printf ("# s: %d, V(s)=%f, Vk(s)=%f\n", s, VI.getValue(s), PE.getValue(s));
 				if (DV_s > L(i, j)) {
 					L(i, j) = DV_s;
