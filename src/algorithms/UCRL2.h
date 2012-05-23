@@ -18,7 +18,7 @@
 #include "real.h"
 #include <vector>
 
-class UCRL2
+class UCRL2 : public OnlineAlgorithms
 {
 protected:
     const int n_states; ///< number of states

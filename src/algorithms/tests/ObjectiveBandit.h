@@ -1,5 +1,6 @@
 // -*- Mode: c++ -*-
 
+/* A multi-objective bandit for discrete outcomes */
 class ObjectiveBanditPolicy
 {
 public:
@@ -92,8 +93,8 @@ public:
 	int T; ///< number of time-steps
 	std::vector<int> plays; ///< number of plays
 	HoeffdingObjectiveBandit(int n_actions_,
-							int n_outcomes_,
-							RandomNumberGenerator& rng_)
+                             int n_outcomes_,
+                             RandomNumberGenerator& rng_)
 		: ObjectiveBanditPolicy(n_actions_, n_outcomes_, rng_),
 		  action(-1),
 		  N(n_actions, n_outcomes),
@@ -209,7 +210,7 @@ public:
 
 	virtual ~WeissmanObjectiveBandit()
 	{
-}	
+    }	
 
     /** Return an optimistic transition vector.
         
@@ -217,7 +218,7 @@ public:
         \f[
         q^* \in \arg \max \{ r' q : \|p - v\|_1 \leq \epsilon \}.
         \f]
-     */
+    */
 	Vector OptimisticTransition(const Vector& p, const Vector& r, real epsilon)
 	{
 		int m = p.Size();

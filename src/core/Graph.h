@@ -19,6 +19,26 @@
 #include <set>
 #include "real.h"
 
+/**
+   \defgroup GraphTheory Graph theory
+
+   There are three possible methods to make graphs.
+
+   1. A connectivity matrix.  This is very simple but takes up N^2
+   space.  This is implemented as the class ConnectivityMatrix.
+   Finding all neighoubrs for a node is O(N).  Finding whether i,j
+   are connected is O(1).
+
+   2. A list of edges for each node.  This is somewhat more
+   complicated but takes up O(N) space.  We can use a single list
+   and just have a pointer for every node.  This is implemented as
+   the class SparseGraph.  Finding whether i,j are connected is
+   O(N).  Insertion is O(1).  Finding all neighbours for a node is
+   O(N). 
+*/
+/*@{*/
+
+
 /** Structure holding an edge
  */
 struct Edge
@@ -43,24 +63,7 @@ struct HalfEdge
 
 #define GRAPH_DEBUG_LEVEL 50
 
-/**
-   \defgroup GraphTheory Graph theory
 
-   There are three possible methods to make graphs.
-
-   1. A connectivity matrix.  This is very simple but takes up N^2
-   space.  This is implemented as the class ConnectivityMatrix.
-   Finding all neighoubrs for a node is O(N).  Finding whether i,j
-   are connected is O(1).
-
-   2. A list of edges for each node.  This is somewhat more
-   complicated but takes up O(N) space.  We can use a single list
-   and just have a pointer for every node.  This is implemented as
-   the class SparseGraph.  Finding whether i,j are connected is
-   O(N).  Insertion is O(1).  Finding all neighbours for a node is
-   O(N). 
-*/
-/*@{*/
 
 /// A general graph class.  This class provides an interface for
 /// classes implementing graph semantics. Most of the non-pure virtual
