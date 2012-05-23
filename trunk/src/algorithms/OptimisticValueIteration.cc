@@ -122,4 +122,5 @@ void OptimisticValueIteration::ComputeStateValues(real epsilon, real threshold, 
 
 void OptimisticValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 {
+    ComputeStateValues(threshold, max_iter)
 }

@@ -24,8 +24,10 @@
 #include "RandomNumberGenerator.h"
 #include <vector>
 
-/// \ingroup ReinforcementLearning
-/// @{
+/** 
+    \ingroup ReinforcementLearning
+ */
+/*@{*/
 	
 /** Direct model-based reinforcement learning.
 	
@@ -78,6 +80,6 @@ public:
 };
 
 
-/// @}
+/*@}*/
 #endif
 

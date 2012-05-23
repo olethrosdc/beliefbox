@@ -10,14 +10,29 @@
  *                                                                         *
  ***************************************************************************/
 
-/// \defgroup ReinforcemenLearning Reinforcement learning algorithms.
+/**
+   \defgroup ReinforcementLearning Reinforcement learning algorithms.
 
-/// \ingroup ReinforcementLearning
-/// @{
+   This group contains various algorithms for the reinforcement
+   learning problem. These algorithms usually employ models,
+   optimisation methods and heuristics in order to learn how to act
+   near-optimally.
+
+*/
+/* @{ */
 
 #ifndef ONLINE_ALGORITHM_H
 #define ONLINE_ALGORITHM_H
 
+/** Online algorithm template.
+
+    This is simply a template for reinforcement learning algorithms.
+    This acts as a base class for all algorithms that are going to be
+    solving reinforcement learning problems. That means that given a
+    sequence of observations and rewards, the produce a sequence of
+    actions. Other algorithms related to reinforcement learning, such
+    as value iteration, are not derived from this class, but can be
+    used in the implementation of any derived class.  */
 template <typename A, typename S>
 class OnlineAlgorithm
 {

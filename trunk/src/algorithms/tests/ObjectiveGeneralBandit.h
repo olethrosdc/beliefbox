@@ -1,5 +1,6 @@
 // -*- Mode: c++ -*-
 
+/** A multi-objective bandit for vector outcomes */
 class ObjectiveGeneralBandit
 {
 public:
@@ -7,8 +8,8 @@ public:
 	const int n_outcomes;
 	RandomNumberGenerator& rng;
 	ObjectiveGeneralBandit(int n_actions_, 
-						  int n_outcomes_, 
-						  RandomNumberGenerator& rng_)
+                           int n_outcomes_, 
+                           RandomNumberGenerator& rng_)
 		: n_actions(n_actions_), n_outcomes(n_outcomes_), rng(rng_)
 	{
 	}
@@ -92,8 +93,8 @@ public:
 	int T; ///< number of time-steps
 	std::vector<int> plays; ///< number of plays
 	HoeffdingObjectiveGeneralBandit(int n_actions_,
-							int n_outcomes_,
-							RandomNumberGenerator& rng_)
+                                    int n_outcomes_,
+                                    RandomNumberGenerator& rng_)
 		: ObjectiveGeneralBandit(n_actions_, n_outcomes_, rng_),
 		  action(-1),
 		  N(n_actions, n_outcomes),
