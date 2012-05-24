@@ -42,7 +42,7 @@ public:
     int get_n_models();
     std::vector<real> & GetModelProbabilities();
     std::vector<DiscreteMDPCounts*> & GetModels();
-    virtual DiscreteMDP* generate() 
+    virtual DiscreteMDP* generate() const
     {
         fprintf(stderr, "Not implemented!\n");
         exit(-1);
