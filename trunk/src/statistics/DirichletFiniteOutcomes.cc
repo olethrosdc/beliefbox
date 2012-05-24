@@ -18,13 +18,13 @@
 DirichletFiniteOutcomes::DirichletFiniteOutcomes()
     : DirichletDistribution(), n_seen_symbols(0)
 {
-    
 }
 
 /// Create a Dirichlet with uniform parameters
 DirichletFiniteOutcomes::DirichletFiniteOutcomes(int n, real p)
     : DirichletDistribution(n, 0.0), prior_alpha(p), n_seen_symbols(0)
 {
+    alpha_sum = p;
 }
 
 

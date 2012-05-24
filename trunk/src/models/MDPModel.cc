@@ -45,7 +45,7 @@ DiscreteMDP* MDPModel::CreateMDP()
     return mdp;
 }
 
-void MDPModel::ShowModel()
+void MDPModel::ShowModel() const
 {
     for (int a=0; a<n_actions; a++) {
         for (int i=0; i<n_states; i++) {

@@ -18,12 +18,14 @@
 DirichletDistribution::DirichletDistribution()
 {
     n = 0;
+    alpha_sum = 1.0;
 }
 
 /// Create a Dirichlet with uniform parameters
 DirichletDistribution::DirichletDistribution(int n, real p)
 {
-    resize(n, p);}
+    resize(n, p);
+}
 
 /// Initialise parameters from a vector
 DirichletDistribution::DirichletDistribution(const Vector& x) : n(x.Size()), alpha(x)
@@ -31,6 +33,7 @@ DirichletDistribution::DirichletDistribution(const Vector& x) : n(x.Size()), alp
     for (int i=0; i<n; ++i) {
         assert(alpha(i) >= 0);
     }
+    alpha_sum = alpha.Sum();
 }
 
 /// Resize the dirichlet distribution, setting all parameters to p.
@@ -41,6 +44,7 @@ void DirichletDistribution::resize(int n, real p)
     for (int i=0; i<n; ++i) {
         alpha(i) = p;
     }
+    alpha_sum = (real) n * p;
 }
 
 
@@ -109,11 +113,28 @@ real DirichletDistribution::log_pdf(const Vector& x) const
     return log_prod - logBeta(alpha);
 }
 
+/// Update with a vector of observations sampled from a Multinomial
+///
+/// Note that this is different from observing a sample from a Multinomial!
+void DirichletDistribution::update(Vector* x)
+{
+    
+    for (int i=0; i<n; ++i) {
+        real xi = (*x)(i);
+        alpha(i) += xi;
+        alpha_sum += xi;
+    }
+}
+
+
 /// When there is only one observation, give it directly.
 real DirichletDistribution::Observe(int i)
 {
-    real p = alpha(i) / alpha.Sum();
+    //real p = alpha(i) / alpha.Sum();
+    assert(fabs(alpha.Sum() - alpha_sum) < 1e-6);
+    real p = alpha(i) / alpha_sum; //alpha.Sum();
     alpha(i) += 1.0;
+    alpha_sum += 1.0;
     return p;
 }
 
@@ -127,9 +148,8 @@ Vector DirichletDistribution::GetParameters() const
 Vector DirichletDistribution::getMarginal() const
 {
     Vector p = alpha;
-    real S = alpha.Sum();
-    if (S > 0) {
-        p /= S;
+    if (alpha_sum > 0) {
+        p /= alpha_sum;
     } else {
         real invs = 1.0 / (real) p.Size();
         for (int i=0; i<p.Size(); i++) {

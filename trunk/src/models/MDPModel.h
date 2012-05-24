@@ -65,11 +65,11 @@ public:
         this->n_actions = n_actions;
         mdp_dbg("Creating MDPModel with %d states and %d actions\n",  n_states, n_actions);
     }
-    inline virtual int getNStates()
+    inline virtual int getNStates() const
     {
         return n_states;
     }
-    inline virtual int getNActions()
+    inline virtual int getNActions() const
     {
         return n_actions;
     }
@@ -92,9 +92,9 @@ public:
     }
     virtual void Reset() = 0;
     virtual DiscreteMDP* CreateMDP();
-    virtual DiscreteMDP* generate() = 0;
+    virtual DiscreteMDP* generate() const = 0;
     virtual const DiscreteMDP* const getMeanMDP() const = 0;
-    virtual void ShowModel();
+    virtual void ShowModel() const;
 
 };
 
@@ -114,7 +114,10 @@ protected:
 public:
     Distribution* initial_transitions;
     Distribution* initial_rewards; 
-    GradientDescentMDPModel (int n_states, int n_actions, Distribution* initial_transitions, Distribution* initial_rewards);
+    GradientDescentMDPModel (int n_states,
+                             int n_actions,
+                             Distribution* initial_transitions,
+                             Distribution* initial_rewards);
     virtual ~GradientDescentMDPModel();
     virtual void AddTransition(int s, int a, real r, int s2);
 

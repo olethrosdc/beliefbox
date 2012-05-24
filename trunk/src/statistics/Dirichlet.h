@@ -25,6 +25,7 @@ class DirichletDistribution : public VectorDistribution
 protected:
     int n; ///< size of multinomial distribution
     Vector alpha; ///< size of vector
+    real alpha_sum; ///< sum of the vector
 public:
     DirichletDistribution();
     DirichletDistribution(int n, real p = 1.0);
@@ -34,10 +35,7 @@ public:
     virtual Vector generate() const;
     virtual real pdf(const Vector& x) const;
     virtual real log_pdf(const Vector& x) const;
-    virtual void update(Vector* x)
-	{
-		alpha += *x;
-	}
+    virtual void update(Vector* x);
     virtual real Observe(int i);
     virtual Vector getMarginal() const;
     Vector GetParameters() const;
@@ -50,6 +48,10 @@ public:
         return n;
     }
     virtual void resize(int n, real p = 0.0);
+    inline real getMass() const
+    {
+        return alpha_sum;
+    }
     
 };
 

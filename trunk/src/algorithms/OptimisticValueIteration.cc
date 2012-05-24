@@ -14,11 +14,13 @@
 #include "real.h"
 #include "MathFunctions.h"
 #include "Vector.h"
-#include "DiscreteMDPCounts.h"
+#include "DiscretePolicy.h"
 #include <cmath>
 #include <cassert>
 
-OptimisticValueIteration::OptimisticValueIteration(DiscreteMDPCounts* mdp, real gamma, real baseline)
+OptimisticValueIteration::OptimisticValueIteration(const DiscreteMDPCounts* mdp,
+                                                   real gamma,
+                                                   real baseline)
 {
     assert (mdp);
     assert (gamma>=0 && gamma <=1);
@@ -32,27 +34,25 @@ OptimisticValueIteration::OptimisticValueIteration(DiscreteMDPCounts* mdp, real 
 
 void OptimisticValueIteration::Reset()
 {
-    int N = n_states * n_actions;
-    V.resize(n_states);
-    dV.resize(n_states);
-    pV.resize(n_states);
-    Q.resize(n_states);
-    Q_data.resize(N);
-    dQ.resize(n_states);
-    dQ_data.resize(N);
-    pQ.resize(n_states);
-    pQ_data.resize(N);
+    //int N = n_states * n_actions;
+
+    V.Resize(n_states);
+    dV.Resize(n_states);
+    pV.Resize(n_states);
+
+    Q.Resize(n_states, n_actions);
+    dQ.Resize(n_states, n_actions);
+    pQ.Resize(n_states, n_actions);
+
+    
     for (int s=0; s<n_states; s++) {
-        V[s] = 0.0;
-        dV[s] = 0.0;
-        pV[s] = 0.0;
-        Q[s] = &Q_data[s*n_actions];
-        dQ[s] = &dQ_data[s*n_actions];
-        pQ[s] = &pQ_data[s*n_actions];
+        V(s) = 0.0;
+        dV(s) = 0.0;
+        pV(s) = 0.0;
         for (int a=0; a<n_actions; a++) {
-            Q[s][a] = 0.0;
-            dQ[s][a] = 0.0;
-            pQ[s][a] = 0.0;
+            Q(s, a) = 0.0;
+            dQ(s, a) = 1.0;
+            pQ(s, a) = 0.0;
         }
     }
 }
@@ -61,66 +61,53 @@ OptimisticValueIteration::~OptimisticValueIteration()
 {
 }
 
-void OptimisticValueIteration::ComputeStateValues(real epsilon, real threshold, int max_iter)
+/** Compute state values using value iteration.
+
+	The process ends either when the error is below the given threshold,
+	or when the given number of max_iter iterations is reached. Setting
+	max_iter to -1 means there is no limit to the number of iterations.
+*/
+void OptimisticValueIteration::ComputeStateValuesStandard(real error_probability, real epsilon, real threshold, int max_iter)
 {
+    int n_iter = 0;
     do {
         Delta = 0.0;
+        pV = V;
         for (int s=0; s<n_states; s++) {
-            //real v = V[s];
-            real Q_a_max = -RAND_MAX;
-            //int a_max = 0;
             for (int a=0; a<n_actions; a++) {
-                real S = 0.0;
-
-                Vector V2(n_states);
-                // store the value of next states
+                real Q_sa = 0.0;
+                int N_sa = (int) ceil(mdp->getNVisits(s, a));
                 for (int s2=0; s2<n_states; ++s2) {
-                    V2[s2] = V[s2];
+                    real P = mdp->getTransitionProbability(s, a, s2);
+                    real R = mdp->getExpectedReward(s, a) - baseline;
+                    Q_sa += P * (R + gamma * pV(s2));
                 }
-                Vector Q = mdp->getTransitionProbabilities(s, a);
-                real max_U = -RAND_MAX;
-                
-                for (int s2=0; s2<n_states; ++s2) {
-                    Vector I(n_states);
-                    I[s2] = 1.0;
-                    I = I + (I - 1.0)/((real) (n_states -1));
-                    for (int j=-1; j<=1; j+=2) {
-                        Vector P(Q);
-                        P += I*((real) j)*epsilon;
-                        real U = Product(&P, &V2);
-                        if (U > max_U) {
-                            max_U = U;
-                        }
-                    }
-                }
-                        
-                //real R = mdp->getExpectedReward(s, a) + gamma*max_U - baseline;
-                
-                if (a==0 || Q_a_max < S) {
-                    //a_max = a;
-                    Q_a_max = S;
-                }
+                Q(s, a) = Q_sa;
             }
-            V[s] = Q_a_max;
-            dV[s] = pV[s] - V[s];
-            pV[s] = V[s];
+            V(s) = Max(Q.getRow(s));
+            Delta += fabs(V(s) - pV(s));
         }
-        Delta = Max(dV) - Min(dV);
-    max_iter--;
-    
-    } while(Delta >= threshold && max_iter > 0);
-	
+        
+        if (max_iter > 0) {
+            max_iter--;
+        }
+        n_iter++;
+    } while(Delta >= threshold && max_iter != 0);
+    //printf("#OptimisticValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
 
-/** ComputeStateActionValues
-   
-    threshold - exit when difference in Q is smaller than the threshold
-    max_iter - exit when the number of iterations reaches max_iter
-
-*/
-
-void OptimisticValueIteration::ComputeStateActionValues(real threshold, int max_iter)
+/// Create the greedy policy with respect to the calculated value function.
+FixedDiscretePolicy* OptimisticValueIteration::getPolicy() const
 {
-    ComputeStateValues(threshold, max_iter)
+    FixedDiscretePolicy* policy = new FixedDiscretePolicy(n_states, n_actions);
+    for (int s=0; s<n_states; s++) {
+        int argmax_Qa = ArgMax(Q.getRow(s));
+        Vector* p = policy->getActionProbabilitiesPtr(s);
+        for (int a=0; a<n_actions; a++) { 
+            (*p)(a) = 0.0;
+        }
+        (*p)(argmax_Qa) = 1.0;
+    }
+    return policy;
 }
