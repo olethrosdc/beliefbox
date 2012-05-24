@@ -116,6 +116,8 @@ void ValueIteration::ComputeStateValuesStandard(real threshold, int max_iter)
     V'(s) - Q(s,a)
     \f]
     then action \f$a\f$ is sub-optimal for state \f$s\f$.
+    
+    \bug This does not seem to match the standard value iteration.
 */
 void ValueIteration::ComputeStateValuesElimination(real threshold, int max_iter)
 {

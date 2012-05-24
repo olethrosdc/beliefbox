@@ -29,15 +29,13 @@ ModelBasedRL::ModelBasedRL(int n_states_,
       total_steps(0)
 {
     state = -1;
-    mdp = model->CreateMDP();
+    mdp = model->getMeanMDP();
 	assert(mdp);
     value_iteration = new ValueIteration(mdp, gamma);
     tmpQ.resize(n_actions);
 }
 ModelBasedRL::~ModelBasedRL()
 {
-    //mdp->ShowModel();
-	delete mdp;
     delete value_iteration;
 }
 void ModelBasedRL::Reset()
@@ -81,7 +79,7 @@ int ModelBasedRL::Act(real reward, int next_state)
 			delete mdp;
 		}
         mdp = model->getMeanMDP();
-        
+        //mdp = model->CreateMeanMDP();
         // update values
         value_iteration->setMDP(mdp);
         value_iteration->ComputeStateValues(1e-6,1);

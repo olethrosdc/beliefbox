@@ -16,7 +16,7 @@
 #include "SingularDistribution.h"
 #include <iostream>
 
-DiscreteMDP* MDPModel::CreateMDP()
+DiscreteMDP* MDPModel::CreateMDP() const
 {
     mdp_dbg("Making a DiscreteMDP with %d states, %d actions from model\n", n_states, n_actions);
     DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL);
