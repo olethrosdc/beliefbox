@@ -75,9 +75,9 @@ int ModelBasedRL::Act(real reward, int next_state)
     state = next_state;
 
     if (use_value_iteration) {
-		if (mdp) {
-			delete mdp;
-		}
+		//if (mdp) {
+        //delete mdp;
+		//}
         mdp = model->getMeanMDP();
         //mdp = model->CreateMeanMDP();
         // update values
