@@ -41,10 +41,10 @@ int main (void)
     DiscreteChain chain(5);
     RandomMDP random_mdp(2, 8, 0.001, 0.1, 0, 1, &rng, false);
 
-    //const DiscreteMDP* mdp = random_mdp.getMDP();
+    const DiscreteMDP* mdp = random_mdp.getMDP();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
-    const DiscreteMDP* mdp = chain.getMDP();
+    //const DiscreteMDP* mdp = chain.getMDP();
 
     int n_states = mdp->getNStates();
     int n_actions = mdp->getNActions();

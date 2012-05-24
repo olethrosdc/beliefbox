@@ -122,6 +122,7 @@ void ValueIteration::ComputeStateValuesStandard(real threshold, int max_iter)
 void ValueIteration::ComputeStateValuesElimination(real threshold, int max_iter)
 {
     int n_iter = 0;
+    dQ.Clear();
     do {
         Delta = 0.0;
         pV = V;

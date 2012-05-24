@@ -42,8 +42,8 @@ public:
     void Reset();
     inline void ComputeStateValues(real threshold, int max_iter=-1)
     {
-        //ComputeStateValuesElimination(threshold, max_iter);
-        ComputeStateValuesStandard(threshold, max_iter);
+        ComputeStateValuesElimination(threshold, max_iter);
+        //ComputeStateValuesStandard(threshold, max_iter);
     }
     void ComputeStateValuesStandard(real threshold, int max_iter=-1);
     void ComputeStateValuesAsynchronous(real threshold, int max_iter=-1);
