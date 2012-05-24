@@ -24,7 +24,6 @@ class DirichletFiniteOutcomes : public DirichletDistribution
 {
 protected:
     real prior_alpha;
-    real alpha_sum;
     int n_seen_symbols;
   public:
     DirichletFiniteOutcomes();

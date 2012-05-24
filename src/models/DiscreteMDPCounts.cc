@@ -184,7 +184,7 @@ void DiscreteMDPCounts::ShowModel() const
    }
 }
 
-DiscreteMDP* DiscreteMDPCounts::generate() 
+DiscreteMDP* DiscreteMDPCounts::generate() const
 {
     DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL);
     for (int s=0; s<n_states; s++) {

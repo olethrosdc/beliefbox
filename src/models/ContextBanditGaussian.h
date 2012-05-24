@@ -42,7 +42,7 @@ public:
     virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
     virtual void ShowModel() const;
-    virtual DiscreteMDP* generate()
+    virtual DiscreteMDP* generate() const
     {
         fprintf(stderr, "Not implemented!\n");
         exit(-1);

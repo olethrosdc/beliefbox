@@ -34,9 +34,9 @@ int main (void)
     theta /= theta.Sum();
     MultinomialDistribution P(theta);
 
-    int interval = 10;
+    int interval = 1000;
     int c = interval;
-    for (int t=0; t<100; t++) {
+    for (int t=0; t<10000; t++) {
         Vector x = P.generate();
 
         dirichlet.update(&x);

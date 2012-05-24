@@ -64,12 +64,16 @@ public:
     virtual void Reset();
     virtual void ShowModel() const;
 
-    virtual DiscreteMDP* generate();
+    virtual DiscreteMDP* generate() const;
     virtual const DiscreteMDP* const getMeanMDP() const;
 
     virtual DiscreteMDP* CreateMDP();
     virtual void CopyMeanMDP(DiscreteMDP* mdp) const;
-
+    int getNVisits(int s, int a) const
+    {
+        int ID = getID(s, a);
+        return (int) ceil(P[ID].getMass());
+    }
     //void SetNextReward(int s, int a, real r);
 };
 
