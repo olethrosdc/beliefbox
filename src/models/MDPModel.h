@@ -91,7 +91,7 @@ public:
         return 0.0;
     }
     virtual void Reset() = 0;
-    virtual DiscreteMDP* CreateMDP();
+    virtual DiscreteMDP* CreateMDP() const;
     virtual DiscreteMDP* generate() const = 0;
     virtual const DiscreteMDP* const getMeanMDP() const = 0;
     virtual void ShowModel() const;

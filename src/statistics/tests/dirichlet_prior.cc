@@ -15,7 +15,7 @@
 
 int main (void)
 {
-    int N = 16384;
+    int N = 1024;
     DirichletDistribution dirichlet(N);
     DirichletFiniteOutcomes finite_dirichlet(N);
 
@@ -34,9 +34,9 @@ int main (void)
     theta /= theta.Sum();
     MultinomialDistribution P(theta);
 
-    int interval = 1000;
+    int interval = 100;
     int c = interval;
-    for (int t=0; t<10000; t++) {
+    for (int t=0; t<1000; t++) {
         Vector x = P.generate();
 
         dirichlet.update(&x);
@@ -45,11 +45,11 @@ int main (void)
         //Vector post = dirichlet.GetParameters();
         //Vector gen = dirichlet.generate();
 
-        Vector post = dirichlet.getMarginal();
-        Vector gen = finite_dirichlet.getMarginal();
+        //Vector post = dirichlet.getMarginal();
+        //Vector gen = finite_dirichlet.getMarginal();
 
-        //Vector post = finite_dirichlet.getMarginal();
-        //Vector gen = finite_dirichlet.generate();
+        Vector post = finite_dirichlet.getMarginal();
+        Vector gen = finite_dirichlet.generate();
         c--;
         if (c == 0) {
             real err1 = 0;

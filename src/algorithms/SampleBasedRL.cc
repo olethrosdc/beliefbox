@@ -116,11 +116,11 @@ int SampleBasedRL::Act(real reward, int next_state)
         if (use_upper_bound) {
             for (int i=0; i<max_samples; ++i) {
                 value_iteration[i]->setMDP(mdp_list[i]);
-                value_iteration[i]->ComputeStateValues(1e-6, 1000);
+                value_iteration[i]->ComputeStateValues(0.0, 1000);
             }
         } else {
             multi_value_iteration->setMDPList(mdp_list);
-            multi_value_iteration->ComputeStateValues(1e-6, 1000);
+            multi_value_iteration->ComputeStateValues(0.0, 1000);
         }
     }
 
@@ -144,7 +144,7 @@ int SampleBasedRL::Act(real reward, int next_state)
     }
 
     int next_action;
-    real epsilon_t = epsilon / (sqrt((real) T));
+    real epsilon_t = epsilon / (1.0 + sqrt((real) T));
 
     // choose action
     if (urandom()<epsilon_t) {
