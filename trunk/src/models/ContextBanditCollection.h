@@ -35,7 +35,7 @@ public:
     virtual real getRewardDensity (int s, int a, real r) const;
     virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
-    virtual DiscreteMDP* generate()
+    virtual DiscreteMDP* generate() const
     {
         fprintf(stderr, "Not implemented!\n");
         exit(-1);
