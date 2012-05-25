@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -13,26 +13,68 @@
 #ifndef UCRL2_H
 #define UCRL2_H
 
-#include "OptimisticValueIteration.h"
+#include "DiscreteMDP.h"
+#include "DiscretePolicy.h"
+#include "ExplorationPolicy.h"
 #include "Matrix.h"
 #include "real.h"
+#include "OnlineAlgorithm.h"
+#include "MDPModel.h"
+#include "OptimisticValueIteration.h"
+#include "RandomNumberGenerator.h"
 #include <vector>
 
-class UCRL2 : public OnlineAlgorithms
+/** 
+    \ingroup ReinforcementLearning
+*/
+/*@{*/
+	
+/** Direct model-based reinforcement learning.
+	
+	This class maintains a model of the (discrete) MDP.
+	
+*/
+class UCRL2 : public OnlineAlgorithm<int, int>
 {
 protected:
     const int n_states; ///< number of states
     const int n_actions; ///< number 
+    real gamma; ///< discount factor
+    real epsilon; ///< randomness
     int state; ///< current state
-
+    int action; ///< current action
+    DiscreteMDPCounts* model; ///< stores what is known about the model
+    OptimisticValueIteration* value_iteration;
+    std::vector<real> tmpQ;
+	RandomNumberGenerator* rng;
+    int total_steps;
+    int update_interval;
+    int next_update;
 public:
     UCRL2(int n_states_,
-          int n_actions_);
-    ~UCRL2();
-    void Reset();
-    real Observe (int action, int next_state, real reward);
-    real getValue (int s, int a);
+          int n_actions_,
+          real gamma_,
+          real epsilon_,
+          DiscreteMDPCounts* model_,
+          RandomNumberGenerator* rng_);
+    virtual ~UCRL2();
+    virtual void Reset();
+    /// Full observation
+    virtual real Observe (int state, int action, real reward, int next_state, int next_action);
+    /// Partial observation 
+    virtual real Observe (real reward, int next_state, int next_action);
+    /// Get an action using the current exploration policy.
+    /// it calls Observe as a side-effect.
+    virtual int Act(real reward, int next_state);
+
+    virtual real getValue (int state, int action)
+    {
+        return value_iteration->getValue(state, action);
+    }
+    
 };
 
+
+/*@}*/
 #endif
 
