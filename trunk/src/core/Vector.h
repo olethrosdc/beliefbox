@@ -24,6 +24,12 @@
     \brief Vector and matrix computations.
 */
 
+#ifdef NDEBUG
+#define DEFAULT_CHECK_BOUNDS NO_CHECK_BOUNDS
+#else
+#define DEAFULT_CHECK_BOUNDS CHECK_BOUNDS
+#endif
+
 /// An n-dimensional vector.
 class Vector : public Object
 {
@@ -32,19 +38,11 @@ public:
     real* x;
     int n;
     Vector ();
-#ifdef NDEBUG
-    Vector (int N_, real* y, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
-    explicit Vector (int N_, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
-    explicit Vector (uint N_, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
-    static Vector Unity(int N_, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
-    explicit Vector (real x, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
-#else
-    Vector (int N_, real* y, enum BoundsCheckingStatus check = CHECK_BOUNDS);
-    explicit Vector (int N_, enum BoundsCheckingStatus check = CHECK_BOUNDS);
-    explicit Vector (uint N_, enum BoundsCheckingStatus check = CHECK_BOUNDS);
-    static Vector Unity(int N_, enum BoundsCheckingStatus check = CHECK_BOUNDS);
-    explicit Vector (real x, enum BoundsCheckingStatus check = CHECK_BOUNDS);
-#endif
+    Vector (int N_, real* y, enum BoundsCheckingStatus check = DEFAULT_CHECK_BOUNDS);
+    explicit Vector (int N_, enum BoundsCheckingStatus check = DEFAULT_CHECK_BOUNDS);
+    explicit Vector (uint N_, enum BoundsCheckingStatus check = DEFAULT_CHECK_BOUNDS);
+    static Vector Unity(int N_, enum BoundsCheckingStatus check = DEFAULT_CHECK_BOUNDS);
+    explicit Vector (real x, enum BoundsCheckingStatus check = DEFAULT_CHECK_BOUNDS);
 
     Vector (const Vector& rhs);
     Vector (const std::vector<real>& rhs);
