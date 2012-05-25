@@ -110,6 +110,21 @@ public:
             next.insert(s2);
         }
     }
+    inline void setTransitionProbabilities(int s, int a, const Vector& p)
+    {
+        assert(s>=0 && s<n_states);
+        int ID = getID (s, a);
+        assert(p.Size() == n_states);
+        for (int s2=0; s2<n_states; ++s2) {
+            P(ID, s2) = p(s2);
+            DiscreteStateSet& next = next_states[ID];
+            if (p(s2)==0) {
+                next.erase(s2);
+            } else {
+                next.insert(s2);
+            }
+        }
+    }
     inline const DiscreteStateSet& getNextStates(int s, int a) const
     {
         int ID = getID (s,a);

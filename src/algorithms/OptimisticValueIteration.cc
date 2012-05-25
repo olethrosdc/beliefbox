@@ -11,10 +11,12 @@
  ***************************************************************************/
 
 #include "OptimisticValueIteration.h"
+#include "ValueIteration.h"
 #include "real.h"
 #include "MathFunctions.h"
 #include "Vector.h"
 #include "DiscretePolicy.h"
+#include "Bounds.h"
 #include <cmath>
 #include <cassert>
 
@@ -34,66 +36,67 @@ OptimisticValueIteration::OptimisticValueIteration(const DiscreteMDPCounts* mdp,
 
 void OptimisticValueIteration::Reset()
 {
-    //int N = n_states * n_actions;
-
     V.Resize(n_states);
-    dV.Resize(n_states);
-    pV.Resize(n_states);
-
+    V.Clear();
     Q.Resize(n_states, n_actions);
-    dQ.Resize(n_states, n_actions);
-    pQ.Resize(n_states, n_actions);
-
-    
-    for (int s=0; s<n_states; s++) {
-        V(s) = 0.0;
-        dV(s) = 0.0;
-        pV(s) = 0.0;
-        for (int a=0; a<n_actions; a++) {
-            Q(s, a) = 0.0;
-            dQ(s, a) = 1.0;
-            pQ(s, a) = 0.0;
-        }
-    }
+    Q.Clear();
 }
 
 OptimisticValueIteration::~OptimisticValueIteration()
 {
 }
 
-/** Compute state values using value iteration.
+/** Compute state values using value iteration in an augmented MDP.
 
-	The process ends either when the error is below the given threshold,
-	or when the given number of max_iter iterations is reached. Setting
-	max_iter to -1 means there is no limit to the number of iterations.
+    The augmented MDP is 
+
+    \param delta the error probability for the confidence bound.
+    \param threshold stop when the change in value Delta < threshold.
+    \param max_iter stop after at most max_iter steps, unless max_iter < 0.
 */
-void OptimisticValueIteration::ComputeStateValuesStandard(real error_probability, real epsilon, real threshold, int max_iter)
+void OptimisticValueIteration::ComputeStateValuesAugmentedMDP(real delta,
+                                                              real threshold,
+                                                              int max_iter)
 {
-    int n_iter = 0;
-    do {
-        Delta = 0.0;
-        pV = V;
-        for (int s=0; s<n_states; s++) {
-            for (int a=0; a<n_actions; a++) {
-                real Q_sa = 0.0;
-                int N_sa = (int) ceil(mdp->getNVisits(s, a));
-                for (int s2=0; s2<n_states; ++s2) {
-                    real P = mdp->getTransitionProbability(s, a, s2);
-                    real R = mdp->getExpectedReward(s, a) - baseline;
-                    Q_sa += P * (R + gamma * pV(s2));
-                }
-                Q(s, a) = Q_sa;
+    int n_aug = 2 * n_actions * n_states;
+    DiscreteMDP augmented_mdp(n_states, n_aug);
+    for (int s=0; s<n_states; s++) {
+        int a_aug = 0;
+        for (int a=0; a<n_actions; a++) {
+            int N_sa = (int) ceil(mdp->getNVisits(s, a));
+            real r_sa = mdp->getExpectedReward(s,a);
+            real r_gap = HoeffdingBound(1, N_sa, delta);
+            Vector P_sa = mdp->getTransitionProbabilities(s, a);
+            real gap = WeissmanBound(n_states, N_sa, delta);
+            for (int k=0; k<n_states; k++) {
+                augmented_mdp.setTransitionProbabilities(s, a_aug, MultinomialDeviation(P_sa, k, -gap));
+                augmented_mdp.setFixedReward(s, a_aug, r_sa + r_gap);
+                a_aug++;
+                augmented_mdp.setTransitionProbabilities(s, a_aug, MultinomialDeviation(P_sa, k, +gap));
+                augmented_mdp.setFixedReward(s, a_aug, r_sa + r_gap);
+                a_aug++;
             }
-            V(s) = Max(Q.getRow(s));
-            Delta += fabs(V(s) - pV(s));
         }
-        
-        if (max_iter > 0) {
-            max_iter--;
+    }
+
+    augmented_mdp.Check();
+
+    ValueIteration vi(&augmented_mdp, gamma);
+    vi.ComputeStateValues(threshold, max_iter);
+    for (int s=0; s<n_states; s++) {
+        int a_aug = 0;
+        V(s) = -INF;
+        for (int a=0; a<n_actions; a++) {
+            real Qaug_max = vi.getValue(s, a_aug);
+            for (int k=0; k<2*n_states; ++k, a_aug++) {
+                //printf("%d %f\n", k, vi.getValue(s, a_aug));
+                Qaug_max = std::max(Qaug_max, vi.getValue(s, a_aug));
+            }
+            Q(s,a) = Qaug_max;
+            V(s) = std::max(V(s), Q(s,a));
+            //printf("Q(%d, %d) = %f\n", s, a, Q(s,a));
         }
-        n_iter++;
-    } while(Delta >= threshold && max_iter != 0);
-    //printf("#OptimisticValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
+    }            
 }
 
 

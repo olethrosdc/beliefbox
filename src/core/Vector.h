@@ -27,7 +27,7 @@
 #ifdef NDEBUG
 #define DEFAULT_CHECK_BOUNDS NO_CHECK_BOUNDS
 #else
-#define DEAFULT_CHECK_BOUNDS CHECK_BOUNDS
+#define DEFAULT_CHECK_BOUNDS CHECK_BOUNDS
 #endif
 
 /// An n-dimensional vector.

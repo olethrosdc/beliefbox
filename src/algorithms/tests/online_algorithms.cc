@@ -25,6 +25,7 @@
 #include "QLearningDirichlet.h"
 #include "ModelBasedRL.h"
 #include "SampleBasedRL.h"
+#include "UCRL2.h"
 #include "ModelCollectionRL.h"
 #include "ContextBanditGaussian.h"
 #include "ContextBandit.h"
@@ -87,7 +88,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
                               real gamma);
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:    {QLearning, Model, Sarsa, Sampling, TdBma}\n\
+    --algorithm:    {QLearning, Model, Sarsa, Sampling, UCRL, TdBma}\n\
     --environment:  {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
@@ -402,6 +403,17 @@ int main (int argc, char** argv)
                                          epsilon,
                                          model,
                                          rng);
+        } else if (!strcmp(algorithm_name, "UCRL")) {
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
+                                                  dirichlet_mass,
+                                                  reward_prior);
+            model= (MDPModel*) discrete_mdp;
+            algorithm = new UCRL2(n_states,
+                                  n_actions,
+                                  gamma,
+                                  epsilon,
+                                  discrete_mdp,
+                                  rng);
         } else if (!strcmp(algorithm_name, "Sampling")) {
             discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
                                                   dirichlet_mass,

@@ -28,12 +28,7 @@ public:
     int n_states;
     int n_actions;
     Vector V; ///< state values
-    Vector dV; ///< difference between state values
-    Vector pV; ///< previous statate value
     Matrix Q; ///< state-action value
-    Matrix dQ; ///< state-action value difference
-    Matrix pQ; ///< previous state-action values
-    real Delta;
     real baseline;
 
     OptimisticValueIteration(const DiscreteMDPCounts* mdp,
@@ -41,14 +36,13 @@ public:
                              real baseline=0.0);
     ~OptimisticValueIteration();
     void Reset();
-    void ComputeStateValues(real error_probability, real epsilon, real threshold, int max_iter=-1)
+    inline void ComputeStateValues(real delta, real threshold, int max_iter=-1)
     {
-        ComputeStateValuesStandard(error_probability,
-                                   epsilon,
-                                   threshold,
-                                   max_iter);
+        ComputeStateValuesAugmentedMDP(delta,
+                                       threshold,
+                                       max_iter);
     }
-    void ComputeStateValuesStandard(real error_probability, real epsilon, real threshold, int max_iter=-1);
+    void ComputeStateValuesAugmentedMDP(real delta, real threshold, int max_iter=-1);
     inline real getValue (int state, int action)
     {
         return Q(state, action);
@@ -56,6 +50,14 @@ public:
     inline real getValue (int state)
     {
         return V(state);
+    }
+    inline Matrix getValues()
+    {
+        return Q;
+    }
+    inline Vector getStateValues()
+    {
+        return V;
     }
     FixedDiscretePolicy* getPolicy() const;
 };

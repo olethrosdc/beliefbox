@@ -218,8 +218,8 @@ FixedDiscretePolicy* RewardPolicyBelief::CalculatePosterior(Demonstrations<int, 
     printf("# reward posterior (%d x %d x %d = %d)\n",
            n_rewards,
            n_policies,
-           loss_vector.size(),
-           n_rewards * n_policies * loss_vector.size());
+           (int) loss_vector.size(),
+           n_rewards * n_policies * (int) loss_vector.size());
 	Vector reward_posterior(n_rewards);
 	reward_posterior.Clear();
 	for (int i=0; i<n_rewards; ++i) {
