@@ -73,14 +73,14 @@ void MultinomialDistribution::generate(Vector& x) const
 }
 
 /// generate an integer
-int MultinomialDistribution::generateInt() const
+int MultinomialDistribution::generateInt(const Vector& x)
 {
     real d=urandom();
     real sum = 0.0;
-	int n = p.Size();
+	int n = x.Size();
 
     for (int i=0; i<n; i++) {
-        sum += p[i];
+        sum += x[i];
         if (d <= sum) {
             return i;
         }

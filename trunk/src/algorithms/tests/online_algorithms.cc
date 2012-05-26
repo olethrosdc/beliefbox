@@ -354,7 +354,9 @@ int main (int argc, char** argv)
         OnlineAlgorithm<int, int>* algorithm = NULL;
         MDPModel* model = NULL;
         //Gridworld* g2 = gridworld;
-        if (!strcmp(algorithm_name, "Sarsa")) { 
+        if (!strcmp(algorithm_name, "Oracle")) {
+            algorithm = NULL;
+        } else if (!strcmp(algorithm_name, "Sarsa")) { 
             algorithm = new Sarsa(n_states,
                                   n_actions,
                                   gamma,
@@ -681,6 +683,20 @@ Statistics EvaluateAlgorithm (int episode_steps,
     statistics.ep_stats.reserve(n_episodes); 
     statistics.reward.reserve(n_steps);
 
+    FixedDiscretePolicy* oracle_policy = NULL;
+    if (!algorithm) {
+        const DiscreteMDP* mdp = environment->getMDP();
+        ValueIteration value_iteration(mdp, gamma);
+        value_iteration.ComputeStateValues(1e-9);
+        oracle_policy = value_iteration.getPolicy();
+        //oracle_policy = new FixedSoftmaxPolicy(value_iteration.Q, 1.0);
+        //for (int i=0; i<mdp->getNStates(); ++i) {
+        //printf ("%f ", value_iteration.getValue(i));
+        //}
+        //printf ("#V REWARD\n");
+        delete mdp;
+    }
+
     real discount = 1.0;
     int current_time = 0;
     environment->Reset();
@@ -694,7 +710,12 @@ Statistics EvaluateAlgorithm (int episode_steps,
         if (!action_ok) {
             int state = environment->getState();
             real reward = environment->getReward();
-            algorithm->Act(reward, state);
+            if (algorithm) {
+                algorithm->Act(reward, state);
+            } else {
+                oracle_policy->Reset(state);
+            }
+            
             //printf ("%d %d %f\n", state, action, reward);
             episode++;
             printf ("# episode %d complete\n", episode);
@@ -709,7 +730,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
                 statistics.ep_stats[episode].steps = 0;
                 discount = 1.0;
                 environment->Reset();
-                algorithm->Reset();
+                if (algorithm) {
+                    algorithm->Reset();
+                }
                 action_ok = true;
                 current_time = 0;
             }
@@ -727,50 +750,21 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
         discount *= gamma;
 
-        int action = algorithm->Act(reward, state);
-        if (0) {
+        int action;
+        if (algorithm) {
+            action = algorithm->Act(reward, state);
+        } else {
+            oracle_policy->Observe(reward, state);
+            action = oracle_policy->SelectAction();
+        }
+        if (1) {
             printf ("%d %d %f # state-action-reward\n", state, action, reward);
         }
         action_ok = environment->Act(action);
         current_time++;
 
-
-
     }
     printf(" %f %f # RUN_REWARD\n", total_reward, discounted_reward);
-
-#if 0
-    const DiscreteMDP* mdp = environment->getMDP(); 
-    if (!mdp) {
-        Serror("The environment must support the creation of an MDP\n");
-        exit(-1);
-    } else {
-        ValueIteration value_iteration(mdp, gamma);
-        
-        std:: cout << "(value iteration)" << std::endl;
-        value_iteration.ComputeStateActionValues(10e-6,-1);
-        int n_states = mdp->getNStates();
-        int n_actions = mdp->getNActions();
-        real sse = 0.0;
-        for (int i=0; i<n_states; i++) {
-            for (int a=0; a<n_actions; a++) {
-                real V =  value_iteration.getValue(i, a);
-                real hV = algorithm->getValue(i, a);
-                printf ("Q(%d, %d) = %f ~ %f\n", i, a, V, hV);
-                real err = V - hV;
-                sse += err*err;
-            }
-        }
-
-        //statistics.ep_stats[episode].mse += sse /((real) (n_states*n_actions));
-        
-        //std::cout << "REAL MODEL\n";
-        //mdp->ShowModel();
-		
-        delete mdp;
-    }
-#endif
-
 	  
     if ((int) statistics.ep_stats.size() != n_episodes) {
         statistics.ep_stats.resize(statistics.ep_stats.size() - 1);
@@ -779,6 +773,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
             episode, n_steps,
             (int) statistics.ep_stats.size(),
             (int) statistics.reward.size());
+
+    delete oracle_policy;
 
     return statistics;
 }

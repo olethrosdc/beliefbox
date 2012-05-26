@@ -82,17 +82,17 @@ int UCRL2::Act(real reward, int next_state)
     state = next_state;
     total_steps++;
     if (total_steps >= next_update) {
-        update_interval +=1;
+        update_interval += n_states;
         next_update = total_steps + update_interval;
         printf(" # next update: %d (interval %d)\n", next_update, update_interval);
-        value_iteration->ComputeStateValues(epsilon, 1e-6, -1);
-        const DiscreteMDP* mdp = model->getMeanMDP();
-        ValueIteration mean_vi(mdp, gamma);
-        mean_vi.ComputeStateValues(1e-6, -1);
-        printf("OVI\n");
-        value_iteration->getValues().print(stdout);
-        printf("MVI\n");
-        mean_vi.getValues().print(stdout);
+        value_iteration->ComputeStateValues(epsilon, 1e-3, -1);
+        //const DiscreteMDP* mdp = model->getMeanMDP();
+        //ValueIteration mean_vi(mdp, gamma);
+        //mean_vi.ComputeStateValues(1e-6, -1);
+        //printf("OVI\n");
+        //value_iteration->getValues().print(stdout);
+        //        printf("MVI\n");
+        //mean_vi.getValues().print(stdout);
     }
     for (int i=0; i<n_actions; i++) {
         tmpQ[i] = value_iteration->getValue(next_state, i);

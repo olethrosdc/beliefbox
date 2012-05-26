@@ -30,7 +30,10 @@ public:
 	virtual void Resize(int n);
 	virtual void generate(Vector* x) const;
 	virtual Vector generate() const;
-    int generateInt() const;
+    int generateInt() const
+    {
+        return generateInt(p);
+    }
     virtual Vector getMean()
     {
         return p;
@@ -46,7 +49,7 @@ public:
     }
     virtual real pdf(const Vector& x) const;
     virtual void generate(Vector& x) const;
-
+    static int generateInt(const Vector& x);
 };
 
 Vector MultinomialDeviation(const Vector& p, const int j, const real c);
