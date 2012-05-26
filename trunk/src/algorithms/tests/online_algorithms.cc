@@ -757,7 +757,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             oracle_policy->Observe(reward, state);
             action = oracle_policy->SelectAction();
         }
-        if (1) {
+        if (0) {
             printf ("%d %d %f # state-action-reward\n", state, action, reward);
         }
         action_ok = environment->Act(action);
