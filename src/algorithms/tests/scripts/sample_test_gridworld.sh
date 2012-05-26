@@ -1,4 +1,4 @@
-runs=1
+runs=1000
 steps=10000
 gamma=0.95
 epsilon=0.0
@@ -11,15 +11,15 @@ task=Gridworld
 
 for randomness in 0.01 #0.05 0.1 0.2 0.3 0.4
 do
-    for maze in maze1 #maze0 maze1 maze2 maze3 maze4
+    for maze in maze0 maze1 maze2 # maze3 maze4
     do
         outdir=$HOME/results/$task/$maze/r${randomness}
         mkdir -p $outdir
-
+        echo "writing resutls to $outdir"
 
         params="--environment $task --maze_name $HOME/projects/beliefbox/dat/$maze --gamma $gamma --epsilon 0.1 --n_runs $runs --n_steps $steps --n_episodes 10000 --episode_steps -1 --randomness $randomness --pit_value 0.0 --step_value 0.001"
 
-        for algorithm in QLearning Model UCRL
+        for algorithm in Oracle QLearning Model UCRL
         do
             /usr/bin/time -o $outdir/${algorithm}.cpu ./bin/online_algorithms --algorithm $algorithm $params >$outdir/${algorithm}.out 
             grep PAYOFF $outdir/${algorithm}.out > $outdir/${algorithm}.payoff
