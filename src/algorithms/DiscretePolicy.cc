@@ -13,6 +13,7 @@
 #include "DiscretePolicy.h"
 //#include "MDPDistribution.h"
 #include "DiscreteMDP.h"
+#include "MultinomialDistribution.h"
 
 #include "Random.h"
 #include <cmath>
@@ -132,17 +133,7 @@ FixedDiscretePolicy FixedDiscretePolicy::MakeGreedyPolicy()
 }
 int FixedDiscretePolicy::SelectAction()
 {
-    
-    int n = p[state].Size();
-    real x = urandom();
-    real s = 0.0;
-    for (int a=0; a<n; ++a) {
-        s += p[state][a];
-        if (s>x) {
-            return a;
-        }
-    }
-    return n-1;
+    return MultinomialDistribution::generateInt(p[state]);
 }
 
 void FixedDiscretePolicy::Observe (int& previous_state, int& action, real r, int& next_state)

@@ -58,7 +58,7 @@ void OptimisticValueIteration::ComputeStateValuesAugmentedMDP(real delta,
                                                               real threshold,
                                                               int max_iter)
 {
-    int n_aug = 2 * n_actions * n_states;
+    int n_aug = n_actions * n_states;
     DiscreteMDP augmented_mdp(n_states, n_aug);
     for (int s=0; s<n_states; s++) {
         int a_aug = 0;
@@ -69,10 +69,7 @@ void OptimisticValueIteration::ComputeStateValuesAugmentedMDP(real delta,
             Vector P_sa = mdp->getTransitionProbabilities(s, a);
             real gap = WeissmanBound(n_states, N_sa, delta);
             for (int k=0; k<n_states; k++) {
-                augmented_mdp.setTransitionProbabilities(s, a_aug, MultinomialDeviation(P_sa, k, -gap));
-                augmented_mdp.setFixedReward(s, a_aug, r_sa + r_gap);
-                a_aug++;
-                augmented_mdp.setTransitionProbabilities(s, a_aug, MultinomialDeviation(P_sa, k, +gap));
+                augmented_mdp.setTransitionProbabilities(s, a_aug, MultinomialDeviation(P_sa, k, gap));
                 augmented_mdp.setFixedReward(s, a_aug, r_sa + r_gap);
                 a_aug++;
             }
@@ -88,7 +85,7 @@ void OptimisticValueIteration::ComputeStateValuesAugmentedMDP(real delta,
         V(s) = -INF;
         for (int a=0; a<n_actions; a++) {
             real Qaug_max = vi.getValue(s, a_aug);
-            for (int k=0; k<2*n_states; ++k, a_aug++) {
+            for (int k=0; k<n_states; ++k, a_aug++) {
                 //printf("%d %f\n", k, vi.getValue(s, a_aug));
                 Qaug_max = std::max(Qaug_max, vi.getValue(s, a_aug));
             }
