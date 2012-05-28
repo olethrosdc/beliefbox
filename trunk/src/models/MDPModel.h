@@ -90,6 +90,15 @@ public:
     {
         return 0.0;
     }
+    /** This function passes a matrix of known rewards to the
+        model. Ideally, all algorithms should automatically be able
+        to tell that the reward is perfectly known in this case, but
+        this is not guaranteed.
+    */
+    virtual void setFixedRewards (const Matrix& rewards)
+    {
+        // does nothing
+    }
     virtual void Reset() = 0;
     virtual DiscreteMDP* CreateMDP() const;
     virtual DiscreteMDP* generate() const = 0;
@@ -120,7 +129,6 @@ public:
                              Distribution* initial_rewards);
     virtual ~GradientDescentMDPModel();
     virtual void AddTransition(int s, int a, real r, int s2);
-
     virtual real GenerateReward (int s, int a) const;
     virtual int GenerateTransition (int s, int a) const;
     virtual real getTransitionProbability (int s, int a, int s2) const;

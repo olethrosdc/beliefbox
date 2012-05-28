@@ -67,6 +67,7 @@ SampleBasedRL::~SampleBasedRL()
 void SampleBasedRL::Reset()
 {
     state = -1;
+    next_update = T;
     //model->Reset();
 }
 /// Full observation
@@ -112,6 +113,15 @@ int SampleBasedRL::Act(real reward, int next_state)
         for (int i=0; i<max_samples; ++i) {
             delete mdp_list[i];
             mdp_list[i] = model->generate();
+#if 0
+            logmsg("Generating MDP model %d\n", i);
+            for (int s=0; s<n_states; ++s) {
+                for (int a=0; a<n_actions; ++a) {
+                    printf ("%f ", mdp_list[i]->getExpectedReward(s, a));
+                }
+                printf("# state %d\n", s);
+            }
+#endif
         }
         if (use_upper_bound) {
             for (int i=0; i<max_samples; ++i) {

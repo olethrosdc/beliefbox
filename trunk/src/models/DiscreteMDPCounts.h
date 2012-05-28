@@ -56,6 +56,7 @@ public:
     DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count= 0.5, RewardFamily reward_family=BETA);
     virtual ~DiscreteMDPCounts();
     virtual void AddTransition(int s, int a, real r, int s2);
+    virtual void setFixedRewards(const Matrix& rewards);
     virtual real GenerateReward (int s, int a) const;
     virtual int GenerateTransition (int s, int a) const;
     virtual real getTransitionProbability (int s, int a, int s2) const;

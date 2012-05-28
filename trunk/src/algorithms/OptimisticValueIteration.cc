@@ -48,13 +48,20 @@ OptimisticValueIteration::~OptimisticValueIteration()
 
 /** Compute state values using value iteration in an augmented MDP.
 
-    The augmented MDP is 
+    The augmented MDP is calculated by selecting the corners of a
+    polytope for each transition probability vector that obeys \f$\{x
+    \in S^n : \|x - y\|_1 \leq \epsilon\}\f$, where y is the original
+    vector and \f$S^n\f$ is the n-dimensional simplex, while
+    \f$\epsilon\f$ is a function of \f$\delta\f$ through the Weissman
+    L1-bound on the empirical distribution.
 
     \param delta the error probability for the confidence bound.
+    \param reward_delta the error probability for the reward bound.
     \param threshold stop when the change in value Delta < threshold.
     \param max_iter stop after at most max_iter steps, unless max_iter < 0.
 */
 void OptimisticValueIteration::ComputeStateValuesAugmentedMDP(real delta,
+                                                              real reward_delta,
                                                               real threshold,
                                                               int max_iter)
 {

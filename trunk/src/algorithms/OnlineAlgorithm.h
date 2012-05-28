@@ -53,7 +53,11 @@ public:
     /// it calls Observe as a side-effect.
     virtual A Act(real reward, S next_state) = 0;
     virtual real getValue (S state, A action) = 0;
-
+    /// Some algorithms may implement a different strategy when the reward matrix SxA is given.
+    virtual void setFixedRewards(const Matrix& rewards) 
+    {
+        // nothing to do here.
+    }
 };
 
 /// @}

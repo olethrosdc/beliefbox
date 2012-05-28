@@ -100,6 +100,20 @@ public:
         return multi_value_iteration->getValue(state, action);
     }
     
+    /** Set the rewards to Singular distributions.
+
+        Since this is a Bayesian approach, we can simply set the belief about the reward in each state to be a singular distribution.
+     */
+    virtual void setFixedRewards(const Matrix& rewards)
+    {
+        model->setFixedRewards(rewards);
+#if 0
+        logmsg("Setting reward matrix\n");
+        rewards.print(stdout);
+#endif
+    }
+
+    
 };
 
 
