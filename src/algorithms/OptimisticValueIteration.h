@@ -19,7 +19,10 @@
 #include <vector>
 
 
+/** Optimistic value iteration.
 
+    Perform value iteration on an augmented MDP.
+*/
 class OptimisticValueIteration
 {
 public:
@@ -36,13 +39,32 @@ public:
                              real baseline=0.0);
     ~OptimisticValueIteration();
     void Reset();
-    inline void ComputeStateValues(real delta, real threshold, int max_iter=-1)
+
+    /// Perform value iteration for unknown rewards and transitions.
+    inline void ComputeStateValues(real delta,
+                                   real threshold,
+                                   int max_iter=-1)
     {
         ComputeStateValuesAugmentedMDP(delta,
+                                       delta,
                                        threshold,
                                        max_iter);
     }
-    void ComputeStateValuesAugmentedMDP(real delta, real threshold, int max_iter=-1);
+    void ComputeStateValuesAugmentedMDP(real delta,
+                                        real reward_delta,
+                                        real threshold,
+                                        int max_iter=-1);
+
+    /// Perform value iteration where the rewards are known.
+    inline void ComputeStateValuesKnownRewards(real delta,
+                                               real threshold,
+                                               int max_iter=-1)
+    {
+        ComputeStateValuesAugmentedMDP(delta,
+                                       0.0,
+                                       threshold,
+                                       max_iter);
+    }
     inline real getValue (int state, int action)
     {
         return Q(state, action);

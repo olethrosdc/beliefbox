@@ -40,7 +40,7 @@ protected:
     const int n_states; ///< number of states
     const int n_actions; ///< number 
     real gamma; ///< discount factor
-    real epsilon; ///< randomness
+    real confidence_interval; ///< confidence interval
     int state; ///< current state
     int action; ///< current action
     DiscreteMDPCounts* model; ///< stores what is known about the model
@@ -50,11 +50,13 @@ protected:
     int total_steps;
     int update_interval;
     int next_update;
+    Matrix rewards;
+    bool known_rewards;
+    int n_resets;
 public:
     UCRL2(int n_states_,
           int n_actions_,
           real gamma_,
-          real epsilon_,
           DiscreteMDPCounts* model_,
           RandomNumberGenerator* rng_);
     virtual ~UCRL2();
@@ -70,6 +72,10 @@ public:
     virtual real getValue (int state, int action)
     {
         return value_iteration->getValue(state, action);
+    }
+    virtual void setFixedRewards(const Matrix& rewards)
+    {
+        this->rewards = rewards;
     }
     
 };

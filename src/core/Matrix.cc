@@ -880,6 +880,39 @@ Vector Matrix::RowMax() const
 }
 
 
+/// Return a column vector that is the column-wise minimum
+Vector Matrix::ColumnMin() const
+{
+	Vector C(Rows());
+	for (int i=0; i<Rows(); ++i) {
+		C(i) = (*this)(i, 0);
+		for (int j=1; j<Columns(); ++j) {
+			real x = (*this)(i, j);
+			if (x < C(j)) {
+				C(j) = x;
+			}
+		}
+	}
+    return C;
+}
+
+/// Return a row vector that is the row-wise minimum
+Vector Matrix::RowMin() const
+{
+	Vector R(Columns());
+    for (int j=0; j<Columns(); ++j) {
+		R(j) = (*this)(0,j);
+		for (int i=1; i<Rows(); ++i) {
+			real x = (*this)(i, j);
+			if (x < R(j)) {
+				R(j) = x;
+			}
+		}
+	}
+    return R;
+}
+
+
 Vector Matrix::getColumn(int c) const
 {
     Vector column(rows);

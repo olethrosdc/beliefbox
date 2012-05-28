@@ -127,6 +127,8 @@ public:
     int Columns() const;
 	Vector RowMax() const;
 	Vector ColumnMax() const;
+	Vector RowMin() const;
+	Vector ColumnMin() const;
     real& operator() (int i, int j);
     const real& operator() (int i, int j) const;
     void print(FILE* f) const;
