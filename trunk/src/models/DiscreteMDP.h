@@ -159,7 +159,7 @@ public:
         assert(R.Rows() == n_states);
         assert(R.Columns() == n_actions);
         for (int s=0; s<n_states; ++s) {
-            for (int a=0; a<n_states; ++a) {
+            for (int a=0; a<n_actions; ++a) {
                 setFixedReward(s, a, R(s,a));
             }
         }

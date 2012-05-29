@@ -91,7 +91,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
                               Adversary* adversary);
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:    {QLearning, Model, Sarsa, Sampling, UCRL, TdBma}\n\
+    --algorithm:    {QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma}\n\
     --environment:  {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
@@ -108,7 +108,6 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --goal_value:   value of reaching a goal (defaults to 1)\n\
     --step_value:   value at each time step (defaults to 0)\n\
     --epsilon:      use epsilon-greedy with randomness in [0,1]\n\
-    --upper_bound:  use upper bound of sampled MDPs rather than lower bound\n\
     --reward_prior: {Beta, Normal, Fixed}\n\
 \n";
 
@@ -129,7 +128,6 @@ int main (int argc, char** argv)
     uint n_episodes = 1000;
     uint n_steps = 100000;
     uint grid_size = 4;
-    bool use_upper_bound = false;
     real dirichlet_mass = 0.5;
 
     enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
@@ -165,7 +163,7 @@ int main (int argc, char** argv)
                 {"grid_size", required_argument, 0, 0}, //14
                 {"randomness", required_argument, 0, 0}, //15
                 {"adversary", required_argument, 0, 0}, //16 
-                {"upper_bound", no_argument, 0, 0}, //17
+                {"upper_bound", no_argument, 0, 0}, //17 - deprecated
                 {"reward_prior", required_argument, 0, 0}, //18
                 {"goal_value", required_argument, 0, 0}, //19
                 {"step_value", required_argument, 0, 0}, //20
@@ -203,7 +201,7 @@ int main (int argc, char** argv)
                 case 14: grid_size = atoi(optarg); break;
                 case 15: randomness = atof(optarg); break;
                 case 16: adversary_name = optarg; break;
-                case 17: use_upper_bound = true; break;
+                    //case 17: use_upper_bound = true; break;
                 case 18: 
                     if (!strcmp(optarg, "Beta")) {
                         reward_prior = DiscreteMDPCounts::BETA;
@@ -434,7 +432,7 @@ int main (int argc, char** argv)
                                   gamma,
                                   discrete_mdp,
                                   rng);
-        } else if (!strcmp(algorithm_name, "Sampling")) {
+        } else if (!strcmp(algorithm_name, "LSampling")) {
             discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
                                                   dirichlet_mass,
                                                   reward_prior);
@@ -446,7 +444,20 @@ int main (int argc, char** argv)
                                           model,
                                           rng,
                                           max_samples,
-                                          use_upper_bound);
+                                          false);
+        } else if (!strcmp(algorithm_name, "USampling")) {
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
+                                                  dirichlet_mass,
+                                                  reward_prior);
+            model= (MDPModel*) discrete_mdp;
+            algorithm = new SampleBasedRL(n_states,
+                                          n_actions,
+                                          gamma,
+                                          epsilon,
+                                          model,
+                                          rng,
+                                          max_samples,
+                                          true);
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
                 new ContextBanditGaussian(n_states,
@@ -632,7 +643,8 @@ Statistics EvaluateAlgorithm (int n_episodes,
                 adversary->setReward();
                 if (algorithm) {
                     algorithm->Reset();
-                    algorithm->setFixedRewards(adversary->getRewardMatrix());
+                    const Matrix& R = adversary->getRewardMatrix();
+                    algorithm->setFixedRewards(R);
                 } else {
                     DiscreteMDP* mdp = environment->getMDP();
                     mdp->setFixedRewards(adversary->getRewardMatrix());

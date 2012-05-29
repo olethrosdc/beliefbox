@@ -261,13 +261,14 @@ void RolloutState::Bootstrap(KDTree<RolloutState>& tree,
             error_bound = exp(rollout->T * log_gamma);
             Vector s_T = rollout->end_state;
             OrderedFixedList<KDNode> knn_list = tree.FindKNearestNeighbours(s_T, 3);
+#if 0
             std::list<std::pair<real, KDNode*> >::iterator knn_iter;
             for (knn_iter = knn_list.S.begin();
                  knn_iter != knn_list.S.end();
                  ++knn_iter) {
                 KDNode* node = knn_iter->second;
             }
-
+#endif
         }
         int a = rollout->start_action;
         N(a)++;
@@ -282,7 +283,8 @@ void RolloutState::Bootstrap(KDTree<RolloutState>& tree,
     V_U = Max(Q_U);
     V_L = Min(Q_L);
     V = 0.5 * (V_U + V_L);
-
+    Serror("Buggy!\n");
+    exit(-1);
 
 }
 RSAPI::RSAPI(Environment<Vector, int>* environment_,

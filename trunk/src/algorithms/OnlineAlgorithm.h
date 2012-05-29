@@ -56,6 +56,7 @@ public:
     /// Some algorithms may implement a different strategy when the reward matrix SxA is given.
     virtual void setFixedRewards(const Matrix& rewards) 
     {
+        printf("Setting fixed rewards!\n");
         // nothing to do here.
     }
 };

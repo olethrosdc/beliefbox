@@ -78,7 +78,7 @@ real Sarsa::Observe (int state, int action, real reward, int next_state, int nex
 real Sarsa::Observe (real reward, int next_state, int next_action)
 {
     real n_R = (reward - baseline) + gamma*Q(next_state, next_action); // partially observed return
-    real p_R = 0.0;
+    //real p_R = 0.0;
     real TD = 0.0;
     if (state >= 0 && action >= 0) {
         real p_R = Q(state, action); // predicted return

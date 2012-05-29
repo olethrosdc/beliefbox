@@ -28,6 +28,8 @@ GaussianProcess::~GaussianProcess()
 
 Vector GaussianProcess::generate()
 {
+    Serror ("Not implemented\n");
+    exit(-1);
     //return Vector();
 }    
          
