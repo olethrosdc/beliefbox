@@ -641,7 +641,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
 		
         int state = environment->getState();
         real reward = adversary->getReward();
-        
+
         statistics.reward.resize(step + 1);
         statistics.reward[step] = reward;
         statistics.ep_stats[episode].steps++;
