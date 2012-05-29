@@ -154,6 +154,16 @@ public:
         assert(s>=0 && s<n_states);
 		reward_distribution.setFixedReward(s, a, reward);
 	}
+	inline void setFixedRewards(const Matrix& R)
+	{
+        assert(R.Rows() == n_states);
+        assert(R.Columns() == n_actions);
+        for (int s=0; s<n_states; ++s) {
+            for (int a=0; a<n_states; ++a) {
+                setFixedReward(s, a, R(s,a));
+            }
+        }
+	}
 };
 
 typedef MDP<int, int> DiscreteMDP;
