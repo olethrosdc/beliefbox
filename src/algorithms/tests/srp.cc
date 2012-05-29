@@ -633,7 +633,17 @@ Statistics EvaluateAlgorithm (int n_episodes,
                 if (algorithm) {
                     algorithm->Reset();
                     algorithm->setFixedRewards(adversary->getRewardMatrix());
+                } else {
+                    DiscreteMDP* mdp = environment->getMDP();
+                    mdp->setFixedRewards(adversary->getRewardMatrix());
+                    ValueIteration value_iteration(mdp, gamma);
+                    value_iteration.ComputeStateValues(1e-9);
+                    delete oracle_policy;
+                    oracle_policy = value_iteration.getPolicy();
+                    delete mdp;
                 }
+
+
                 action_ok = true;
                 current_time = 0;
             }
