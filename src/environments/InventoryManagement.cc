@@ -73,11 +73,11 @@ DiscreteMDP* InventoryManagement::getMDP() const
         for (uint a=0; a<n_actions; a++) {
             mdp->setFixedReward(s, a, (real) s + 0.1 * (real) a);
             Vector p(n_states);
-            for (int s2 = 0; s2<n_states; ++s2) {
+            for (uint s2 = 0; s2<n_states; ++s2) {
                 p(s2) = urandom();
             }
             p /= p.Sum();
-            for (int s2 = 0; s2<n_states; ++s2) {
+            for (uint s2 = 0; s2<n_states; ++s2) {
                 mdp->setTransitionProbability(s, a, s2, p(s2));
             }
         }

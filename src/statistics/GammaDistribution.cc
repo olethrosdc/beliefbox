@@ -198,7 +198,7 @@ real GammaDistributionUnknownShapeScale::generate() const
     real alpha = Exp.generate();
     GammaDistribution prior_gamma(mu + (real) T * alpha, nu + S);
     real beta = prior_gamma.generate();
-    real log_p = 0.0;
+    //real log_p = 0.0;
     GammaDistribution marginal_gamma(alpha, beta);
     return marginal_gamma.generate();
 }

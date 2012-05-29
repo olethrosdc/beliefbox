@@ -413,7 +413,6 @@ int main (int argc, char** argv)
             algorithm = new UCRL2(n_states,
                                   n_actions,
                                   gamma,
-                                  epsilon,
                                   discrete_mdp,
                                   rng);
         } else if (!strcmp(algorithm_name, "Sampling")) {

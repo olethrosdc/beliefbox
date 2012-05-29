@@ -50,7 +50,7 @@ void UCRL2::Reset()
 {
     state = -1;
     n_resets++;
-    confidence_interval = 1.0 / (real) n_resets;
+    confidence_interval *= 0.5;// 1.0 / (real) n_resets;
     //model->Reset();
 }
 /// Full observation

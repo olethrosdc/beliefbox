@@ -110,7 +110,9 @@ void PolicyEvaluation::RecomputeStateValuesFeatureExpectation()
             rho(state) += mdp->getExpectedReward(state, action) * policy->getActionProbability(state, action);
         }
     }
-    V = FeatureMatrix*rho;
+    const Matrix& F_ref = FeatureMatrix;
+    const Vector& rho_ref = rho;
+    V = F_ref * rho_ref;
 }
 
 

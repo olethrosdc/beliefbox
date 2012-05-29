@@ -30,7 +30,7 @@ Gridworld::Gridworld(const char* fname,
     CalculateDimensions(fname);
     n_states = width * height + 1; // plus a terminal state
     terminal_state = n_states - 1;
-
+    //reward = 0.0;
     logmsg("Gridworld, states: %d, random: %f, pit: %f, goal: %f, step: %f\n",
            n_states,
            random,
@@ -308,6 +308,7 @@ void Gridworld::Reset()
     } while(whatIs(x, y) != GRID);
     ox = x;
     oy = y;
+    reward = 0.0;
 }
 
 bool Gridworld::Act(int action)

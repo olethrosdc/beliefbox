@@ -39,6 +39,7 @@ public:
     {
         state_lower_bound = 0;
         state_upper_bound = 0;
+        reward = 0.0;
     }
 
     Environment(int n_states_, int n_actions_)
@@ -46,6 +47,7 @@ public:
     {
         state_lower_bound = 0;
         state_upper_bound = n_states - 1;
+        reward = 0.0;
     }
 
     virtual ~Environment() 
