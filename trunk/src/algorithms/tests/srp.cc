@@ -627,9 +627,19 @@ Statistics EvaluateAlgorithm (int n_episodes,
                 oracle_policy->Reset(state);
             }
             
+
+            statistics.reward.resize(step + 1);
+            statistics.reward[step] = reward;
+            statistics.ep_stats[episode].steps++;
+            statistics.ep_stats[episode].total_reward += reward;
+            statistics.ep_stats[episode].discounted_reward += discount * reward;
+            total_reward += reward;
+            discounted_reward += discount * reward;
+
             //printf ("%d %d %f\n", state, action, reward);
             episode++;
             printf ("# episode %d complete, step %d\n", episode, step);
+
             if (n_episodes >= 0 && episode >= n_episodes) {
                 logmsg ("Breaking after %d episodes,  %d steps\n", episode, step);
                 break;
