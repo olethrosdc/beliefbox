@@ -706,6 +706,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
     real total_reward = 0.0;
     real discounted_reward = 0.0;
     for (uint step = 0; step < n_steps; ++step) {
+
         if (!action_ok) {
             int state = environment->getState();
             real reward = environment->getReward();
@@ -714,26 +715,34 @@ Statistics EvaluateAlgorithm (int episode_steps,
             } else {
                 oracle_policy->Reset(state);
             }
-            
+            statistics.reward.resize(step + 1);
+            statistics.reward[step] = reward;
+            statistics.ep_stats[episode].steps++;
+            statistics.ep_stats[episode].total_reward += reward;
+            statistics.ep_stats[episode].discounted_reward += discount * reward;
+            total_reward += reward;
+            discounted_reward += discount * reward;
+
+            discount *= gamma;            
+
             //printf ("%d %d %f\n", state, action, reward);
             episode++;
+            statistics.ep_stats.resize(episode + 1);
+            statistics.ep_stats[episode].total_reward = 0.0;
+            statistics.ep_stats[episode].discounted_reward = 0.0;
+            statistics.ep_stats[episode].steps = 0;
+            discount = 1.0;
+            environment->Reset();
+            if (algorithm) {
+                algorithm->Reset();
+            }
+            action_ok = true;
+            current_time = 0;
             printf ("# episode %d complete\n", episode);
             if (n_episodes >= 0 && episode >= n_episodes) {
                 fprintf (stderr, "Breaking after %d episodes,  %d steps\n",
                          episode, step);
                 break;
-            } else {
-                statistics.ep_stats.resize(episode + 1);
-                statistics.ep_stats[episode].total_reward = 0.0;
-                statistics.ep_stats[episode].discounted_reward = 0.0;
-                statistics.ep_stats[episode].steps = 0;
-                discount = 1.0;
-                environment->Reset();
-                if (algorithm) {
-                    algorithm->Reset();
-                }
-                action_ok = true;
-                current_time = 0;
             }
         }
 		
@@ -756,7 +765,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             oracle_policy->Observe(reward, state);
             action = oracle_policy->SelectAction();
         }
-        if (0) {
+        if (reward > 0) {
             printf ("%d %d %f # state-action-reward\n", state, action, reward);
         }
         action_ok = environment->Act(action);
