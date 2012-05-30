@@ -592,7 +592,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
                               real gamma,
                               Adversary* adversary)
 {
-    std:: cout << "# evaluating..." << environment->Name() << std::endl;
+    std::cout << "# evaluating..." << environment->Name() << std::endl;
     
     Statistics statistics;
     statistics.ep_stats.reserve(n_episodes); 
@@ -617,10 +617,13 @@ Statistics EvaluateAlgorithm (int n_episodes,
     bool action_ok = false;
     real total_reward = 0.0;
     real discounted_reward = 0.0;
+
+
     for (uint step = 0; step < n_steps; ++step) {
         if (!action_ok) {
             int state = environment->getState();
             real reward = environment->getReward();
+            //printf ("%d %f # initial reward\n", state, reward);
             if (algorithm) {
                 algorithm->Act(reward, state);
             } else {
@@ -630,9 +633,11 @@ Statistics EvaluateAlgorithm (int n_episodes,
 
             statistics.reward.resize(step + 1);
             statistics.reward[step] = reward;
-            statistics.ep_stats[episode].steps++;
-            statistics.ep_stats[episode].total_reward += reward;
-            statistics.ep_stats[episode].discounted_reward += discount * reward;
+            if (episode >= 0) {
+                statistics.ep_stats[episode].steps++;
+                statistics.ep_stats[episode].total_reward += reward;
+                statistics.ep_stats[episode].discounted_reward += discount * reward;
+            }
             total_reward += reward;
             discounted_reward += discount * reward;
 
@@ -664,8 +669,9 @@ Statistics EvaluateAlgorithm (int n_episodes,
                     oracle_policy = value_iteration.getPolicy();
                     delete mdp;
                 }
-
-
+                //printf("Reward matrix:\n");
+                //adversary->getRewardMatrix().print(stdout);
+                
                 action_ok = true;
                 current_time = 0;
             }
@@ -694,7 +700,8 @@ Statistics EvaluateAlgorithm (int n_episodes,
         adversary->Observe(state, action);
 
         if (0) {
-            printf ("%d %d %f # state-action-reward\n", state, action, reward);
+            printf ("%f %d %d # reward-state-action\n",
+                    reward, state, action);
         }
         action_ok = environment->Act(action);
         if (urandom() < 1.0 - gamma) {
