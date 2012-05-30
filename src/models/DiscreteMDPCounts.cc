@@ -55,6 +55,9 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_tra
 
 DiscreteMDPCounts::~DiscreteMDPCounts()
 {
+    for (int i=0; i<N; ++i) {
+        delete ER[i];
+    }
     //printf ("COUNTS MODEL\n");
     //ShowModel();
 }
