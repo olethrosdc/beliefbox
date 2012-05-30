@@ -6,5 +6,5 @@ gamma=0.99
 for environment in Chain Optimistic ContextBandit;
 do
     basedir=$HOME/results/srp
-    qsub -v"run=$runs","eps=$eps","environemnt=$environment","maze=$maze","steps=$steps","basedir=$basedir,gamma=$gamma"
+    qsub -v"run=$runs","eps=$eps","environemnt=$environment","maze=$maze","steps=$steps","basedir=$basedir,gamma=$gamma" ./srp_sub.sh
 done
