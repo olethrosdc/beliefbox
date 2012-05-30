@@ -1,4 +1,4 @@
-runs=100;
+runs=1000;
 eps=1000;
 maze=maze1
 steps=100000
