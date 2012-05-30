@@ -25,7 +25,7 @@ public:
         reward(n_states, n_actions),
         last_state(0),
         last_action(0),
-        last_reward(-1)
+        last_reward(0.0)
     {
     }
     virtual ~Adversary()

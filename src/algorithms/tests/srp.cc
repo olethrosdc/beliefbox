@@ -623,7 +623,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
         if (!action_ok) {
             int state = environment->getState();
             real reward = environment->getReward();
-            //printf ("%d %f # initial reward\n", state, reward);
+            printf ("%d %f # initial reward\n", state, reward);
             if (algorithm) {
                 algorithm->Act(reward, state);
             } else {
@@ -633,6 +633,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
 
             statistics.reward.resize(step + 1);
             statistics.reward[step] = reward;
+            //printf("r_%d = %f\n", step, reward);
             if (episode >= 0) {
                 statistics.ep_stats[episode].steps++;
                 statistics.ep_stats[episode].total_reward += reward;
@@ -667,6 +668,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
                     value_iteration.ComputeStateValues(1e-9);
                     delete oracle_policy;
                     oracle_policy = value_iteration.getPolicy();
+                    oracle_policy->Reset(state);
                     delete mdp;
                 }
                 //printf("Reward matrix:\n");
@@ -681,6 +683,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
         real reward = adversary->getReward();
 
         statistics.reward.resize(step + 1);
+        //printf("r_%d = %f\n", step, reward);
         statistics.reward[step] = reward;
         statistics.ep_stats[episode].steps++;
         statistics.ep_stats[episode].total_reward += reward;
