@@ -1,9 +1,9 @@
-runs=1;
+runs=100;
 eps=1000;
 maze=maze1
 steps=100000
 gamma=0.99;
-for environment in Chain Optimistic ContextBandit;
+for environment in Chain RiverSwim Optimistic ContextBandit;
 do
     basedir=$HOME/results/srp
 
@@ -15,7 +15,7 @@ do
         do
             results=$resdir/$algo.out
             echo "$reward # $algo $adversary $environment";
-            ./bin/srp --reward_prior Normal --maze_name ~/projects/beliefbox/dat/$maze --algorithm $algo --max_samples 4 --n_runs $runs --n_episodes $eps --environment $environment --adversary $adversary --epsilon 0.0 --gamma $gamma --n_states 16 >$results 
+            ./bin/srp --reward_prior Normal --maze_name ~/projects/beliefbox/dat/$maze --algorithm $algo --max_samples 4 --n_runs $runs --n_episodes $eps --environment $environment --adversary $adversary --epsilon 0.0 --gamma $gamma  >$results 
 
             grep REWARD $results >$resdir/$algo.reward
             grep EPISODE $results >$resdir/$algo.episode
