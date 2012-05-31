@@ -727,7 +727,6 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
             discount *= gamma;            
 
-            //printf ("%d %d %f\n", state, action, reward);
             episode++;
             statistics.ep_stats.resize(episode + 1);
             statistics.ep_stats[episode].total_reward = 0.0;
@@ -746,6 +745,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
                          episode, step);
                 break;
             }
+            step++;
         }
 		
         int state = environment->getState();
@@ -767,8 +767,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
             oracle_policy->Observe(reward, state);
             action = oracle_policy->SelectAction();
         }
-        if (reward > 0) {
-            printf ("%d %d %f # state-action-reward\n", state, action, reward);
+        if (0) {
+            printf ("%d %d %d %f # t-state-action-reward\n", step, state, action, reward);
         }
         action_ok = environment->Act(action);
         current_time++;
