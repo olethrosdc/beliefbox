@@ -717,9 +717,11 @@ Statistics EvaluateAlgorithm (int episode_steps,
             }
             statistics.reward.resize(step + 1);
             statistics.reward[step] = reward;
-            statistics.ep_stats[episode].steps++;
-            statistics.ep_stats[episode].total_reward += reward;
+            if (episode >= 0) {
+                statistics.ep_stats[episode].steps++;
+                statistics.ep_stats[episode].total_reward += reward;
             statistics.ep_stats[episode].discounted_reward += discount * reward;
+            }
             total_reward += reward;
             discounted_reward += discount * reward;
 
