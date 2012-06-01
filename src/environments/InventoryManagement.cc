@@ -32,13 +32,14 @@ InventoryManagement::InventoryManagement(int period_,
     assert (period > 0);
     local_mdp = getMDP();
     local_mdp->Check();
+    logmsg ("Inventory management | period %d, max_items: %d, demand: %f, margin: %f\n", period, max_items, demand, margin);
     Reset();
 }
 
 DiscreteMDP* InventoryManagement::getMDP() const
 {
     DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions, NULL);
-#if 0
+#if 1
     for (uint s=0; s<n_states; s++) {
         for (uint a=0; a<n_actions; a++) {
             int order = a;
@@ -85,7 +86,7 @@ DiscreteMDP* InventoryManagement::getMDP() const
     }
 #endif
     mdp->Check();
-    mdp->ShowModel();
+    //mdp->ShowModel();
     return mdp;
 }
 

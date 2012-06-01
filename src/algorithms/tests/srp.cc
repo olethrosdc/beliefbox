@@ -321,9 +321,9 @@ int main (int argc, char** argv)
         } else if (!strcmp(environment_name, "RiverSwim")) { 
             environment = new RiverSwim();
         } else if (!strcmp(environment_name, "Inventory")) { 
-            int period = 2;
-            int max_items = 2;
-            real demand = 0.1;
+            int period = n_actions - 1;
+            int max_items = n_states - 1;
+            real demand = randomness;
             real margin = 1.1;
             environment = new InventoryManagement(period,
                                                   max_items,
