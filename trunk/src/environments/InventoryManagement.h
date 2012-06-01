@@ -40,6 +40,7 @@ public:
     virtual void Reset() 
     {
         state = 1;
+        local_mdp->setState(state);
     }
 
     virtual bool Act(const int action) 
