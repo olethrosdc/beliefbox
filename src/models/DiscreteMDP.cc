@@ -46,9 +46,9 @@ DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
             }
         }
     }
-
+    reward = 0.0;
     state = 0;
-
+    
 #if 0    
     ER.resize(N);
     R.resize(N);
@@ -79,6 +79,7 @@ DiscreteMDP::MDP(const MDP<int,int>& mdp)
 {
     N = n_states * n_actions;
 
+    reward = 0.0;
 	state = 0;
     next_states.resize(N);
 	P = mdp.P;
@@ -126,6 +127,7 @@ DiscreteMDP::MDP (const std::vector<const MDP<int,int>*> &mdp_list,
         }
     }    
 
+    reward =0.0;
     state = 0;
 }
 

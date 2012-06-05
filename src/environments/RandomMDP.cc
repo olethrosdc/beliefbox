@@ -126,13 +126,14 @@ RandomMDP::~RandomMDP() {
 void RandomMDP::Reset()
 {
     state = (int) rng->discrete_uniform(n_states);
+    mdp->setState(state);
     reward = 0;
 }
 
 /// returns true if the action succeeds, false if we are in a terminal state
 bool RandomMDP::Act(int action)
 {
-    reward = mdp->generateReward(state, action);
-    state = mdp->generateState(state, action);
+  reward = mdp->Act(action); //mdp->generateReward(state, action);
+  state = mdp->getState();//mdp->generateState(state, action);
     return true;  // we continue
 }
