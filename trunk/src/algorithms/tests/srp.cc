@@ -672,7 +672,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
                     mdp->setFixedRewards(adversary->getRewardMatrix());
                     ValueIteration value_iteration(mdp, gamma);
                     value_iteration.ComputeStateValues(1e-9);
-                    value_iteration.getStateValues().print(stdout);
+                    //value_iteration.getStateValues().print(stdout);
                     delete oracle_policy;
                     oracle_policy = value_iteration.getPolicy();
                     oracle_policy->Reset(state);
