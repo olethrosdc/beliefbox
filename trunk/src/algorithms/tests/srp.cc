@@ -709,10 +709,6 @@ Statistics EvaluateAlgorithm (int n_episodes,
         }
         adversary->Observe(state, action);
 
-        if (0) {
-            printf ("%f %d %d # reward-state-action\n",
-                    reward, state, action);
-        }
         action_ok = environment->Act(action);
         if (urandom() < 1.0 - gamma) {
         //if (current_time > (real) (1.0 / (1.0 - gamma))) {
