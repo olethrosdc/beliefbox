@@ -20,6 +20,7 @@
 #include "RandomMDP.h"
 #include "DiscretePolicy.h"
 #include "MersenneTwister.h"
+#include "MDPWrapper.h"
 
 int main (void)
 {
@@ -39,12 +40,12 @@ int main (void)
 
     Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", random, pit, goal, step);
     DiscreteChain chain(5);
-    RandomMDP random_mdp(2, 8, 0.001, 0.1, 0, 1, &rng, false);
-
-    const DiscreteMDP* mdp = random_mdp.getMDP();
-    //const DiscreteMDP* mdp = inventory_management.getMDP();
-    //const DiscreteMDP* mdp = grid_world.getMDP();
-    //const DiscreteMDP* mdp = chain.getMDP();
+    RandomMDP random_mdp(2, 8, 0.0, 0.1, 0, 1, &rng, false);
+    
+    //DiscreteMDP* mdp = random_mdp.getMDP();
+    //DiscreteMDP* mdp = inventory_management.getMDP();
+    DiscreteMDP* mdp = grid_world.getMDP();
+    //DiscreteMDP* mdp = chain.getMDP();
 
     int n_states = mdp->getNStates();
     int n_actions = mdp->getNActions();
@@ -100,13 +101,42 @@ int main (void)
    FixedDiscretePolicy* vi_policy = value_iteration.getPolicy();
    PolicyEvaluation f_policy_evaluation(vi_policy, mdp, gamma);
    f_policy_evaluation.ComputeStateValuesFeatureExpectation(epsilon, -1);
+   MDPWrapper wrapper(mdp);
+   MDPWrapper* env = &wrapper;
    for (int s=0; s<mdp->getNStates(); s++) {
-       printf ("%f %f %f\n",
+       int n_iter = 1000;
+       int T = 1000;
+       real ret = 0.0;
+       real cumret = 0.0;
+       for (int iter=0; iter<n_iter; ++iter) {
+	 env->Reset(s);
+	 real rt = env->getReward();
+	 int st = env->getState();
+	 vi_policy->Observe(rt, st);
+	 real discount = 1.0;
+	 for (int t=0; t<T; ++t) {
+	   int at = vi_policy->SelectAction();
+	   env->Act(at);
+	   real rt = env->getReward();
+	   int st = env->getState();
+	   vi_policy->Observe(rt, st);
+	   //printf("%f %d %d # rsa \n", rt, st, at);
+	   ret += rt * discount;
+	   cumret += rt;
+	   discount *= gamma;
+	 }
+       }
+       ret /= (real) n_iter;
+       cumret /= (real) n_iter;
+       printf ("%f %f %f ~ %f %f\n",
                value_iteration.getValue(s),
                policy_evaluation.getValue(s),
-               f_policy_evaluation.getValue(s));       
+               f_policy_evaluation.getValue(s),
+	       ret,
+	       cumret);       
    }
 
+   
    //mdp->ShowModel();
    if (1) {
        FILE* f = fopen("test.dot", "w");

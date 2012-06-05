@@ -73,8 +73,11 @@ public:
     {
         return value_iteration->getValue(state, action);
     }
+
     virtual void setFixedRewards(const Matrix& rewards)
     {
+      //logmsg("Setting fixed rewards\n");
+        known_rewards = true;
         this->rewards = rewards;
     }
     

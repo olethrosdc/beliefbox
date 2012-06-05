@@ -32,6 +32,7 @@ typedef std::set<int>& DiscreteStateSetRef;
 template<>
 class MDP<int, int> {
 protected:
+  real reward; ///< current reward
     int state; ///< current state;
     int n_states; ///< number of states (or dimensionality of state space)
     int n_actions; ///< number of actions (or dimensionality of action space)
@@ -70,6 +71,15 @@ public:
 	{
 		return state;
 	}
+	real getReward() const
+	{
+	  return reward;
+	}
+	int Reset(int new_state)
+	{
+	  reward = 0.0;
+	  return setState(new_state);
+	}
 	int setState(int new_state)
 	{
 		assert(new_state >=0 && new_state < n_states);
@@ -79,9 +89,9 @@ public:
     // generate a new state given the current state and action, then set the current state to be the new state.
     real Act (int a)
     {
-        real r = generateReward(state, a);
+        reward = generateReward(state, a);
         state = generateState(state, a);
-        return r;
+        return reward;
     }
     virtual void ShowModel() const;
     virtual void dotModel(FILE* fout) const;

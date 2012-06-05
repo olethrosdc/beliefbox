@@ -223,7 +223,8 @@ void ValueIteration::ComputeStateActionValues(real threshold, int max_iter)
 /// Create the greedy policy with respect to the calculated value function.
 FixedDiscretePolicy* ValueIteration::getPolicy()
 {
-    FixedDiscretePolicy* policy = new FixedDiscretePolicy(n_states, n_actions);
+#if 0
+  FixedDiscretePolicy* policy = new FixedDiscretePolicy(n_states, n_actions);
     for (int s=0; s<n_states; s++) {
         int argmax_Qa = ArgMax(Q.getRow(s));
         Vector* p = policy->getActionProbabilitiesPtr(s);
@@ -233,4 +234,7 @@ FixedDiscretePolicy* ValueIteration::getPolicy()
         (*p)(argmax_Qa) = 1.0;
     }
     return policy;
+#else
+    return new FixedDiscretePolicy(n_states, n_actions, Q);
+#endif
 }

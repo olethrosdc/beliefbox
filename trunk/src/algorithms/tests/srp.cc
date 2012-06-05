@@ -1,6 +1,6 @@
 /* -*- Mode: C++; -*- */
 /* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
-// copyright (c) 2006-2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2012 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -36,6 +36,9 @@
 
 // -- Adversary -- //
 #include "Adversary.h"
+
+// -- General environments -- //
+#include "MDPWrapper.h"
 
 // -- Discrete environments -- //
 #include "RandomMDP.h"
@@ -236,7 +239,7 @@ int main (int argc, char** argv)
                 exit (-1);
             }
         }
-	
+    
         if (optind < argc) {
             printf ("non-option ARGV-elements: ");
             while (optind < argc) {
@@ -354,12 +357,12 @@ int main (int argc, char** argv)
                                             gamma);
         } else if (!strcmp(adversary_name, "Heuristic")) {
             adversary = new HeuristicAdversary(environment->getNStates(),
-                                      environment->getNActions(),
-                                      gamma);
+                                               environment->getNActions(),
+                                               gamma);
         } else if (!strcmp(adversary_name, "Fixed")) {
             adversary = new FixedAdversary(environment->getNStates(),
-                                      environment->getNActions(),
-                                      gamma);
+                                           environment->getNActions(),
+                                           gamma);
         }
 
         //std::cout << "Creating exploration policy" << std::endl;
@@ -514,7 +517,7 @@ int main (int argc, char** argv)
                                          false);
 
         } else if(!strcmp(algorithm_name, "TdBma")) {
-			algorithm = new TdBma(n_states,
+            algorithm = new TdBma(n_states,
                                   n_actions,
                                   gamma,
                                   lambda,
@@ -525,12 +528,15 @@ int main (int argc, char** argv)
         }
 
         //std::cerr << "run : " << run << std::endl;
+        //DiscreteMDP* actual_mdp = environment->getMDP();
+        //MDPWrapper wrapper(actual_mdp);
         Statistics run_statistics = EvaluateAlgorithm(n_episodes,
                                                       n_steps,
                                                       algorithm,
                                                       environment,
                                                       gamma,
                                                       adversary);
+        //delete actual_mdp;
         for (uint i=0; i<run_statistics.ep_stats.size(); ++i) {
             statistics.ep_stats[i].total_reward += run_statistics.ep_stats[i].total_reward;
             statistics.ep_stats[i].discounted_reward += run_statistics.ep_stats[i].discounted_reward;
@@ -538,7 +544,7 @@ int main (int argc, char** argv)
             statistics.ep_stats[i].mse += run_statistics.ep_stats[i].mse;
             statistics.ep_stats[i].n_runs ++;
         }
-		
+        
         for (uint i=0; i<run_statistics.reward.size(); ++i) {
             statistics.reward[i] += run_statistics.reward[i];
             statistics.n_runs[i]++;
@@ -666,6 +672,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
                     mdp->setFixedRewards(adversary->getRewardMatrix());
                     ValueIteration value_iteration(mdp, gamma);
                     value_iteration.ComputeStateValues(1e-9);
+                    value_iteration.getStateValues().print(stdout);
                     delete oracle_policy;
                     oracle_policy = value_iteration.getPolicy();
                     oracle_policy->Reset(state);
@@ -678,7 +685,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
                 current_time = 0;
             }
         }
-		
+        
         int state = environment->getState();
         real reward = adversary->getReward();
 
@@ -708,12 +715,13 @@ Statistics EvaluateAlgorithm (int n_episodes,
         }
         action_ok = environment->Act(action);
         if (urandom() < 1.0 - gamma) {
+        //if (current_time > (real) (1.0 / (1.0 - gamma))) {
             action_ok = false;
         }
         current_time++;
     }
     printf(" %f %f # RUN_REWARD\n", total_reward, discounted_reward);
-	  
+      
     if ((int) statistics.ep_stats.size() != n_episodes) {
         statistics.ep_stats.resize(statistics.ep_stats.size() - 1);
     }

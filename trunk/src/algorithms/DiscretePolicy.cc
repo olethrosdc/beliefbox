@@ -37,7 +37,7 @@ FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions)
 }
 
 /// Create a fixed discrete policy from a demonstrator policy
-FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions, Demonstrations<int, int>& D)
+FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions, const Demonstrations<int, int>& D)
     : DiscretePolicy(n_states, n_actions)      
 {
 
@@ -70,7 +70,7 @@ FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions, Demonstrat
 
 
 /// Create a fixed discrete policy from a set of probability vectors.
-FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
+FixedDiscretePolicy::FixedDiscretePolicy (const std::vector<Vector>& p)
     : DiscretePolicy(n_states, n_actions)
 {
     state = 0;
@@ -83,7 +83,7 @@ FixedDiscretePolicy::FixedDiscretePolicy (std::vector<Vector>& p)
 
 /// Create a greedy policy from a Q value matrix.
 FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions,
-                                          Matrix& Q)
+                                          const Matrix& Q)
     : DiscretePolicy(n_states, n_actions)
 {
     assert(Q.Rows() == n_states);
@@ -93,7 +93,6 @@ FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions,
     for (uint i=0; i<p.size(); i++) {
         p[i].Resize(n_actions);
     }
-
     
     for (int s=0; s<n_states; s++) {
         real max_Qa = Q(s, 0);
