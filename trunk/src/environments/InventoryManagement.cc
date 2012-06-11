@@ -51,7 +51,7 @@ DiscreteMDP* InventoryManagement::getMDP() const
             // Calculate the transition probabilities
             int current_stock = s + order;
             real P_empty = 1;
-            for (int s2 = 0; s2<n_states; ++s2) {
+            for (uint s2 = 0; s2<n_states; ++s2) {
                 mdp->setTransitionProbability(s, a, s2, 0.0);
             }
             for (int d=0; d<current_stock; ++d) {

@@ -94,7 +94,7 @@ real TdBma::Observe(const int state, const int action, const real reward, const 
 		real nTd, nMc;
 
 		// - Intermediary variable to update μ and σ
-		real delta, meanSquared;
+		real delta, meanSquared = 0;
 
 
 		// o Browse the episode
