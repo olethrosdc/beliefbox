@@ -88,11 +88,11 @@ Statistics EvaluateAlgorithm (int episode_steps,
                               real gamma);
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:    {QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma}\n\
+    --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma}\n\
     --environment:  {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
-    --gamma:        reward discounting in [0,1]\n\
+    --gamma:        reward discounting in [0,1] (* 0.95)\n\
     --lambda:       eligibility trace parameter (for some algorithms)\n\
     --randomness:   environment randomness\n\
     --n_runs:       maximum number of runs\n\
@@ -101,11 +101,13 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --n_steps:      maximum number of total steps\n\
     --grid_size:    number of grid intervals for discretised environments\n\
     --maze_name:    (Gridworld) file name for the maze\n\
-    --pit_value:    value of falling in a pit (defaults to -1)\n\
-    --goal_value:   value of reaching a goal (defaults to 1)\n\
-    --step_value:   value at each time step (defaults to 0)\n\
-    --epsilon:      use epsilon-greedy with randomness in [0,1]\n\
-    --reward_prior: {Beta, Normal, Fixed}\n\
+    --pit_value:    value of falling in a pit (* -1)\n\
+    --goal_value:   value of reaching a goal (* 1)\n\
+    --step_value:   value at each time step (* 0)\n\
+    --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0.01)\n\
+    --reward_prior: {Beta, Fixed, *Normal}\n\
+    \n\
+    * denotes default parameter\n\
 \n";
 
 
@@ -129,7 +131,7 @@ int main (int argc, char** argv)
     //bool use_upper_bound = false;
     real dirichlet_mass = 0.5;
 
-    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
+    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::Normal;
 
     const char * algorithm_name = "QLearning";
     const char * environment_name = "Chain";
