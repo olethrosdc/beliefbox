@@ -9,7 +9,7 @@ epsilon=0.0
 task=Gridworld
 
 
-for randomness in 0.01 #0.05 0.1 0.2 0.3 0.4
+for randomness in 0.01 0.1 0.0
 do
     for maze in maze0 maze1 maze2 # maze3 maze4
     do
@@ -17,47 +17,48 @@ do
         mkdir -p $outdir
         echo "writing resutls to $outdir"
 
-        params="--environment $task --maze_name $HOME/projects/beliefbox/dat/$maze --gamma $gamma --epsilon 0.1 --n_runs $runs --n_steps $steps --n_episodes 10000 --episode_steps -1 --randomness $randomness --pit_value 0.0 --step_value 0.001"
+        params="--environment $task --maze_name $HOME/projects/beliefbox/dat/$maze --gamma $gamma --epsilon 0.1 --n_runs $runs --n_steps $steps --n_episodes 10000 --episode_steps -1 --randomness $randomness --pit_value -1.0 --step_value -0.01"
+
+        for algorithm in Oracle QLearning 
+        do
+            /usr/bin/time -o $outdir/${algorithm}.cpu ./bin/online_algorithms --algorithm $algorithm $params >$outdir/${algorithm}.out &
+        done
+        wait;
+
+        for algorithm in Model UCRL
+        do
+            /usr/bin/time -o $outdir/${algorithm}.cpu ./bin/online_algorithms --algorithm $algorithm $params >$outdir/${algorithm}.out &
+        done
+        wait;
 
         for algorithm in Oracle QLearning Model UCRL
         do
-            /usr/bin/time -o $outdir/${algorithm}.cpu ./bin/online_algorithms --algorithm $algorithm $params >$outdir/${algorithm}.out 
             grep PAYOFF $outdir/${algorithm}.out > $outdir/${algorithm}.payoff
             grep RUN $outdir/${algorithm}.out > $outdir/${algorithm}.reward
             rm $outdir/${algorithm}.out
         done
 
-        params="--environment $task --maze_name $HOME/projects/beliefbox/dat/$maze --gamma $gamma --epsilon 0.0 --n_runs $runs --n_steps $steps --n_episodes 10000 --episode_steps -1 --randomness $randomness --pit_value 0.0 --step_value 0.001"
+        params="--environment $task --maze_name $HOME/projects/beliefbox/dat/$maze --gamma $gamma --epsilon 0.0 --n_runs $runs --n_steps $steps --n_episodes 10000 --episode_steps -1 --randomness $randomness --pit_value -1.0 --step_value 0.01 --reward_prior Normal"
 
-        for i in 1 2 4 8 16;
-        do 
-            echo $i; 
-            /usr/bin/time -o $outdir/l_sampling${i}.cpu  ./bin/online_algorithms --algorithm Sampling --max_samples=${i} $params >$outdir/l_sampling${i}.out
-	    done
 
-	    wait;
-        
-        for i in 1 2 4 8 16
+        for i in 001 002 004 008 016 032 064 128
         do 
-            grep PAYOFF $outdir/l_sampling${i}.out >$outdir/l_sampling${i}.payoff; 
-            grep RUN $outdir/l_sampling${i}.out >$outdir/l_sampling${i}.reward; 
-            rm $outdir/l_sampling${i}.out
+            for algorithm in LSampling USampling
+            do
+                echo $algorithm $i; 
+                /usr/bin/time -o $outdir/${algorithm}${i}.cpu  ./bin/online_algorithms --algorithm $algorithm --max_samples=${i} $params >$outdir/${algorithm}${i}.out &
+            done 
+
+            wait;
+
+            for algorithm in LSampling USampling
+            do
+                grep PAYOFF $outdir/${algorithm}${i}.out >$outdir/${algorithm}${i}.payoff; 
+                grep RUN $outdir/${algorithm}${i}.out >$outdir/${algorithm}${i}.reward; 
+                rm $outdir/${algorithm}${i}.out
+            done
         done
 
 
-        for i in 1 2 4 8 16;
-        do 
-            echo $i; 
-            /usr/bin/time -o $outdir/u_sampling${i}.cpu  ./bin/online_algorithms --algorithm Sampling --upper_bound --max_samples=${i} $params >$outdir/u_sampling${i}.out 
-	    done
-
-	    wait;
-
-        for i in 1 2 4 8 16
-        do 
-            grep PAYOFF $outdir/u_sampling${i}.out >$outdir/u_sampling${i}.payoff; 
-            grep RUN $outdir/u_sampling${i}.out >$outdir/u_sampling${i}.reward; 
-            rm $outdir/u_sampling${i}.out
-        done
     done
 done
