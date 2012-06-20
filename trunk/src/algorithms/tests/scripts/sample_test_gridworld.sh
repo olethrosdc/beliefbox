@@ -1,7 +1,7 @@
-runs=1000
+runs=10
 steps=10000
 gamma=0.95
-epsilon=0.0
+epsilon=0.1
 
 #task=Chain
 #params="--n_states 5 --n_actions 2 --environment Chain --gamma $gamma --epsilon $epsilon --n_runs $runs --n_steps $steps"
@@ -17,17 +17,17 @@ do
         mkdir -p $outdir
         echo "writing resutls to $outdir"
 
-        params="--environment $task --maze_name $HOME/projects/beliefbox/dat/$maze --gamma $gamma --epsilon 0.1 --n_runs $runs --n_steps $steps --n_episodes 10000 --episode_steps -1 --randomness $randomness --pit_value -1.0 --step_value -0.01"
+        params="--environment $task --maze_name $HOME/projects/beliefbox/dat/$maze --gamma $gamma --n_runs $runs --n_steps $steps --n_episodes 10000 --episode_steps -1 --randomness $randomness --pit_value -1.0 --step_value 0.0"
 
-        for algorithm in Oracle QLearning 
+        for algorithm in QLearning Model
         do
-            /usr/bin/time -o $outdir/${algorithm}.cpu ./bin/online_algorithms --algorithm $algorithm $params >$outdir/${algorithm}.out &
+            /usr/bin/time -o $outdir/${algorithm}.cpu ./bin/online_algorithms --algorithm $algorithm $params --epsilon $epsilon >$outdir/${algorithm}.out &
         done
         wait;
 
-        for algorithm in Model UCRL
+        for algorithm in Oracle UCRL
         do
-            /usr/bin/time -o $outdir/${algorithm}.cpu ./bin/online_algorithms --algorithm $algorithm $params >$outdir/${algorithm}.out &
+            /usr/bin/time -o $outdir/${algorithm}.cpu ./bin/online_algorithms --algorithm $algorithm $params --epsilon 0.0 >$outdir/${algorithm}.out &
         done
         wait;
 
