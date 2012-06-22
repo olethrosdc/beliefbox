@@ -1,4 +1,4 @@
-runs=10
+runs=100
 steps=10000
 gamma=0.95
 epsilon=0.1
