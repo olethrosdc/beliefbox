@@ -57,6 +57,9 @@ protected:
     int update_interval;
     int next_update;
     bool use_upper_bound;
+    bool use_sampling_threshold;
+    real sampling_threshold;
+    Vector weights;
 public:
     SampleBasedRL(int n_states_,
                   int n_actions_,
@@ -113,7 +116,12 @@ public:
 #endif
     }
 
-    
+    virtual void setSamplingThreshold(real sampling_threshold_)
+    {
+        use_sampling_threshold = true;
+        sampling_threshold = sampling_threshold_;
+        assert(sampling_threshold >= 0.0 && sampling_threshold <= 1.0);
+    }
 };
 
 

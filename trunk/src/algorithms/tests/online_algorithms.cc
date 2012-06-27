@@ -130,8 +130,10 @@ int main (int argc, char** argv)
     uint grid_size = 4;
     //bool use_upper_bound = false;
     real dirichlet_mass = 0.5;
+    real sampling_threshold = 0.1;
+    bool use_sampling_threshold = false;
 
-    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::Normal;
+    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::NORMAL;
 
     const char * algorithm_name = "QLearning";
     const char * environment_name = "Chain";
@@ -168,6 +170,7 @@ int main (int argc, char** argv)
                 {"goal_value", required_argument, 0, 0}, //19
                 {"step_value", required_argument, 0, 0}, //20
                 {"pit_value", required_argument, 0, 0}, //21
+                {"sampling_threshold", required_argument, 0, 0}, //22
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -217,6 +220,11 @@ int main (int argc, char** argv)
                 case 19: goal_value = atof(optarg); break;
                 case 20: step_value = atof(optarg); break;
                 case 21: pit_value = atof(optarg); break;
+                case 22:
+                    sampling_threshold = atof(optarg);
+                    assert(sampling_threshold>=0.0 && sampling_threshold<=1.0);
+                    use_sampling_threshold = true;
+                    break;
                 default:
                     fprintf (stderr, "%s", help_text);
                     exit(0);
@@ -421,7 +429,7 @@ int main (int argc, char** argv)
                                                   dirichlet_mass,
                                                   reward_prior);
             model= (MDPModel*) discrete_mdp;
-            algorithm = new SampleBasedRL(n_states,
+            SampleBasedRL* sampling = new SampleBasedRL(n_states,
                                           n_actions,
                                           gamma,
                                           epsilon,
@@ -429,12 +437,17 @@ int main (int argc, char** argv)
                                           rng,
                                           max_samples,
                                           false);
+            if (use_sampling_threshold) {
+                sampling->setSamplingThreshold(sampling_threshold);
+            }
+            algorithm = sampling;
+            
         } else if (!strcmp(algorithm_name, "USampling")) {
             discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
                                                   dirichlet_mass,
                                                   reward_prior);
             model= (MDPModel*) discrete_mdp;
-            algorithm = new SampleBasedRL(n_states,
+            SampleBasedRL* sampling = new SampleBasedRL(n_states,
                                           n_actions,
                                           gamma,
                                           epsilon,
@@ -442,6 +455,10 @@ int main (int argc, char** argv)
                                           rng,
                                           max_samples,
                                           true);
+            if (use_sampling_threshold) {
+                sampling->setSamplingThreshold(sampling_threshold);
+            }
+            algorithm = sampling;
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
                 new ContextBanditGaussian(n_states,

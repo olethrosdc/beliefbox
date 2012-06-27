@@ -97,6 +97,11 @@ public:
     virtual void dotModel(FILE* fout) const;
     real generateReward (int s, int a) const;
     int generateState (int s, int a) const;
+    inline real getRewardProbability (int s, int a, real r) const
+    {
+        return reward_distribution.pdf(s, a, r);
+    }
+
     inline real getTransitionProbability (int s, int a, int s2) const
     {
         int ID = getID (s, a);                

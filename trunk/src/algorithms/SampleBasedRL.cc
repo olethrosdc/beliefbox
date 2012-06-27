@@ -30,14 +30,16 @@ SampleBasedRL::SampleBasedRL(int n_states_,
       T(0),
       update_interval(1),
       next_update(0),
-      use_upper_bound(use_upper_bound_)
+      use_upper_bound(use_upper_bound_),
+      use_sampling_threshold(false),
+      sampling_threshold(0.1),
+      weights(max_samples)
 {
     printf("# Starting Sample-Based-RL with %d samples, update interval %d\n",
            max_samples, update_interval);
 
     state = -1;
 
-    Vector w(max_samples);
     real w_i = 1.0 / (real) max_samples;
     mdp_list.resize(max_samples);
     value_iteration.resize(max_samples);
@@ -46,12 +48,12 @@ SampleBasedRL::SampleBasedRL(int n_states_,
     for (int i=0; i<max_samples; ++i) {
         printf("# Generating sampled MDP\n");
         mdp_list[i] = model->generate();
-        w[i] = w_i;
+        weights[i] = w_i;
         value_iteration[i] = new ValueIteration(mdp_list[i], gamma);
     }
 
     printf ("# Setting up MultiMPDValueIteration\n");
-    multi_value_iteration = new MultiMDPValueIteration(w, mdp_list, gamma);
+    multi_value_iteration = new MultiMDPValueIteration(weights, mdp_list, gamma);
     printf ("# Testing MultiMPDValueIteration\n");
     multi_value_iteration->ComputeStateActionValues(0,1);
     tmpQ.resize(n_actions);
@@ -104,9 +106,29 @@ int SampleBasedRL::Act(real reward, int next_state)
     // Update MDPs
     //mdp_list[0] = model->getMeanMDP();
     // Do note waste much time generating MDPs
-
-    if (T >= next_update) {    
-        //printf("# mean model\n");
+    
+    bool do_update = false;
+    if (use_sampling_threshold) {
+        for (int i=0; i<max_samples; ++i) {
+            real p = mdp_list[i]->getTransitionProbability(state, action, next_state);
+            weights[i] *= p;
+        }
+        weights /= weights.Sum();
+        if (Max(weights) > 1.0 - sampling_threshold) {
+            //printf("Minimum: %f\n", Min(weights));
+            //weights.print(stdout);
+            do_update = true;
+            for (int i=0; i<max_samples; ++i) {
+                weights[i] = 1.0 / (real) max_samples;
+            }
+        }
+    } else {
+        if (T >= next_update) {    
+            do_update = true;
+        }
+    }
+    if (do_update) {    
+        printf("# update: %d\n", T);
         //model->ShowModel();
         update_interval += 1;//(int) (ceil)(1.01*(double) T);
         next_update = T + update_interval;
