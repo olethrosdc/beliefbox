@@ -42,6 +42,7 @@
 #include "RiverSwim.h"
 #include "OptimisticTask.h"
 #include "InventoryManagement.h"
+#include "DoubleLoop.h"
 
 // -- Continuous environments -- //
 #include "MountainCar.h"
@@ -89,7 +90,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
     --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma}\n\
-    --environment:  {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory}\n\
+    --environment:  {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory, DoubleLoop}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
     --gamma:        reward discounting in [0,1] (* 0.95)\n\
@@ -328,6 +329,8 @@ int main (int argc, char** argv)
             environment = new OptimisticTask (0.1, 0.01);
         } else if (!strcmp(environment_name, "RiverSwim")) { 
             environment = new RiverSwim();
+        } else if (!strcmp(environment_name, "DoubleLoop")) { 
+            environment = new DoubleLoop();
         } else if (!strcmp(environment_name, "Inventory")) { 
             int period = n_actions - 1;
             int max_items = n_states - 1;
