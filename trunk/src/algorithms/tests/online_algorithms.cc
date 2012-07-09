@@ -107,6 +107,7 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --step_value:   value at each time step (* 0)\n\
     --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0.01)\n\
     --reward_prior: {Beta, Fixed, *Normal}\n\
+    --initial_reward: [0]\n\
     \n\
     * denotes default parameter\n\
 \n";
@@ -133,6 +134,7 @@ int main (int argc, char** argv)
     real dirichlet_mass = 0.5;
     real sampling_threshold = 0.1;
     bool use_sampling_threshold = false;
+    real initial_reward = 0.0;
 
     enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::NORMAL;
 
@@ -166,7 +168,7 @@ int main (int argc, char** argv)
                 {"grid_size", required_argument, 0, 0}, //14
                 {"randomness", required_argument, 0, 0}, //15
                 {"episode_steps", required_argument, 0, 0}, //16
-                {"upper_bound", no_argument, 0, 0}, //17
+                {"initial_reward", required_argument, 0, 0}, //17
                 {"reward_prior", required_argument, 0, 0}, //18
                 {"goal_value", required_argument, 0, 0}, //19
                 {"step_value", required_argument, 0, 0}, //20
@@ -205,7 +207,7 @@ int main (int argc, char** argv)
                 case 14: grid_size = atoi(optarg); break;
                 case 15: randomness = atof(optarg); break;
                 case 16: episode_steps = atoi(optarg); break;
-                    //case 17: use_upper_bound = true; break;
+                case 17: initial_reward = atof(optarg); break;
                 case 18: 
                     if (!strcmp(optarg, "Beta")) {
                         reward_prior = DiscreteMDPCounts::BETA;
@@ -374,14 +376,16 @@ int main (int argc, char** argv)
                                   gamma,
                                   lambda,
                                   alpha,
-                                  exploration_policy);
+                                  exploration_policy,
+                                  initial_reward);
         } else if (!strcmp(algorithm_name, "QLearning")) { 
             algorithm = new QLearning(n_states,
                                       n_actions,
                                       gamma,
                                       lambda,
                                       alpha,
-                                      exploration_policy);
+                                      exploration_policy,
+                                      initial_reward);
         } else if (!strcmp(algorithm_name, "HQLearning")) { 
             algorithm = new HQLearning(
                                        4,
