@@ -254,7 +254,7 @@ int main(int argc, char** argv)
         //printf ("%f %f\n", statistics.probability[t] * inv_iter,
         //statistics.error[t] * inv_iter);
         printf ("%f %f %f #STATS\n",
-                statistics.probability[t] * inv_iter,
+                - log(statistics.probability[t]) * inv_iter,
                 statistics.reward[t] * inv_iter, 
                 statistics.error[t] * inv_iter);
     }

@@ -129,6 +129,7 @@ real ContinuousContextTreeRL::Node::Observe(Vector& x, Vector& y, real reward, r
     //real prior_normal = exp(log_prior_normal);
     real P_tree = local_density->Observe(y);
     real P_normal = normal_density->Observe(y);
+	//printf ("%f # normal\n", P_normal);
     real P_local = prior_normal * P_normal + (1 - prior_normal) * P_tree;
     //log_prior_normal += log(P_normal) - log(P_local);
     prior_normal *= P_normal / P_local;

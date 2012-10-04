@@ -20,7 +20,7 @@
 #include "Random.h"
 #define INITIAL_Q_VALUE 0.0
 #define NORMAL_PRIOR  0.5
-#define PREDICT_REWARDS
+#undef PREDICT_REWARDS
 
 /** Construction of the root node */
 ContinuousStateContextTreeRL::Node::Node(ContinuousStateContextTreeRL& tree_,
@@ -150,6 +150,7 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x_t,
     //real prior_normal = exp(log_prior_normal);
     real P_tree = local_density->Observe(y_t);
     real P_normal = normal_density->Observe(y_t);
+	//printf("%f # normal\n", P_normal);
     real P_local =  prior_normal * P_normal + (1 - prior_normal) * P_tree;
     //log_prior_normal += log(P_normal) - log(P_local);
     if (P_local > fudge) {

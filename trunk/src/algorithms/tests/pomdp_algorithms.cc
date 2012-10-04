@@ -109,7 +109,13 @@ int main (int argc, char** argv)
         for (int i=0; i<argc; ++i) {
             printf("arg %d: %s\n", i, argv[i]);
         }
-        std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment [optional args]\n";
+        std::cerr << "Usage: online_algorithms n_states n_actions gamma lambda randomness n_runs n_episodes n_steps algorithm environment [optional args]"
+				  << std::endl
+				  << "environments: Gridworld, POMDPGridworld, ContextBandit, OneDMaze, DiscretisedContinuousChain, MountainCar, Pendulum"
+				  << std::endl
+				  << "algorithms: Sarsa, QLearning, HQLearning, QLearningDirichlet, Model, ContextBanditGaussian, Aggregate, Collection, ContextBanditCollection, BVMM"
+				  << std::endl;
+
         return -1;
     }
     n_original_states = atoi(argv[1]);
@@ -208,7 +214,7 @@ int main (int argc, char** argv)
             pomdp_wrapper = new POMDPWrapper<int, int, POMDPGridworld>(*pomdp_gridworld);
             environment = pomdp_wrapper;
         } else if (!strcmp(environment_name, "ContextBandit")) { 
-            context_bandit = new ContextBandit(n_actions, 3, 4, rng);
+            context_bandit = new ContextBandit(2, n_actions, rng);
             environment = context_bandit;
         } else if (!strcmp(environment_name, "OneDMaze")) { 
             one_d_maze = new OneDMaze(n_original_states, rng);
@@ -287,7 +293,8 @@ int main (int argc, char** argv)
                                          n_actions,
                                          gamma,
                                          epsilon,
-                                         model);
+                                         model,
+										 rng);
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
                 new ContextBanditGaussian(n_states,
@@ -324,6 +331,7 @@ int main (int argc, char** argv)
                                               gamma,
                                               epsilon,
                                               collection,
+											  rng,
                                               true);
         } else if (!strcmp(algorithm_name, "ContextBanditCollection")) {
             ContextBanditCollection* collection = 
@@ -556,7 +564,7 @@ Statistics EvaluateAlgorithmContinuous (uint n_steps,
         action_ok = environment->Act(action);
     }
     fprintf(stderr, "\n");
-    std::cout << "(done)" << std::endl;
+    std::cout << "(done after " << t << " steps)" << std::endl;
     return statistics;
 }
 
