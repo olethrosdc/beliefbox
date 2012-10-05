@@ -305,6 +305,7 @@ int main (int argc, char** argv)
                                          gamma,
                                          epsilon,
                                          model,
+                                         rng,
                                          false);
         } else if (!strcmp(algorithm_name, "Aggregate")) {
             model= (MDPModel*)
@@ -317,6 +318,7 @@ int main (int argc, char** argv)
                                          gamma,
                                          epsilon,
                                          model,
+                                         rng,
                                          false);
         } else if (!strcmp(algorithm_name, "Collection")) {
             DiscreteMDPCollection* collection = 
@@ -346,6 +348,7 @@ int main (int argc, char** argv)
                                          gamma,
                                          epsilon,
                                          collection,
+                                         rng,
                                          false);
         } else if  (!strcmp(algorithm_name, "BVMM")){
             BVMM_QLearning<ContextTreeRL>* bvmm = new BVMM_QLearning<ContextTreeRL>(n_actions, n_states, depth + 1, epsilon, alpha, gamma);
