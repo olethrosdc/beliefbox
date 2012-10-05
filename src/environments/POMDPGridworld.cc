@@ -33,8 +33,8 @@ POMDPGridworld::POMDPGridworld(RandomNumberGenerator* rng_,
 
 
     // the number of obsrvations
-    if (n_obs != 16 && n_obs != 2) {
-        Serror ("Either 2 or 16 observations must be used\n");
+    if (n_obs != 32 && n_obs != 4) {
+        Serror ("Either 4 or 32 observations must be used\n");
     }
 
     CalculateDimensions(fname);
@@ -165,10 +165,10 @@ void POMDPGridworld::Reset()
     ox = x;
     oy = y;
     switch(n_obs) {
-    case 2:
+    case 4:
         observation = 0;
         break;
-    case 16:
+    case 32:
         observation = CalculateObservation16obs();
         break;
     default:
@@ -216,17 +216,20 @@ bool POMDPGridworld::Act(int action)
         ox = x;
         oy = y;
         state = getStateFromCoords(x, y);
-        if (n_obs == 2) {
-            observation = 1;
+        if (n_obs == 4) {
+            observation = 2;
         }
-    } 
-
+    }
+ 
     if (whatIs(x,y) == GOAL || whatIs(x,y)== PIT) {
         state = terminal_state;
     }
 
     if (whatIs(x,y) == GOAL) {
         reward = goal_value;
+        if (n_obs == 4) {
+            observation += 1;
+        }
     }
 
     if (whatIs(x,y) == PIT) {
@@ -275,21 +278,26 @@ int POMDPGridworld::CalculateObservation16obs()
 {
     int obs = 0;
 
-    if (whatIs(ox-1, oy)==WALL || whatIs(ox-1, oy)==INVALID) {
+    if (whatIs(ox, oy) == GOAL) {
         obs |= 1;
     }
 
-    if (whatIs(ox+1, oy)==WALL || whatIs(ox+1, oy)==INVALID) {
+    if (whatIs(ox-1, oy)==WALL || whatIs(ox-1, oy)==INVALID) {
         obs |= 2;
     }
 
-    if (whatIs(ox, oy-1)==WALL || whatIs(ox, oy-1)==INVALID) {
+    if (whatIs(ox+1, oy)==WALL || whatIs(ox+1, oy)==INVALID) {
         obs |= 4;
     }
 
-    if (whatIs(ox, oy+1)==WALL || whatIs(ox, oy+1)==INVALID) {
+    if (whatIs(ox, oy-1)==WALL || whatIs(ox, oy-1)==INVALID) {
         obs |= 8;
     }
+
+    if (whatIs(ox, oy+1)==WALL || whatIs(ox, oy+1)==INVALID) {
+        obs |= 16;
+    }
+    
     assert(obs>=0 && obs<n_obs);
     return obs;
 }

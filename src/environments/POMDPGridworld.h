@@ -44,7 +44,7 @@ public:
     int terminal_state;
     POMDPGridworld(RandomNumberGenerator* rng_,
                    const char* fname,
-                   uint n_obs_ = 16,
+                   uint n_obs_ = 32,
                    real random_ = 0.0,
                    real pit_ = -1.0,
                    real goal_ = 0.0,

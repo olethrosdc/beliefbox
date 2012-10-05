@@ -43,7 +43,9 @@
 #include "QLearning.h"
 #include "HQLearning.h"
 #include "QLearningDirichlet.h"
+#include "DiscreteMDPCounts.h"
 #include "ModelBasedRL.h"
+#include "SampleBasedRL.h"
 #include "ModelCollectionRL.h"
 #include "ContextBanditGaussian.h"
 #include "DiscreteMDPCollection.h"
@@ -98,12 +100,14 @@ int main (int argc, char** argv)
     real randomness = 0.01;
     real pit_value = -1.0;
     real goal_value = 1.0;
-    real step_value = -0.01;
+    real step_value = -1.0;
     real epsilon = 0.01;
     uint n_runs = 1000;
     uint n_episodes = 1000;
     uint n_steps = 100;
     int depth = 1;
+    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::NORMAL;                        
+
 
     if (argc < 11) {
         for (int i=0; i<argc; ++i) {
@@ -210,7 +214,8 @@ int main (int argc, char** argv)
             gridworld = new Gridworld("/home/olethros/projects/beliefbox/dat/maze3",  16, 16);
             environment = gridworld;
         } else if (!strcmp(environment_name, "POMDPGridworld")) { 
-            pomdp_gridworld = new POMDPGridworld(rng, "/home/olethros/projects/beliefbox/dat/maze6", 2, 0.0, -1.0, 1.0, -0.1);
+            pomdp_gridworld = new POMDPGridworld(rng, "/home/olethros/projects/beliefbox/dat/maze6", 32, randomness,
+                                                 pit_value, goal_value, step_value);
             pomdp_wrapper = new POMDPWrapper<int, int, POMDPGridworld>(*pomdp_gridworld);
             environment = pomdp_wrapper;
         } else if (!strcmp(environment_name, "ContextBandit")) { 
@@ -248,7 +253,7 @@ int main (int argc, char** argv)
         //std::cout << "Creating exploration policy" << std::endl;
         VFExplorationPolicy* exploration_policy = NULL;
         exploration_policy = new EpsilonGreedy(n_actions, epsilon);
-    
+        exploration_policy->setGeometricSchedule(1.0, 1.0);
     
         //std::cout << "Creating online algorithm" << std::endl;
         OnlineAlgorithm<int, int>* algorithm = NULL;
@@ -295,6 +300,20 @@ int main (int argc, char** argv)
                                          epsilon,
                                          model,
 										 rng);
+        } else if (!strcmp(algorithm_name, "USampling")) {
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
+                                                  1.0,
+                                                  reward_prior);
+            model= (MDPModel*) discrete_mdp;
+            SampleBasedRL* sampling = new SampleBasedRL(n_states,
+                                                        n_actions,
+                                                        gamma,
+                                                        epsilon,
+                                                        model,
+                                                        rng,
+                                                        1, //max_samples
+                                                        true);
+            algorithm = sampling;
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
                 new ContextBanditGaussian(n_states,

@@ -30,6 +30,8 @@ public:
     virtual int SelectAction() = 0;
     virtual void setValueMatrix(const Matrix* Q) = 0;
     virtual DiscretePolicy* getFixedPolicy() = 0;
+    virtual void setGeometricSchedule(real alpha, real beta)
+    {}
 };
 
 class EpsilonGreedy : public VFExplorationPolicy
@@ -39,9 +41,12 @@ protected:
     real epsilon;
     int state;
     const Matrix* Q;
+    bool use_geometric_schedule;
+    real alpha, beta;
 public:
     EpsilonGreedy(int n_actions_, real epsilon_) :
-        n_actions(n_actions_), epsilon(epsilon_), Q(NULL)
+        n_actions(n_actions_), epsilon(epsilon_), Q(NULL),
+        use_geometric_schedule(false)
     {
         assert(n_actions > 0);
         assert(epsilon >= 0 && epsilon <= 1);
@@ -66,9 +71,21 @@ public:
         Q = Q_;
     }
 
+    virtual void setGeometricSchedule(real alpha_, real beta_)
+        
+    {
+        alpha = alpha_;
+        beta = beta_;
+        use_geometric_schedule = true;
+    }
     virtual int SelectAction() 
     {
-        if (urandom() < epsilon) {
+        real threshold = epsilon;
+        if (use_geometric_schedule) {
+            threshold = epsilon / (1 + sqrt(beta));
+            beta += alpha;
+        }
+        if (urandom() < threshold) {
             int action =  (int) floor(urandom(0.0, n_actions));
             //printf("returning random action %d\n", action);
             return action;
