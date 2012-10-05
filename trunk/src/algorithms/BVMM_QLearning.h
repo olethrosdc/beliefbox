@@ -23,7 +23,8 @@ protected:
     int n_actions; ///< the number of actions
     int n_obs; ///< the number of distinct observations
     T tree; ///< the context tree
-    int t;
+    int n_steps; ///< number of steps passed
+    int n_episode_steps; ///< number of steps passed in an episode
     int action; ///< the current action
     int current_obs; ///< the current observation
     real current_reward; ///< the current reward
@@ -35,7 +36,8 @@ public:
         : n_actions(n_actions_),
           n_obs(n_obs_),
           tree(n_obs * n_actions, n_obs, n_actions, n_obs, depth),
-          t(0),
+          n_steps(0),
+          n_episode_steps(0),
           current_obs(0),
           epsilon(epsilon_),
           alpha(alpha_),
@@ -50,7 +52,7 @@ public:
     /// call this at the end of an episode.
     virtual void Reset()
     {
-        t = 0;
+        n_episode_steps = 0;
         action = 0;
     }
     /// Partial observation
@@ -65,14 +67,16 @@ public:
     {
         assert(next_state >= 0 && next_state < n_obs);
 
-        if (t) {
+        if (n_episode_steps) {
             _Observe(action, next_state, reward);
         } else {
             _Observe(next_state);
         }
-        t++;
-        _QLearning(alpha, gamma);
-        if (urandom() < epsilon) {
+        n_episode_steps++;
+        n_steps++;
+        //_QLearning(alpha, gamma);
+        real threshold = epsilon / (1.0 + sqrt(n_steps));
+        if (urandom() < threshold) {
             action =  rand()%n_actions;
             return action;
         }
