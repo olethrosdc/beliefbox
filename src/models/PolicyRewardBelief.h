@@ -27,7 +27,15 @@
 class DiscreteSpaceRewardDistribution;
 class ExponentialDistribution;
 
-/** Prior on policy given reward belief */
+/** A model for inverse reinforcement learning, using a prior on the policy given reward belief.
+
+    From the papers
+    "Preference Elicitation and Inverse Reinforcement Learning",
+    C. Rothkopf, C. Dimitrakakis, ECML 2011.
+
+    "Bayesian Multi-task Inverse Reinforcement Learning",
+    C. Dimitrakakis, C. Rothkopf, EWRL 2011.
+ */
 class PolicyRewardBelief
 {
 protected:

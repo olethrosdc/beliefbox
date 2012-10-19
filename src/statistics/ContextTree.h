@@ -18,11 +18,11 @@
 #include "Ring.h"
 
 
-/** An alternative context tree implementation.
+/** An Bayesian variable order Markov model implemented as a context tree.
 
-    Somewhat more generic.
-    
-    
+    This is a dynamically-updated model, usable online. From the paper:
+    "Bayesian Variable Order Markov Models",
+    C. Dimitrakakis, AI-STATS 2010.
 */
 class ContextTree
 {

@@ -25,7 +25,13 @@
 
 class DiscreteSpaceRewardDistribution;
 
-/** Prior on policy given reward belief.
+/** A Multi-task (population) model for inverse reinforcement learning using a arior on policy given reward belief.
+
+    Described in:
+
+    "Bayesian Multi-task Inverse Reinforcement Learning",
+    C. Dimitrakakis, C. Rothkopf, EWRL 2011.
+
 
  */
 class PopulationPolicyRewardBelief
