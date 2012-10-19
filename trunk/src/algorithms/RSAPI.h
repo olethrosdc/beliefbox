@@ -51,6 +51,22 @@ public:
 };
 
 
+/** Rollout sampling approximate policy iteration.
+
+    From
+    
+    "Rollout Sampling Approximate Policy Iteration",
+    C. Dimitrakakis, M. Lagoudakis, Machine Learning Journal, 2008.
+
+    and
+
+    "Algorithms and Bounds for Rollout Sampling Approximate Policy
+    Iteration",
+    C. Dimitrakakis, M. Lagoudakis, Machine Learning
+    Journal, 2008,
+
+    with some additional experimental improvements.
+*/
 class RSAPI
 {
 protected:

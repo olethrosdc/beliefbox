@@ -21,6 +21,10 @@
 
 /** Multi-MDP value iteration.
 
+    From the paper
+    "Robust Bayesian Reinforcement Learning via Tight Lower Bounds",
+    C. Dimitrakakis, EWRL 2012.
+
     The main assumption in this algorithm is that the policy is
     reactive and oblivious. In that case, we can use a fixed
     probability measure.

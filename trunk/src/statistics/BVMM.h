@@ -25,7 +25,12 @@
 
 
 
-/// A Markov Chain
+/// A Bayesian variable order Markov chain
+///
+/// Naive implementation from the paper
+/// "Bayesian Variable Order Markov Models",
+/// C. Dimitrakakis, AI-STATS 2010.
+///
 class BVMM : public BayesianMarkovChain
 {
 protected:

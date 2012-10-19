@@ -32,9 +32,9 @@
     This class maintains a model of the (discrete) MDP.
     It selects actions based on a set of _sampled_ MDPs.
     
-    This is described in the paper
-
-    "Robust Bayesian Reinforcement Learning through Tight Lower Boudns"
+    The algorithm is described in the paper:
+    "Robust Bayesian Reinforcement Learning through Tight Lower Bounds",
+    Christos Dimitrakakis
     EWRL 2012.
 */
 class SampleBasedRL : public OnlineAlgorithm<int, int>

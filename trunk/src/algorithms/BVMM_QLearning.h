@@ -16,6 +16,12 @@
 #include "OnlineAlgorithm.h"
 #include <cstdio>
 
+/** Q-Learning on a Bayesian Variable Order Markov Model
+
+    From the paper:
+    "Context model inference for large or partially observable MDPs",
+    C. Dimitrakakis, ICML workshop on RL and search, 2010.
+ */
 template <class T>
 class BVMM_QLearning : public OnlineAlgorithm<int, int>
 {

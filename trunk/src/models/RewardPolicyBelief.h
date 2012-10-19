@@ -15,10 +15,13 @@
 #include "PolicyBelief.h"
 #include "DiscreteMDP.h"
 
-/** Prior on epsilon optimality of policies.
+/** A model for inverse reinforcement learning, using a prior on epsilon optimality of policies.
 
-    The main idea is that, given a set of reward functions, you end up
-    with this.
+    From the paper
+
+    "Bayesian Multi-task Inverse Reinforcement Learning",
+    C. Dimitrakakis, C. Rothkopf, EWRL 2011.
+
  */
 class RewardPolicyBelief
 {
