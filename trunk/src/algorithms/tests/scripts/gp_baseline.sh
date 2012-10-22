@@ -1,17 +1,17 @@
 #! /bin/bash
 
-n_states=16
-runs=10
+n_states=8
+runs=1000
 T=1000000
-episodes=100
+episodes=1000
 
-for environment in Puddle
+for environment in MountainCar Puddle
 do
 
     outdir=$HOME/results/gaussian_processes/$environment/${n_states}
     mkdir -p $outdir
 
-    for algorithm in QLearning Sarsa Model UCRL
+    for algorithm in QLearning Sarsa UCRL 
     do
         for eps in 0 01 1
         do
