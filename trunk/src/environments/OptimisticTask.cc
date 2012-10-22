@@ -19,25 +19,42 @@ void OptimisticTask::Reset()
 
 bool OptimisticTask::Act(int action)
 {
-    if (action == 0) {
-        state = 0;
-    } else { // action 1
-        if (state < 2) {
-            if (urandom() < delta) {
-                state = 2;
-            } else {
-                state = 1;
-            }
-        }  else {
-            state = 2;
+    // get next state
+    switch (state) {
+    case 0:
+        if (action == 0) {
+            state = 0; 
+        } else {
+            state = 1;
         }
-        
+        break;
+    case 1:
+        if (urandom() < delta) {
+            if (action == 0) {
+                state = 0;
+            } else {
+                state = 2;
+            }
+        }
+        break;
+    case 2:
+        if (action == 1) {
+            state = 2;
+        } else {
+            state = 1;
+        }
+        break;
     }
 
+    // get next reward
     switch(state) {
-    case 0: reward = epsilon; break;
-    case 1: reward = 0; break;
-    case 2: reward = 1; break;
+    case 0:
+    case 2:
+        reward = epsilon; 
+        break;
+    case 1:
+        reward = 0;
+        break;
     }
 
     return true;
@@ -47,34 +64,26 @@ DiscreteMDP* OptimisticTask::getMDP() const
 {
     DiscreteMDP* mdp = new DiscreteMDP(n_states, n_actions);
 
-    int good_state = 2;
-    int bad_state = 1;
-    int default_state = 0;
-    // action 0 takes you to state 0 always
-    for (int s=0; s<3; ++s) {
-        mdp->setTransitionProbability(s, 0, default_state, 1);
-    }
+    // get next state
+    mdp->setTransitionProbability(0, 0, 0, 1);
+    mdp->setTransitionProbability(0, 1, 1, 1);
+    mdp->setTransitionProbability(2, 0, 1, 1);
+    mdp->setTransitionProbability(2, 1, 2, 1);
 
-    // action 1 takes you to state 2 w.p. delta, and to state 1 as long
-    // as you are in one of the first two states.
-    for (int s=0; s<2; ++s) {
-        mdp->setTransitionProbability(s, 1, good_state, delta);
-        mdp->setTransitionProbability(s, 1, bad_state, 1.0 - delta);
-    }
-    // you can stay in the good state forever by taking action 1!
-    mdp->setTransitionProbability(good_state, 1, good_state, 1.0);
-    
-    // default state
-    mdp->addFixedReward(default_state, 0, epsilon);
-    mdp->addFixedReward(default_state, 1, epsilon);
+    mdp->setTransitionProbability(1, 0, 0, delta);
+    mdp->setTransitionProbability(1, 0, 1, 1 - delta);
 
-    // 'bad' state
-    mdp->addFixedReward(bad_state, 0, 0.0);
-    mdp->addFixedReward(bad_state, 1, 0.0);
+    mdp->setTransitionProbability(1, 1, 2, delta);
+    mdp->setTransitionProbability(1, 1, 1, 1 - delta);
 
-    // 'good' state
-    mdp->addFixedReward(good_state, 0, 1.0);
-    mdp->addFixedReward(good_state, 1, 1.0);
+    mdp->addFixedReward(0, 0, epsilon);
+    mdp->addFixedReward(0, 1, epsilon);
+
+    mdp->addFixedReward(1, 0, 0.0);
+    mdp->addFixedReward(1, 1, 0.0);
+
+    mdp->addFixedReward(2, 0, epsilon);
+    mdp->addFixedReward(2, 1, epsilon);
     
     return mdp;
 }

@@ -17,6 +17,20 @@
 #include "RandomNumberGenerator.h"
 #include "DiscreteMDP.h"
 
+/** Optimistic task.
+
+    Adapted from an example by Ronald Ortner.
+
+    This task seriously inconveniences algorithms that implement an 
+    "optimism under uncertainty" heuristic.
+    
+    The idea is that there are two identical states, with reward
+    epsilon.  There is a transitory state, which has reward zero. If
+    you are optimistic, you may constantly think that the other state
+    has a higher reward than the one you observe, forcing you to spend
+    a lot of time in the transitory state.
+
+ */
 class OptimisticTask : public DiscreteEnvironment
 {
 protected:

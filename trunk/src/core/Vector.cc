@@ -53,6 +53,7 @@ Vector::Vector()
     checking_bounds = NO_CHECK_BOUNDS;
 }
 
+/// Always create a zero vector
 Vector::Vector(int N_, enum BoundsCheckingStatus check)
 {
     n = N_;
