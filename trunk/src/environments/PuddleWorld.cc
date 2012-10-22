@@ -17,10 +17,14 @@
 
 //PuddleWorld::Parameters PuddleWorld::default_parameters = SetDefaultParameters();
 
-PuddleWorld:: PuddleWorld(bool random_parameters):Environment<Vector, int>(2,4),parameters(default_parameters)
+PuddleWorld:: PuddleWorld(bool random_parameters)
+ : Environment<Vector, int>(2,4)
+   //parameters(default_parameters)
 {	
-	default_parameters = SetDefaultParameters();
+    printf("Entering actual constructor\n");
 
+	default_parameters = SetDefaultParameters();
+    
 	if(random_parameters){
 		RandomSourceRNG rng(false);
 		parameters.U_POS_X = (0.5 + rng.uniform()) * default_parameters.U_POS_X;
@@ -32,7 +36,9 @@ PuddleWorld:: PuddleWorld(bool random_parameters):Environment<Vector, int>(2,4),
 		for(int i=0;i<default_parameters.NUMPUDDLES;i++)
 			parameters.RADIUSPUDDLES(i) = (0.5 + rng.uniform()) * default_parameters.RADIUSPUDDLES(i);
 		parameters.AGENTSPEED	= (0.5 + rng.uniform()) * default_parameters.AGENTSPEED;
-	}
+	} else {
+        parameters = default_parameters;
+    }
 	
 	state.Resize(n_states);
 	state.Clear();
@@ -91,11 +97,11 @@ void PuddleWorld::Simulate(const int action)
 	Vector input(2);
 	
 	switch(action){
-		case 0: input[0] = parameters.AGENTSPEED;
-		case 1: input[0] = -parameters.AGENTSPEED; 
-		case 2: input[1] = parameters.AGENTSPEED;
-		case 3: input[1] = -parameters.AGENTSPEED;
-		default: Serror("Undefined action %d\n",action);
+    case 0: input[0] = parameters.AGENTSPEED; break;
+    case 1: input[0] = -parameters.AGENTSPEED; break;
+    case 2: input[1] = parameters.AGENTSPEED; break;
+    case 3: input[1] = -parameters.AGENTSPEED; break;
+    default: Serror("Undefined action %d\n",action);
 	}
 	
 	state += input;
