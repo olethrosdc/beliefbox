@@ -46,6 +46,7 @@
 
 // -- Continuous environments -- //
 #include "MountainCar.h"
+#include "PuddleWorld.h"
 #include "DiscretisedEnvironment.h"
 
 // -- Randomness -- //
@@ -90,7 +91,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
     --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma}\n\
-    --environment:  {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory, DoubleLoop}\n\
+    --environment:  {Puddle, MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory, DoubleLoop}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
     --gamma:        reward discounting in [0,1] (* 0.95)\n\
@@ -309,6 +310,9 @@ int main (int argc, char** argv)
         continuous_mountain_car.setRandomness(randomness);
         continuous_mountain_car.Reset();
 
+        PuddleWorld continuous_puddle_world;
+        continuous_puddle_world.Reset();
+
         DiscreteEnvironment* environment = NULL;
         if (!strcmp(environment_name, "RandomMDP")) { 
             environment = new RandomMDP (n_actions,
@@ -343,9 +347,9 @@ int main (int argc, char** argv)
                                                   demand,
                                                   margin);
         } else if (!strcmp(environment_name, "MountainCar")) { 
-            environment = 
-                new DiscretisedEnvironment<MountainCar> (continuous_mountain_car,
-                                                         grid_size);
+            environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car, grid_size);
+        } else if (!strcmp(environment_name, "Puddle")) { 
+            environment = new DiscretisedEnvironment<PuddleWorld> (continuous_puddle_world, grid_size);
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }

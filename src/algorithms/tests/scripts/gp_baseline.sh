@@ -1,28 +1,32 @@
 #! /bin/bash
 
-n_states=8
-runs=1000
+n_states=16
+runs=10
 T=1000000
 episodes=100
 
-outdir=$HOME/results/gaussian_processes/MountainCar/${n_states}
-mkdir -p $outdir
-
-for algorithm in UCRL QLearning Sarsa Model
+for environment in Puddle
 do
-    for eps in 0 1
+
+    outdir=$HOME/results/gaussian_processes/$environment/${n_states}
+    mkdir -p $outdir
+
+    for algorithm in QLearning Sarsa Model UCRL
     do
-        echo $algorithm $eps
-        ./bin/online_algorithms --algorithm $algorithm --environment MountainCar --n_states $n_states --n_runs $runs --n_steps $T --n_episodes $episodes --epsilon 0.00${eps} | grep EPISODE_RETURN >$outdir/${algorithm}_${eps}e.episode;
+        for eps in 0 01 1
+        do
+            echo $algorithm $eps
+            ./bin/online_algorithms --algorithm $algorithm --environment $environment --n_states $n_states --n_runs $runs --n_steps $T --n_episodes $episodes --epsilon 0.${eps} | grep EPISODE_RETURN >$outdir/${algorithm}_${eps}e.episode;
+        done
     done
-done
 
 
-for s in 1 2 4 8
-do
-    for algorithm in USampling LSampling
+    for s in 1 2 4 8
     do
-        echo $algorithm $s
-        ./bin/online_algorithms --algorithm $algorithm --environment MountainCar --n_states $n_states --n_runs $runs --n_steps $T --n_episodes $episodes --epsilon 0.0 --max_samples $s | grep EPISODE_RETURN >$outdir/${algorithm}_${s}s.episode;
+        for algorithm in USampling LSampling
+        do
+            echo $algorithm $s
+            ./bin/online_algorithms --algorithm $algorithm --environment $environment --n_states $n_states --n_runs $runs --n_steps $T --n_episodes $episodes --epsilon 0.0 --max_samples $s | grep EPISODE_RETURN >$outdir/${algorithm}_${s}s.episode;
+        done
     done
 done

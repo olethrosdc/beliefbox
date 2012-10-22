@@ -27,7 +27,7 @@ protected:
 		real	L_POS_X;		///< Lower bound on axis x
 		real	U_POS_Y;		///< Upper bound on axis y
 		real	L_POS_Y;		///< Lower bound on axis y
-		real	NUMPUDDLES;		///< Number of puddles
+		int 	NUMPUDDLES;		///< Number of puddles
 		Matrix	U_POS_P;		///< Upper point on puddles
 		Matrix	L_POS_P;		///< Lower point on puddles
 		Vector	RADIUSPUDDLES;	///< Radius of puddles
