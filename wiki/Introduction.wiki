@@ -7,3 +7,37 @@ problems in sequential inference and decision making.
 
 It also includes some highly experimental code. The codebase
 is extremely unstable and the API likely to change at any time.
+
+This is a summary of the main features of the code-base:
+
+= Algorithms == 
+
+Bayesian RL Search
+Expectation-Maximisation
+Q-Learning
+Rollout Classification Policy Iteration
+Rollout Sampling Approximate Policy Iteration
+Sarsa
+MWAL
+Multi-MDP Value Iteration
+Thompson Sampling
+Variable order Markov reinforcement learning
+UCB, UCRL
+
+= Models =
+
+Bayesian Non-Parametric Conditional Density Estimation
+Conjugate Priors (e.g. Normal/Wishart, Multinomial/Dirichlet)
+Context Trees and Bayesian Variable Order Markov Models
+Hidden Markov Models
+Inverse Reinforcement Learning Models
+KNN classifier
+Linear classifiers
+MDP Models
+Multitask Inverse Reinforcement Learning Models
+Neural Networks
+
+= Core Classes =
+
+Matrices, Vectors, Graphs
+KD-Trees, Cover Trees
