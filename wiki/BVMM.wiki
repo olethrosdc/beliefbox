@@ -1,5 +1,6 @@
-The Bayesian variable order Markov model
+# summary The Bayesian variable order Markov model
 
+This is a family of methods that perform Bayesian inference on variable order Markov models.
 
 = Efficient implementation =
 
