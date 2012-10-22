@@ -127,9 +127,9 @@ void MountainCar::Simulate(const int action)
         state[0] = parameters.L_POS + 0.01;
         state[1] = 0.01;
     }
-        //printf ("S: %f %f\n", state[0], state[1]);
+    printf ("S: %f %f\n", state[0], state[1]);
     if (state[0] == parameters.U_POS) {
-        reward = 1.0;
+        reward = 0.0;
         endsim = true;
     } else {
         reward = -1;
