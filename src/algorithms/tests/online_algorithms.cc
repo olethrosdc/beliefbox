@@ -118,7 +118,7 @@ int main (int argc, char** argv)
 {
     int n_actions = 2;
     int n_states = 5;
-    real gamma = 0.9;
+    real gamma = 0.99;
     real lambda = 0.9;
     real alpha = 0.1;
     real randomness = 0.01;
