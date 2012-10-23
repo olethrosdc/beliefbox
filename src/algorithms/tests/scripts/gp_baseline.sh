@@ -1,11 +1,13 @@
 #! /bin/bash
 
 n_states=8
-runs=1000
+runs=100
 T=1000000
-episodes=1000
+episodes=10000
+steps=-1
+gamma=0.999
 
-for environment in MountainCar Puddle
+for environment in Puddle #MountainCar Puddle
 do
 
     outdir=$HOME/results/gaussian_processes/$environment/${n_states}
@@ -13,20 +15,28 @@ do
 
     for algorithm in QLearning Sarsa UCRL 
     do
-        for eps in 0 01 1
+        for eps in 01 #01 1
         do
             echo $algorithm $eps
-            ./bin/online_algorithms --algorithm $algorithm --environment $environment --n_states $n_states --n_runs $runs --n_steps $T --n_episodes $episodes --epsilon 0.${eps} | grep EPISODE_RETURN >$outdir/${algorithm}_${eps}e.episode;
+            outfile=`mktemp`
+            ./bin/online_algorithms --gamma $gamma --algorithm $algorithm --environment $environment --n_states $n_states --n_runs $runs --n_steps $T --episode_steps  $steps --n_episodes $episodes --epsilon 0.${eps} > $outfile
+            grep EPISODE_RETURN $outfile >$outdir/${algorithm}_${eps}e.episode;
+            grep REWARD $outfile >$outdir/${algorithm}_${eps}e.reward
+            grep PAYOFF $outfile >$outdir/${algorithm}_${eps}e.payoff
         done
     done
 
 
-    for s in 1 2 4 8
+    for s in 1 2  4 8
     do
         for algorithm in USampling LSampling
         do
             echo $algorithm $s
-            ./bin/online_algorithms --algorithm $algorithm --environment $environment --n_states $n_states --n_runs $runs --n_steps $T --n_episodes $episodes --epsilon 0.0 --max_samples $s | grep EPISODE_RETURN >$outdir/${algorithm}_${s}s.episode;
+            outfile=`mktemp`
+            ./bin/online_algorithms --gamma $gamma --algorithm $algorithm --environment $environment --n_states $n_states --n_runs $runs --n_steps $T --episode_steps $steps --n_episodes $episodes --epsilon 0.0 --max_samples $s  >$outfile
+            grep EPISODE_RETURN $outfile >$outdir/${algorithm}_${s}s.episode;
+            grep REWARD $outfile >$outdir/${algorithm}_${s}s.reward;
+            grep PAYOFF $outfile >$outdir/${algorithm}_${s}s.payoff;
         done
     done
 done

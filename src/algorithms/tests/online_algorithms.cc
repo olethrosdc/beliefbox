@@ -748,7 +748,11 @@ Statistics EvaluateAlgorithm (int episode_steps,
     real total_reward = 0.0;
     real discounted_reward = 0.0;
     for (uint step = 0; step < n_steps; ++step) {
-
+        if (episode_steps > 0 && current_time >= episode_steps) {
+            action_ok = false;
+            algorithm->Reset();
+            environment->Reset();
+        }
         if (!action_ok) {
             int state = environment->getState();
             real reward = environment->getReward();
