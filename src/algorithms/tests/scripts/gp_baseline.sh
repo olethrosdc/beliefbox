@@ -1,7 +1,7 @@
 #! /bin/bash
 
-n_states=8
-runs=100
+n_states=16
+runs=10
 T=1000000
 episodes=10000
 steps=-1
@@ -13,7 +13,7 @@ do
     outdir=$HOME/results/gaussian_processes/$environment/${n_states}
     mkdir -p $outdir
 
-    for algorithm in QLearning Sarsa UCRL 
+    for algorithm in QLearning #Sarsa #UCRL 
     do
         for eps in 01 #01 1
         do
