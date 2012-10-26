@@ -88,6 +88,38 @@ public:
             return LowerBound(state, action);
         }
     }
+    
+    inline void CalculateUpperBound(real accuracy, int iterations)
+    {
+        for (int j=0; j<max_samples; ++j) {
+            value_iteration[j]->setMDP(mdp_list[j]);
+            value_iteration[j]->ComputeStateValues(accuracy, iterations);
+        }
+    }
+
+    inline void CalculateLowerBound(real accuracy, int iterations)
+    {
+        multi_value_iteration->setMDPList(mdp_list);
+        multi_value_iteration->ComputeStateValues(accuracy, iterations);
+    }
+
+    inline real UpperBound(int state)
+    {
+        Vector Q(n_actions);
+        for (int i=0; i<n_actions; ++i) {
+            Q(i) = UpperBound(state, i);
+        }
+        return Max(Q);
+    }
+
+    inline real LowerBound(int state)
+    {
+        Vector Q(n_actions);
+        for (int i=0; i<n_actions; ++i) {
+            Q(i) = LowerBound(state, i);
+        }
+        return Max(Q);
+    }
 
     inline real UpperBound(int state, int action)
     {

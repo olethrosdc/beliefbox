@@ -60,7 +60,7 @@ public:
     virtual void generate(Vector& x) const
     {
         x = generate();
-    }
+`    }
     virtual Vector generate();
     virtual Vector generate() const;
     /// This is the probability of a particular mean (ignoring the covariance)

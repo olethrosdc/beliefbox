@@ -60,6 +60,16 @@ SampleBasedRL::SampleBasedRL(int n_states_,
 }
 SampleBasedRL::~SampleBasedRL()
 {
+    CalculateUpperBound(1e-6, 1e4);
+    for (int s=0; s<n_states; ++s) {
+        printf ("%f ", UpperBound(state));
+    }
+    printf(" # SampleBasedRL upper bound\n");
+    CalculateLowerBound(1e-6,1e4);
+    for (int s=0; s<n_states; ++s) {
+        printf ("%f ", LowerBound(state));
+    }
+    printf(" # SampleBasedRL lower bound\n");
     for (int i=0; i<max_samples; ++i) {
         delete mdp_list[i];
         delete value_iteration[i];
@@ -158,17 +168,12 @@ int SampleBasedRL::Act(real reward, int next_state)
 
     // update values    
     if (use_upper_bound) {
-        for (int j=0; j<max_samples; ++j) {
-            value_iteration[j]->setMDP(mdp_list[j]);
-            value_iteration[j]->ComputeStateValues(0, 1);
-        }
+        CalculateUpperBound(0, 1);
         for (int i=0; i<n_actions; i++) {
             tmpQ[i] = UpperBound(next_state, i);
         }
-
     } else {
-        multi_value_iteration->setMDPList(mdp_list);
-        multi_value_iteration->ComputeStateValues(0, 1);
+        CalculateLowerBound(0, 1);
         for (int i=0; i<n_actions; i++) {
             tmpQ[i] = LowerBound(next_state, i);
         }
