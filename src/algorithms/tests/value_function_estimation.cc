@@ -169,8 +169,8 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 										  real gamma)
 {
 	real accuracy_threshold = 1e-6;
-	real max_iter = 10000;
-	int initial_samples = 16;
+	real max_iter = 1000;
+	int initial_samples = 2;
 	int evaluation_samples = 0;
 
     std:: cout << "Evaluating..." << std::endl;
@@ -189,7 +189,7 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
         delete mdp;
     }
 
-    return statistics;
+    //return statistics;
     DiscreteMDPCounts model(environment->getNStates(),
 							environment->getNActions(),
 							1.0 / (real) environment->getNStates());
@@ -246,11 +246,11 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 		std::vector<DiscretePolicy*> pessimistic_policy_samples;
 
 		// collect some statistics
-		//printf ("# Samples\n");
+		printf ("# Samples\n");
 		FixedDiscretePolicy* pessimistic_policy;
 		for (int sample=1; sample<=initial_samples; ++sample) {
 			mdp_samples.push_back(model.generate());
-			//printf ("# Optimistic policy\n");
+			printf ("# Optimistic policy\n");
 			ValueIteration vi(mdp_samples[sample - 1], gamma);
 			vi.ComputeStateActionValues(accuracy_threshold, max_iter);
 			FixedDiscretePolicy* vi_policy = vi.getPolicy();
@@ -262,7 +262,7 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 				w(i) = w_i;
 			}
 			
-			//printf ("# Multi-MDP %d samples\n", sample);
+			printf ("# Multi-MDP %d samples\n", sample);
 			MultiMDPValueIteration mmvi(w, mdp_samples, gamma);
 			mmvi.ComputeStateActionValues(accuracy_threshold, max_iter);
 			FixedDiscretePolicy* mmvi_policy = mmvi.getPolicy();
@@ -285,7 +285,11 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 			optimistic_mean(s) = 0.0;
 			pessimistic_mean(s) = 0.0;
 		}
+
+        printf("# policy evaluation");
 		for (int sample=0; sample < n_samples; ++sample) {
+            printf(".");
+            fflush(stdout);
 			{
 				PolicyEvaluation pe_mean (empirical_policy,
 										  mdp_samples[sample], gamma);
@@ -294,8 +298,8 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 					empirical_mean(s) += pe_mean.getValue(s);
 				}
 			}
-
-
+            
+            
 			{
 				PolicyEvaluation pe_pessimistic (pessimistic_policy,
 										   mdp_samples[sample], gamma);
@@ -306,12 +310,14 @@ std::vector<Statistics> EvaluateAlgorithm(int n_steps,
 			}
 			
 		}
-
+        printf("\n");fflush(stdout);
 
 		
 		empirical_mean /= (real) n_samples;
 		pessimistic_mean /= (real) n_samples;
+        printf ("# empircal mean\n");
 		empirical_mean.print(stdout);
+        printf ("# pessimistic mean\n");
 		pessimistic_mean.print(stdout);
 
 		printf ("# episode %d reward: %f %f\n", 
