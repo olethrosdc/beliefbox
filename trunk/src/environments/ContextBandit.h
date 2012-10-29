@@ -39,7 +39,8 @@ protected:
 public:
     ContextBandit(uint n_states_,
                   uint n_actions_,
-                  RandomNumberGenerator* rng_);
+                  RandomNumberGenerator* rng_,
+                  bool normal = true);
     virtual ~ContextBandit();
 
     /// put the environment in its natural state
@@ -55,7 +56,7 @@ public:
     virtual const char* Name();
 
 protected:
-    NormalDistribution normal;
+    NormalDistribution normal_prior;
     DiscreteMDP* mdp;
     std::vector<Distribution*> rewards;
 };

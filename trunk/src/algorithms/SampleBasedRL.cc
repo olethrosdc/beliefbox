@@ -100,6 +100,25 @@ real SampleBasedRL::Observe (real reward, int next_state, int next_action)
     action = next_action;
     return 0.0;
 }
+
+
+void SampleBasedRL::Resample()
+{
+    for (int i=0; i<max_samples; ++i) {
+        delete mdp_list[i];
+        mdp_list[i] = model->generate();
+#if 1
+        logmsg("Generating MDP model %d\n", i);
+        for (int s=0; s<n_states; ++s) {
+            for (int a=0; a<n_actions; ++a) {
+                printf ("%f ", mdp_list[i]->getExpectedReward(s, a));
+            }
+            printf("# state %d\n", s);
+        }
+#endif
+    }
+}
+
 /// Get an action using the current exploration policy.
 /// it calls Observe as a side-effect.
 int SampleBasedRL::Act(real reward, int next_state)
@@ -140,29 +159,13 @@ int SampleBasedRL::Act(real reward, int next_state)
     if (do_update) {    
         //printf("# update: %d\n", T);
         //model->ShowModel();
-        update_interval = 128;//(int) (ceil)(1.01*(double) T);
+        update_interval += 8;//(int) (ceil)(1.01*(double) T);
         next_update = T + update_interval;
-        for (int i=0; i<max_samples; ++i) {
-            delete mdp_list[i];
-            mdp_list[i] = model->generate();
-#if 0
-            logmsg("Generating MDP model %d\n", i);
-            for (int s=0; s<n_states; ++s) {
-                for (int a=0; a<n_actions; ++a) {
-                    printf ("%f ", mdp_list[i]->getExpectedReward(s, a));
-                }
-                printf("# state %d\n", s);
-            }
-#endif
-        }
+        Resample();
         if (use_upper_bound) {
-            for (int i=0; i<max_samples; ++i) {
-                value_iteration[i]->setMDP(mdp_list[i]);
-                value_iteration[i]->ComputeStateValues(1e-3, 1000);
-            }
+            CalculateUpperBound(1e-6, 1e3);
         } else {
-            multi_value_iteration->setMDPList(mdp_list);
-            multi_value_iteration->ComputeStateValues(1e-3, 1000);
+            CalculateLowerBound(1e-6, 1e3);
         }
     }
 

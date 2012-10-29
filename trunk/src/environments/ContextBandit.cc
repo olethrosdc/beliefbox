@@ -15,7 +15,8 @@
 
 ContextBandit::ContextBandit(uint n_states_,
                              uint n_actions_,
-                             RandomNumberGenerator* rng_)
+                             RandomNumberGenerator* rng_,
+                             bool normal)
     : DiscreteEnvironment(n_states_, n_actions_),
       rng(rng_)
 { 
@@ -27,8 +28,12 @@ ContextBandit::ContextBandit(uint n_states_,
     // setup rewards
     for (uint s=0; s<n_states; ++s) {
         for (uint a=0; a<n_actions; a++) {
-            NormalDistribution* reward_dist
-                = new NormalDistribution(urandom(), 1.0);
+            Distribution* reward_dist;
+            if (normal) {
+                reward_dist = new NormalDistribution(normal_prior.generate(), 1.0);
+            } else {
+                reward_dist = new BernoulliDistribution(urandom());
+            }
             mdp->setRewardDistribution(s, a, reward_dist);
             rewards.push_back(reward_dist);
         }

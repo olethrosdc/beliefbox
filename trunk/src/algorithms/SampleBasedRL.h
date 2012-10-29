@@ -75,6 +75,10 @@ public:
     virtual real Observe (int state, int action, real reward, int next_state, int next_action);
     /// Partial observation 
     virtual real Observe (real reward, int next_state, int next_action);
+
+    /// Sample a new set of MDPs
+    void Resample();
+
     /// Get an action using the current exploration policy.
     /// it calls Observe as a side-effect.
     virtual int Act(real reward, int next_state);
