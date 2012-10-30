@@ -134,8 +134,7 @@ public:
     the precision is \f$\xi_0(r) = g(r \mid \alpha_0, \beta_0)\f$. 
 
     The predictive posterior distribution \f$\xi_n(x_{n+1})\f$ is
-    actually a generalised student-t distribution, but here we are
-    hacking it as a normal.
+    actually a multivariate student-t distribution.
  */
 class NormalUnknownMeanPrecision: public ConjugatePrior
 {
