@@ -168,7 +168,7 @@ NormalUnknownMeanPrecision::NormalUnknownMeanPrecision()
 {
     mu_0 = 0;
     tau_0 = 1.0;
-    alpha_0 = 1.0;
+    alpha_0 = 2.0;
     beta_0 = 1.0;
     Reset();
 }

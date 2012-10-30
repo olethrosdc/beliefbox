@@ -35,7 +35,7 @@
     The algorithm is described in the paper:
     "Robust Bayesian Reinforcement Learning through Tight Lower Bounds",
     Christos Dimitrakakis
-    EWRL 2012.
+    EWRL 2011.
 */
 class SampleBasedRL : public OnlineAlgorithm<int, int>
 {
@@ -44,23 +44,28 @@ protected:
     const int n_actions; ///< number 
     real gamma; ///< discount factor
     real epsilon; ///< randomness
-    int state; ///< current state
-    int action; ///< current action
-    MDPModel* model;
-    std::vector<const DiscreteMDP*> mdp_list;
-    std::vector<ValueIteration*> value_iteration;
-    MultiMDPValueIteration* multi_value_iteration;
+    int current_state; ///< current state
+    int current_action; ///< current action
+    MDPModel* model; ///< pointer to the base MDP model
+    std::vector<ValueIteration*> value_iteration; ///< value iteration on each separate model
+    MultiMDPValueIteration* multi_value_iteration; ///< multi-MDP value iteration
     std::vector<real> tmpQ;
-    int max_samples;
-    RandomNumberGenerator* rng;
-    int T;
-    int update_interval;
-    int next_update;
-    bool use_upper_bound;
-    bool use_sampling_threshold;
-    real sampling_threshold;
-    Vector weights;
+    Vector VU; ///< upper bound value
+    Vector VL; ///< lower bound value
+    Matrix QU; ///< upper bound Q-value
+    Matrix QL; ///< lower bound Q-value
+    int max_samples; ///< maximum number of samples to take
+    RandomNumberGenerator* rng; ///< random number generator to draw samples from
+    int T; ///< time passed
+    int update_interval; ///< update interval for policy
+    int next_update; ///< next time at which we use a new policy
+    bool use_upper_bound; ///< use upper bounds to take actions if true
+    bool use_sampling_threshold; ///< use a threshold for resampling
+    real sampling_threshold; ///< value of the threshold
+
 public:
+    std::vector<const DiscreteMDP*> mdp_list; ///< list of sampled models
+    Vector weights; ///< probability vector of MDPs
     SampleBasedRL(int n_states_,
                   int n_actions_,
                   real gamma_,
@@ -93,19 +98,9 @@ public:
         }
     }
     
-    inline void CalculateUpperBound(real accuracy, int iterations)
-    {
-        for (int j=0; j<max_samples; ++j) {
-            value_iteration[j]->setMDP(mdp_list[j]);
-            value_iteration[j]->ComputeStateValues(accuracy, iterations);
-        }
-    }
+    void CalculateUpperBound(real accuracy, int iterations);
 
-    inline void CalculateLowerBound(real accuracy, int iterations)
-    {
-        multi_value_iteration->setMDPList(mdp_list);
-        multi_value_iteration->ComputeStateValues(accuracy, iterations);
-    }
+    void CalculateLowerBound(real accuracy, int iterations);
 
     inline real UpperBound(int state)
     {
@@ -127,16 +122,12 @@ public:
 
     inline real UpperBound(int state, int action)
     {
-        real Q = 0.0;
-        for (int i=0; i<max_samples; i++) {
-            Q += value_iteration[i]->getValue(state, action);
-        }
-        return Q / (real) max_samples;
+        return QU(state, action);
     }
 
     inline real LowerBound(int state, int action)
     {
-        return multi_value_iteration->getValue(state, action);
+        return QL(state, action);
     }
     
     /** Set the rewards to Singular distributions.
