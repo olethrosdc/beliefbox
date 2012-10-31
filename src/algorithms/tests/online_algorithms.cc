@@ -33,6 +33,7 @@
 #include "ContextBanditCollection.h"
 #include "HQLearning.h"
 #include "TdBma.h"
+#include "MDPModelClassPriors.h"
 
 // -- Discrete environments -- //
 #include "RandomMDP.h"
@@ -46,6 +47,7 @@
 
 // -- Continuous environments -- //
 #include "MountainCar.h"
+#include "Pendulum.h"
 #include "PuddleWorld.h"
 #include "DiscretisedEnvironment.h"
 
@@ -310,6 +312,10 @@ int main (int argc, char** argv)
         continuous_mountain_car.setRandomness(randomness);
         continuous_mountain_car.Reset();
 
+        Pendulum continuous_pendulum;
+        continuous_pendulum.setRandomness(randomness);
+        continuous_pendulum.Reset();
+
         PuddleWorld continuous_puddle_world;
         continuous_puddle_world.Reset();
 
@@ -348,6 +354,8 @@ int main (int argc, char** argv)
                                                   margin);
         } else if (!strcmp(environment_name, "MountainCar")) { 
             environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car, grid_size);
+        } else if (!strcmp(environment_name, "Pendulum")) { 
+            environment = new DiscretisedEnvironment<Pendulum> (continuous_pendulum, grid_size);
         } else if (!strcmp(environment_name, "Puddle")) { 
             environment = new DiscretisedEnvironment<PuddleWorld> (continuous_puddle_world, grid_size);
         } else {
@@ -470,6 +478,21 @@ int main (int argc, char** argv)
                 sampling->setSamplingThreshold(sampling_threshold);
             }
             algorithm = sampling;
+        } else if (!strcmp(algorithm_name, "BMCSampling")) {
+            MDPModelClassPriors* mcp_mdp = new MDPModelClassPriors(n_states,
+                                            n_actions,
+                                            gamma,
+                                            dirichlet_mass,
+                                            reward_prior);
+            model = (MDPModel*) mcp_mdp;
+            algorithm = new SampleBasedRL(n_states,
+                                        n_actions,
+                                        gamma,
+                                        epsilon,
+                                        model,
+                                        rng,
+                                        max_samples,
+                                        false);
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
                 new ContextBanditGaussian(n_states,
@@ -787,7 +810,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             current_time = 0;
             printf ("# episode %d complete\n", episode);
             if (n_episodes >= 0 && episode >= n_episodes) {
-                fprintf (stderr, "Breaking after %d episodes,  %d steps\n",
+                logmsg (" Breaking after %d episodes,  %d steps\n",
                          episode, step);
                 break;
             }

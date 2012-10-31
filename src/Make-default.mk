@@ -1,7 +1,7 @@
 #	$Id: Makefile,v 1.3 2006/11/06 23:42:32 olethros Exp olethros $	
 # My packages
 
-PACKAGES = core algorithms geometry models statistics environments
+PACKAGES = core algorithms geometry models statistics environments florian
 # Compiler and Linker
 CC = g++
 CXX = g++
