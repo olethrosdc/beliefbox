@@ -30,6 +30,7 @@ public:
         n_actions = environment.getNActions();
         n_states = grid.getNIntervals();
         environment.Reset();
+        logmsg("Creating discretised environment with %d states, %d actions\n", n_states, n_actions);
     }
 
     virtual ~DiscretisedEnvironment()
@@ -45,6 +46,7 @@ public:
         bool flag = environment.Act(action);
         state = grid.getInterval(environment.getState());
         reward = environment.getReward();
+        printf("# s: %d, a: %d, r:%f\n", state, action, reward);
         return flag;
     }
 
