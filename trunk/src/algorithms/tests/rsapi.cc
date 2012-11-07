@@ -56,7 +56,7 @@ struct AveragePerformanceStatistics : PerformanceStatistics
     }
     void Show()
     {
-        printf ("%f %f %f\n", 
+        printf ("%f %f %f # reward, discounted, time\n", 
                 total_reward,
                 discounted_reward,
                 run_time);
@@ -80,6 +80,10 @@ static const char* const help_text = "Usage: rsapi [options]\n\
     --knn:         number of nearest neighbours in KNN classifier\n\
     --group:       use grouped action training\n\
     --resample:    resample states from discounted state distribution\n\
+    --lipschitz:   use a Lipschitz assumption with constant L\n\
+    --uniform:     uniformly sample all states in representative set\n\
+    --upper_bound: use upper bound to sample states in set\n\
+    --error_bound: sample uniformly until error bound is attained\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -90,16 +94,25 @@ int main(int argc, char* argv[])
 
 	MersenneTwisterRNG rng;
 
+
+	enum SamplingMethod 
+	{
+		UNIFORM,
+		UPPER_BOUND,
+		ERROR_BOUND
+	};
     int n_states = 100;
     real gamma = 0.99;
     int n_iter=10;
     int n_rollouts = 100;
-    int horizon = 1000;
+    int horizon = -1;
     int n_neighbours = 1;
     char* environment_name = NULL;
     bool group_training = false;
     bool resample = false;
     real delta = 0.1;
+	real Lipschitz = -1;
+	enum SamplingMethod sampling_method = UPPER_BOUND;
 
     {
         // options
@@ -119,6 +132,10 @@ int main(int argc, char* argv[])
                 {"group", no_argument, 0, 0}, //7
                 {"resample", no_argument, 0, 0}, //8
                 {"delta", required_argument, 0, 0}, //9
+                {"lipschitz", required_argument, 0, 0}, //10
+                {"uniform", no_argument, 0, 0}, //11
+                {"upper_bound", no_argument, 0, 0}, //12
+                {"error_bound", no_argument, 0, 0}, //13
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -145,6 +162,10 @@ int main(int argc, char* argv[])
                 case 7: group_training = true; break;
                 case 8: resample = true; break;
                 case 9: delta = atof(optarg); break;
+                case 10: Lipschitz = atof(optarg); break;
+				case 11: sampling_method = UNIFORM; break;
+				case 12: sampling_method = UPPER_BOUND; break;
+				case 13: sampling_method = ERROR_BOUND; break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
@@ -235,10 +256,22 @@ int main(int argc, char* argv[])
         for (uint k=0; k<state_vector.size(); ++k) {
             rsapi.AddState(state_vector[k]);
         }
-        
-        //rsapi.SampleUniformly(n_rollouts, horizon);
-        rsapi.SampleToErrorBound(n_rollouts, horizon, delta);
 
+		switch (sampling_method) {
+		case UNIFORM:
+			rsapi.SampleUniformly(n_rollouts, horizon);
+			break;
+		case ERROR_BOUND:
+			rsapi.SampleToErrorBound(n_rollouts, horizon, delta);
+			break;
+		case UPPER_BOUND:
+			Serror("unsupported\n");
+			exit(-1);
+			break;
+		}
+		if (Lipschitz > 0) {
+			rsapi.Bootstrap();
+		}
         KNNClassifier* new_classifier = new KNNClassifier(state_dimension, environment->getNActions(), n_neighbours);
         int n_improved_actions = 0;
         if (group_training) {
@@ -246,7 +279,7 @@ int main(int argc, char* argv[])
         } else {
             n_improved_actions = rsapi.TrainClassifier(new_classifier, delta);
         }
-        printf ("# n: %d\n", n_improved_actions);
+        printf ("# n: %d # improved actions\n", n_improved_actions);
         if (resample) {
             for (uint i=0; i<state_vector.size(); ++i) {
                 if (rng.uniform() >= gamma) {
