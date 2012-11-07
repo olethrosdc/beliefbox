@@ -28,6 +28,7 @@ public:
 	Environment<Vector, int>* environment; ///< the environment
 	AbstractPolicy<Vector, int>* policy; ///< the base policy to compare against
 	Vector start_state; ///< The starting state
+	int start_action; ///< starting action
 	real gamma;  ///< The value of gamma used
 	std::vector<Rollout<Vector, int, AbstractPolicy<Vector, int> >* > rollouts; ///< The set of rollouts
 	real V_U; ///< Upper bound on the value
@@ -62,8 +63,7 @@ public:
 
     "Algorithms and Bounds for Rollout Sampling Approximate Policy
     Iteration",
-    C. Dimitrakakis, M. Lagoudakis, Machine Learning
-    Journal, 2008,
+    C. Dimitrakakis, M. Lagoudakis, European Workshop on Reinforcement Learning (EWRL), 2008.
 
     with some additional experimental improvements.
 */

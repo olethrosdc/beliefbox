@@ -15,6 +15,7 @@
 
 #include "Environment.h"
 #include "AbstractPolicy.h"
+#include "Random.h"
 
 /** A rollout.
  */
@@ -64,7 +65,8 @@ public:
         environment->Reset();
 		environment->setState(start_state);
 		running = true;
-		for (int t=0; t<period; ++t) {
+		int t = 0;
+		while (t < period || period < 0) {
             policy->setState(environment->getState());
 			if (!running) {
 				break;
@@ -73,6 +75,10 @@ public:
 				Act(start_action);
 			} else {
 				Act(policy->SelectAction());
+			}
+			++t;
+			if (urandom() < 1.0 - gamma) {
+				running = false;
 			}
 		}
 		//printf("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward);

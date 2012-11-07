@@ -85,6 +85,7 @@ int RolloutState::BestEmpiricalAction(real delta)
 
     policy->setState(start_state);
     int normal_action = policy->SelectAction();
+	start_action = normal_action;
     //int optimistic_action = ArgMax(Q_U);
     int pessimistic_action = ArgMax(Q_L);
     real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
@@ -283,8 +284,8 @@ void RolloutState::Bootstrap(KDTree<RolloutState>& tree,
     V_U = Max(Q_U);
     V_L = Min(Q_L);
     V = 0.5 * (V_U + V_L);
-    Serror("Buggy!\n");
-    exit(-1);
+    //Serror("Buggy!\n");
+    //exit(-1);
 
 }
 RSAPI::RSAPI(Environment<Vector, int>* environment_,
@@ -398,20 +399,24 @@ int RSAPI::TrainClassifier(Classifier<Vector, int, Vector>* classifier, real del
     int n_improved_actions = 0;
 
     for (uint i=0; i<states.size(); ++i) {
-        int best_action = states[i]->BestEmpiricalAction(delta);
-        if (best_action >= 0) {
+        //int best_action = states[i]->BestEmpiricalAction(delta);
+        int best_action = states[i]->BestHighProbabilityAction(delta);
+        if (best_action >= 0 && best_action != states[i]->start_action) {
             //printf("# Action: %d state: ", best_action);
             //states[i]->start_state.print(stdout)
             n_improved_actions++;
-            classifier->Observe(states[i]->start_state, best_action);
-        }
+		} 
+		if (best_action >= 0) {
+			classifier->Observe(states[i]->start_state, best_action);
+		}
+
     }        
     return n_improved_actions;
 }
 
 real RSAPI::LipschitzBound()
 {
-    real L = 0;
+    real L = 1e-3;
     for (uint i=0; i<states.size(); ++i) {
         for (uint j=0; j<states.size(); ++j) {
             if (i==j) {
@@ -439,10 +444,18 @@ void RSAPI::Bootstrap()
         tree.AddVectorObject(states[i]->start_state, states[i]);
     }
 
+    for (uint i=0; i<states.size(); ++i) {
+		printf ("%f %f # state bounds\n", states[i]->V_U, states[i]->V_L);
+	}
+
     real L = LipschitzBound();
     for (uint i=0; i<states.size(); ++i) {
         states[i]->Bootstrap(tree, L);
     }
+
+    for (uint i=0; i<states.size(); ++i) {
+		printf ("%f %f # new state bounds\n", states[i]->V_U, states[i]->V_L);
+	}
 }
 
 
