@@ -38,7 +38,6 @@
 #include "DiscretisedEnvironment.h"
 #include "HQLearning.h"
 #include "MWAL.h"
-#include "MWAL2.h"
 #include "PolicyBelief.h"
 #include "RewardPolicyBelief.h"
 #include "PolicyRewardBelief.h"
@@ -100,7 +99,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
                               real gamma,
                               int iterations,
 							  Sampler sampler,
-							  real accuracy);
+							  real accuracy,
+							  RandomNumberGenerator* rng);
 static const char* const environment_names_list = "{MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}";
 
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
@@ -515,7 +515,8 @@ int main (int argc, char** argv)
 													  gamma,
                                                       iterations,
 													  sampler,
-													  accuracy);
+													  accuracy,
+													  rng);
 
         for (uint i=0; i<run_statistics.ep_stats.size(); ++i) {
             statistics.ep_stats[i].total_reward += run_statistics.ep_stats[i].total_reward;
@@ -624,7 +625,7 @@ int main (int argc, char** argv)
     }
     DV_var /= (real) n_runs;
     DV_var.printf(stdout); printf("# DV_VAR\n");
-    printf("# SMAX IMIT MWAL MWGR MWAL2 PRB RPB # DV_LEGEND\n");
+    printf("# SMAX IMIT MWAL MWGR PRB RPB # DV_LEGEND\n");
     std::cout << "# Done" << std::endl;
 
 
@@ -648,17 +649,26 @@ Statistics EvaluateAlgorithm (int episode_steps,
 							  real gamma,
                               int iterations,
 							  Sampler sampler,
-							  real accuracy)
+							  real accuracy,
+							  RandomNumberGenerator* rng)
 {
 	assert(accuracy >= 0);
     std:: cout << "evaluating..." << environment->Name() << std::endl;
     
-    const DiscreteMDP* mdp = environment->getMDP(); 
-    ValueIteration value_iteration(mdp, gamma);
+    const DiscreteMDP* true_mdp = environment->getMDP(); 
+	if (!true_mdp) {
+		Serror("The environment requires a true MDP\n");
+		exit(-1);
+	}
+    ValueIteration value_iteration(true_mdp, gamma);
     value_iteration.ComputeStateValues(accuracy);
     FixedSoftmaxPolicy softmax_policy(value_iteration.Q, 1.0 / epsilon);
 
-    if (!mdp) {
+	int n_states = true_mdp->getNStates();
+	int n_actions = true_mdp->getNActions();
+
+
+    if (!true_mdp) {
         Serror("The environment must support the creation of an MDP\n");
         exit(-1);
     }
@@ -678,6 +688,13 @@ Statistics EvaluateAlgorithm (int episode_steps,
 	bool action_ok = false;
     Demonstrations<int, int> demonstrations;
 
+    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
+
+	MDPModel* mdp_model = new DiscreteMDPCounts(n_states,
+												n_actions,
+												1.0 / (real) n_states,
+												reward_prior);
+	SampleBasedRL sample_based_rl(n_states, n_actions, gamma, accuracy, mdp_model, rng, 1, true);
     for (uint step = 0; step < n_steps; ++step) {
 		if (!action_ok) {
             if (episode > 0) {
@@ -695,6 +712,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 				statistics.ep_stats[episode].steps = 0;
 				discount = 1.0;
 				environment->Reset();
+				sample_based_rl.Reset();
                 if (algorithm) {
                     algorithm->Reset();
                 }
@@ -722,10 +740,11 @@ Statistics EvaluateAlgorithm (int episode_steps,
 		//std::cout << "t:" << current_time << " s:" << state << " r:" << reward << " a:" << action << std::endl;
 		action_ok = environment->Act(action);
 		current_time++;
+		sample_based_rl.Observe(0, state, action);
+		// perhaps do not observe all steps in the demonstration while the algorithm is learning...
         if (step > n_steps / 2 || episode > n_episodes / 2) {
             demonstrations.Observe(state, action);
         }
-
     }
 
     //std::cout << "REAL MODEL\n";
@@ -737,36 +756,33 @@ Statistics EvaluateAlgorithm (int episode_steps,
     //episode, n_steps,
 	//		 (int) statistics.ep_stats.size(),
     //(int) statistics.reward.size());
-    
-    {
+	
 
-    }
-
+	sample_based_rl.Resample();
     {
         double start_time;
         double end_time;
         //fprintf (stderr, "Trying to guess policy!\n");
-        DiscreteMDP* mdp = environment->getMDP();
-        if (!mdp->Check()) {
+
+
+        DiscreteMDP* sampled_mdp = mdp_model->generate();
+        if (!sampled_mdp->Check()) {
             Serror("MDP model is nonsense\n");
-            mdp->ShowModel();
+            sampled_mdp->ShowModel();
         }
             
-        int n_states = mdp->getNStates();
-        int n_actions = mdp->getNActions();
         
         // -------- MWAL -------- //
         start_time = GetCPU();
-        DiscreteMDP* computation_mdp = environment->getMDP();
+        DiscreteMDP computation_mdp(*sampled_mdp);
         MWAL mwal(n_states, n_actions, gamma);
         mwal.CalculateFeatureCounts(demonstrations);
-        mwal.Compute(*computation_mdp, gamma, 0.0001, iterations);
-        delete computation_mdp;
+        mwal.Compute(computation_mdp, gamma, accuracy, iterations);
         end_time = GetCPU();
         printf("%f # T_MWAL\n", end_time - start_time);
         printf ("MWAL policy:\n------------\n");
         mwal.mean_policy.Show();
-        PolicyEvaluation mwal_evaluator(&mwal.mean_policy, mdp, gamma);
+        PolicyEvaluation mwal_evaluator(&mwal.mean_policy, true_mdp, gamma);
         mwal_evaluator.ComputeStateValues(accuracy);
 
         for (int i=0; i<n_states; ++i) {
@@ -775,7 +791,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("# V_MWAL\n");
         
         FixedDiscretePolicy mwal_greedy = mwal.mean_policy.MakeGreedyPolicy();
-        PolicyEvaluation mwal_greedy_evaluator(&mwal_greedy, mdp, gamma);
+        PolicyEvaluation mwal_greedy_evaluator(&mwal_greedy, true_mdp, gamma);
         mwal_greedy_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", mwal_greedy_evaluator.getValue(i));
@@ -784,7 +800,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
         
         // -------- optimal -------- //
-        ValueIteration VI(mdp, gamma);
+        ValueIteration VI(true_mdp, gamma);
         VI.ComputeStateValues(0.1 * accuracy);
         printf ("Optimal Q function:\n---------------\n");
         VI.Q.print(stdout);
@@ -801,7 +817,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         // -------- softmax -------- //
         printf ("Softmax policy:\n---------------\n");
         softmax_policy.Show();
-        PolicyEvaluation smax_evaluator(&softmax_policy, mdp, gamma);
+        PolicyEvaluation smax_evaluator(&softmax_policy, true_mdp, gamma);
         smax_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", smax_evaluator.getValue(i));
@@ -810,21 +826,16 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
         
         
-        if (!mdp->Check()) {
-            Serror("MDP check failed\n");
-            mdp->ShowModel();
-        }
-
         // -------- RPB : Reward | Policy Belief -------- //
         real expected_optimality = 1.0;
         DirichletDistribution dirichlet(n_states * n_actions);
         start_time = GetCPU();
+        DiscreteMDP mdp_copy(*sampled_mdp);
         RewardPolicyBelief reward_policy_belief (expected_optimality, 
                                                  gamma,
-                                                 *mdp,
+                                                 mdp_copy,
                                                  dirichlet,
                                                  sampler.n_chain_samples);
-
         reward_policy_belief.setAccuracy(accuracy);
 
         FixedDiscretePolicy* rpb_policy = reward_policy_belief.CalculatePosterior(demonstrations);
@@ -833,7 +844,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("Posterior policy:\n---------------\n");
         rpb_policy->Show();
 
-        PolicyEvaluation rpb_evaluator(rpb_policy, mdp, gamma);
+        PolicyEvaluation rpb_evaluator(rpb_policy, true_mdp, gamma);
         rpb_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
 				printf ("%f ", rpb_evaluator.getValue(i));
@@ -843,7 +854,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
 		// ----- PRB: Policy | Reward Belief ------ //
         start_time = GetCPU();
-		PolicyRewardBelief prb(1.0, gamma, *mdp);
+		PolicyRewardBelief prb(1.0, gamma, mdp_copy);
 
 		if (sampler.type == METROPOLIS) {
 			logmsg("Metropolis sampler: %d %d\n", sampler.n_chain_samples, sampler.n_chains);
@@ -861,7 +872,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         printf ("MH sampler policy:\n---------------\n");
         prb_policy->Show();
 
-        PolicyEvaluation prb_evaluator(prb_policy, mdp, gamma);
+        PolicyEvaluation prb_evaluator(prb_policy, true_mdp, gamma);
         prb_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
 				printf ("%f ", prb_evaluator.getValue(i));
@@ -874,7 +885,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
                                              demonstrations);
         printf ("imitator policy:\n------------\n");
         imitating_policy.Show();
-        PolicyEvaluation imitating_evaluator(&imitating_policy, mdp, gamma);
+        PolicyEvaluation imitating_evaluator(&imitating_policy, true_mdp, gamma);
         imitating_evaluator.ComputeStateValues(accuracy);
         for (int i=0; i<n_states; ++i) {
             printf ("%f ", imitating_evaluator.getValue(i));
@@ -896,10 +907,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
                 statistics.DV(3),
                 statistics.DV(4));
         #endif
-        delete mdp;
-        
+        delete sampled_mdp;
     }
-    delete mdp;
+    delete true_mdp;
 
     return statistics;
 }
