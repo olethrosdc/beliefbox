@@ -30,7 +30,7 @@ FixedDiscretePolicy* DirichletProductPolicyBelief::Sample() const
     for (int i=0; i<n_states; ++i) {
         p_sa[i] = P[i].generate();
     }
-    return new FixedDiscretePolicy(p_sa);
+    return new FixedDiscretePolicy(n_states, n_actions, p_sa);
 }
 
 /// Create a new policy, the same as the expected policy. 
@@ -40,7 +40,7 @@ FixedDiscretePolicy* DirichletProductPolicyBelief::getExpectedPolicy() const
     for (int i=0; i<n_states; ++i) {
         p_sa[i] = P[i].generate();
     }
-    return new FixedDiscretePolicy(p_sa);
+    return new FixedDiscretePolicy(n_states, n_actions, p_sa);
 }
 
 /// Get the posterior

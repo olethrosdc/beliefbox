@@ -70,7 +70,7 @@ FixedDiscretePolicy::FixedDiscretePolicy(int n_states, int n_actions, const Demo
 
 
 /// Create a fixed discrete policy from a set of probability vectors.
-FixedDiscretePolicy::FixedDiscretePolicy (const std::vector<Vector>& p)
+FixedDiscretePolicy::FixedDiscretePolicy (int n_states, int n_actions, const std::vector<Vector>& p)
     : DiscretePolicy(n_states, n_actions)
 {
     state = 0;

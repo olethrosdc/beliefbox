@@ -53,7 +53,7 @@ class FixedDiscretePolicy : public DiscretePolicy
 public:
     std::vector<Vector> p;
     FixedDiscretePolicy(int n_states, int n_actions);
-    FixedDiscretePolicy (const std::vector<Vector>& p);
+    FixedDiscretePolicy (int n_states, int n_actions, const std::vector<Vector>& p);
     FixedDiscretePolicy (int n_states, int n_actions, const Matrix& Q);
     FixedDiscretePolicy (int n_states, int n_actions, const Demonstrations<int, int>& D);
     virtual ~FixedDiscretePolicy();

@@ -112,7 +112,7 @@ void SampleBasedRL::Resample()
     for (int i=0; i<max_samples; ++i) {
         delete mdp_list[i];
         mdp_list[i] = model->generate();
-#if 1
+#if 0
         logmsg("Generating MDP model %d\n", i);
         for (int s=0; s<n_states; ++s) {
             for (int a=0; a<n_actions; ++a) {
