@@ -101,12 +101,12 @@ Statistics EvaluateAlgorithm (int episode_steps,
 							  Sampler sampler,
 							  real accuracy,
 							  RandomNumberGenerator* rng);
-static const char* const environment_names_list = "{MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}";
+static const char* const environment_names_list = "{MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, Inventory}";
 
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
   --algorithm:   {QLearning, Model, Sarsa, Sampling}\n\
-  --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic}\n\
+  --environment: {MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, Inventory}\n\
   --n_states:    number of states (usually there is no need to specify it)\n\
   --n_actions:   number of actions (usually there is no need to specify it)\n\
   --gamma:       reward discounting in [0,1]\n\
@@ -114,9 +114,9 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
   --iterations:  number of iterations (for some algorithms)\n\
   --randomness:  environment randomness\n\
   --n_runs:      maximum number of runs\n\
-  --n_episodes:  maximum number of episodes (ignored if < 0)\n\
-  --episode_steps:     maximum number of steps in each episode (ignored if <0)\n\
-  --n_steps:           maximum number of total steps\n\
+  --n_episodes:  maximum number of episodes (ignored if < 0) [100]\n\
+  --episode_steps:     maximum number of steps in each episode (ignored if <0) [1000]\n\
+  --n_steps:           maximum number of total steps [100000]\n\
   --grid_size:         number of grid intervals for discretised environments\n\
   --maze_name:         (Gridworld) file name for the maze\n\
   --epsilon:           use epsilon-greedy with randomness in [0,1]\n\
@@ -142,7 +142,7 @@ int main (int argc, char** argv)
     real step_value = -0.01;
     real epsilon = 0.01;
     uint n_runs = 1000;
-    uint n_episodes = 1000;
+    uint n_episodes = 100;
     uint n_steps = 100000;
     uint episode_steps = 1000;
     uint grid_size = 4;
@@ -358,6 +358,8 @@ int main (int argc, char** argv)
             environment = new DiscreteChain (n_states);
         } else if (!strcmp(environment_name, "Optimistic")) { 
             environment = new OptimisticTask (0.1, 0.001);
+        } else if (!strcmp(environment_name, "Inventory")) { 
+            environment = new InventoryManagement (n_states, n_actions, randomness, 0.1);
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
@@ -617,6 +619,7 @@ int main (int argc, char** argv)
     #endif
 
     statistics.DV /= (real) n_runs;
+    printf ("# SMAX IMIT MWAL MWGR PRB RPB # DV_LABELS\n");
     statistics.DV.printf(stdout); printf("# DV_MEAN\n");
     Vector DV_var(N_COMPARISONS);
     for (uint i=0; i<n_runs; ++i) {
