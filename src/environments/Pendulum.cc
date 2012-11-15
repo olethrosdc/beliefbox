@@ -105,7 +105,7 @@ void Pendulum::Simulate(const int action)
     Vector xdot(2);
     real input=0.0, noise, t;
 
-    printf ("# s: %f %f, a: %d\n", state[0], state[1], action);
+    //printf ("# s: %f %f, a: %d\n", state[0], state[1], action);
     switch(action) {
     case 0: input = -50.0; break;
     case 1: input = 0.0; break;
