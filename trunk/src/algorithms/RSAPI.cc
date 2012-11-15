@@ -418,7 +418,7 @@ void RSAPI::SampleUpperBound(const int K, const int T, const real delta)
     int total_rollouts = states.size() * K;
     int total_updates = 0;
 	
-	Vector U(states.size());
+	Vector U((uint) states.size());
 	U += 1e9;
 	for (int k=0; k<total_rollouts; ++k) {
 		uint i = ArgMax(U);
