@@ -104,6 +104,28 @@ int RolloutState::BestEmpiricalAction(real delta)
     }
 }
 
+real RolloutState::Gap()
+{
+    Vector Q((int) environment->getNActions()); // Average Q
+    Vector N((int) environment->getNActions()); // number of times action was played
+
+	for (uint i=0; i<rollouts.size(); ++i) {
+        Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];
+        int a = rollout->start_action;
+        N(a)++;
+        Q(a) += rollout->discounted_reward;
+    }
+    Q /= N; // normalise
+	real maxQ = Max(Q);
+	real Q2 = -1e-9;
+	for (uint i=0; i<environment->getNActions(); ++i) {
+		if (Q(i) > Q2 && Q(i) < maxQ) {
+			Q2 = Q(i);
+		}
+	}
+	return maxQ - Q2;
+}
+
 /// Get the best empirical action in isolation
 ///
 /// The error bounds used here are totally silly, though!
@@ -388,6 +410,36 @@ void RSAPI::SampleToErrorBound(const int K, const int T, const real delta)
             }
         }
     }
+    printf ("# n updates: %d\n", total_updates);
+}
+
+void RSAPI::SampleUpperBound(const int K, const int T, const real delta)
+{                                            
+    int total_rollouts = states.size() * K;
+    int total_updates = 0;
+	
+	Vector U(states.size());
+	U += 1e9;
+	for (int k=0; k<total_rollouts; ++k) {
+		uint i = ArgMax(U);
+		if (U(i) == 0) {
+			logmsg("Early break from upper bound sampling\n");
+			break;
+		}
+		RolloutState* state = states[i];
+		++k;
+		for (uint a=0; a<environment->getNActions(); ++a) {
+			Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout
+				= state->NewRollout(policy, a); 
+			rollout->Sample(T);
+		}
+		int a_max = state->BestHighProbabilityAction(delta);
+		if (a_max >= 0) {
+			U(i) = 0;
+			total_updates++;
+		}
+		
+	}
     printf ("# n updates: %d\n", total_updates);
 
 }
