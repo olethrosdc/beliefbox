@@ -169,23 +169,29 @@ int main(int argc, char** argv)
                 case 2:
                     tree_depth = atoi(optarg); 
                     classifier_type = GAUSSIAN_TREE;
+                    logmsg("Using Gaussian tree classifier\n");
                     break;
                 case 3:
                     n_classifiers = atoi(optarg); 
                     classifier_type = HASHED_MIXTURE;
+                    logmsg("Using hashed mixture classifier\n");
                     break;
                 case 4: 
-                    n_neighbours = atoi(optarg); 
+                    n_neighbours = atoi(optarg);
+                    logmsg("Using KNN classifier\n");
                     use_knn = true;
                     break;
                 case 5:
                     n_iterations = atoi(optarg); 
+                    logmsg("Using %d iterations\n", n_iterations);
                     break;
                 case 6:
                     step_size = atof(optarg); 
+                    logmsg("Setting step size to %f\n", step_size);
                     break;
                 case 7:
                     normalise = true;
+                    logmsg("Using normalisation\n");
                     break;
                 case 8:
                     randomise = true;
@@ -238,7 +244,9 @@ int main(int argc, char** argv)
         logmsg("Setting classifier to KNN tree");
     }
 
+
     if (classifier_type == LINEAR) {
+        logmsg("Using linear classifier");
         if (use_gaussian) {
             classifier_type = GAUSSIAN;
             logmsg("Setting classifier to multivariate Gaussian");
