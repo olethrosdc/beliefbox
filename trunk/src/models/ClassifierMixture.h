@@ -14,9 +14,11 @@
 
 #include "SparseLinearClassifier.h"
 #include "Random.h"
+#include "Classifier.h"
+#include "Vector.h"
 #include <vector>
 
-class LinearClassifierMixture 
+class LinearClassifierMixture : public Classifier<Vector, int, Vector>
 {
 public:
     const int n_inputs;

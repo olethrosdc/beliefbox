@@ -18,6 +18,7 @@
 #include "MersenneTwister.h"
 #include "RandomNumberGenerator.h"
 #include "KNNClassifier.h"
+#include "ClassifierMixture.h"
 #include "ClassifierPolicy.h"
 #include <cstring>
 #include <getopt.h>
@@ -227,7 +228,7 @@ int main(int argc, char* argv[])
     printf("# State dimension: %d\n", state_dimension);
     printf("# S_L: "); S_L.print(stdout);
     printf("# S_U: "); S_U.print(stdout);
-    KNNClassifier* classifier = NULL;
+    //Classifier<Vector, int, Vector>* classifier = NULL;
 
 
     std::vector<Vector> state_vector(n_states);
@@ -271,7 +272,17 @@ int main(int argc, char* argv[])
 		if (Lipschitz > 0) {
 			rsapi.Bootstrap();
 		}
-        KNNClassifier* new_classifier = new KNNClassifier(state_dimension, environment->getNActions(), n_neighbours);
+		//int n_classifiers = 2;
+		//std::vector<KNNClassifier*> experts(n_classifiers);
+		//for (int i=0; i<n_classifiers; ++i) {
+		//experts[i] = new KNNClassifier(state_dimension, environment->getNActions(), n_neighbours);
+			//}
+		//HashedClassifierMixture<KNNClassifier> hcm_classifier(state_dimension, environment->getNActions(), experts);
+		//Classifier<Vector, int, Vector> new_classifier = hcm_classifier;
+			//Classifier<Vector, int, Vector> *new_classifier = new HashedClassifierMixture<KNNClassifier>(state_dimension, environment->getNActions(), experts);
+
+		
+		Classifier<Vector, int, Vector>* new_classifier = new KNNClassifier(state_dimension, environment->getNActions(), n_neighbours);
         int n_improved_actions = 0;
         if (group_training) {
             n_improved_actions = rsapi.GroupTrainClassifier(new_classifier, delta);
@@ -288,13 +299,9 @@ int main(int argc, char* argv[])
         }
         delete policy;
         policy = new ClassifierPolicy(new_classifier);
-        if (classifier) {
-            delete classifier;
-        }        
-        classifier = new_classifier;
+        //classifier = new_classifier;
         fflush(stdout);
     }
-    delete classifier;
     delete policy;
 	delete environment;
 }

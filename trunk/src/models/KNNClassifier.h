@@ -38,7 +38,7 @@ public:
     };
 protected:
     int n_classes; ///< number of classes
-    int n_dim; ///< number of input dimensions
+    int n_inputs; ///< number of input dimensions
     int K; ///< number of neighbours to use
     KDTree<DataSample> kd_tree; ///< storage backend
     std::list<DataSample> samples; ///< list of samples
