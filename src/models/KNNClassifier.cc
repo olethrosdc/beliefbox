@@ -17,14 +17,14 @@
 /** Create a model
     
     \param n_classes_ set the number of classes
-    \param n_dim_ the number of dimensions in the observation space
+    \param n_inputs_ the number of dimensions in the observation space
     \param K_ the number of neighbours
     
     As a side-effect, initialise the kd_tree list
  */
-KNNClassifier::KNNClassifier(const int n_dim_, const int n_classes_, const int K_)
-    : n_classes(n_classes_), n_dim(n_dim_), K(K_),
-      kd_tree(n_dim), output(n_classes)
+KNNClassifier::KNNClassifier(const int n_inputs_, const int n_classes_, const int K_)
+    : n_classes(n_classes_), n_inputs(n_inputs_), K(K_),
+      kd_tree(n_inputs), output(n_classes)
 {
 }
 
@@ -69,7 +69,7 @@ void KNNClassifier::AddSample(const DataSample sample)
 Vector& KNNClassifier::Output(const Vector& x) 
 {
     //basis.Evaluate(x);
-    assert(n_dim == x.Size());
+    assert(n_inputs == x.Size());
     assert(n_classes == output.Size());
     real init_value = 1.0 / (1 + samples.size());
     for (int i=0; i<n_classes; ++i) {
