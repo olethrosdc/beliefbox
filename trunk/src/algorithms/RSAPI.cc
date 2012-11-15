@@ -139,7 +139,7 @@ int RolloutState::BestHighProbabilityAction(real delta)
 	for (uint i=0; i<rollouts.size(); ++i) {
         Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];
         real error_bound = 0;
-        if (rollout->running) {
+        if (0) {//rollout->running) {
             error_bound = exp(rollout->T * log_gamma);
         }
         int a = rollout->start_action;
