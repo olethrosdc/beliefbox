@@ -179,7 +179,16 @@ real Span (const std::vector<T>& x)
 }
 
 
-
+inline int ipow(int x, int n)
+{
+    if(n < 0) return -1;
+    if(n == 0) return 1;
+    int i = x; 
+    for (int j = 1; j<n; ++j) {
+        i *= x;
+    }
+    return i;
+}
 
 
 void SoftMax (int n, real* Q, real* p, real beta);

@@ -17,20 +17,22 @@
 
 int main (void)
 {
-    int n_dimensions = 2;
+    int n_dimensions = 3;
+    int K = 5;
+
     Vector L(n_dimensions);
     Vector U(n_dimensions);
     Vector M(n_dimensions);
     for (int i=0; i<n_dimensions; ++i) {
-        L[i] = urandom();
-        U[i] = L[i] + urandom();
+        L[i] = 0; //urandom();
+        U[i] = 1.0; //L[i] + urandom();
         M[i] = (L[i] + U[i]) * 0.5;
     }
 
     Grid grid(L, U);
 
     int n_errors = 0;
-    int n_points = 1000;
+    int n_points = 100;
 
     for (int t=0; t<n_points; ++t) {
         Vector x(n_dimensions);
@@ -52,7 +54,7 @@ int main (void)
         }
     }
 
-    int K = 10;
+
     EvenGrid even_grid(L, U, K);
     printf ("# Making even grid with %d subdivisions for %d intervals\n",
             K, even_grid.getNIntervals());
@@ -84,6 +86,11 @@ int main (void)
     } else {
         fprintf (stdout, "%d / %d errors found\n", n_errors, n_points);
     }
+
+    for (int i=0; i<even_grid.getNIntervals(); ++i){
+        even_grid.getCenter(i).print(stdout);
+    }
+
     return n_errors;
     
 }

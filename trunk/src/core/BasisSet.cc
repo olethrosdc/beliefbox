@@ -11,7 +11,14 @@
 
 #include "BasisSet.h"
 
-void RBFBasisSet::AddCenter(Vector& v, real b)
+RBFBasisSet::RBFBasisSet(const EvenGrid& grid, real bandwidth)
+{
+    for (int i=0; i<grid.getNIntervals(); ++i) {
+        AddCenter(grid.getCenter(i), bandwidth);
+    }
+}
+
+void RBFBasisSet::AddCenter(const Vector& v, real b)
 {
     RBF* rbf = new RBF(v, b);
     centers.push_back(rbf);
@@ -22,7 +29,7 @@ void RBFBasisSet::AddCenter(Vector& v, real b)
     n_bases++;
 }
 
-void RBFBasisSet::logEvaluate(Vector& x)
+void RBFBasisSet::logEvaluate(const Vector& x)
 {
     real log_sum = LOG_ZERO;
     for (int i=0; i<n_bases; ++i) {
@@ -36,7 +43,7 @@ void RBFBasisSet::logEvaluate(Vector& x)
     valid_features = false;
 }
 
-void RBFBasisSet::Evaluate(Vector& x)
+void RBFBasisSet::Evaluate(const Vector& x)
 {
     logEvaluate(x);
     for (int i=0; i<n_bases; ++i) {
@@ -44,3 +51,4 @@ void RBFBasisSet::Evaluate(Vector& x)
     }
     valid_features = true;
 }
+
