@@ -149,7 +149,7 @@ int RolloutState::BestHighProbabilityAction(real delta)
     }
     Q_U = Q_U / N; // normalise
     Q_L = Q_L / N; // normalise
-    Vector confidence_interval = pow(N, (real) -0.5) * sqrt(log(1.0 / delta));
+    Vector confidence_interval = pow(N, (real) -0.5) * sqrt(0.5*log(1.0 / delta));
     Q_U += confidence_interval;
     Q_L -= confidence_interval;
     V_U = Max(Q_U);
@@ -158,12 +158,17 @@ int RolloutState::BestHighProbabilityAction(real delta)
 
     policy->setState(start_state);
     int normal_action = policy->SelectAction();
-    //int optimistic_action = ArgMax(Q_U);
+    int optimistic_action = ArgMax(Q_U);
     int pessimistic_action = ArgMax(Q_L);
     real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
+	printf ("# gap: %f, p:[%f %f] n:[%f %f] u:[%f %f]\n",
+			gap,
+			Q_L(pessimistic_action), Q_U(pessimistic_action), 
+			Q_L(normal_action), Q_U(normal_action),
+			Q_L(optimistic_action), Q_U(optimistic_action));
     if (gap > 0) {
-        //printf ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action);
-        //start_state.print(stdout);
+        printf ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action);
+        start_state.print(stdout);
 
         return pessimistic_action;
     }  else {
@@ -223,7 +228,7 @@ std::pair<Vector, bool> RolloutState::BestGroupAction(real delta)
     }
     Q_U = Q_U / N; // normalise
     Q_L = Q_L / N; // normalise
-    Vector confidence_interval = pow(N, (real) -0.5) * sqrt(log(1.0 / delta));
+    Vector confidence_interval = pow(N, (real) -0.5) * sqrt(0.5*log(1.0 / delta));
     Q_U += confidence_interval;
     Q_L -= confidence_interval;
     V_U = Max(Q_U);

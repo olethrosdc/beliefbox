@@ -58,7 +58,7 @@ public:
 		end_state = environment->getState();
 		T++;
 		total_reward += reward;
-		discounted_reward += reward * pow(gamma, T);
+		discounted_reward += reward; //* pow(gamma, T);
 	}
 	void Sample(const int period)
     {
@@ -81,8 +81,8 @@ public:
 				running = false;
 			}
 		}
-		//printf("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward);
-		//end_state.print(stdout);
+		logmsg("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward);
+		end_state.print(stdout);
 	}
 };
 
