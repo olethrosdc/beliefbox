@@ -15,15 +15,16 @@
 #include <vector>
 #include <cassert>
 #include "Vector.h"
+#include "Grid.h"
 
 /** A simple radial basis function */
 class RBF
 {
 public:
-    Vector& center; ///< The centroid
+    Vector center; ///< The centroid
     real beta; ///< the variance
     /// Constructor
-    RBF(Vector& c, real b) : center(c), beta(b)
+    RBF(const Vector& c, real b) : center(c), beta(b)
     {
         assert(b > 0);
     }
@@ -56,9 +57,10 @@ public:
         valid_log_features = false;
         n_bases = 0;
     }
-    void AddCenter(Vector& v, real b);
-    void Evaluate(Vector& x);
-    void logEvaluate(Vector& x);
+    RBFBasisSet(const EvenGrid& grid, real bandwidth);
+    void AddCenter(const Vector& v, real b);
+    void Evaluate(const Vector& x);
+    void logEvaluate(const Vector& x);
     int size()
     {
         return n_bases;

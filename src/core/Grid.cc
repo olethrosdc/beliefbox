@@ -106,3 +106,20 @@ int EvenGrid::getNIntervals() const
 {
     return n_intervals;
 }
+
+
+/// Get the center of the interval
+/// 
+/// There are K subdivisions in each dimension.
+Vector EvenGrid::getCenter(int interval) const
+{
+    assert(interval >= 0 && interval < getNInterval());
+
+    Vector center(n_dimensions);
+    for (int d = 0; d<n_dimensions; ++d) {
+        int j = interval % ipow(K, d + 1); 
+        int i = j / ipow(K, d);
+        center(d) = lower_bound[d] + (0.5 + (real) i) * delta[d];
+    }
+    return center;
+}

@@ -23,6 +23,7 @@ GridTree::GridTree(Vector& lower_bound, Vector& upper_bound)
 
 /** Get the index of the interval containing x.
     
+    TODO
  */
 std::vector<int> GridTree::getInterval(Vector& x)
 {
