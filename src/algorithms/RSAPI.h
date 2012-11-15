@@ -49,6 +49,7 @@ public:
     std::pair<Vector, bool> BestGroupAction(real delta);
     void Bootstrap(KDTree<RolloutState>& tree,
                    real L);
+	real Gap();
 };
 
 
@@ -89,6 +90,7 @@ public:
     void NewRandomRollouts(const int K, const int T);
     void SampleUniformly(const int K, const int T);
     void SampleToErrorBound(const int K, const int T, const real delta);
+    void SampleUpperBound(const int K, const int T, const real delta);
     int TrainClassifier(Classifier<Vector, int, Vector>* classifier, real delta);
     int GroupTrainClassifier(Classifier<Vector, int, Vector>* classifier, real delta);
     real LipschitzBound();

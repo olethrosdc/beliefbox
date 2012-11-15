@@ -265,8 +265,7 @@ int main(int argc, char* argv[])
 			rsapi.SampleToErrorBound(n_rollouts, horizon, delta);
 			break;
 		case UPPER_BOUND:
-			Serror("unsupported\n");
-			exit(-1);
+			rsapi.SampleUpperBound(n_rollouts, horizon, delta);
 			break;
 		}
 		if (Lipschitz > 0) {
