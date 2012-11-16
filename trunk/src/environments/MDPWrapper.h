@@ -28,7 +28,7 @@ public:
     mdp->setState(state);
   }
   virtual void Reset(int new_state)
-  {						\
+  {
     state = new_state;
     reward = 0.0;
     mdp->setState(new_state);

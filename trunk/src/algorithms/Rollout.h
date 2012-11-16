@@ -66,6 +66,7 @@ public:
 		environment->setState(start_state);
 		running = true;
 		int t = 0;
+		//logmsg("Start state: "); start_state.print(stdout);
 		while (t < period || period < 0) {
             policy->setState(environment->getState());
 			if (!running) {
@@ -77,12 +78,12 @@ public:
 				Act(policy->SelectAction());
 			}
 			++t;
-			if (urandom() < 1.0 - gamma) {
-				running = false;
-			}
+			//if (urandom() < 1.0 - gamma) {
+            //running = false;
+            //}
 		}
-		logmsg("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward);
-		end_state.print(stdout);
+		//logmsg("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward);
+		//end_state.print(stdout);
 	}
 };
 

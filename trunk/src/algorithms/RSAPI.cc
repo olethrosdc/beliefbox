@@ -50,13 +50,11 @@ void RolloutState::ExtendAllRollouts(const int T)
 	for (uint i=0; i<rollouts.size(); ++i) {
 		rollouts[i]->Sample(T);
 	}
-
 }
 
 /// Get the best empirical action in isolation
 ///
-/// The error bounds used here are totally silly, though!
-/// See OOP (Bubeck et al) for better bounds.
+/// If no improved action is found, then it returns the normal action
 int RolloutState::BestEmpiricalAction(real delta)
 {
     Vector Q_U((int) environment->getNActions()); // Upper bound on Q
@@ -128,8 +126,8 @@ real RolloutState::Gap()
 
 /// Get the best empirical action in isolation
 ///
-/// The error bounds used here are totally silly, though!
-/// See OOP (Bubeck et al) for better bounds.
+/// This actually returns no action if no improvement seems possible.
+///
 int RolloutState::BestHighProbabilityAction(real delta)
 {
     Vector Q_U((int) environment->getNActions()); // Upper bound on Q
@@ -219,7 +217,7 @@ std::pair<Vector, bool> RolloutState::BestGroupAction(real delta)
         real error_bound = 0;
         if (rollout->running) {
             error_bound = exp(rollout->T * log_gamma);
-            printf ("error bound not zero: %f\n", error_bound);
+            //printf ("error bound not zero: %f\n", error_bound);
         }
         int a = rollout->start_action;
         N(a)++;
@@ -349,6 +347,8 @@ Vector RSAPI::SampleStateFromPolicy() const
 void RSAPI::SampleRandomly(const int T)
 {
     RolloutState* state = states[rng->discrete_uniform(states.size())];
+    logmsg("Randomly sampling state");
+    
     state->ExtendAllRollouts(T);
 }
 
@@ -456,8 +456,8 @@ int RSAPI::TrainClassifier(Classifier<Vector, int, Vector>* classifier, real del
     int n_improved_actions = 0;
 
     for (uint i=0; i<states.size(); ++i) {
-        //int best_action = states[i]->BestEmpiricalAction(delta);
-        int best_action = states[i]->BestHighProbabilityAction(delta);
+        int best_action = states[i]->BestEmpiricalAction(delta);
+        //int best_action = states[i]->BestHighProbabilityAction(delta);
         if (best_action >= 0 && best_action != states[i]->start_action) {
             //printf("# Action: %d state: ", best_action);
             //states[i]->start_state.print(stdout)
