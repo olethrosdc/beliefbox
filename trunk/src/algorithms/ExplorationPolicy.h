@@ -18,6 +18,85 @@
 #include "Random.h"
 #include "Distribution.h"
 
+
+class ContinuousStateExplorationPolicy 
+{
+protected:
+    real (*getValue)(const Vector&, int);
+public:
+    virtual ~ContinuousStateExplorationPolicy()
+    {}
+    ContinuousStateExplorationPolicy(real (*getValue_)(const Vector&, int))
+    {
+        getValue = getValue_;
+    }
+    virtual int SelectAction() = 0;
+};
+
+class ContinuousStateEpsilonGreedy : public ContinuousStateExplorationPolicy
+{
+public:
+    bool use_geometric_schedule;
+    real alpha, beta;
+    real epsilon;
+    Vector Q;
+    Vector state;
+    ContinuousStateEpsilonGreedy(real (*getValue_)(const Vector&, int),
+                                 int n_states,
+                                 int n_actions,
+                                 real epsilon_)
+        : ContinuousStateExplorationPolicy(getValue_),
+          use_geometric_schedule(false),
+          epsilon(epsilon_),
+          Q(n_actions),
+          state(n_states)
+    {
+    }
+    
+    virtual ~ContinuousStateEpsilonGreedy()
+    {}
+
+
+    virtual void setGeometricSchedule(real alpha_, real beta_)
+        
+    {
+        alpha = alpha_;
+        beta = beta_;
+        use_geometric_schedule = true;
+    }
+
+    virtual int SelectAction() 
+    {
+        real threshold = epsilon;
+        if (use_geometric_schedule) {
+            threshold = epsilon / (1 + sqrt(beta));
+            beta += alpha;
+        }
+        if (urandom() < threshold) {
+            int action =  (int) floor(urandom(0.0, Q.Size()));
+            return action;
+        }
+
+        for (int i=0; i<Q.Size(); ++i) {
+            Q(i) = (*getValue)(state, i);
+        }
+        return ArgMax(Q);
+    }
+
+    virtual void Observe(real reward, Vector& state)
+    {
+        this->state = state;
+    }
+
+    virtual DiscretePolicy* getFixedPolicy() 
+    {
+        Serror ("Not implemented\n");
+        exit(-1);
+        return NULL;
+    }
+};
+
+
 /// Value-function-based exploration policy
 ///
 /// Examples: epsilon-greedy, softmax
@@ -113,7 +192,6 @@ public:
         exit(-1);
         return NULL;
     }
-
 };
 
 class SoftmaxPolicy : public VFExplorationPolicy
