@@ -50,7 +50,7 @@ public:
 		discounted_reward = 0;
 		running = false;
 	}
-	void Act(const A& a)
+	void Act(const A& a, real discount_factor)
 	{
 		running = environment->Act(a);
 		real reward = environment->getReward();
@@ -58,32 +58,39 @@ public:
 		end_state = environment->getState();
 		T++;
 		total_reward += reward;
-		discounted_reward += reward; //* pow(gamma, T);
+		discounted_reward += reward * discount_factor;
 	}
 	void Sample(const int period)
     {
+		real discount_factor = 1;
+		if (period > 0) {
+			discount_factor = pow(gamma, T);
+		}
         environment->Reset();
 		environment->setState(start_state);
 		running = true;
 		int t = 0;
-		//logmsg("Start state: "); start_state.print(stdout);
+		//logmsg("Period, %d, start state: ", period); start_state.print(stdout);
 		while (t < period || period < 0) {
             policy->setState(environment->getState());
 			if (!running) {
+				//logmsg("Episode ended\n");
 				break;
 			}
 			if (t==0) {
-				Act(start_action);
+				Act(start_action, discount_factor);
 			} else {
-				Act(policy->SelectAction());
+				Act(policy->SelectAction(), discount_factor);
+			}
+			if (period < 0) {
+				discount_factor*= gamma;
 			}
 			++t;
-			//if (urandom() < 1.0 - gamma) {
-            //running = false;
-            //}
+			if (period < 0 && urandom() < 1.0 - gamma) {
+				running = false;
+            }
 		}
-		//logmsg("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward);
-		//end_state.print(stdout);
+		//logmsg("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward); end_state.print(stdout);
 	}
 };
 

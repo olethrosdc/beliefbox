@@ -48,6 +48,7 @@ Rollout<Vector, int, AbstractPolicy<Vector, int> >*  RolloutState::NewRollout(Ab
 void RolloutState::ExtendAllRollouts(const int T)
 {
 	for (uint i=0; i<rollouts.size(); ++i) {
+		//logmsg("performing %d-th rollout for state\n", i);
 		rollouts[i]->Sample(T);
 	}
 }
@@ -64,7 +65,7 @@ int RolloutState::BestEmpiricalAction(real delta)
 	for (uint i=0; i<rollouts.size(); ++i) {
         Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];
         real error_bound = 0;
-        if (rollout->running) {
+        if (0) {  //rollout->running) {
             error_bound = exp(rollout->T * log_gamma);
         }
         int a = rollout->start_action;
@@ -74,7 +75,7 @@ int RolloutState::BestEmpiricalAction(real delta)
     }
     Q_U = Q_U / N; // normalise
     Q_L = Q_L / N; // normalise
-    Vector confidence_interval = pow(N, (real) -0.5) * sqrt(log(1.0 / delta));
+    Vector confidence_interval = pow(N, (real) -0.5) * sqrt(0.5 * log(1.0 / delta));
     Q_U += confidence_interval;
     Q_L -= confidence_interval;
     V_U = Max(Q_U);
@@ -87,17 +88,11 @@ int RolloutState::BestEmpiricalAction(real delta)
     //int optimistic_action = ArgMax(Q_U);
     int pessimistic_action = ArgMax(Q_L);
     real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
+	logmsg ("gap: %f, %f %f, a: %d->%d, s: ", gap, Q_U(pessimistic_action), Q_U(normal_action), normal_action, pessimistic_action);
+	start_state.print(stdout);
     if (gap > 0) {
-        //printf ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action);
-        //start_state.print(stdout);
-
         return pessimistic_action;
     }  else {
-        //printf ("# gap: %f, CI: ", gap); 
-        //confidence_interval.print(stdout); 
-        //printf("Q_U: "); Q_U.print(stdout); 
-        //printf("Q_L: "); Q_L.print(stdout);
-        //return normal_action;
         return normal_action;
     }
 }
@@ -159,14 +154,15 @@ int RolloutState::BestHighProbabilityAction(real delta)
     int optimistic_action = ArgMax(Q_U);
     int pessimistic_action = ArgMax(Q_L);
     real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
+#if 0
 	printf ("# gap: %f, p:[%f %f] n:[%f %f] u:[%f %f]\n",
 			gap,
 			Q_L(pessimistic_action), Q_U(pessimistic_action), 
 			Q_L(normal_action), Q_U(normal_action),
 			Q_L(optimistic_action), Q_U(optimistic_action));
+#endif
     if (gap > 0) {
-        printf ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action);
-        start_state.print(stdout);
+        logmsg ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action); start_state.print(stdout);
 
         return pessimistic_action;
     }  else {
@@ -347,7 +343,7 @@ Vector RSAPI::SampleStateFromPolicy() const
 void RSAPI::SampleRandomly(const int T)
 {
     RolloutState* state = states[rng->discrete_uniform(states.size())];
-    logmsg("Randomly sampling state");
+    //logmsg("Randomly sampling state");
     
     state->ExtendAllRollouts(T);
 }
@@ -375,6 +371,7 @@ void RSAPI::SampleUniformly(const int K, const int T)
                 state->NewRollout(policy, a); 
             }
         }
+		//logmsg("Sampling state %d\n", i);
         state->ExtendAllRollouts(T);
     }
 
@@ -428,7 +425,7 @@ void RSAPI::SampleUpperBound(const int K, const int T, const real delta)
 	for (int k=0; k<total_rollouts; ++k) {
 		uint i = ArgMax(U);
 		if (U(i) == 0) {
-			logmsg("Early break from upper bound sampling\n");
+			//logmsg("Early break from upper bound sampling\n");
 			break;
 		}
 		RolloutState* state = states[i];
@@ -459,8 +456,8 @@ int RSAPI::TrainClassifier(Classifier<Vector, int, Vector>* classifier, real del
         int best_action = states[i]->BestEmpiricalAction(delta);
         //int best_action = states[i]->BestHighProbabilityAction(delta);
         if (best_action >= 0 && best_action != states[i]->start_action) {
-            //printf("# Action: %d state: ", best_action);
-            //states[i]->start_state.print(stdout)
+            printf("# Action: %d state: ", best_action);
+            states[i]->start_state.print(stdout);
             n_improved_actions++;
 		} 
 		if (best_action >= 0) {

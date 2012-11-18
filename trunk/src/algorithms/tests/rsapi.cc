@@ -272,6 +272,7 @@ int main(int argc, char* argv[])
 		if (Lipschitz > 0) {
 			rsapi.Bootstrap();
 		}
+		//rsapi.ShowRollouts();
 		//int n_classifiers = 2;
 		//std::vector<KNNClassifier*> experts(n_classifiers);
 		//for (int i=0; i<n_classifiers; ++i) {
