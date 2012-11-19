@@ -155,6 +155,16 @@ Matrix operator* (const Vector& lhs, const Matrix& rhs);
 Vector operator* (const Matrix& lhs, const Vector& rhs);
 real Mahalanobis2 (const Vector& x, const Matrix& A, const Vector& y);
 
+
+
+
+inline Matrix OuterProduct (const Vector& lhs, const Vector& rhs)
+{
+    Matrix R(lhs.n, rhs.n);
+    Product(lhs, rhs, R);
+    return R;
+}
+
 Matrix Transpose (const Matrix& rhs);
 
 /// In-place transpose matrix

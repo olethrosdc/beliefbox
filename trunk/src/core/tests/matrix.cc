@@ -35,10 +35,15 @@ int main()
     Matrix x(N,N);
     Vector u(N);
     Matrix D(N,1);
-
+    Vector v(N);
     for (int i=0; i<N; ++i) {
         u[i] = i + 1;
+        v[i] = i;
     }
+    
+    Matrix Res = OuterProduct(u, v);
+    Res.print(stdout);
+    printf("outer product\n");
 
     Matrix three_by_four(N + 1, N + 2);
     for (int i=0; i<N; ++i) {

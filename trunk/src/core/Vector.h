@@ -152,6 +152,7 @@ real Product (const Vector* const lhs, const Vector* const rhs);
 void Product (const Vector* lhs, const Vector* rhs, Matrix* res);
 real Product (const Vector& lhs, const Vector& rhs);
 void Product (const Vector& lhs, const Vector& rhs, Matrix& res);
+
 //real EuclideanNorm (const Vector* lhs, const Vector* rhs);
 //real SquareNorm (const Vector* lhs, const Vector* rhs);
 /// Return \f$\|a-b\|_1\f$, the L1 norm between two vectors.
