@@ -38,6 +38,7 @@ FixedContinuousPolicy::~FixedContinuousPolicy()
 
 int FixedContinuousPolicy::SelectAction()
 {
+	StatePolicy();
     return  MultinomialDistribution::generateInt(p);
 }
 
@@ -95,9 +96,10 @@ void FixedContinuousPolicy::StatePolicy()
 	Vector Phi = bfs->F();
 	for(int i = 0; i< n_actions; ++i)
 	{
+		Q[i] = weights[(bfs->size() + 1)*i];
 		for(int j = 0; j<bfs->size(); ++j)
 		{
-			Q[i] += Phi[j]*weights[i*j + j];
+			Q[i] += Phi[j]*weights[i*(bfs->size() + 1) + j + 1];
 		}
 	}
 	p.Clear();

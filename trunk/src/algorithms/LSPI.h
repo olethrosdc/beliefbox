@@ -43,6 +43,7 @@ public:
 	
 	Vector BasisFunction(Vector state, int action);
 	void LSTDQ();
+	void LSTDQ_Fast();
 	void PolicyIteration();
 	void Reset();
 	real getValue(Vector state, int action);
