@@ -509,18 +509,22 @@ void RSAPI::Bootstrap()
         tree.AddVectorObject(states[i]->start_state, states[i]);
     }
 
+#if 0
     for (uint i=0; i<states.size(); ++i) {
 		printf ("%f %f # state bounds\n", states[i]->V_U, states[i]->V_L);
 	}
+#endif
 
     real L = LipschitzBound();
     for (uint i=0; i<states.size(); ++i) {
         states[i]->Bootstrap(tree, L);
     }
 
+#if 0
     for (uint i=0; i<states.size(); ++i) {
 		printf ("%f %f # new state bounds\n", states[i]->V_U, states[i]->V_L);
 	}
+#endif
 }
 
 
