@@ -195,6 +195,11 @@ int main(int argc, char* argv[])
 	printf("Total number of collected samples -> %d\n",rollout->getNSamples());
 	EvenGrid Discretisation(S_L, S_U, grids);
 	
+	for(int i = 0; i < rollout->getNRollouts(); ++i)
+	{
+		printf("Total number of collected samples -> %d\n",rollout->getNSamples(i));
+	}
+	
 	RBFBasisSet* RBFs = new RBFBasisSet(Discretisation);
 	LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs,rollout);
 	lspi->PolicyIteration();
@@ -223,10 +228,10 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
 	statistics.total_reward = 0;
 	statistics.discounted_reward = 0;
 	statistics.run_time = 0;
-	
+	int t;
 	real discount = 1;
 	environment->Reset();
-    for (int t=0; t < T; ++t, ++statistics.run_time) {
+    for (t=0; t < T; ++t, ++statistics.run_time) {
 		Vector state = environment->getState();
 		real reward = environment->getReward();
 		statistics.total_reward += reward;

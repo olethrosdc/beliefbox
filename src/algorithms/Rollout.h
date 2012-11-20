@@ -118,7 +118,7 @@ public:
 			discount_factor = pow(gamma, T);
 		}
         environment->Reset();
-		environment->setState(start_state);
+		//environment->setState(start_state);
 		running = true;
 		int t = 0;
 		//logmsg("Period, %d, start state: ", period); start_state.print(stdout);

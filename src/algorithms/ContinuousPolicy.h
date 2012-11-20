@@ -55,7 +55,6 @@ class FixedContinuousPolicy : public ContinuousPolicy
 {
 public:
 	Vector p;
-	Vector state;
 	FixedContinuousPolicy(int n_dimension_, int n_actions_, RBFBasisSet* bfs_);
 	FixedContinuousPolicy(int n_dimension_, int n_actions_, RBFBasisSet* bfs_, Vector& weights_);
 	virtual ~FixedContinuousPolicy();

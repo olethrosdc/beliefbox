@@ -16,7 +16,7 @@ LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_i
 	:gamma(gamma_), Delta(Delta_), n_dimension(n_dimension_), n_actions(n_actions_), max_iteration(max_iteration_),bfs(bfs_), Samples(Samples_), policy(n_dimension, n_actions, bfs)
 {
 	assert(gamma>=0 && gamma <=1);
-	n_basis = n_actions*bfs->size();
+	n_basis = n_actions*(bfs->size() + 1);
 	A.Resize(n_basis, n_basis);
 	b.Resize(n_basis);
 	w.Resize(n_basis);
@@ -31,9 +31,11 @@ Vector LSPI::BasisFunction(Vector state, int action)
 	bfs->Evaluate(state);
 	Vector Phi_state = bfs->F();
 	Vector Phi(n_basis);
+	Phi[(bfs->size() + 1)*action] = 1.0;
+	
 	for(int i = 0; i<bfs->size(); ++i)
 	{
-		Phi[bfs->size()*action + i] = Phi_state[i];
+		Phi[(bfs->size() + 1)*action + i + 1] = Phi_state[i];
 	}
 	return Phi;
 }
@@ -56,7 +58,7 @@ void LSPI::LSTDQ()
 			}
 			else{
 				Phi = BasisFunction(Samples->getNextState(i,j),policy.SelectAction(Samples->getNextState(i,j)));
-				res = OuterProduct(Phi_,(Phi_ - (Phi*gamma)));
+				res = OuterProduct((Phi_ - (Phi*gamma)),Phi_);
 			}
 			A += res;
 			b += Phi_*Samples->getReward(i,j);
@@ -64,6 +66,43 @@ void LSPI::LSTDQ()
 	}
 	const Matrix w_ = A.Inverse_LU();
 	w = w_*b;
+	w.print(stdout);
+}
+
+/*TODO*/
+void LSPI::LSTDQ_Fast()
+{
+	Vector Phi_;
+	Vector Phi;
+	Vector Phi_dif;
+	Matrix res;
+	A.Clear();
+	b.Clear();
+	
+	for(int i=0; i<Samples->getNRollouts(); ++i)
+	{
+		for(int j=0; j<Samples->getNSamples(i); ++j)
+		{
+			Phi_ = BasisFunction(Samples->getState(i,j), Samples->getAction(i,j));
+			if(Samples->getEndsim(i,j)){
+				Phi_dif = Phi_;
+				res = OuterProduct(Phi_, Phi_);
+			}
+			else{
+				Phi = BasisFunction(Samples->getNextState(i,j),policy.SelectAction(Samples->getNextState(i,j)));
+				Phi_dif = Phi_ - (Phi*gamma);
+			}
+			res = OuterProduct(Phi_,Phi_dif);
+			const Matrix p = A;
+			real v = Product(Phi_dif,p*Phi_);
+			A -= (((A*res)*A) / (v + 1));
+			b += Phi_ * Samples->getReward(i,j);
+		}
+	}
+	A.print(stdout);
+	const Matrix w_ = A;
+	w = w_*b;
+	w.print(stdout);
 }
 
 void LSPI::PolicyIteration()
@@ -75,6 +114,7 @@ void LSPI::PolicyIteration()
 	{
 //		printf("Policy Evaluation\n");
 		LSTDQ();
+//		LSTDQ_Fast();
 //		printf("Policy Improvement\n");
 		old_w = policy.getWeights();
 		policy.Update(w);
