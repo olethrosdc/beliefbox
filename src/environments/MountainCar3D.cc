@@ -79,6 +79,10 @@ bool MountainCar3D::Act(int action)
     
     // run
     Simulate(action);
+	
+	if(endsim) {
+		return false;
+	}
     return true;
 }
 

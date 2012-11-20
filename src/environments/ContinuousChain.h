@@ -29,7 +29,6 @@ class ContinuousChain : public Environment<Vector, int>
 {
 protected:
     void Simulate();
-    bool endsim;
 public:
     ContinuousChain();
     virtual ~ContinuousChain();

@@ -22,7 +22,6 @@ class DiscretisedContinuousChain : public Environment<int, int>
 {
 protected:
     void Simulate();
-    bool endsim;
     real position;
     void DiscretiseState()
     {

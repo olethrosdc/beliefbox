@@ -30,6 +30,7 @@ class Environment
 protected:
     S state; ///< The current state
     real reward; ///< The current reward
+	bool endsim; ///< Absorbing state
     uint n_states; ///< The state dimension
     uint n_actions; ///< The action dimension
     S state_lower_bound; ///< lower bound on the states
@@ -40,6 +41,7 @@ public:
         state_lower_bound = 0;
         state_upper_bound = 0;
         reward = 0.0;
+		endsim = false;
     }
 
     Environment(int n_states_, int n_actions_)
@@ -48,6 +50,7 @@ public:
         state_lower_bound = 0;
         state_upper_bound = n_states - 1;
         reward = 0.0;
+		endsim = false;
     }
 
     virtual ~Environment() 
@@ -56,7 +59,7 @@ public:
 
     /// put the environment in its "natural: state
     virtual void Reset() = 0;
-
+	
     /// returns true if the action succeeds, false if it does not.
     ///
     /// The usual of false is that the environment is in a terminal
@@ -85,6 +88,11 @@ public:
     {
         return reward;
     }
+	/// indicates if the current state is absorbing or not
+	bool getEndsim()
+	{
+		return endsim;
+	}
     /// returns the number of state dimensions
     uint getNStates()
     {

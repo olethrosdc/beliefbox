@@ -30,10 +30,10 @@ void setRandomSeed(unsigned int seed);
 unsigned long lrandom();
 real urandom();
 real urandom(real min, real max);
-
+Vector urandom(Vector min, Vector max);
 /// Give a true random number
 /// When blocking is true, then that takes 2-3 s per number.
-/// When blocking is alse, then that takse 12 us per number
+/// When blocking is false, then that takse 12 us per number
 real true_random(bool blocking=true);
 
 unsigned long true_random_bits(bool blocking=true);

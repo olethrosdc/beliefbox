@@ -67,9 +67,7 @@ protected:
 		p.MCNOISE			= 0.1;
 		return p;
 	};
-
 	void Simulate();
-	bool endsim;
 public:
 	PuddleWorld(bool random_parameters = false);
 	virtual ~PuddleWorld();
@@ -78,7 +76,6 @@ public:
 	virtual void Simulate(const int action);
 	real DistPointToPuddle(const int puddle);
 
-	
 	Vector& StateActionUpperBound(){
 		return state_action_upper_bound;
 	}
