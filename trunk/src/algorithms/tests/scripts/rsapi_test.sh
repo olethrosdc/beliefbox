@@ -8,7 +8,7 @@ for n_states in 10 20 50 100 200 500 1000
 do
     for n_rollouts in 10 20 50 100 200 #1000
     do
-        for environment in MountainCar Pendulum
+        for environment in Pendulum
         do
             echo "$environment s:$n_states n:$n_rollouts"
             outdir=$resdir/$environment/
