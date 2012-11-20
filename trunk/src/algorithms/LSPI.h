@@ -36,17 +36,17 @@ protected:
 	Vector w;
 	RBFBasisSet* bfs;
 	Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples;
-	FixedContinuousPolicy* policy;
+	FixedContinuousPolicy policy;
 public:	
 	LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_);
-	~LSPI(){}
+	~LSPI();
 	
 	Vector BasisFunction(Vector state, int action);
 	void LSTDQ();
 	void PolicyIteration();
 	void Reset();
 	real getValue(Vector state, int action);
-	FixedContinuousPolicy* ReturnPolicy()
+	FixedContinuousPolicy& ReturnPolicy()
 	{
 		return policy;
 	}

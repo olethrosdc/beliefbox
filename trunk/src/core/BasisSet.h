@@ -66,13 +66,13 @@ protected:
     bool valid_log_features;
     int n_bases;
 public:
-    RBFBasisSet()
-    {
-        valid_features = false;
-        valid_log_features = false;
-        n_bases = 0;
-    }
+    RBFBasisSet() :
+        valid_features(false),
+        valid_log_features(false),
+        n_bases(0)
+    {  }
     RBFBasisSet(const EvenGrid& grid);
+    ~RBFBasisSet();
 	void AddCenter(const Vector& v, const Vector& b);
     void AddCenter(const Vector& v, real b);
     void Evaluate(const Vector& x);

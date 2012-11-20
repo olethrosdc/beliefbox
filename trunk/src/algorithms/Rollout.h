@@ -29,9 +29,13 @@ public:
 		real reward;
 		S next_state;
 		bool endsim;
+        Observations(const S& s, const A& a, real r, const S& s2, bool end)
+            : state(s), action(a), reward(r), next_state(s2), endsim(end)
+        {
+        }
 	};
-	std::vector<Observations*> esamples;
-	std::vector<std::vector<Observations*> > Samples;
+	std::vector<Observations> esamples;
+	std::vector<std::vector<Observations> > Samples;
 //public:
 	S start_state; ///< initial state
 	A start_action; ///< initial action
@@ -82,7 +86,9 @@ public:
 		running = false;
 	}
 	/// Destructor
-	~Rollout();
+	~Rollout()
+    {
+    }
 	
 	//void Act(const A& a)
 //=======
@@ -97,14 +103,7 @@ public:
 
 		if(sampling)
 		{
-			//Statistics
-			Observations* new_sample = new Observations;
-			new_sample->state		= previous_state;		
-			new_sample->action		= a;			
-			new_sample->reward		= reward; 			
-			new_sample->next_state	= end_state;	
-			new_sample->endsim		= endsim;		
-			esamples.push_back(new_sample);		
+			esamples.push_back(Observations(previous_state, a, reward, end_state, endsim));		
 		}
 
 		T++;
@@ -167,23 +166,23 @@ public:
 	}
 	S getState(const int& r, const int& s)
 	{
-		return Samples[r][s]->state;
+		return Samples[r][s].state;
 	}
 	A getAction(const int& r, const int& s)
 	{
-		return Samples[r][s]->action;
+		return Samples[r][s].action;
 	}
 	real getReward(const int& r, const int& s)
 	{
-		return Samples[r][s]->reward;
+		return Samples[r][s].reward;
 	}
 	S getNextState(const int& r, const int& s)
 	{
-		return Samples[r][s]->next_state;
+		return Samples[r][s].next_state;
 	}
 	bool getEndsim(const int& r, const int& s)
 	{
-		return Samples[r][s]->endsim;
+		return Samples[r][s].endsim;
 	}
 	int getNRollouts()
 	{
