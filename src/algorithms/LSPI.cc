@@ -13,14 +13,17 @@
 #include "LSPI.h"
 
 LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_)
-	:gamma(gamma_), Delta(Delta_), n_dimension(n_dimension_), n_actions(n_actions_), max_iteration(max_iteration_),bfs(bfs_), Samples(Samples_)
+	:gamma(gamma_), Delta(Delta_), n_dimension(n_dimension_), n_actions(n_actions_), max_iteration(max_iteration_),bfs(bfs_), Samples(Samples_), policy(n_dimension, n_actions, bfs)
 {
 	assert(gamma>=0 && gamma <=1);
 	n_basis = n_actions*bfs->size();
 	A.Resize(n_basis, n_basis);
 	b.Resize(n_basis);
 	w.Resize(n_basis);
-	policy = new FixedContinuousPolicy( n_dimension_, n_actions_, bfs_);
+}
+
+LSPI::~LSPI()
+{
 }
 
 Vector LSPI::BasisFunction(Vector state, int action)
@@ -52,11 +55,11 @@ void LSPI::LSTDQ()
 				res = OuterProduct(Phi_, Phi_);
 			}
 			else{
-				Phi = BasisFunction(Samples->getNextState(i,j),policy->SelectAction(Samples->getNextState(i,j)));
+				Phi = BasisFunction(Samples->getNextState(i,j),policy.SelectAction(Samples->getNextState(i,j)));
 				res = OuterProduct(Phi_,(Phi_ - (Phi*gamma)));
 			}
-			A = A + res;
-			b = b + Phi_*Samples->getReward(i,j);
+			A += res;
+			b += Phi_*Samples->getReward(i,j);
 		}
 	}
 	const Matrix w_ = A.Inverse_LU();
@@ -73,12 +76,13 @@ void LSPI::PolicyIteration()
 //		printf("Policy Evaluation\n");
 		LSTDQ();
 //		printf("Policy Improvement\n");
-		old_w = policy->getWeights();
-		policy->Update(w);
-		
+		old_w = policy.getWeights();
+		policy.Update(w);
 		iteration++;
 		//Stop criterion
 		distance = (old_w - w).L2Norm();
+		logmsg("LSPI iteration %d, d: %f\n", iteration, distance); fflush(stdout);
+
 		if( distance < Delta || iteration > max_iteration){
 			if(distance > Delta){
 				printf("LSPI finished after %d iterations without convergence into a fixed point\n",iteration);

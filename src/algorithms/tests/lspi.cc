@@ -64,16 +64,17 @@ struct AveragePerformanceStatistics : PerformanceStatistics
 };
 
 PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
-                               AbstractPolicy<Vector, int>* policy,
+                               AbstractPolicy<Vector, int>& policy,
                                real gamma, int T);
 
 static const char* const help_text = "Usage: rsapi [options]\n\
 \nOptions:\n\
 --environment: {PuddleWorld, Pendulum}\n\
---n_states:    number of states\n\
 --gamma:       reward discounting in [0,1]\n\
---n_iter:      maximum number of policy iterations\n\
+--max_iteration:      maximum number of policy iterations\n\
 --horizon:     rollout horizon\n\
+--delta:       stopping threshold\n\
+--grids:       RBF factor\n\
 --n_rollouts:  number of rollouts\n\
 \n";
 
@@ -187,7 +188,7 @@ int main(int argc, char* argv[])
     printf("# S_U: "); S_U.print(stdout);
 	
 	Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout
-	= new Rollout<Vector, int, AbstractPolicy<Vector, int> >(urandom(S_L,S_U), policy, environment, gamma, true);
+        = new Rollout<Vector, int, AbstractPolicy<Vector, int> >(urandom(S_L,S_U), policy, environment, gamma, true);
 	
     rollout->Sampling(n_rollouts, horizon);
 
@@ -201,7 +202,7 @@ int main(int argc, char* argv[])
 	AveragePerformanceStatistics statistics;
 	for (int i=0; i<100; ++i) {
 		PerformanceStatistics run_statistics = Evaluate(environment,
-														policy,
+														lspi->ReturnPolicy(),
 														gamma,
 														1000);
 		statistics.Observe(run_statistics);
@@ -211,10 +212,11 @@ int main(int argc, char* argv[])
 	delete RBFs;
 	delete environment;
 	delete lspi;
+    delete rollout;
 }
 
 PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
-							   AbstractPolicy<Vector, int>* policy,
+							   AbstractPolicy<Vector, int>& policy,
 							   real gamma, int T)
 {
 	PerformanceStatistics statistics;
@@ -230,8 +232,8 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
 		statistics.total_reward += reward;
 		statistics.discounted_reward += reward*discount;
 		discount *=gamma;
-		policy->setState(state);
-		int action = policy->SelectAction();
+		policy.setState(state);
+		int action = policy.SelectAction();
 		bool action_ok = environment->Act(action);
 		if(!action_ok) {
 			break;

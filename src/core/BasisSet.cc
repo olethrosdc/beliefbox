@@ -17,29 +17,33 @@ RBFBasisSet::RBFBasisSet(const EvenGrid& grid)
     for (int i=0; i<grid.getNIntervals(); ++i) {
         AddCenter(grid.getCenter(i), grid.delta);
     }
+    //logmsg("Added %d RBFs\n", centers.size());
+}
+
+RBFBasisSet::~RBFBasisSet()
+{
+    for (uint i=0;  i<centers.size(); ++i) {
+        delete centers[i];
+    }
 }
 
 void RBFBasisSet::AddCenter(const Vector& v, const Vector& b)
 {
     RBF* rbf = new RBF(v, b);
     centers.push_back(rbf);
-//    features.push_back(0.0);
-//    log_features.push_back(0.0);
+    n_bases++;
 	features.Resize(centers.size());
 	features[n_bases-1] = 0.0;
 	log_features.Resize(centers.size());
 	log_features[n_bases-1] = 0.0;
     valid_features = false;
     valid_log_features = false;
-	n_bases++;
 }
 
 void RBFBasisSet::AddCenter(const Vector& v, real b)
 {
     RBF* rbf = new RBF(v, b);
     centers.push_back(rbf);
-//    features.push_back(0.0);
-//    log_features.push_back(0.0);
 	n_bases++;
 	features.Resize(centers.size());
 	features[n_bases-1] = 0.0;
