@@ -423,7 +423,7 @@ void RSAPI::SampleToErrorBound(const int K, const int T, const real delta)
             }
         }
     }
-    printf ("# n updates: %d\n", total_updates);
+    //printf ("# n updates: %d\n", total_updates);
 }
 
 void RSAPI::SampleUpperBound(const int K, const int T, const real delta)
@@ -453,7 +453,7 @@ void RSAPI::SampleUpperBound(const int K, const int T, const real delta)
 		}
 		
 	}
-    printf ("# n updates: %d\n", total_updates);
+    //printf ("# n updates: %d\n", total_updates);
 
 }
 
@@ -467,8 +467,8 @@ int RSAPI::TrainClassifier(Classifier<Vector, int, Vector>* classifier, real del
         int best_action = states[i]->BestEmpiricalAction(delta);
         //int best_action = states[i]->BestHighProbabilityAction(delta);
         if (best_action >= 0 && best_action != states[i]->start_action) {
-            printf("# Action: %d state: ", best_action);
-            states[i]->start_state.print(stdout);
+            //printf("# Action: %d state: ", best_action);
+            //states[i]->start_state.print(stdout);
             n_improved_actions++;
 		} 
 		if (best_action >= 0) {

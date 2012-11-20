@@ -295,7 +295,7 @@ int main(int argc, char* argv[])
         } else {
             n_improved_actions = rsapi.TrainClassifier(new_classifier, delta);
         }
-        printf ("# n: %d # improved actions\n", n_improved_actions);
+        logmsg ("n: %d # improved actions\n", n_improved_actions);
         if (resample) {
             for (uint i=0; i<state_vector.size(); ++i) {
                 if (rng.uniform() >= gamma) {
