@@ -115,8 +115,6 @@ Matrix::Matrix (const Vector& v, enum BoundsCheckingStatus check_)
 
 }
 
-
-
 /// Copy constructor
 Matrix::Matrix (const Matrix& rhs, bool clone)
     : rows(rhs.Rows()),

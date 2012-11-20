@@ -21,23 +21,36 @@
 class RBF
 {
 public:
-    Vector center; ///< The centroid
-    real beta; ///< the variance
+    Vector center;		///< The centroid
+    Vector beta;		///< the variance
     /// Constructor
-    RBF(const Vector& c, real b) : center(c), beta(b)
+    RBF(const Vector& c, real b) : center(c)
     {
         assert(b > 0);
+		Vector var(c.Size(), &b);
+		beta = var;
     }
+	
+	RBF(const Vector& c, const Vector& b) : center(c), beta(b)
+	{
+		assert(b > 0);
+	}
+	
     /// Get the density at point x
     real Evaluate(const Vector& x)
     {
-        real d = EuclideanNorm(&x, &center);
-        return exp(-beta*d);
+		Vector d = pow(x - center,2) / beta;
+		real r = d.Sum();
+        //real d = EuclideanNorm(&x, &center);
+        return exp(-r);
     }
     /// Evaluate the log density
     real logEvaluate(const Vector& x)
     {
-        return - beta * EuclideanNorm(&x, &center);
+		Vector d = pow(x - center,2) / beta;
+		d.print(stdout);
+		return d.Sum();
+    //    return (-beta) * EuclideanNorm(&x, &center);		
     }
 };
 
@@ -45,8 +58,10 @@ class RBFBasisSet
 {
 protected:
     std::vector<RBF*> centers;
-    std::vector<real> log_features;
-    std::vector<real> features;
+//	  std::vector<real> log_features;
+//    std::vector<real> features;
+	Vector log_features;
+	Vector features;
     bool valid_features;
     bool valid_log_features;
     int n_bases;
@@ -57,7 +72,8 @@ public:
         valid_log_features = false;
         n_bases = 0;
     }
-    RBFBasisSet(const EvenGrid& grid, real bandwidth);
+    RBFBasisSet(const EvenGrid& grid);
+	void AddCenter(const Vector& v, const Vector& b);
     void AddCenter(const Vector& v, real b);
     void Evaluate(const Vector& x);
     void logEvaluate(const Vector& x);
@@ -71,12 +87,19 @@ public:
         assert(valid_log_features);
         return log_features[j];
     }
+	Vector log_F()
+	{
+		return log_features;
+	}
     real F(int j)
     {
         assert(j>=0 && j < n_bases);
         assert(valid_features);
         return features[j];
     }
-
+	Vector F()
+	{
+		return features;
+	}
 };
 #endif

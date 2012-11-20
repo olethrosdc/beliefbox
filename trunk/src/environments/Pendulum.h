@@ -35,7 +35,6 @@ protected:
     Vector action_upper_bound;
     Vector action_lower_bound;
     void Simulate();
-    bool endsim;
     void penddot(Vector& xdot, real u, Vector& x);
     void pendulum_simulate(int action);
 public:

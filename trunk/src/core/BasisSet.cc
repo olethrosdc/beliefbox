@@ -11,22 +11,42 @@
 
 #include "BasisSet.h"
 
-RBFBasisSet::RBFBasisSet(const EvenGrid& grid, real bandwidth)
+RBFBasisSet::RBFBasisSet(const EvenGrid& grid)
 {
+	n_bases = 0;
     for (int i=0; i<grid.getNIntervals(); ++i) {
-        AddCenter(grid.getCenter(i), bandwidth);
+        AddCenter(grid.getCenter(i), grid.delta);
     }
+}
+
+void RBFBasisSet::AddCenter(const Vector& v, const Vector& b)
+{
+    RBF* rbf = new RBF(v, b);
+    centers.push_back(rbf);
+//    features.push_back(0.0);
+//    log_features.push_back(0.0);
+	features.Resize(centers.size());
+	features[n_bases-1] = 0.0;
+	log_features.Resize(centers.size());
+	log_features[n_bases-1] = 0.0;
+    valid_features = false;
+    valid_log_features = false;
+	n_bases++;
 }
 
 void RBFBasisSet::AddCenter(const Vector& v, real b)
 {
     RBF* rbf = new RBF(v, b);
     centers.push_back(rbf);
-    features.push_back(0.0);
-    log_features.push_back(0.0);
+//    features.push_back(0.0);
+//    log_features.push_back(0.0);
+	n_bases++;
+	features.Resize(centers.size());
+	features[n_bases-1] = 0.0;
+	log_features.Resize(centers.size());
+	log_features[n_bases-1] = 0.0;
     valid_features = false;
     valid_log_features = false;
-    n_bases++;
 }
 
 void RBFBasisSet::logEvaluate(const Vector& x)
@@ -43,12 +63,21 @@ void RBFBasisSet::logEvaluate(const Vector& x)
     valid_features = false;
 }
 
+//void RBFBasisSet::Evaluate(const Vector& x)
+//{
+//    logEvaluate(x);
+//    for (int i=0; i<n_bases; ++i) {
+//        features[i] = exp(log_features[i]);
+//    }
+//    valid_features = true;
+//}
+
 void RBFBasisSet::Evaluate(const Vector& x)
 {
-    logEvaluate(x);
-    for (int i=0; i<n_bases; ++i) {
-        features[i] = exp(log_features[i]);
-    }
-    valid_features = true;
+	for(int i = 0; i<n_bases; ++i){
+		features[i] = centers[i]->Evaluate(x);
+	}
+	valid_log_features = true;
+	valid_features = true;
 }
 

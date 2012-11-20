@@ -163,6 +163,18 @@ void Vector::printf(FILE* f) const
     }
 }
 
+/// Inequality operator.
+///
+/// Return true iff this[i] > value for all i.
+const bool Vector::operator> (const real& rhs) const
+{
+    for (int i=0; i<n; i++) {
+		if (x[i] <= rhs) {
+			return false;
+		}
+    }
+    return true;
+}
 
 /// Inequality operator.
 ///
@@ -173,6 +185,19 @@ const bool Vector::operator> (const Vector& rhs) const
 	assert(n == rhs.n);
     for (int i=0; i<n; i++) {
 		if (x[i] <= rhs[i]) {
+			return false;
+		}
+    }
+    return true;
+}
+
+/// Inequality operator.
+///
+/// Return true iff this[i] < rhs for all i.
+const bool Vector::operator< (const real& rhs) const
+{
+	for (int i=0; i<n; i++) {
+		if (x[i] <= rhs) {
 			return false;
 		}
     }
@@ -321,7 +346,6 @@ Vector& Vector::operator+= (const Vector& rhs)
     return *this;
 }
 
-
 /// Subtraction
 const Vector Vector::operator- (const Vector& rhs) const
 {
@@ -406,6 +430,17 @@ const Vector Vector::operator- (const real& rhs) const
     }
     return lhs;
 }
+
+/// Scalar multiplication by -1
+const Vector Vector:: operator- () const
+{
+	Vector lhs(n);
+	for (int i=0; i<n; i++) {
+		lhs.x[i] = -x[i];
+	}
+	return lhs;
+}
+
 /// Scalar multiplication
 const Vector Vector::operator* (const real& rhs) const
 {
@@ -562,6 +597,7 @@ void Div (const Vector* lhs, const Vector* rhs, Vector* res)
         res->x[i] = lhs->x[i] / rhs->x[i];
     }
 }  
+
 
 /// \brief Return the inner product of two vectors.
 /// If all vectors are column vectors, this is \f$x=a' b\f$.

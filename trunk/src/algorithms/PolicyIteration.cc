@@ -47,7 +47,7 @@ PolicyIteration::PolicyIteration(const DiscreteMDP* mdp_,
     assert (gamma>=0 && gamma <=1);
     
     n_actions = mdp->getNActions();
-    n_states = mdp->getNStates();
+    n_states  = mdp->getNStates();
     
     policy = new FixedDiscretePolicy(n_states, n_actions);
     _evaluation = new PolicyEvaluation(policy, mdp, gamma, baseline);

@@ -75,7 +75,9 @@ public:
     real L1Norm() const;
     real L2Norm() const;
     real SquareNorm() const;
+	const bool operator< (const real& rhs) const;
     const bool operator< (const Vector& rhs) const;
+	const bool operator> (const real& rhs) const;
     const bool operator> (const Vector& rhs) const;
     const bool operator== (const Vector& rhs) const;
     const Vector operator+ (const Vector& rhs) const;
@@ -88,12 +90,14 @@ public:
     Vector& operator/= (const Vector& rhs);
     const Vector operator+ (const real& rhs) const;
     const Vector operator- (const real& rhs) const;
+	const Vector operator- () const;
     const Vector operator* (const real& rhs) const;
     const Vector operator/ (const real& rhs) const;
     Vector& operator+= (const real& rhs);
     Vector& operator-= (const real& rhs);
     Vector& operator*= (const real& rhs);
     Vector& operator/= (const real& rhs);
+	
     void print(FILE* f) const;
     void printf(FILE* f) const;
 private:

@@ -66,7 +66,7 @@ public:
     /// Matrix inversion (defaults to Cholesky)
     Matrix Inverse(real epsilon = ACCURACY_LIMIT)
     {
-        return Inverse_Cholesky(epsilon);
+		return Inverse_Cholesky(epsilon);
         //return Inverse_LU(epsilon);
     }
     /** Matrix inversion using the Cholesky decomposition.
@@ -154,8 +154,6 @@ Matrix operator* (const real& lhs, const Matrix& rhs);
 Matrix operator* (const Vector& lhs, const Matrix& rhs);
 Vector operator* (const Matrix& lhs, const Vector& rhs);
 real Mahalanobis2 (const Vector& x, const Matrix& A, const Vector& y);
-
-
 
 
 inline Matrix OuterProduct (const Vector& lhs, const Vector& rhs)

@@ -49,6 +49,16 @@ real urandom(real min, real max)
     return min + ((max-min)*urandom());
 }
 
+Vector urandom(Vector min, Vector max)
+{
+	assert(min.Size() == max.Size());
+	Vector rvector(min.Size());
+	for(int i=0; i<min.Size(); ++i){
+		rvector[i] = urandom();
+	}
+	return min + (max - min)*rvector;
+}
+
 real true_random(bool blocking)
 {
 	real x;
