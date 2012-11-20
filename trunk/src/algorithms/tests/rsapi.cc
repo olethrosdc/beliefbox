@@ -20,6 +20,7 @@
 #include "KNNClassifier.h"
 #include "ClassifierMixture.h"
 #include "ClassifierPolicy.h"
+#include "EasyClock.h"
 #include <cstring>
 #include <getopt.h>
 
@@ -28,10 +29,12 @@ struct PerformanceStatistics
 {
     real total_reward;
     real discounted_reward;
+    real n_of_steps;
     real run_time;
     PerformanceStatistics()
         : total_reward(0),
           discounted_reward(0),
+          n_of_steps(0),
           run_time(0)
     {}
 };
@@ -52,14 +55,16 @@ struct AveragePerformanceStatistics : PerformanceStatistics
 
         total_reward = gamma * total_reward + (1 - gamma) * x.total_reward;
         discounted_reward = gamma * discounted_reward + (1 - gamma) * x.discounted_reward;
-        run_time = gamma * run_time + (1 - gamma) * x.run_time;
+        n_of_steps = gamma * n_of_steps + (1 - gamma) * x.n_of_steps;
+        run_time += x.run_time;
 
     }
     void Show()
     {
-        printf ("%f %f %f # reward, discounted, time\n", 
+        printf ("%f %f %f %f # reward, discounted, steps, cpu-time\n", 
                 total_reward,
                 discounted_reward,
+                n_of_steps,
                 run_time);
     }
 };
@@ -315,11 +320,11 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
     PerformanceStatistics statistics;
     statistics.total_reward = 0;
     statistics.discounted_reward = 0;
-    statistics.run_time = 0;
-
+    statistics.n_of_steps = 0;
+    statistics.run_time = GetCPU();
     real discount = 1;
     environment->Reset();
-    for (int t=0; t < T; ++t, ++statistics.run_time) {
+    for (int t=0; t < T; ++t, ++statistics.n_of_steps) {
         Vector state = environment->getState();
         real reward = environment->getReward();
         statistics.total_reward += reward;
@@ -332,6 +337,7 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
             break;
         }
     }
+    statistics.run_time = GetCPU() - statistics.run_time;
     return statistics;
 }
 #endif

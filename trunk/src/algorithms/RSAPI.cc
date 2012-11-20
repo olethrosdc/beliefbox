@@ -61,11 +61,12 @@ int RolloutState::BestEmpiricalAction(real delta)
     Vector Q_U((int) environment->getNActions()); // Upper bound on Q
     Vector Q_L((int) environment->getNActions()); // Lower bound on Q
     Vector N((int) environment->getNActions()); // number of times action was played
+    Q_U += 1 / (1 - gamma);
     real log_gamma = log(gamma);
 	for (uint i=0; i<rollouts.size(); ++i) {
         Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout = rollouts[i];
         real error_bound = 0;
-        if (0) {  //rollout->running) {
+        if (rollout->running) {
             error_bound = exp(rollout->T * log_gamma);
         }
         int a = rollout->start_action;
@@ -73,9 +74,9 @@ int RolloutState::BestEmpiricalAction(real delta)
         Q_U(a) += rollout->discounted_reward + error_bound;
         Q_L(a) += rollout->discounted_reward - error_bound;
     }
-    Q_U = Q_U / N; // normalise
-    Q_L = Q_L / N; // normalise
-    Vector confidence_interval = pow(N, (real) -0.5) * sqrt(0.5 * log(1.0 / delta));
+    Q_U = Q_U / (N + 1); // normalise
+    Q_L = Q_L / (N + 1); // normalise
+    Vector confidence_interval = pow(N + 1, (real) -0.5) * sqrt(0.5 * log(1.0 / delta));
     Q_U += confidence_interval;
     Q_L -= confidence_interval;
     V_U = Max(Q_U);
@@ -88,8 +89,18 @@ int RolloutState::BestEmpiricalAction(real delta)
     //int optimistic_action = ArgMax(Q_U);
     int pessimistic_action = ArgMax(Q_L);
     real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
-	logmsg ("gap: %f, %f %f, a: %d->%d, s: ", gap, Q_U(pessimistic_action), Q_U(normal_action), normal_action, pessimistic_action);
-	start_state.print(stdout);
+#if 0
+    dbgmsg("CI: "); confidence_interval.print(stdout);
+    dbgmsg("QU: "); Q_U.print(stdout);
+    dbgmsg("QL: "); Q_L.print(stdout);
+	dbgmsg ("gap: %f, %f %f, a: %d->%d, s: ",
+            gap,
+            Q_U(pessimistic_action),
+            Q_U(normal_action),
+            normal_action,
+            pessimistic_action);
+    start_state.print(stdout);
+#endif
     if (gap > 0) {
         return pessimistic_action;
     }  else {
@@ -162,7 +173,7 @@ int RolloutState::BestHighProbabilityAction(real delta)
 			Q_L(optimistic_action), Q_U(optimistic_action));
 #endif
     if (gap > 0) {
-        logmsg ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action); start_state.print(stdout);
+        //dbgmsg ("# gap: %f, a: %d->%d, s: ", gap, normal_action, pessimistic_action); start_state.print(stdout);
 
         return pessimistic_action;
     }  else {
