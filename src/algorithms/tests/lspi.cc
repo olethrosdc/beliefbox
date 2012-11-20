@@ -21,6 +21,7 @@
 #include "ContinuousPolicy.h"
 #include "Vector.h"
 #include <getopt.h>
+#include <cstring>
 
 struct PerformanceStatistics
 {
