@@ -35,7 +35,7 @@ public:
 #ifdef NDEBUG
     static Matrix Null(int rows, int columns, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     static Matrix Unity(int rows, int columns, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
-
+	
     Matrix (int rows = 1, int columns = 1,  enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     Matrix (int rows, int columns, real* y, enum BoundsCheckingStatus check = NO_CHECK_BOUNDS);
     Matrix (const Vector& v, enum BoundsCheckingStatus check_ = NO_CHECK_BOUNDS);
