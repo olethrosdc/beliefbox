@@ -90,14 +90,12 @@ public:
     {
     }
 	
-	//void Act(const A& a)
-//=======
 	void Act(const A& a, real discount_factor)
 	{
 		running = environment->Act(a);
 		real reward = environment->getReward();
 		S previous_state = end_state;
-//		printf("A: %d, r: %f ", a, reward);
+		//printf("A: %d, r: %f\n", a, reward);
 		end_state = environment->getState();
 		bool endsim = environment->getEndsim();
 
@@ -147,6 +145,7 @@ public:
 				running = false;
             }
 		}
+        //logmsg("Stopping after %d steps\n", t);
 		if(sampling){
 			Samples.push_back(esamples);
 		}

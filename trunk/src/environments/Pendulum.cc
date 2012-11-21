@@ -62,7 +62,7 @@ Pendulum::~Pendulum()
 
 void Pendulum::Reset()
 {
-
+    reward = 0.0;
     // Theta
     state[0] =  urandom(-0.01, 0.01);
 
@@ -130,7 +130,7 @@ void Pendulum::Simulate(const int action)
         reward = -1.0;
         endsim = true;
     } else {
-        reward = 1.0;
+        reward = 0.0;
         endsim = false;
     }
 }

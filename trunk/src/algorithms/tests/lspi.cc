@@ -76,6 +76,7 @@ static const char* const help_text = "Usage: rsapi [options]\n\
 --delta:       stopping threshold\n\
 --grids:       RBF factor\n\
 --n_rollouts:  number of rollouts\n\
+--eval_iter:   number of evaluations\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -84,6 +85,15 @@ int main(int argc, char* argv[])
 	Environment<Vector,int>* environment;
 	
 	MersenneTwisterRNG rng;
+#if 0
+    srand(1228517343);
+    srand48(1228517343);
+    rng.manualSeed(18517339);
+#else
+    srand(time(NULL));
+    srand48(time(NULL));
+    rng.manualSeed(time(NULL));
+#endif
 
 	int max_iteration = 100;
 	real gamma = 0.999;
@@ -92,7 +102,7 @@ int main(int argc, char* argv[])
 	int grids = 10;
 	real delta = 0.01;
 	char* environment_name = NULL;
-
+    int eval_iter = 100;
 	{
 		//options
 		int c;
@@ -108,6 +118,7 @@ int main(int argc, char* argv[])
 				{"environment", required_argument, 0, 0}, //4
 				{"delta", required_argument, 0, 0}, //5
 				{"grids", required_argument, 0, 0}, //6
+				{"eval_iter", required_argument, 0, 0}, //7
 				{0, 0, 0, 0}
 			};
 			c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -130,6 +141,7 @@ int main(int argc, char* argv[])
 						case 4: environment_name = optarg; break;
 						case 5: delta = atof(optarg); break;
 						case 6: grids = atoi(optarg); break;
+						case 7: eval_iter = atoi(optarg); break;
 						default:
 							fprintf (stderr, "Invalid options\n");
 							exit(0);
@@ -166,58 +178,63 @@ int main(int argc, char* argv[])
     if (!strcmp(environment_name, "PuddleWorld")) {
         environment = new PuddleWorld();
     } else if (!strcmp(environment_name, "Pendulum")) {
-        environment = new Pendulum();    
+        environment = new Pendulum(); //2.0, 8.0, 0.5, 9.8, 0.0);    
     } else {
         fprintf(stderr, "Invalid environment name %s\n", environment_name);
         exit(-1);
     }
-	
-	// Place holder for the policy
-	AbstractPolicy<Vector, int>* policy;
 
-	// Start with a random policy!
-	policy = new RandomPolicy(environment->getNActions(), &rng);
-
-	int state_dimension = environment->getNStates();
-	int n_actions = environment->getNActions();
-	Vector S_L = environment->StateLowerBound();
-    Vector S_U = environment->StateUpperBound();
-    
-    printf("# State dimension: %d\n", state_dimension);
-    printf("# S_L: "); S_L.print(stdout);
-    printf("# S_U: "); S_U.print(stdout);
-	
-	Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout
-        = new Rollout<Vector, int, AbstractPolicy<Vector, int> >(urandom(S_L,S_U), policy, environment, gamma, true);
-	
-    rollout->Sampling(n_rollouts, horizon);
-
-	printf("Total number of collected samples -> %d\n",rollout->getNSamples());
-	EvenGrid Discretisation(S_L, S_U, grids);
-	
-	for(int i = 0; i < rollout->getNRollouts(); ++i)
+	AveragePerformanceStatistics statistics;
+	for (int i=0; i<eval_iter; ++i) {
+        // Place holder for the policy
+        AbstractPolicy<Vector, int>* policy;
+        
+        // Start with a random policy!
+        policy = new RandomPolicy(environment->getNActions(), &rng);
+        
+        int state_dimension = environment->getNStates();
+        int n_actions = environment->getNActions();
+        Vector S_L = environment->StateLowerBound();
+        Vector S_U = environment->StateUpperBound();
+        
+        printf("# State dimension: %d\n", state_dimension);
+        printf("# S_L: "); S_L.print(stdout);
+        printf("# S_U: "); S_U.print(stdout);
+        
+        Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout
+            = new Rollout<Vector, int, AbstractPolicy<Vector, int> >(urandom(S_L,S_U), policy, environment, gamma, true);
+        
+        rollout->Sampling(n_rollouts, horizon);
+        
+        printf("Total number of collected samples -> %d\n",rollout->getNSamples());
+        EvenGrid Discretisation(S_L, S_U, grids);
+        
+        for(int i = 0; i < rollout->getNRollouts(); ++i)
 	{
 		printf("Total number of collected samples -> %d\n",rollout->getNSamples(i));
 	}
-	
-	RBFBasisSet* RBFs = new RBFBasisSet(Discretisation);
-	LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs,rollout);
-	lspi->PolicyIteration();
-	
-	AveragePerformanceStatistics statistics;
-	for (int i=0; i<100; ++i) {
+        
+        RBFBasisSet* RBFs = new RBFBasisSet(Discretisation);
+        LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs,rollout);
+        lspi->PolicyIteration();
+        
 		PerformanceStatistics run_statistics = Evaluate(environment,
 														lspi->ReturnPolicy(),
 														gamma,
 														1000);
 		statistics.Observe(run_statistics);
+	
+        statistics.Show();
+        delete policy;
+        
+        delete lspi;
+        delete rollout;
+        
+        delete RBFs;
 	}
-	statistics.Show();
-	delete policy;
-	delete RBFs;
+
 	delete environment;
-	delete lspi;
-    delete rollout;
+
 }
 
 PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
@@ -234,6 +251,7 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
     for (t=0; t < T; ++t, ++statistics.run_time) {
 		Vector state = environment->getState();
 		real reward = environment->getReward();
+        //printf("%d %f # r_t\n", t, reward);
 		statistics.total_reward += reward;
 		statistics.discounted_reward += reward*discount;
 		discount *=gamma;
@@ -241,6 +259,10 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
 		int action = policy.SelectAction();
 		bool action_ok = environment->Act(action);
 		if(!action_ok) {
+            real reward = environment->getReward();
+            //printf("%d %f # r_T\n", t, reward);
+            statistics.total_reward += reward;
+            statistics.discounted_reward += reward*discount;
 			break;
 		}
 	}
