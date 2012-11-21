@@ -125,10 +125,10 @@ void LSPI::PolicyIteration()
 
 		if( distance < Delta || iteration > max_iteration){
 			if(distance > Delta){
-				printf("LSPI finished after %d iterations without convergence into a fixed point\n",iteration);
+				logmsg("LSPI finished after %d iterations without convergence into a fixed point\n",iteration);
 			}
 			else{
-				printf("LSPI converged after %d iterations",iteration);
+				logmsg("LSPI converged after %d iterations\n",iteration);
 			}	
 			break;
 		}
