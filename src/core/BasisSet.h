@@ -39,7 +39,7 @@ public:
     /// Get the density at point x
     real Evaluate(const Vector& x)
     {
-		Vector d = pow(x - center,2) / (beta*2);
+		Vector d = pow(x - center,2) / (beta);
 		real r = d.Sum();
         //real d = EuclideanNorm(&x, &center);
         return exp(-r);
@@ -47,7 +47,7 @@ public:
     /// Evaluate the log density
     real logEvaluate(const Vector& x)
     {
-		Vector d = pow(x - center,2) / (beta*2);
+		Vector d = pow(x - center,2) / (beta);
 		d.print(stdout);
 		return d.Sum();
     //    return (-beta) * EuclideanNorm(&x, &center);		
