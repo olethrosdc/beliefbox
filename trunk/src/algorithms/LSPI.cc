@@ -13,9 +13,34 @@
 #include "LSPI.h"
 
 LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_)
-	:gamma(gamma_), Delta(Delta_), n_dimension(n_dimension_), n_actions(n_actions_), max_iteration(max_iteration_),bfs(bfs_), Samples(Samples_), policy(n_dimension, n_actions, bfs)
+:gamma(gamma_),
+Delta(Delta_), 
+n_dimension(n_dimension_), 
+n_actions(n_actions_), 
+max_iteration(max_iteration_),
+bfs(bfs_), Samples(Samples_), 
+policy(n_dimension, n_actions, bfs)
 {
 	assert(gamma>=0 && gamma <=1);
+	n_basis = n_actions*(bfs->size() + 1);
+	algorithm = 1;
+	A.Resize(n_basis, n_basis);
+	b.Resize(n_basis);
+	w.Resize(n_basis);
+}
+
+LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_)
+	:gamma(gamma_),
+	Delta(Delta_), 
+	n_dimension(n_dimension_), 
+	n_actions(n_actions_), 
+	max_iteration(max_iteration_),
+	algorithm(algorithm_),
+	bfs(bfs_), Samples(Samples_), 
+    policy(n_dimension, n_actions, bfs)
+{
+	assert(gamma>=0 && gamma <=1);
+	assert(algorithm>=1 && algorithm<=2);
 	n_basis = n_actions*(bfs->size() + 1);
 	A.Resize(n_basis, n_basis);
 	b.Resize(n_basis);
@@ -66,17 +91,16 @@ void LSPI::LSTDQ()
 	}
 	const Matrix w_ = A.Inverse_LU();
 	w = w_*b;
-	w.print(stdout);
 }
 
-/*TODO*/
-void LSPI::LSTDQ_Fast()
+void LSPI::LSTDQ_OPT()
 {
 	Vector Phi_;
 	Vector Phi;
 	Vector Phi_dif;
 	Matrix res;
-	A.Clear();
+	real d = 0.000001;
+	A = Matrix::Unity(n_basis,n_basis) * (1/d);
 	b.Clear();
 	
 	for(int i=0; i<Samples->getNRollouts(); ++i)
@@ -86,23 +110,20 @@ void LSPI::LSTDQ_Fast()
 			Phi_ = BasisFunction(Samples->getState(i,j), Samples->getAction(i,j));
 			if(Samples->getEndsim(i,j)){
 				Phi_dif = Phi_;
-				res = OuterProduct(Phi_, Phi_);
 			}
 			else{
 				Phi = BasisFunction(Samples->getNextState(i,j),policy.SelectAction(Samples->getNextState(i,j)));
 				Phi_dif = Phi_ - (Phi*gamma);
 			}
-			res = OuterProduct(Phi_,Phi_dif);
+			res = OuterProduct(Phi_dif,Phi_);
 			const Matrix p = A;
-			real v = Product(Phi_dif,p*Phi_);
+			real v = Product(p*Phi_,Phi_dif);
 			A -= (((A*res)*A) / (v + 1));
 			b += Phi_ * Samples->getReward(i,j);
 		}
 	}
-	A.print(stdout);
 	const Matrix w_ = A;
 	w = w_*b;
-	w.print(stdout);
 }
 
 void LSPI::PolicyIteration()
@@ -112,17 +133,22 @@ void LSPI::PolicyIteration()
 	int iteration = 0;
 	while(1)
 	{
-//		printf("Policy Evaluation\n");
-		LSTDQ();
-//		LSTDQ_Fast();
-//		printf("Policy Improvement\n");
+		//Policy Evaluation
+		if(algorithm == 1){
+			LSTDQ();
+		}
+		else if(algorithm == 2){
+			LSTDQ_OPT();
+		}
+
+		//Policy Improvement
 		old_w = policy.getWeights();
 		policy.Update(w);
 		iteration++;
+		
 		//Stop criterion
 		distance = (old_w - w).L2Norm();
-		logmsg("LSPI iteration %d, d: %f\n", iteration, distance); fflush(stdout);
-
+//		logmsg("LSPI iteration %d, d: %f\n", iteration, distance); fflush(stdout);
 		if( distance < Delta || iteration > max_iteration){
 			if(distance > Delta){
 				logmsg("LSPI finished after %d iterations without convergence into a fixed point\n",iteration);

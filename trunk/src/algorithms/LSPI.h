@@ -31,6 +31,7 @@ protected:
 	int n_actions;
 	int n_basis;
 	int max_iteration;
+	int algorithm;
 	Matrix A;
 	Vector b;
 	Vector w;
@@ -39,11 +40,12 @@ protected:
 	FixedContinuousPolicy policy;
 public:	
 	LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_);
+	LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_);
 	~LSPI();
 	
 	Vector BasisFunction(Vector state, int action);
 	void LSTDQ();
-	void LSTDQ_Fast();
+	void LSTDQ_OPT();
 	void PolicyIteration();
 	void Reset();
 	real getValue(Vector state, int action);

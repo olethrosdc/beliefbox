@@ -647,11 +647,11 @@ real Product (const Vector& lhs, const Vector& rhs)
 /// If all vectors are column vectors, this is \f$x=a b'\f$.
 void Product (const Vector& lhs, const Vector& rhs, Matrix& res)
 {
-    int n=lhs.n;
-    assert((n==rhs.n)&&(n==res.Columns()));
-    assert (n==res.Rows());
-    for (int i=0; i<n; i++) { // columns
-        for (int j=0; j<n; j++) { //rows
+  	int nl = lhs.n;
+	int nr = rhs.n;
+	assert((nr == res.Rows())&&(nl == res.Columns()));
+    for (int i=0; i<nr; i++) { // columns
+        for (int j=0; j<nl; j++) { //rows
             res(i,j) = lhs.x[j] * rhs.x[i];
         }
     }
