@@ -77,6 +77,7 @@ static const char* const help_text = "Usage: rsapi [options]\n\
 --grids:       RBF factor\n\
 --n_rollouts:  number of rollouts\n\
 --eval_iter:   number of evaluations\n\
+--algorithm: {1:LSTDQ, 2:LSTD1_OPT}\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -100,6 +101,7 @@ int main(int argc, char* argv[])
 	int n_rollouts = 100;
 	int horizon = 50;
 	int grids = 10;
+	int algorithm = 1;
 	real delta = 0.01;
 	char* environment_name = NULL;
     int eval_iter = 100;
@@ -119,6 +121,7 @@ int main(int argc, char* argv[])
 				{"delta", required_argument, 0, 0}, //5
 				{"grids", required_argument, 0, 0}, //6
 				{"eval_iter", required_argument, 0, 0}, //7
+				{"algorithm", required_argument, 0, 0}, //8
 				{0, 0, 0, 0}
 			};
 			c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -141,7 +144,8 @@ int main(int argc, char* argv[])
 						case 4: environment_name = optarg; break;
 						case 5: delta = atof(optarg); break;
 						case 6: grids = atoi(optarg); break;
-						case 7: eval_iter = atoi(optarg); break;
+						case 7: algorithm = atoi(optarg); break;
+						case 8: eval_iter = atoi(optarg); break;
 						default:
 							fprintf (stderr, "Invalid options\n");
 							exit(0);
