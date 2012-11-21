@@ -15,7 +15,7 @@ RBFBasisSet::RBFBasisSet(const EvenGrid& grid)
 {
 	n_bases = 0;
     for (int i=0; i<grid.getNIntervals(); ++i) {
-        AddCenter(grid.getCenter(i), grid.delta);
+        AddCenter(grid.getCenter(i), grid.delta * 2.0);
     }
     //logmsg("Added %d RBFs\n", centers.size());
 }

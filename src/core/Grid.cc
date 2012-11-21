@@ -64,12 +64,11 @@ EvenGrid::EvenGrid(const Vector& lower_bound_, const Vector& upper_bound_, int K
     assert(lower_bound.Size() == upper_bound.Size());
     assert(K >= 1);
     delta = (upper_bound - lower_bound) / K ;
-	//delta.Clear();
-//	delta = delta + 1;
+
 	delta.print(stdout);
     n_dimensions = lower_bound.Size();
     n_intervals = (int) floor(pow(K, n_dimensions));
-    //logmsg("Creating grid with %d intervals\n", n_intervals);
+
 }
 
 /** Get the index of the interval containing x.
