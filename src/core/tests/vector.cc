@@ -54,6 +54,8 @@ int main(int argc, char** argv)
             double start_time = GetCPU();
             //gsl_vector_memcpy(gz, gx);
             //gsl_vector_mul(gz, gy);
+            Vector z(N);
+            gsl_blas_ddot(gx, gy, z.x);
             double end_time = GetCPU();
             total_time += end_time - start_time;
         }
