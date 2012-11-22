@@ -159,7 +159,7 @@ real Mahalanobis2 (const Vector& x, const Matrix& A, const Vector& y);
 inline Matrix OuterProduct (const Vector& lhs, const Vector& rhs)
 {
     Matrix R(lhs.n, rhs.n);
-    Product(lhs, rhs, R);
+    MatrixProduct(lhs, rhs, R);
     return R;
 }
 

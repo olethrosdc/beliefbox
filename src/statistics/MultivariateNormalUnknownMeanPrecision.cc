@@ -144,7 +144,7 @@ void MultivariateNormalUnknownMeanPrecision::calculatePosterior(const Vector& x)
     tau_n += 1.0;
 
     alpha_n += 1.0;
-    Product(&delta_mean, &delta_mean, &T_n);
+    MatrixProduct(&delta_mean, &delta_mean, &T_n);
     T_n = T_0 + M_2n + T_n * tau_0 * rn / tau_n;
 
     Matrix InvT = T_n.Inverse();

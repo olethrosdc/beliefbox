@@ -10,6 +10,7 @@
 #include <cstring>
 #include <cassert>
 
+
 Vector Vector::Unity(int N_, enum BoundsCheckingStatus check)
 {
     Vector v(N_);
@@ -99,9 +100,7 @@ Vector::Vector (int N_, real* y, enum BoundsCheckingStatus check)
         x = NULL;
     } else {
         x = (real*) malloc(sizeof(real)*n);
-        for (int i=0; i<n; i++) {
-            x[i] = y[i];
-        }
+        memcpy(x, y, sizeof(real)*n);
     }
     checking_bounds = check;
 }
@@ -616,17 +615,17 @@ real Product (const Vector* const lhs, const Vector* const rhs)
 
 /// \brief Save product of two vectors onto a matrix.
 /// If all vectors are column vectors, this is \f$x=a b'\f$.
-void Product (const Vector* lhs, const Vector* rhs, Matrix* res)
+void MatrixProduct (const Vector* lhs, const Vector* rhs, Matrix* res)
 {
-    assert(lhs && rhs  && res);
-    int n=lhs->n;
-    assert((n==rhs->n)&&(n==res->Columns()));
-    assert (n==res->Rows());
-    for (int i=0; i<n; i++) { // columns
-        for (int j=0; j<n; j++) { //rows
-            (*res)(i,j) = lhs->x[j] * rhs->x[i];
+  	int nl = lhs->n;
+	int nr = rhs->n;
+	assert((nr == res->Rows())&&(nl == res->Columns()));
+    for (int i=0; i<nr; i++) { // columns
+        for (int j=0; j<nl; j++) { //rows
+            (*res)(i,j) = lhs->x[i] * rhs->x[j];
         }
     }
+
 }
 
 /// \brief Return the inner product of two vectors.
@@ -645,14 +644,14 @@ real Product (const Vector& lhs, const Vector& rhs)
 
 /// \brief Save product of two vectors onto a matrix.
 /// If all vectors are column vectors, this is \f$x=a b'\f$.
-void Product (const Vector& lhs, const Vector& rhs, Matrix& res)
+void MatrixProduct (const Vector& lhs, const Vector& rhs, Matrix& res)
 {
   	int nl = lhs.n;
 	int nr = rhs.n;
 	assert((nr == res.Rows())&&(nl == res.Columns()));
     for (int i=0; i<nr; i++) { // columns
         for (int j=0; j<nl; j++) { //rows
-            res(i,j) = lhs.x[j] * rhs.x[i];
+            res(i,j) = lhs.x[i] * rhs.x[j];
         }
     }
 }
