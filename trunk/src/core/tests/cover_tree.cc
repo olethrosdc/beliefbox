@@ -160,7 +160,7 @@ int main(int argc, char** argv)
         double timer_start = GetCPU();
         test_cover_tree_insertion(cover_tree, X);
         double timer_mid = GetCPU();
-        //	tree.Show();
+			//cover_tree.Show();
         int n_cover_tree_failures = test_cover_tree_query(cover_tree, Q);
         double timer_end = GetCPU();
         printf ("%f %f %f # COVER TREE\n",

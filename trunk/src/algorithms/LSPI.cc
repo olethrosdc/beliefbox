@@ -83,7 +83,7 @@ void LSPI::LSTDQ()
 			}
 			else{
 				Phi = BasisFunction(Samples->getNextState(i,j),policy.SelectAction(Samples->getNextState(i,j)));
-				res = OuterProduct((Phi_ - (Phi*gamma)),Phi_);
+				res = OuterProduct(Phi_,(Phi_ - (Phi*gamma)));
 			}
 			A += res;
 			b += Phi_*Samples->getReward(i,j);
@@ -115,7 +115,7 @@ void LSPI::LSTDQ_OPT()
 				Phi = BasisFunction(Samples->getNextState(i,j),policy.SelectAction(Samples->getNextState(i,j)));
 				Phi_dif = Phi_ - (Phi*gamma);
 			}
-			res = OuterProduct(Phi_dif,Phi_);
+			res = OuterProduct(Phi_,Phi_dif);
 			const Matrix p = A;
 			real v = Product(p*Phi_,Phi_dif);
 			A -= (((A*res)*A) / (v + 1));
