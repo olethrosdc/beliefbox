@@ -12,36 +12,57 @@
 #ifdef MAKE_MAIN
 
 #include "Vector.h"
+#include "EasyClock.h"
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_vector.h>
 
 int main(int argc, char** argv)
 {
     
-    {
-        Vector x(4);
-        for (uint i=0; i<x.Size(); ++i) {
+    int N = 100000;
+    int iter=100;
+    Vector x(N);
+    Vector y(N);
+
+    gsl_vector* gx = gsl_vector_alloc(N);
+    gsl_vector* gy = gsl_vector_alloc(N);
+
+    for (int i=0; i<x.Size(); ++i) {
         x(i) = i;
+        y(i) = 2*i - 1;
+        gsl_vector_set(gx, i, x(i));
+        gsl_vector_set(gy, i, y(i));
+    }
+
+    {
+        double total_time = 0.0;
+        for (int k=0; k<10000; ++k) {
+            double start_time = GetCPU();
+            Vector z = x * y;
+            double end_time = GetCPU();
+            total_time += end_time - start_time;
         }
-        x.print(stdout);
-        x *= 2;
-        x.print(stdout);
-        x = 3;
-        x.print(stdout);
+        logmsg("total time %f\n", total_time);
     }
+
+
 
     {
-        real n = 3.0;
-        Vector w(n);
-        w.print(stdout);
+        double total_time = 0.0;
+        gsl_vector* gz = gsl_vector_alloc(N);
+        for (int k=0; k<10000; ++k) {
+            double start_time = GetCPU();
+            //gsl_vector_memcpy(gz, gx);
+            //gsl_vector_mul(gz, gy);
+            double end_time = GetCPU();
+            total_time += end_time - start_time;
+        }
+        gsl_vector_free(gz);
+        logmsg("total time %f\n", total_time);
     }
 
-    {
-        int n = 3;
-        Vector w(n);
-        w.print(stdout);
-
-    }
-
-
+    gsl_vector_free(gx);
+    gsl_vector_free(gy);
     return 0;
 }
 

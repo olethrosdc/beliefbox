@@ -43,7 +43,7 @@ void GaussianProcess::Observe(Vector& x, real y)
 {
     // Update total covariance
     Matrix V;
-    Product(&x, &x, &V);
+    MatrixProduct(&x, &x, &V);
     X2 += V;
 
     A = X2 / noise_variance + Accuracy;
