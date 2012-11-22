@@ -105,6 +105,7 @@ int main(int argc, char* argv[])
 	real delta = 0.01;
 	char* environment_name = NULL;
     int eval_iter = 100;
+	
 	{
 		//options
 		int c;
@@ -144,8 +145,8 @@ int main(int argc, char* argv[])
 						case 4: environment_name = optarg; break;
 						case 5: delta = atof(optarg); break;
 						case 6: grids = atoi(optarg); break;
-						case 7: algorithm = atoi(optarg); break;
-						case 8: eval_iter = atoi(optarg); break;
+						case 7: eval_iter = atoi(optarg); break;
+						case 8: algorithm = atoi(optarg); break;
 						default:
 							fprintf (stderr, "Invalid options\n");
 							exit(0);
@@ -190,6 +191,7 @@ int main(int argc, char* argv[])
 
 	AveragePerformanceStatistics statistics;
 	for (int i=0; i<eval_iter; ++i) {
+		
         // Place holder for the policy
         AbstractPolicy<Vector, int>* policy;
         
@@ -204,7 +206,7 @@ int main(int argc, char* argv[])
         printf("# State dimension: %d\n", state_dimension);
         printf("# S_L: "); S_L.print(stdout);
         printf("# S_U: "); S_U.print(stdout);
-        
+	 
         Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout
             = new Rollout<Vector, int, AbstractPolicy<Vector, int> >(urandom(S_L,S_U), policy, environment, gamma, true);
         
@@ -213,11 +215,11 @@ int main(int argc, char* argv[])
         printf("Total number of collected samples -> %d\n",rollout->getNSamples());
         EvenGrid Discretisation(S_L, S_U, grids);
         
-        for(int i = 0; i < rollout->getNRollouts(); ++i)
-	{
-		printf("Total number of collected samples -> %d\n",rollout->getNSamples(i));
-	}
-        
+      //  for(int i = 0; i < rollout->getNRollouts(); ++i)
+//		{
+//			printf("Total number of collected samples -> %d\n",rollout->getNSamples(i));
+//		}
+//        
         RBFBasisSet* RBFs = new RBFBasisSet(Discretisation);
         LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs,rollout);
         lspi->PolicyIteration();
