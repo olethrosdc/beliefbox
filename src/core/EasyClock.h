@@ -25,6 +25,4 @@ inline double GetCPU()
     return (double) usage.ru_utime.tv_sec + ((double) usage.ru_utime.tv_usec)/1000000.0;
 }
 
-
-
 #endif

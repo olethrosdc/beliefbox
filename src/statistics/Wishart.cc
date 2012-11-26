@@ -71,7 +71,7 @@ Matrix Wishart::generate() const
 	}
     
 	Matrix X = B*T;
-	return (Transpose(X) * X) / n;
+	return (Transpose(X) * X);
 }
 
 /** the log pdf */
