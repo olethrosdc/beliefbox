@@ -17,12 +17,14 @@
 /// Wishart probability distribution
 class Wishart : public AbstractDistribution<Matrix>
 {
+protected:
+    Matrix Precision; ///< precision matrix
+    Matrix Covariance; ///< covariance matrix
 public:
     int k; ///< dimensionality
     real n; ///< degrees of freedom
-    Matrix V; ///< precision matrix
     Wishart();
-    Wishart(real n_, const Matrix& V_);
+    Wishart(real n_, const Matrix& V, bool is_covariance = false);
     virtual ~Wishart();
 	virtual void generate(Matrix& X) const;
     virtual Matrix generate() const;
@@ -31,6 +33,16 @@ public:
         return exp(log_pdf(X));
     }
     virtual real log_pdf(const Matrix& X) const;
+    void setCovariance(const Matrix& V)
+    {
+        Covariance = V;
+        Precision = V.Inverse();
+    }
+    void setPrecision(const Matrix& V)
+    {
+        Covariance = V.Inverse();
+        Precision = V;
+    }
 };
 
 #endif
