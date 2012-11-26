@@ -64,7 +64,7 @@ public:
     Matrix operator- (const real& rhs);
     Matrix operator/ (const real& rhs);
     /// Matrix inversion (defaults to Cholesky)
-    Matrix Inverse(real epsilon = ACCURACY_LIMIT)
+    Matrix Inverse(real epsilon = ACCURACY_LIMIT) const
     {
 		return Inverse_Cholesky(epsilon);
         //return Inverse_LU(epsilon);
@@ -78,7 +78,7 @@ public:
         \f]
         by dynamic programming.
     */
-    Matrix Inverse_Cholesky(real epsilon = ACCURACY_LIMIT)
+    Matrix Inverse_Cholesky(real epsilon = ACCURACY_LIMIT) const
     {
         Matrix U = Cholesky(epsilon);
         Matrix L(U, false);
