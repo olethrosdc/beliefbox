@@ -43,6 +43,14 @@ public:
         Covariance = V.Inverse();
         Precision = V;
     }
+    void Show()
+    {
+        logmsg("Precision:");
+        Precision.print(stdout);
+
+        logmsg("Covariance:");
+        Covariance.print(stdout);
+    }
 };
 
 #endif

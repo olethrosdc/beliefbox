@@ -175,3 +175,8 @@ void MultivariateNormalUnknownMeanPrecision::Show()
     printf("# Normal-Wishart Predictive Marginal:\n");
     marginal.Show();
 }
+
+Wishart MultivariateNormalUnknownMeanPrecision::getPrecision() const
+{
+    return Wishart(alpha_n, T_n);
+}

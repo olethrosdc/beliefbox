@@ -13,6 +13,7 @@
 #define MULTIVARIATE_NORMAL_UNKNOWN_MEAN_PRECISION_H
 
 #include "Student.h"
+#include "Wishart.h"
 
 /** A multivariate normal distribution with unknown mean and precision.
     
@@ -72,6 +73,7 @@ public:
     virtual const Vector& getMean() const;
     virtual void calculatePosterior(const Vector& x);
     virtual real Observe(const Vector& x);
+    Wishart getPrecision() const;
     void Show();
 };
 
