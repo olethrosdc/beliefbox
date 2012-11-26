@@ -10,8 +10,9 @@
  ***************************************************************************/
 
 #include "Wishart.h"
-#include "Matrix.h"
+#include "ranlib.h"
 #include "SpecialFunctions.h"
+#include "NormalDistribution.h"
 
 Wishart::Wishart()
     : k(1),
@@ -31,24 +32,44 @@ Wishart::Wishart(real n_, const Matrix& V_)
 
 Wishart::~Wishart()
 {
-    Serror("Not implemented\n");
+    
 }
+
 void Wishart::generate(Matrix& X) const
 {
-    Serror("Not implemented\n");    
+    Serror("Not implemented\n");
 }
 
+
+///Smith & Hocking, "Wishart Variate Generator"
 Matrix Wishart::generate() const
 {
-    Serror("Not implemented\n");
-    return Vector(1);
-
-
+	//time_t ltime;
+//	struct tm *today;
+//	time(&ltime);
+//	today = localtime(&ltime);
+//	setall(today->tm_sec, 0.1*today->tm_sec);
+//	
+	NormalDistribution norm;
+	Matrix T = V.Cholesky();
+	Matrix B(k,k);
+	
+	for(int i = 0; i < k; ++i){
+	    real r = (real)genchi((real)(n - i));
+		B(i,i) = sqrt(r);
+	}
+	
+	for(int i = 0; i < k; ++i){
+		for(int j = (i + 1); j < k; ++j){
+			B(i,j) = norm.generate();
+		}
+	}
+    
+	Matrix X = B*T;
+	return (Transpose(X) * X) / n;
 }
 
-/** the log pdf
-
- */
+/** the log pdf */
 real Wishart::log_pdf(const Matrix& X) const
 {
     assert(X.isSymmetric());

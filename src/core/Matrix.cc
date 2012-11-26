@@ -506,6 +506,21 @@ real Matrix::det() const
 
 }
 
+/// 
+real Matrix::tr() const
+{
+	assert(rows == columns);
+	if(rows != columns){
+		throw std::domain_error("Trace cannot be computed for non-square matrices");
+	}
+	real trace = 0.0;
+	for(int i = 0; i<rows; ++i)
+	{
+		trace += (*this)(i,i);
+	}
+	return trace;
+}
+
 bool Matrix::isTriangular() const
 {
     if (rows != columns) {
@@ -698,6 +713,73 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
     return retval;
 }
 
+/// QR decomposition using Householder reflections.
+std::vector<Matrix> Matrix::QRDecomposition() const
+{
+	
+	const int m = rows;
+	const int n = columns;
+	std::vector<Matrix> retval;
+
+	retval.push_back(Matrix(m,n));
+    retval.push_back(Matrix(n,n));
+    Matrix& Q = retval[0];
+    Matrix& R = retval[1];
+	Vector d(n);
+	Matrix  A = (*this);
+	real f;
+	
+	for(int k = 0; k < n; ++k)
+	{
+		real s = 0.0;
+		for(int j = k; j < m; ++j) {
+			s += A(j,k)*A(j,k);
+		}
+		s = sqrt(s);
+		if(s == 0){
+			fprintf(stderr,"\nERROR: Matrix rank is smaller than the number of columns\n");
+			throw std::runtime_error("Could not do QR Decomposition, matrix not positive definite");
+		}
+		d(k) = (A(k,k) > 0) ? (-s) : s;
+		f = sqrt(s*(s + fabs(A(k,k))));
+		A(k,k) = A(k,k) - d(k);
+		for(int j = k; j < m; ++j) {
+			A(j,k) = A(j,k) / f;
+		}
+		for(int i = (k+1); i < n; ++i)
+		{
+			s = 0.0;
+			for(int j = k; j < m; ++j) {
+				s += A(j,k)*A(j,i);
+			}
+			for(int j = k; j < m; ++j) {
+				A(j,i) = A(j,i) - A(j,k)*s;
+			}
+		}
+	}
+	for (int i = 0;	i < n; ++i) {
+		Vector y(m);
+		y(i) = 1.0;
+		for( int j = (n-1); j >= 0; --j)
+		{
+			real s = 0.0;
+			for( int k = j; k < m; ++k) {
+				s += A(k,j)*y(k);
+			}
+			for( int k = j; k < m; ++k) {
+				y(k) = y(k) - A(k,j)*s;
+			}
+		}
+		Q.setColumn(i,y);
+	}
+	for(int i=0; i<n; ++i) {
+		R(i,i) = d(i);
+		for(int j = (i + 1); j<n; ++j) {
+			R(i,j) = A(i,j);
+		}
+	}
+	return retval;
+}	
 
 /** Cholesky decomposition.
     

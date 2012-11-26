@@ -108,10 +108,12 @@ public:
     bool isUpperTriangular() const;
     bool isLowerTriangular() const;
     real det() const;
+	real tr() const;
     real ColumnSum(int c) const;
     real RowSum(int r) const;
     real compute_det_triangular() const;
     real gaussian_elimination_forward(real epsilon = ACCURACY_LIMIT);
+	std::vector<Matrix> QRDecomposition() const;
     std::vector<Matrix> LUDecomposition(real& determinant, real epsilon = ACCURACY_LIMIT);
     Matrix Cholesky(real epsilon = ACCURACY_LIMIT) const;
     void Cholesky(Matrix& chol, real epsilon = ACCURACY_LIMIT) const;
