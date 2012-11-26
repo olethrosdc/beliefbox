@@ -15,19 +15,20 @@
 #include "NormalDistribution.h"
 
 Wishart::Wishart()
-    : k(1),
-      n(1),
-      V(Matrix::Unity(1,1))
+    : Precision(Matrix::Unity(1,1)),
+      Covariance(Matrix::Unity(1,1)),
+      k(1),
+      n(1)
 {
     
 }
 
 Wishart::Wishart(real n_, const Matrix& V, bool is_covariance)
-    : k(V_.Rows()),
-      n(n_),
+    : k(V.Rows()),
+      n(n_)
 {
     assert(V.Rows() == V.Columns());
-    if (is_coveriance) {
+    if (is_covariance) {
         setCovariance(V);
     } else {
         setPrecision(V);
