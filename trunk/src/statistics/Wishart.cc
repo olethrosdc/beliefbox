@@ -22,12 +22,16 @@ Wishart::Wishart()
     
 }
 
-Wishart::Wishart(real n_, const Matrix& V_)
+Wishart::Wishart(real n_, const Matrix& V, bool is_covariance)
     : k(V_.Rows()),
       n(n_),
-      V(V_)
 {
     assert(V.Rows() == V.Columns());
+    if (is_coveriance) {
+        setCovariance(V);
+    } else {
+        setPrecision(V);
+    }
 }
 
 Wishart::~Wishart()
@@ -51,7 +55,7 @@ Matrix Wishart::generate() const
 //	setall(today->tm_sec, 0.1*today->tm_sec);
 //	
 	NormalDistribution norm;
-	Matrix T = V.Cholesky();
+	Matrix T = Covariance.Cholesky();
 	Matrix B(k,k);
 	
 	for(int i = 0; i < k; ++i){
@@ -88,11 +92,11 @@ real Wishart::log_pdf(const Matrix& X) const
     real trace_VX = 0.0;
     for (int i=0; i<k; ++i) {
         for (int j=0; j<k; ++j) {
-            trace_VX += V(i,j) * X(i,j);
+            trace_VX += Precision(i,j) * X(i,j);
         }
     }
 
-    real det_V = V.det();
+    real det_V = Precision.det();
     real det_X = X.det();
 
     real log_p = log_c 

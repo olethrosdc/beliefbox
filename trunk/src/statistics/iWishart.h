@@ -22,7 +22,7 @@ class iWishart : public AbstractDistribution<Matrix>
 public:
 	int k;		///< dimensionality
 	real n;		///< degrees of freedom
-	Matrix V;   ///< precision matrix
+	Matrix V;   ///< covariance matrix
 	iWishart(); 
 	iWishart(real n_, const Matrix& V_);
 	virtual ~iWishart();
