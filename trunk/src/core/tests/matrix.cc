@@ -208,13 +208,23 @@ int main()
     W = Q * Transpose(Q);
     W.print(stdout);
     printf("Cholesky:\n");
-    W.Cholesky().print(stdout);
+	W.Cholesky().print(stdout);
     
     printf("LU:\n");
     real det;
+	W.print(stdout);
     std::vector<Matrix> LU= W.LUDecomposition(det);
     LU[0].print(stdout);
     LU[1].print(stdout);
+	
+	printf("QR:\n");
+	std::vector<Matrix> QR = W.QRDecomposition();
+	printf("\n");
+	QR[0].print(stdout);
+	printf("\n");
+    QR[1].print(stdout);
+	printf("\n");
+	W.print(stdout);
     
     printf("Testing inverse:\n");
     W.print(stdout);
