@@ -162,7 +162,7 @@ int RolloutState::BestHighProbabilityAction(real delta)
 
     policy->setState(start_state);
     int normal_action = policy->SelectAction();
-    int optimistic_action = ArgMax(Q_U);
+    //int optimistic_action = ArgMax(Q_U);
     int pessimistic_action = ArgMax(Q_L);
     real gap = (Q_L(pessimistic_action) - Q_U(normal_action));
 #if 0
