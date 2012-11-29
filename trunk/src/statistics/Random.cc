@@ -73,7 +73,11 @@ real true_random(bool blocking)
 		do {
 			unsigned int i;
 			int items_read = fread(&i, sizeof(unsigned int), 1, rand_device);
-            assert(items_read == 1);
+            //assert(items_read == 1);
+			if (items_read != 1) {
+				Serror("%d items read\n", items_read);
+				exit(-1);
+			}
 			x = ((double) i / (double) std::numeric_limits<int>::max());
 		} while (x>=1.0);
 		fclose (rand_device);
@@ -98,7 +102,10 @@ unsigned long true_random_bits(bool blocking)
 	}
 	if (rand_device) {
         int items_read = fread(&x, sizeof(unsigned long), 1, rand_device);
-        assert(items_read == 1);
+		if (items_read != 1) {
+			Serror("%d items read\n", items_read);
+			exit(-1);
+		}
 		fclose (rand_device);
 		return x;
 	} else if (!warned) {

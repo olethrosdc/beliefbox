@@ -162,8 +162,8 @@ real ContinuousStateContextTreeRL::Node::Observe(const Vector& x_t,
     //printf ("%f %f = %f -> %f\n", P_tree, P_normal, P_local, prior_normal);
 
     //real mean_reward = reward_prior.getMean();
-	real p_reward = reward_prior.Observe(reward);
 #ifdef PREDICT_REWARDS	
+	real p_reward = reward_prior.Observe(reward);
     P_local *= p_reward;
 #endif
     if (P_local < fudge) {
