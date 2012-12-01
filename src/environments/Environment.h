@@ -64,7 +64,7 @@ public:
     ///
     /// The usual of false is that the environment is in a terminal
     /// absorbing state.
-    virtual bool Act(const A action) = 0;
+    virtual bool Act(const A& action) = 0;
     
     /// Return a full MDP model of the environment.  This may not be
     /// possible for some environments.  The MDP is required to be
@@ -73,13 +73,18 @@ public:
     {
         return NULL;
     }
+    virtual const char* Name()
+    {
+        return "Undefined environment name";
+    }
+	// --- The following functions are not supposed to be overwritten.. -- //
     /// returns a (reference to) the current state
     S& getState()
     {
         return state;
     }
 	///  sets the current state
-	void setState(S& s_next)
+	void setState(const S& s_next)
 	{
 		state = s_next;
 	}
@@ -102,10 +107,6 @@ public:
     {
         return n_actions;
     }
-    virtual const char* Name()
-    {
-        return "Undefined environment name";
-    }
     /// Set the overall randomness of the environment
     virtual void setRandomness(real randomness)
     {
@@ -119,6 +120,10 @@ public:
     {
         return state_lower_bound;
     }
+	virtual real getTransitionProbability(const S& state, const A& action, const S& next_state)
+	{
+		return 1.0;
+	}
 };
 
 /// Default type for discrete environments

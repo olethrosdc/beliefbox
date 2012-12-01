@@ -135,23 +135,23 @@ int FixedDiscretePolicy::SelectAction()
     return MultinomialDistribution::generateInt(p[state]);
 }
 
-void FixedDiscretePolicy::Observe (int& previous_state, int& action, real r, int& next_state)
+void FixedDiscretePolicy::Observe (const int& previous_state, const int& action, real r, const int& next_state)
 {
     state = next_state;
 }
 
-void FixedDiscretePolicy::Observe (real r, int& next_state)
+void FixedDiscretePolicy::Observe (real r, const int& next_state)
 {
     state = next_state;
 }
 
 
-void FixedDiscretePolicy::Reset(int& start_state)
+void FixedDiscretePolicy::Reset(const int& start_state)
 {
     state = start_state;
 }
 
-real FixedDiscretePolicy::getActionProbability(int& action) const
+real FixedDiscretePolicy::getActionProbability(const int& action) const
 {
     assert(state >= 0 && state < n_states);
     assert(action >= 0 && action < n_actions);
@@ -159,7 +159,7 @@ real FixedDiscretePolicy::getActionProbability(int& action) const
 }
 
 
-real FixedDiscretePolicy::getActionProbability(int& state, int& action) const
+real FixedDiscretePolicy::getActionProbability(const int& state, const int& action) const
 {
     assert(state >= 0 && state < n_states);
     assert(action >= 0 && action < n_actions);

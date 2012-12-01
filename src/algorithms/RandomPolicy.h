@@ -33,10 +33,10 @@ public:
 	{
 		return rng->discrete_uniform(n_actions);
 	}
-	virtual void Observe (Vector& previous_state, int& action, real r, Vector& next_state) 
+	virtual void Observe (const Vector& previous_state, const int& action, real r, const Vector& next_state) 
 	{
 	}
-    virtual void Observe (real r, Vector& next_state) 
+    virtual void Observe (real r, const Vector& next_state) 
 	{
 	}
 	virtual void Reset() 

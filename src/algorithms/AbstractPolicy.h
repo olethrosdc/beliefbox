@@ -24,10 +24,10 @@ public:
 	StateType state;
 	virtual ~AbstractPolicy(){};
 	virtual ActionType SelectAction() = 0;
-	virtual void Observe (StateType& previous_state, ActionType& action, real r, StateType& next_state) = 0;
-    virtual void Observe (real r, StateType& next_state) = 0;
+	virtual void Observe (const StateType& previous_state, const ActionType& action, real r, const StateType& next_state) = 0;
+    virtual void Observe (real r, const StateType& next_state) = 0;
 	virtual void Reset() = 0;
-	virtual void setState(StateType& state)
+	virtual void setState(const StateType& state)
 	{ 
 		this->state = state;
 	}

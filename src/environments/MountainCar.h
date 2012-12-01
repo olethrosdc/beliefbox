@@ -46,19 +46,19 @@ public:
     virtual bool Act(const int action);
     virtual void Simulate(const int action);
 
-    Vector& StateActionUpperBound()
+    const Vector& StateActionUpperBound()
     {
         return state_action_upper_bound;
     }
-    Vector& StateActionLowerBound()
+    const Vector& StateActionLowerBound()
     {
         return state_action_lower_bound;
     }
-    Vector& ActionUpperBound()
+    const Vector& ActionUpperBound()
     {
         return action_upper_bound;
     }
-    Vector& ActionLowerBound()
+    const Vector& ActionLowerBound()
     {
         return action_lower_bound;
     }
