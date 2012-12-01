@@ -25,7 +25,7 @@ FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension, int n_actions_, RB
 	p.Resize(n_actions);
 }
 
-FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension_, int n_actions_, RBFBasisSet* bfs_, Vector& weights_)
+FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension_, int n_actions_, RBFBasisSet* bfs_, const Vector& weights_)
 	: ContinuousPolicy(n_dimension_, n_actions_, bfs_, weights_) 
 {
 	p.Resize(n_actions);
@@ -42,38 +42,38 @@ int FixedContinuousPolicy::SelectAction()
     return  MultinomialDistribution::generateInt(p);
 }
 
-int FixedContinuousPolicy::SelectAction(Vector next_state)
+int FixedContinuousPolicy::SelectAction(const Vector& next_state)
 {
 	state = next_state;	
 	StatePolicy();
 	return  MultinomialDistribution::generateInt(p);
 }
 
-void FixedContinuousPolicy::Observe(Vector& previous_state, int& action, real r, Vector& next_state)
+void FixedContinuousPolicy::Observe(const Vector& previous_state, const int& action, real r, const Vector& next_state)
 {
     state = next_state;
 	StatePolicy();
 }
 
-void FixedContinuousPolicy::Observe(real r, Vector& next_state)
+void FixedContinuousPolicy::Observe(real r, const Vector& next_state)
 {
     state = next_state;
 	StatePolicy();
 }
 
-void FixedContinuousPolicy::Reset(const Vector start_state)
+void FixedContinuousPolicy::Reset(const Vector& start_state)
 {
     state = start_state;
 	StatePolicy();
 }
 
-real FixedContinuousPolicy::getActionProbability(int& action) const
+real FixedContinuousPolicy::getActionProbability(const int& action) const
 {
 	assert(action >= 0 && action < n_actions);
 	return p[action];
 }
 
-real FixedContinuousPolicy::getActionProbability(Vector start_state, int& action) 
+real FixedContinuousPolicy::getActionProbability(const Vector& start_state, const int& action) 
 {
 	assert(action >= 0 && action < n_actions);
 	state = start_state;

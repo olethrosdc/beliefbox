@@ -41,6 +41,7 @@ public:
         trajectories.push_back(Trajectory<S, A>());
         current_trajectory = &trajectories[trajectories.size() - 1];
     }
+	/// Use a negative horizon to use a geometric stopping distribution
 	void Simulate(Environment<S, A>& environment, AbstractPolicy<S, A>& policy, real gamma, int horizon)
 	{
 		environment.Reset();
@@ -56,7 +57,9 @@ public:
 			real reward = environment->getReward();
 			total_reward += reward;
 			discounted_reward += discount * reward;
-			discount *= gamma;
+			if (horizon >= 0) {
+				discount *= gamma;
+			}
             A action = policy.Act(reward, state);
 			Observe(state, action);
 			running = environment->Act(action);
