@@ -62,7 +62,7 @@ public:
     virtual void Reset();
 
     /// returns true if the action succeeds
-    virtual bool Act(int action);
+    virtual bool Act(const int& action);
 
     /// Remove periods from MDP
     void AperiodicityTransform(real tau) 
