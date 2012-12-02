@@ -13,9 +13,11 @@
 #define REPRESENTATIVE_STATE_MODEL_H
 
 #include "MDP.h"
+#include "DiscreteMDP.h"
+#include "ValueIteration.h"
 
 template <class Model, class S, class A>
-class RepresentativeStateModel : class MDP<S, A>
+class RepresentativeStateModel : public MDP<S, A>
 {
 protected:
     Model model;
@@ -61,7 +63,7 @@ public:
 				}
 				p /= p.Sum();
 				for (uint j=0; j<states.size(); ++j) {
-					setTransitionProbability(i, a, j, p(j));
+					mdp->setTransitionProbability(i, a, j, p(j));
 				}
 			}
 		}
@@ -75,7 +77,7 @@ public:
 	{
 		Vector p(states.size());
 		for (uint j=0; j<states.size(); ++j) {
-			p(j) = model.getTransitionProbability(i, a, j);
+			p(j) = model.getTransitionProbability(state, action, j);
 		}
 		p /= p.Sum();
 		return p * V;

@@ -53,16 +53,17 @@ public:
 		real discounted_reward = 0.0;
 		int t = 0;
 		do {
-			S state = environment->getState();
-			real reward = environment->getReward();
+			S state = environment.getState();
+			real reward = environment.getReward();
 			total_reward += reward;
 			discounted_reward += discount * reward;
 			if (horizon >= 0) {
 				discount *= gamma;
 			}
-            A action = policy.Act(reward, state);
+			policy.Observe(reward, state);
+            A action = policy.SelectAction();
 			Observe(state, action);
-			running = environment->Act(action);
+			running = environment.Act(action);
 			if (horizon >= 0 && t >= horizon) {
 				running = false;
 			} else if (horizon < 0) {
