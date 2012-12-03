@@ -74,11 +74,14 @@ public:
 	
 		for (int i=0; i<n_states; ++i) {
 			for (uint a=0; a<n_actions; ++a) {
+                real r_ia = model.getExpectedReward(i, a);
+                mdp->setFixedReward(i, a, r_ia);
 				Vector p(n_states);
 				for (int j=0; j<n_states; ++j) {
 					p(j) = model.getTransitionProbability(i, a, j);
 				}
 				p /= p.Sum();
+                printf ("# %d %d (%f %f) ", i, a, r_ia,  mdp->getExpectedReward(i, a)); p.print(stdout);
 				for (int j=0; j<n_states; ++j) {
 					mdp->setTransitionProbability(i, a, j, p(j));
 				}
@@ -91,6 +94,7 @@ public:
 		ValueIteration value_iteration(mdp, gamma);
 		value_iteration.ComputeStateValues(threshold, max_iter);
 		V = value_iteration.V;
+        V.print(stdout);
 	}
 
 	real getValue(const S& state, const A& action)

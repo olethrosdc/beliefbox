@@ -71,10 +71,15 @@ public:
     }
     virtual real getTransitionProbability(const int& state,
                                           const int& action,
-                                          const int& next_state)
+                                          const int& next_state) const
     {
         return mdp->getTransitionProbability(state, action, next_state);
     }
+    virtual real getExpectedReward(const int& state, const int& action) const
+    {
+        return mdp->getExpectedReward(state, action);
+    }
+
 
 protected:
     DiscreteMDP* mdp;

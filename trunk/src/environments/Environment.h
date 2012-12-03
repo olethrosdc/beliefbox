@@ -124,6 +124,11 @@ public:
 	{
 		return 1.0;
 	}
+    virtual real getExpectedReward(const S& state, const A& action) const
+	{
+		return 0.123456789;
+	}
+
 };
 
 /// Default type for discrete environments
