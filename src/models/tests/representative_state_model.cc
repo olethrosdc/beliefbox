@@ -40,26 +40,32 @@
 #include "RandomMDP.h"
 #include "ValueIteration.h"
 #include "MersenneTwister.h"
+#include "DiscreteChain.h"
 
 real TestRandomMDP(int n_states, int n_samples);
-
+real TestChainMDP(int n_states, int n_samples);
 
 int main(int argc, char** argv)
 {
-
-    real discrete_mdp_error = TestRandomMDP(4, 4);
+    
+    logmsg("Random MDP\n");
+    real random_mdp_error = TestRandomMDP(4, 4);
+    printf("\n\n");
+    logmsg("Chain MDP\n");
+    real chain_mdp_error = TestChainMDP(5, 5);
+    logmsg("Done\n");
     return 0;
 }
 
 real TestRandomMDP(int n_states, int n_samples)
 {
-	uint n_actions = 4;
+	uint n_actions = 2;
 	real randomness = 0.01;
 	real step_value = -0.1;
-	real pit_value = -10;
+	real pit_value = -1;
 	real goal_value = 1.0;
-	real discount_factor = 0.99;
-    real accuracy = 1e-6;
+	real discount_factor = 0.9;
+    real accuracy = 1e-12;
 	MersenneTwisterRNG rng;
     RandomMDP random_mdp(n_actions,
                          n_states,
@@ -85,11 +91,12 @@ real TestRandomMDP(int n_states, int n_samples)
         total_error += abs(V - V_approx);
     }
 
+    logmsg("state-action values\n");
     for (int i=0; i<n_states; ++i) {
         for (int a=0; a<n_actions; ++a) {
             real V = VI.getValue(i, a);
             real V_approx = representative_model.getValue(i, a);
-            printf ("%f %f %f\n", V, V_approx, mdp->getExpectedReward(i, a));
+            printf ("%d %d %f %f %f\n", i, a, V, V_approx, mdp->getExpectedReward(i, a));
         }
     }
 
@@ -98,5 +105,51 @@ real TestRandomMDP(int n_states, int n_samples)
     return total_error;
 }
 
+
+
+real TestChainMDP(int n_states, int n_samples)
+{
+	real discount_factor = 0.9;
+    real accuracy = 1e-12;
+	MersenneTwisterRNG rng;
+
+    logmsg("Creating chain\n");
+    DiscreteChain chain(n_states);
+    DiscreteEnvironment& environment = chain;
+
+    logmsg("Building model\n");
+    DiscreteMDP* mdp = chain.getMDP();
+    logmsg("Creating Representative States\n");
+    RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(environment, n_samples, environment.getNActions());
+    
+    logmsg("Value iteration\n"); fflush(stdout);
+    ValueIteration VI(mdp, discount_factor);
+    VI.ComputeStateValues(accuracy);
+
+    logmsg("Approximate VI\n");
+    representative_model.ComputeStateValues(discount_factor, accuracy);
+
+    real total_error = 0;
+    logmsg("state values\n");
+    for (int i=0; i<n_states; ++i) {
+        real V = VI.getValue(i);
+        real V_approx = representative_model.getValue(i);
+        printf ("%f %f\n", V, V_approx);
+        total_error += abs(V - V_approx);
+    }
+
+    logmsg("state-action values\n");
+    for (int i=0; i<n_states; ++i) {
+        for (int a=0; a<environment.getNActions(); ++a) {
+            real V = VI.getValue(i, a);
+            real V_approx = representative_model.getValue(i, a);
+            printf ("%d %d %f %f %f\n", i, a, V, V_approx, mdp->getExpectedReward(i, a));
+        }
+    }
+
+
+    delete mdp;
+    return total_error;
+}
 
 #endif

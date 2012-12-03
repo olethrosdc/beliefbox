@@ -48,8 +48,10 @@ public:
         assert(n_actions > 0);
         S lower_bound = model.StateLowerBound();
         S upper_bound = model.StateUpperBound();
+        logmsg("[%d %d]\n", lower_bound, upper_bound);
         for (uint i=0; i<n_states; ++i) {
-            S state = urandom(lower_bound, upper_bound);
+            S state = i % n_states; //urandom(lower_bound, upper_bound);
+            logmsg("%d -> %d\n", state, i);
             states.push_back(state);
         }
         BuildMDP();
@@ -74,19 +76,31 @@ public:
 	
 		for (int i=0; i<n_states; ++i) {
 			for (uint a=0; a<n_actions; ++a) {
-                real r_ia = model.getExpectedReward(i, a);
+                // Set rewards
+                real r_ia = model.getExpectedReward(states[i], a);
                 mdp->setFixedReward(i, a, r_ia);
+
+                // Set transition probabilities
 				Vector p(n_states);
 				for (int j=0; j<n_states; ++j) {
-					p(j) = model.getTransitionProbability(i, a, j);
+					p(j) = model.getTransitionProbability(states[i], a, states[j]);
 				}
-				p /= p.Sum();
-                printf ("# %d %d (%f %f) ", i, a, r_ia,  mdp->getExpectedReward(i, a)); p.print(stdout);
+                logmsg ("s:%d a:%d r:(%f %f) ", i, a, r_ia,  model.getExpectedReward(states[i], a)); p.print(stdout);
+                real sum = p.Sum();
+				if (sum > 0) {
+                    p /= sum;
+                } else {
+                    Swarning("OUCH\n");
+                    p += 1.0;
+                    p /= p.Sum();
+                }
+
 				for (int j=0; j<n_states; ++j) {
 					mdp->setTransitionProbability(i, a, j, p(j));
 				}
 			}
 		}
+        mdp->Check();
     }
 
 	void ComputeStateValues(real gamma, real threshold, int max_iter = -1)
@@ -94,16 +108,18 @@ public:
 		ValueIteration value_iteration(mdp, gamma);
 		value_iteration.ComputeStateValues(threshold, max_iter);
 		V = value_iteration.V;
-        V.print(stdout);
+        logmsg("AV: "); V.print(stdout);
 	}
 
 	real getValue(const S& state, const A& action)
 	{
 		Vector p((int) states.size());
 		for (uint j=0; j<states.size(); ++j) {
-			p(j) = model.getTransitionProbability(state, action, j);
+			p(j) = model.getTransitionProbability(state, action, states[j]);
 		}
 		p /= p.Sum();
+        logmsg("V!: "); V.print(stdout);
+
 		return Product(p, V);
 	}
 

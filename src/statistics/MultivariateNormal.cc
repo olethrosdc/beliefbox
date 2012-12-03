@@ -53,7 +53,7 @@ Vector MultivariateNormal::generate() const
         v(i) = normal.generate();
     }
     const Matrix& Ar = A;
-    return Ar * v;
+    return mean + Ar * v;
 }
 
 

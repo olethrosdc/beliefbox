@@ -78,7 +78,7 @@ int ModelCollectionRL::Act(real reward, int next_state)
     // choose action
     int next_action;
     if (urandom()<epsilon) {
-        next_action = (int) floor(urandom(0.0, n_actions));
+        next_action = (int) floor(urandom(0.0, (real) n_actions));
         //printf ("\n");
     } else {
         next_action = ArgMax(tmpQ);

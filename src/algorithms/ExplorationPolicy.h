@@ -73,7 +73,7 @@ public:
             beta += alpha;
         }
         if (urandom() < threshold) {
-            int action =  (int) floor(urandom(0.0, Q.Size()));
+            int action =  (int) floor(urandom(0.0, (real) Q.Size()));
             return action;
         }
 
@@ -165,7 +165,7 @@ public:
             beta += alpha;
         }
         if (urandom() < threshold) {
-            int action =  (int) floor(urandom(0.0, n_actions));
+            int action =  (int) floor(urandom(0.0, (real) n_actions));
             //printf("returning random action %d\n", action);
             return action;
         }

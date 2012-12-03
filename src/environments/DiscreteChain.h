@@ -49,7 +49,7 @@ public:
     virtual ~DiscreteChain();
     
     virtual void Reset();
-    virtual bool Act(int action);
+    virtual bool Act(const int& action);
 
     virtual const char* Name()
     {
@@ -57,6 +57,20 @@ public:
     }
 
     virtual DiscreteMDP* getMDP() const;
+
+    virtual real getTransitionProbability(const int& state,
+                                          const int& action,
+                                          const int& next_state) const
+    {
+        return mdp->getTransitionProbability(state, action, next_state);
+    }
+
+    virtual real getExpectedReward(const int& state, const int& action) const
+    {
+        return mdp->getExpectedReward(state, action);
+    }
+
+
 };
 
 #endif

@@ -6,27 +6,32 @@ DiscreteChain::DiscreteChain(int n, real slip_, real start_, real end_)
 	  end(end_)
 {
     logmsg ("Dscrete chain, slip: %f, r_s: %f, r_e: %f\n", slip, start, end);
+    mdp = getMDP();
     Reset();
+
 }
     
 DiscreteChain::~DiscreteChain()
 {
+    delete mdp;
 }
 
 void DiscreteChain::Reset()
 {
     state = 0;
     reward = 0;
+    mdp->Reset(0);
 }
 
-bool DiscreteChain::Act(int action)
+bool DiscreteChain::Act(const int& action)
 {
+    int action_taken = action;
 	int forward = action;
 	if (urandom() < slip) {
 		forward = 1 - forward;
 	}
-	action = forward;
-	switch(action) {
+	action_taken = forward;
+	switch(action_taken) {
 	case 0:
 		reward = start;
 		break;
