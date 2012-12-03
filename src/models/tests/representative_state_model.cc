@@ -47,10 +47,7 @@ real TestRandomMDP(int n_states, int n_samples);
 int main(int argc, char** argv)
 {
 
-    real discrete_mdp_error = TestRandomMDP(128, 32);
-    if (discrete_mdp_error > 128) {
-        
-    }
+    real discrete_mdp_error = TestRandomMDP(4, 4);
     return 0;
 }
 
@@ -76,7 +73,8 @@ real TestRandomMDP(int n_states, int n_samples)
     DiscreteMDP* mdp = random_mdp.getMDP();
     RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(environment, n_samples, n_actions);
     
-    ValueIteration VI(mdp, discount_factor, accuracy);
+    ValueIteration VI(mdp, discount_factor);
+    VI.ComputeStateValues(accuracy);
     representative_model.ComputeStateValues(discount_factor, accuracy);
 
     real total_error = 0;
@@ -86,6 +84,15 @@ real TestRandomMDP(int n_states, int n_samples)
         printf ("%f %f\n", V, V_approx);
         total_error += abs(V - V_approx);
     }
+
+    for (int i=0; i<n_states; ++i) {
+        for (int a=0; a<n_actions; ++a) {
+            real V = VI.getValue(i, a);
+            real V_approx = representative_model.getValue(i, a);
+            printf ("%f %f %f\n", V, V_approx, mdp->getExpectedReward(i, a));
+        }
+    }
+
 
     delete mdp;
     return total_error;
