@@ -95,24 +95,24 @@ public:
     }
     virtual void ShowModel() const;
     virtual void dotModel(FILE* fout) const;
-    real generateReward (int s, int a) const;
-    int generateState (int s, int a) const;
-    inline real getRewardProbability (int s, int a, real r) const
+    real generateReward (const int& s, const int& a) const;
+    int generateState (const int& s, const int& a) const;
+    virtual real getRewardProbability (const int& s, const int& a, real r) const
     {
         return reward_distribution.pdf(s, a, r);
     }
 
-    inline real getTransitionProbability (int s, int a, int s2) const
+    virtual real getTransitionProbability (const int& s, const int& a, const int& s2) const
     {
         int ID = getID (s, a);                
         assert (s2>=0 && s2<n_states);
         return P(ID, s2);
     }
-    inline real getExpectedReward (int s, int a) const
+    virtual real getExpectedReward (const int& s, const int& a) const
     {
         return reward_distribution.expected(s,a);
     }
-    inline void setTransitionProbability(int s, int a, int s2, real p)
+    virtual void setTransitionProbability(int s, int a, int s2, real p)
     {
         assert(s>=0 && s<n_states);
         int ID = getID (s, a);
@@ -125,7 +125,7 @@ public:
             next.insert(s2);
         }
     }
-    inline void setTransitionProbabilities(int s, int a, const Vector& p)
+    virtual void setTransitionProbabilities(int s, int a, const Vector& p)
     {
         assert(s>=0 && s<n_states);
         int ID = getID (s, a);
@@ -140,7 +140,7 @@ public:
             }
         }
     }
-    inline const DiscreteStateSet& getNextStates(int s, int a) const
+    virtual const DiscreteStateSet& getNextStates(int s, int a) const
     {
         int ID = getID (s,a);
         return next_states[ID];
@@ -149,27 +149,27 @@ public:
     void AperiodicityTransform(real tau);
     bool Check() const;
     real CalculateDiameter() const;
-	inline void setRewardDistribution(int s, int a, Distribution* reward)
+	virtual void setRewardDistribution(int s, int a, Distribution* reward)
 	{
         assert(s>=0 && s<n_states);
 		reward_distribution.setRewardDistribution(s, a, reward);
 	}
-	inline void addRewardDistribution(int s, int a, Distribution* reward)
+	virtual void addRewardDistribution(int s, int a, Distribution* reward)
 	{
         assert(s>=0 && s<n_states);
 		reward_distribution.addRewardDistribution(s, a, reward);
 	}
-	inline void addFixedReward(int s, int a, real reward)
+	virtual void addFixedReward(int s, int a, real reward)
 	{
         assert(s>=0 && s<n_states);
 		reward_distribution.addFixedReward(s, a, reward);
 	}
-	inline void setFixedReward(int s, int a, real reward)
+	virtual void setFixedReward(int s, int a, real reward)
 	{
         assert(s>=0 && s<n_states);
 		reward_distribution.setFixedReward(s, a, reward);
 	}
-	inline void setFixedRewards(const Matrix& R)
+	virtual void setFixedRewards(const Matrix& R)
 	{
         assert(R.Rows() == n_states);
         assert(R.Columns() == n_actions);

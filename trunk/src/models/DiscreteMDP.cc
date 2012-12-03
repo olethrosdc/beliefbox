@@ -222,12 +222,12 @@ void DiscreteMDP::dotModel(FILE* fout) const
 
 
 
-real DiscreteMDP::generateReward (int s, int a) const
+real DiscreteMDP::generateReward (const int& s, const int& a) const
 {
     return reward_distribution.generate(s, a);
 }
 
-int DiscreteMDP::generateState (int s, int a) const
+int DiscreteMDP::generateState (const int& s, const int& a) const
 {
     int ID = getID (s,a);
     real sum = 0.0f;

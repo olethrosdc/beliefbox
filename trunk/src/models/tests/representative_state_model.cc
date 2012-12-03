@@ -40,33 +40,55 @@
 #include "RandomMDP.h"
 #include "ValueIteration.h"
 #include "MersenneTwister.h"
+
+real TestRandomMDP(int n_states, int n_samples);
+
+
 int main(int argc, char** argv)
 {
-	
+
+    real discrete_mdp_error = TestRandomMDP(128, 32);
+    if (discrete_mdp_error > 128) {
+        
+    }
+    return 0;
+}
+
+real TestRandomMDP(int n_states, int n_samples)
+{
 	uint n_actions = 4;
-	uint n_states = 128;
 	real randomness = 0.01;
 	real step_value = -0.1;
 	real pit_value = -10;
 	real goal_value = 1.0;
 	real discount_factor = 0.99;
+    real accuracy = 1e-6;
 	MersenneTwisterRNG rng;
-	RandomMDP random_mdp(n_actions,
-						 n_states,
-						 randomness,
-						 step_value,
-						 pit_value,
-						 goal_value,
-						 &rng);
+    RandomMDP random_mdp(n_actions,
+                         n_states,
+                         randomness,
+                         step_value,
+                         pit_value,
+                         goal_value,
+                         &rng);
+    
+    DiscreteEnvironment& environment = random_mdp;
+    DiscreteMDP* mdp = random_mdp.getMDP();
+    RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(environment, n_samples, n_actions);
+    
+    ValueIteration VI(mdp, discount_factor, accuracy);
+    representative_model.ComputeStateValues(discount_factor, accuracy);
 
-	DiscreteEnvironment& environment = random_mdp;
-	Demonstrations<int, int> demonstrations;
-	FixedDiscretePolicy policy(n_states, n_actions);
-	demonstrations.Simulate(environment,
-							policy,
-							discount_factor,
-							-1);
-	
+    real total_error = 0;
+    for (int i=0; i<n_states; ++i) {
+        real V = VI.getValue(i);
+        real V_approx = representative_model.getValue(i);
+        printf ("%f %f\n", V, V_approx);
+        total_error += abs(V - V_approx);
+    }
+
+    delete mdp;
+    return total_error;
 }
 
 

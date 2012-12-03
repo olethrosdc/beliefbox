@@ -42,27 +42,27 @@ public:
     virtual void Reset();
     virtual bool Act(int action);
     virtual void Simulate(int action);
-    Vector& StateUpperBound()
+    const Vector& StateUpperBound() const
     {
         return state_upper_bound;
     }
-    Vector& StateLowerBound()
+    const Vector& StateLowerBound() const
     {
         return state_lower_bound;
     }
-    Vector& StateActionUpperBound()
+    const Vector& StateActionUpperBound() const
     {
         return state_action_upper_bound;
     }
-    Vector& StateActionLowerBound()
+    const Vector& StateActionLowerBound() const
     {
         return state_action_lower_bound;
     }
-    Vector& ActionUpperBound()
+    const Vector& ActionUpperBound() const
     {
         return action_upper_bound;
     }
-    Vector& ActionLowerBound()
+    const Vector& ActionLowerBound() const
     {
         return action_lower_bound;
     }
