@@ -69,6 +69,13 @@ public:
     {
         mdp->AperiodicityTransform(tau);
     }
+    virtual real getTransitionProbability(const int& state,
+                                          const int& action,
+                                          const int& next_state)
+    {
+        return mdp->getTransitionProbability(state, action, next_state);
+    }
+
 protected:
     DiscreteMDP* mdp;
 };

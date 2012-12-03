@@ -44,36 +44,43 @@ public:
 	{
 		return state;
 	}
-    real getTransitionProbability (StateType& s, ActionType& a, StateType& s2) const
+    virtual real getTransitionProbability (const StateType& s,
+                                           const ActionType& a,
+                                           const StateType& s2) const
     {
         return transition_distribution.pdf(s, a, s2);
     }
-    real getRewardProbability (StateType& s, ActionType& a, real r) const
+    virtual real getRewardProbability (const StateType& s,
+                                       const ActionType& a, 
+                                       real r) const
     {
         return reward_distribution.pdf(s, a, r);
     }
 
-    real getExpectedReward (StateType& s, ActionType& a) const
+    virtual real getExpectedReward (const StateType& s,
+                                    const ActionType& a) const
     {
         return reward_distribution.expected(s, a);
     }
 	
-    StateType generateState(StateType& s, ActionType& a) const
+    virtual StateType generateState(const StateType& s,
+                            const ActionType& a) const
     {
         return transition_distribution.generate(s, a);
     }
-    real generateReward(StateType& s, ActionType& a) const
+    virtual real generateReward(const StateType& s,
+                                const ActionType& a) const
     {
         return reward_distribution.generate(s, a);
     }
     // generate a new state given the current state and action, then set the current state to be the new state.
-    real Act (ActionType& a)
+    virtual real Act (ActionType& a)
     {
         real r = generateReward(state, a);
         state = generateState(state, a);
         return r;
     }
-    StateType generateState(ActionType& a)
+    virtual StateType generateState(const ActionType& a)
     {
         return generateState(state, a);
     }

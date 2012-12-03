@@ -73,13 +73,13 @@ public:
     {
         return NULL;
     }
-    virtual const char* Name()
+    virtual const char* Name() const
     {
         return "Undefined environment name";
     }
 	// --- The following functions are not supposed to be overwritten.. -- //
     /// returns a (reference to) the current state
-    S& getState()
+    const S& getState() const
     {
         return state;
     }
@@ -89,21 +89,21 @@ public:
 		state = s_next;
 	}
     /// returns the current reward
-    real getReward()
+    real getReward() const
     {
         return reward;
     }
 	/// indicates if the current state is absorbing or not
-	bool getEndsim()
+	bool getEndsim() const
 	{
 		return endsim;
 	}
     /// returns the number of state dimensions
-    uint getNStates()
+    uint getNStates() const
     {
         return n_states;
     }
-    uint getNActions()
+    uint getNActions() const
     {
         return n_actions;
     }
@@ -112,15 +112,15 @@ public:
     {
         
     }
-    const S& StateUpperBound()
+    const S& StateUpperBound() const
     {
         return state_upper_bound;
     }
-    const S& StateLowerBound()
+    const S& StateLowerBound() const
     {
         return state_lower_bound;
     }
-	virtual real getTransitionProbability(const S& state, const A& action, const S& next_state)
+	virtual real getTransitionProbability(const S& state, const A& action, const S& next_state) const
 	{
 		return 1.0;
 	}

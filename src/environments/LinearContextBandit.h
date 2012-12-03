@@ -39,11 +39,11 @@ public:
 						RandomNumberGenerator* rng_);
     virtual ~LinearContextBandit();
     void GenerateContext();
-    Vector& StateUpperBound()
+    const Vector& StateUpperBound() const
     {
         return U_x;
     }
-    Vector& StateLowerBound()
+    const Vector& StateLowerBound() const
     {
         return L_x;
     }
