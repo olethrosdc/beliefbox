@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 {
     
     logmsg("Random MDP\n");
-    real random_mdp_error = TestRandomMDP(4, 4);
+    real random_mdp_error = TestRandomMDP(256, 16);
     printf("\n\n");
     logmsg("Chain MDP\n");
     real chain_mdp_error = TestChainMDP(5, 5);
@@ -77,11 +77,11 @@ real TestRandomMDP(int n_states, int n_samples)
     
     DiscreteEnvironment& environment = random_mdp;
     DiscreteMDP* mdp = random_mdp.getMDP();
-    RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(environment, n_samples, n_actions);
+    RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(discount_factor, environment, n_samples, n_actions);
     
     ValueIteration VI(mdp, discount_factor);
     VI.ComputeStateValues(accuracy);
-    representative_model.ComputeStateValues(discount_factor, accuracy);
+    representative_model.ComputeStateValues(accuracy);
 
     real total_error = 0;
     for (int i=0; i<n_states; ++i) {
@@ -109,7 +109,7 @@ real TestRandomMDP(int n_states, int n_samples)
 
 real TestChainMDP(int n_states, int n_samples)
 {
-	real discount_factor = 0.9;
+	real discount_factor = 0.95;
     real accuracy = 1e-12;
 	MersenneTwisterRNG rng;
 
@@ -120,14 +120,14 @@ real TestChainMDP(int n_states, int n_samples)
     logmsg("Building model\n");
     DiscreteMDP* mdp = chain.getMDP();
     logmsg("Creating Representative States\n");
-    RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(environment, n_samples, environment.getNActions());
+    RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(discount_factor, environment, n_samples, environment.getNActions());
     
     logmsg("Value iteration\n"); fflush(stdout);
     ValueIteration VI(mdp, discount_factor);
     VI.ComputeStateValues(accuracy);
 
     logmsg("Approximate VI\n");
-    representative_model.ComputeStateValues(discount_factor, accuracy);
+    representative_model.ComputeStateValues(accuracy);
 
     real total_error = 0;
     logmsg("state values\n");
