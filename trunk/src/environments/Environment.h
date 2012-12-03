@@ -48,7 +48,7 @@ public:
   : n_states(n_states_), n_actions(n_actions_)
     {
         state_lower_bound = 0;
-        state_upper_bound = n_states - 1;
+        state_upper_bound = n_states;
         reward = 0.0;
 		endsim = false;
     }

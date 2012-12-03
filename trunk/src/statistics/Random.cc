@@ -49,6 +49,12 @@ real urandom(real min, real max)
     return min + ((max-min)*urandom());
 }
 
+int urandom(int min, int max)
+{
+    return floor(min + ((max-min)*urandom()));
+}
+
+
 Vector urandom(const Vector& min, const Vector& max)
 {
 	assert(min.Size() == max.Size());
