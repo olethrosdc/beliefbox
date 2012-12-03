@@ -22,6 +22,7 @@ template <class Model, class S, class A>
 class RepresentativeStateModel
 {
 protected:
+    real gamma;
     const Model& model;
     std::vector<S> states;
 	uint n_actions;
@@ -29,7 +30,8 @@ protected:
 	DiscreteMDP* mdp;
 public:
     /// Build a model from a set of representative states
-    RepresentativeStateModel(const Model& model_, const std::vector<S>& states_, uint n_actions_) :
+    RepresentativeStateModel(real gamma_, const Model& model_, const std::vector<S>& states_, uint n_actions_) :
+        gamma(gamma_),
         model(model_),
         states(states_),
 		n_actions(n_actions_),
@@ -39,9 +41,11 @@ public:
         BuildMDP();
     }
     /// Build a model from n_states representative states
-    RepresentativeStateModel(const Model& model_,
+    RepresentativeStateModel(real gamma_,
+                             const Model& model_,
                              uint n_states,
                              uint n_actions_) :
+        gamma(gamma_),
         model(model_),
 		n_actions(n_actions_)
     {
@@ -50,7 +54,7 @@ public:
         S upper_bound = model.StateUpperBound();
         logmsg("[%d %d]\n", lower_bound, upper_bound);
         for (uint i=0; i<n_states; ++i) {
-            S state = i % n_states; //urandom(lower_bound, upper_bound);
+            S state = urandom(lower_bound, upper_bound);
             logmsg("%d -> %d\n", state, i);
             states.push_back(state);
         }
@@ -103,7 +107,7 @@ public:
         mdp->Check();
     }
 
-	void ComputeStateValues(real gamma, real threshold, int max_iter = -1)
+	void ComputeStateValues(real threshold, int max_iter = -1)
     {
 		ValueIteration value_iteration(mdp, gamma);
 		value_iteration.ComputeStateValues(threshold, max_iter);
@@ -118,9 +122,9 @@ public:
 			p(j) = model.getTransitionProbability(state, action, states[j]);
 		}
 		p /= p.Sum();
-        logmsg("V!: "); V.print(stdout);
-
-		return Product(p, V);
+        real r = model.getExpectedReward(state, action);
+        real U = Product(p, V);
+		return  r + gamma * U;
 	}
 
     
