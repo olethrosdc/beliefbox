@@ -43,33 +43,30 @@ int main(int argc, char* argv[])
 		Y[i].Resize(n_dimensions_y);
 		for(int j = 0; j < n_dimensions_y; ++j) {
 			real ZX  = distribution_x->generate();
-//			X[i][j] = ZX;
 			X[i][j] = urandom(2.0,7.0);
 			Y[i][j] = 2.0*X[i][j] + ZX;
 		}
-	//	for(int j = 0; j < n_dimensions_y; ++j) {
-//			real ZY  = distribution_y->generate();
-//			Y[i][j] = ZY;
-//		}
 		X[i][n_dimensions_y] = 1.0;
 	}
 
-	X[0].print(stdout);
-	Y[0].print(stdout);
-	Matrix h = OuterProduct(Y[0],X[0]);
-	h.print(stdout);
 	for( int i = 0; i < n_points; ++i) {
 		bmr.AddElement(Y[i],X[i]);
 	}
 	
 	const Matrix W = bmr.generate();
 	W.print(stdout);
-//	printf("Input\n");
-//	X[10].print(stdout);
-//	Vector y = W*X[10];
-//	y.print(stdout);
-//	printf("Output\n");
-//	Y[10].print(stdout);
+	
+	std::vector<Vector> R(n_points); 
+	for(int i = 0; i < n_points; ++i){
+		R[i] = W * X[i];
+		printf("Input\n");
+		X[i].print(stdout);
+		printf("Output\n");
+		Y[i].print(stdout);
+		printf("Prediction\n");
+		R[i].print(stdout);
+	}
+	
 }
 
 #endif
