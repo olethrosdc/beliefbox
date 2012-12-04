@@ -18,7 +18,7 @@
 #include "Vector.h"
 #include "Random.h"
 #include <vector>
-
+#include <memory>
 
 int main(int argc, char* argv[])
 {
@@ -53,18 +53,32 @@ int main(int argc, char* argv[])
 		bmr.AddElement(Y[i],X[i]);
 	}
 	
-	const Matrix W = bmr.generate();
-	W.print(stdout);
+	const Matrix W1 = bmr.generate();
+	W1.print(stdout);
+
+	const Matrix W2 = bmr.generate();
+	W2.print(stdout);
+
+	const Matrix W3 = bmr.generate();
+	W3.print(stdout);
 	
-	std::vector<Vector> R(n_points); 
+	std::vector<Vector> R1(n_points); 
+	std::vector<Vector> R2(n_points); 
+	std::vector<Vector> R3(n_points); 
 	for(int i = 0; i < n_points; ++i){
-		R[i] = W * X[i];
-		printf("Input\n");
+		R1[i] = W1 * X[i];
+		R2[i] = W2 * X[i];
+		R3[i] = W3 * X[i];
+		printf("Input|");
 		X[i].print(stdout);
-		printf("Output\n");
+		printf("Output|");
 		Y[i].print(stdout);
-		printf("Prediction\n");
-		R[i].print(stdout);
+		printf("Prediction1|");
+		R1[i].print(stdout);
+		printf("Prediction2|");
+		R2[i].print(stdout);
+		printf("Prediction3|");
+		R3[i].print(stdout);
 	}
 }
 
