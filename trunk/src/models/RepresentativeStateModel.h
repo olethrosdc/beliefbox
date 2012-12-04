@@ -54,7 +54,8 @@ public:
         S upper_bound = model.StateUpperBound();
         logmsg("[%d %d]\n", lower_bound, upper_bound);
         for (uint i=0; i<n_states; ++i) {
-            S state = urandom(lower_bound, upper_bound);
+            S state = i % n_states; //urandom(lower_bound, upper_bound);
+            //S state = urandom(lower_bound, upper_bound);
             logmsg("%d -> %d\n", state, i);
             states.push_back(state);
         }
@@ -89,12 +90,12 @@ public:
 				for (int j=0; j<n_states; ++j) {
 					p(j) = model.getTransitionProbability(states[i], a, states[j]);
 				}
-                logmsg ("s:%d a:%d r:(%f %f) ", i, a, r_ia,  model.getExpectedReward(states[i], a)); p.print(stdout);
+                //logmsg ("s:%d a:%d r:(%f %f) ", i, a, r_ia,  model.getExpectedReward(states[i], a)); p.print(stdout);
                 real sum = p.Sum();
 				if (sum > 0) {
                     p /= sum;
                 } else {
-                    Swarning("OUCH\n");
+                    //Swarning("OUCH\n");
                     p += 1.0;
                     p /= p.Sum();
                 }
@@ -121,7 +122,15 @@ public:
 		for (uint j=0; j<states.size(); ++j) {
 			p(j) = model.getTransitionProbability(state, action, states[j]);
 		}
-		p /= p.Sum();
+        real sum = p.Sum();
+        
+        if (sum > 0) {
+            p /= sum;
+        } else {
+            p += 1.0;
+            p /= p.Sum();
+        }
+        
         real r = model.getExpectedReward(state, action);
         real U = Product(p, V);
 		return  r + gamma * U;
