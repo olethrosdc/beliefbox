@@ -49,12 +49,6 @@ void Wishart::generate(Matrix& X) const
 ///Smith & Hocking, "Wishart Variate Generator"
 Matrix Wishart::generate() const
 {
-	//time_t ltime;
-//	struct tm *today;
-//	time(&ltime);
-//	today = localtime(&ltime);
-//	setall(today->tm_sec, 0.1*today->tm_sec);
-//	
 	NormalDistribution norm;
 	Matrix T = Covariance.Cholesky();
 	Matrix B(k,k);
@@ -93,7 +87,7 @@ real Wishart::log_pdf(const Matrix& X) const
     real trace_VX = 0.0;
     for (int i=0; i<k; ++i) {
         for (int j=0; j<k; ++j) {
-            trace_VX += Precision(i,j) * X(i,j);
+            trace_VX += Precision(i,j) * X(j,i);
         }
     }
 
@@ -106,7 +100,6 @@ real Wishart::log_pdf(const Matrix& X) const
         - 0.5 * trace_VX;
 
     return log_p;
-
 }
 
 

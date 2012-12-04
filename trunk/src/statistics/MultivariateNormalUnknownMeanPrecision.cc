@@ -176,7 +176,7 @@ void MultivariateNormalUnknownMeanPrecision::Show()
     marginal.Show();
 }
 
-Wishart MultivariateNormalUnknownMeanPrecision::getPrecision() const
+iWishart MultivariateNormalUnknownMeanPrecision::getPrecision() const
 {
-    return Wishart(alpha_n, T_n);
+    return iWishart(alpha_n, T_n.Inverse());
 }

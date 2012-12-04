@@ -14,6 +14,8 @@
 
 #include "real.h"
 #include "Vector.h"
+#include "Matrix.h"
+#include "BayesianMultivariateRegression.h"
 
 #undef DEBUG_COVER_TREE
 #undef DEBUG_COVER_TREE_NN
@@ -49,18 +51,59 @@ public:
 		return L1Norm(&x, &y);
 	}
 
+	struct Statistics
+	{
+		
+		BayesianMultivariateRegression StatePrediction;
+		std::vector<Vector> state;	        ///< States
+		std::vector<int> action;			///< Actions
+		std::vector<Vector> nextstate;		///< Next states
+		std::vector<real> reward;			///< Received rewards
+		std::vector<bool> absorb;			///< Absorb criterion
+		
+		Statistics(int m_ = 1, int d_ = 1, Matrix S0_ = Matrix::Unity(1,1), real N0_ = 1.0, real a_ = 1.0) { 
+			StatePrediction = BayesianMultivariateRegression(m_,d_,S0_,N0_,a_);
+		}
+		
+		const int Size() const
+		{
+			return nextstate.size();
+		}
+		
+		void Insert(const Vector& s, const Vector& ns, const int& a, const real& r, const bool& ab)
+		{
+			StatePrediction.AddElement(s,ns);
+			state.push_back(s);
+			action.push_back(a);
+			nextstate.push_back(ns);
+			reward.push_back(r);
+			absorb.push_back(ab);
+		}
+		
+		void Show() const
+		{
+			for(int i = 0; i<Size(); ++i){
+				printf("Next State: "); nextstate[i].printf(stdout); 
+				printf("Action: :%d Reward: %f Absorb: %s\n", action[i],reward[i],(absorb[i])?"true":"false");
+			}
+		}
+	};
+	
     /// This simply is a node
     struct Node
     {
         const CoverTree& tree;
-        Vector point; ///< The location of the point.
-        std::vector<Node*> children; ///< Pointer to children
-        int level; ///< Level in the tree
-		int children_level; ///< Level of children
-		void* object; ///< the object stored
+        Vector point;					///< The location of the point.
+		Statistics stats;				///< Pointer to the statistics
+        std::vector<Node*> children;	///< Pointer to children
+        int level;						///< Level in the tree
+		int descendants;				///< Number of descendants
+		int children_level;				///< Level of children
+		Node* father;					///< Pointer to the father
+		void* object;					///< the object stored
 
 		/// Constructor needs a point and a level
-        Node (const CoverTree& tree_, const Vector& point_, const int level_, void* object_);
+		Node (const CoverTree& tree_, const Vector& point_, const int level_, CoverTree::Node* const father_, void* object_);
 
 		/// Destructor
         ~Node();
@@ -72,11 +115,12 @@ public:
 		}
 
 		/// Insert a new point at the given level, as a child of this node
-        const Node* Insert(const Vector& new_point, const int level, void* obj = NULL);
-        
+        void Insert(const Vector& new_point, const int level, void* obj = NULL);
+		void Insert(const Vector& new_point, const int& action, const Vector& next_state, const real& reward, const bool& absorb, const int level, void* obj = NULL);
+
         /// Find nearest neighbour of the node
         std::pair<const CoverTree::Node*, real> NearestNeighbour(const Vector& query, const real distance) const;
-
+       
  		/// The number of children
         const int Size() const
         {
@@ -87,6 +131,12 @@ public:
 		const int ChildrenLevel() const
 		{
 			return children_level;
+		}
+		
+		//Find the number of descendants
+		const int Descendants() const
+		{
+			return descendants;
 		}
 
 		/// Display the tree in textual format
@@ -135,10 +185,11 @@ public:
     };
 	
 	const real metric(const CoverSet& Q, const Vector& p) const;
-	const Node* Insert(const Vector& new_point, const CoverSet& Q_i, const int level, void* obj);
-	const Node* Insert(const Vector& new_point, void* obj = NULL);
-
-
+	Node* Insert(const Vector& new_point, const CoverSet& Q_i, const int level, void* obj);
+	Node* Insert(const Vector& new_point, const int& action, const Vector& next_state, const real& reward, const bool& absorb, const CoverSet& Q_i, const int level, void* obj);
+	Node* Insert(const Vector& new_point, void* obj = NULL);
+	Node* Insert(const Vector& new_point, const int& action, const Vector& next_state, const real& reward, const bool& absorb, void* obj = NULL);
+	
 	const Node* NearestNeighbour(const Vector& query_point) const;
 	bool Check() const;
 	void Show() const;

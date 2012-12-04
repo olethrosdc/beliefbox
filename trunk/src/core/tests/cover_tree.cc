@@ -26,7 +26,7 @@ void test_cover_tree_insertion(CoverTree& tree, std::vector<Vector>& X)
 
     for (int i=0; i<n_points; i++) {
         //printf ("Adding : "); X[i].print(stdout);
-        const  CoverTree::Node* new_node = tree.Insert(X[i]);
+        CoverTree::Node* new_node = tree.Insert(X[i]);
         assert(new_node);
     }    
 }

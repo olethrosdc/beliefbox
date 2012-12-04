@@ -19,7 +19,7 @@
 #include "MultivariateNormal.h"
 #include "MultivariateNormalUnknownMeanPrecision.h"
 #include "BetaDistribution.h"
-#include "Wishart.h"
+#include "iWishart.h"
 
 
 int main (int argc, char** argv)
@@ -89,17 +89,17 @@ int main (int argc, char** argv)
     logmsg("Real precision:\n"); R.print(stdout);
 
     // generate covariance matrices from this wishart!
-    Wishart wishart = normal_wishart.getPrecision();
-
+    iWishart wishart = normal_wishart.getPrecision();
+	
     wishart.Show();
 
     for (int i=0; i<10; ++i) {
         Matrix A = wishart.generate();
         Matrix B = A.Inverse();
         printf("## %d %f %f %f\n", i,
-               wishart.log_pdf(A),
-               wishart.log_pdf(B),
-               wishart.log_pdf(R));
+               wishart.pdf(A),
+               wishart.pdf(B),
+               wishart.pdf(R.Inverse()));
         A.print(stdout);
 
         B.print(stdout);

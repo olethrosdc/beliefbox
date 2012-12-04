@@ -15,19 +15,24 @@
 #include "NormalDistribution.h"
 
 iWishart::iWishart()
-: k(1),
-n(1),
-V(Matrix::Unity(1,1))
+	: Precision(Matrix::Unity(1,1)),
+	  Covariance(Matrix::Unity(1,1)),
+	  k(1),
+	  n(1)
 {
     
 }
 
-iWishart::iWishart(real n_, const Matrix& V_)
-: k(V_.Rows()),
-n(n_),
-V(V_)
+iWishart::iWishart(real n_, const Matrix& V, bool is_covariance)
+	: k(V.Rows()),
+	  n(n_)
 {
-    assert(V.Rows() == V.Columns());
+	assert(V.Rows() == V.Columns());
+    if (is_covariance) {
+        setCovariance(V);
+    } else {
+        setPrecision(V);
+    }
 }
 
 iWishart::~iWishart()
@@ -45,7 +50,7 @@ Matrix iWishart::generate() const
 {
 	NormalDistribution norm;
 	std::vector<Matrix> QR;
-	Matrix T = V.Cholesky();
+	Matrix T = Covariance.Cholesky();
 	Matrix B(k,k);
 	
 	for(int i = 0; i < k; ++i){
@@ -61,7 +66,7 @@ Matrix iWishart::generate() const
 	QR = B.QRDecomposition();
 
 	Matrix X = Transpose(T)*QR[1].Inverse_LU();
-	return X*Transpose(X) / n;
+	return X*Transpose(X);
 }
 
 /** the log pdf **/
@@ -80,20 +85,20 @@ real iWishart::log_pdf(const Matrix& X) const
 	}
 	
 	real trace_VX = 0.0;
-	Matrix invX = X.Inverse_LU();
+	Matrix inv_X = X.Inverse();
 	for ( int i=0; i<k; ++i){
 		for(int j = 0; j<k; ++j){
-			trace_VX += V(i,j) * invX(j,i);
+			trace_VX += Covariance(i,j) * inv_X(j,i);
 		}
 	}
 	
-	real det_V = V.det();
+	real det_V = Covariance.det();
 	real det_X = X.det();
 	
 	real log_p = log_c
 		+ 0.5 * n * log(det_V)
 		- 0.5 * (n + rk + 1.0) * log(det_X)
-		- 0.5 * trace_VX;
+		- 0.5 * (trace_VX);
 	
 	return log_p;
 }
