@@ -66,7 +66,6 @@ int main(int argc, char* argv[])
 		printf("Prediction\n");
 		R[i].print(stdout);
 	}
-	
 }
 
 #endif
