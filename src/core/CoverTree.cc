@@ -15,13 +15,17 @@
 CoverTree::Node::Node (const CoverTree& tree_, 
                        const Vector& point_,
                        const int level_, 
+					   CoverTree::Node* const father_,
 					   void* object_)
-	:  tree(tree_),
-       point(point_),
-       level(level_), 
-       children_level(level_),
-	   object(object_)
+	:	tree(tree_),
+		point(point_),
+		level(level_), 
+		children_level(level_),
+		father(father_),
+		object(object_)
 {
+	descendants = 0;
+	stats = CoverTree::Statistics();
 }
 
 /// Destructor
@@ -33,7 +37,7 @@ CoverTree::Node::~Node()
 }
 
 /// Insert a new point at the given level, as a child of this node
-const CoverTree::Node* CoverTree::Node::Insert(const Vector& new_point, const int level, void* obj)
+void CoverTree::Node::Insert(const Vector& new_point, const int level, void* obj)
 {
 
 #ifdef DEBUG_COVER_TREE
@@ -44,14 +48,33 @@ const CoverTree::Node* CoverTree::Node::Insert(const Vector& new_point, const in
 #endif
 
 	assert(level <= this->level); //hm, does this assert make sense?
-	Node* node = new Node(tree, new_point, level, obj);
+	Node* node = new Node(tree, new_point, level, this, obj);
+	node->father = this;
 	children.push_back(node);
 	if (level < children_level) {
 		children_level = level;
 	}
-    return node;
 }
 
+/// Insert a new point at the given level, as a child of this node
+void CoverTree::Node::Insert(const Vector& new_point, const int& action, const Vector& next_state, const real& reward, const bool& absorb, const int level, void* obj)
+{
+#ifdef DEBUG_COVER_TREE
+	printf(" | [%d] ", this->level);
+	point.print(stdout);
+	printf(" |--(%d)--> ", level);
+	new_point.print(stdout);
+#endif
+	
+	assert(level <= this->level); //hm, does this assert make sense?
+	Node* node = new Node(tree, new_point, level, this, obj);
+	node->father = this;
+	node->stats.Show();
+	children.push_back(node);
+	if (level < children_level) {
+		children_level = level;
+	}
+}
 
 void CoverTree::Node::Show() const
 {
@@ -125,7 +148,7 @@ const real CoverTree::metric(const CoverSet& Q, const Vector& p) const
        }
    }
 */
-const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
+CoverTree::Node* CoverTree::Insert(const Vector& new_point,
                                          const CoverSet& Q_i,
                                          const int level,
 										 void* obj)
@@ -176,7 +199,7 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
 
 	// Try and see whether the point can be inserted in a subtree
 	// Maintain only the points within 2^level distance.
-	const Node* found = Insert(new_point, Q_next, max_next_level, obj);
+	Node* found = Insert(new_point, Q_next, max_next_level, obj);
 
     // The new point x is only possible 
 	if (!found) {
@@ -195,20 +218,111 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point,
 		
 		if (distance <= separation) {
 			int new_level = level - 1;
-			const Node* inserted = closest_node->Insert(new_point, new_level);
+			closest_node->Insert(new_point, new_level);
+			closest_node->descendants = closest_node->descendants + 1;
 			if (tree_level > new_level) {
 				tree_level = new_level;
 			}
-			return inserted; // Means stop!
+			return closest_node; //Means stop!!
 		} 
 	} 
+	else if(found->father != NULL){
+		if(found->father != found){
+			found = found->father;
+			found->descendants = found->descendants + 1;
+		}
+	}
 	return found;
 		
 }
 
+CoverTree::Node* CoverTree::Insert(const Vector& new_point, const int& action, const Vector& next_state, const real& reward, const bool& absorb, const CoverSet& Q_i, const int level, void* obj)
+{
+	Node* closest_node = NULL;
+	
+	// Check if d(p, Q) > 2^level
+	real log_separation = level * log_c;
+	real separation = exp(log_separation);
+	//Q_i.Show();
+	
+	bool separated = true;
+	
+	// The set of nodes 2^d-close to the new point
+	CoverSet Q_next;
+	
+	// go through all the children and only add them if they are close
+    int max_next_level = -INF;
+	for (int k=0; k<Q_i.Size(); ++k) {
+		int n_children = Q_i.NChildren(k);
+		for (int j=-1; j<n_children; ++j) {
+			Node* node;
+            real dist_i;
+			if (j >= 0) {
+				node = Q_i.nodes[k]->children[j];
+                // ignore children which are too deep.
+                if (node->level < level) {
+                    max_next_level = std::max(node->level, max_next_level);
+                    continue;
+                }
+                dist_i = metric(new_point, node->point);
+			} else {
+				node	= Q_i.nodes[k];
+                dist_i	= Q_i.distances[k];
+            }
+			if (dist_i <= separation) {
+				separated = false; 
+				Q_next.Insert(node, dist_i);
+			}
+		}
+	}
+	
+	// If no points are c^d-close then the point was found previously.
+    if (separated) {
+        return NULL;
+    }
+	
+	// Try and see whether the point can be inserted in a subtree
+	// Maintain only the points within 2^level distance.
+	Node* found = Insert(new_point, action, next_state, reward, absorb, Q_next, max_next_level, obj);
+	
+    // The new point x is only possible 
+	if (!found) {
+		real distance = INF;
+		for (int k=0; k<Q_i.Size(); ++k) {
+			Node* node = Q_i.nodes[k];
+			real dist_k = Q_i.distances[k];    //metric(new_point, node->point);
+			if (dist_k < distance) {
+				distance = dist_k; 
+				closest_node = node;
+				if (distance <= separation) { // assuming only one node can be here. 
+					break;
+				}
+			}
+		}
+		
+		if (distance <= separation) {
+			int new_level = level - 1;
+//			const Node* inserted = 
+			closest_node->Insert(new_point, action, next_state, reward, absorb, new_level);
+			closest_node->descendants = closest_node->descendants + 1;
+			if (tree_level > new_level) {
+				tree_level = new_level;
+			}
+			return closest_node; // Means stop!
+		} 
+	}
+	else if(found->father != NULL){
+		if(found->father != found){
+			found = found->father;
+			found->descendants = found->descendants + 1;
+			found->stats.Insert(new_point, next_state, action, reward, absorb);
+		}
+	}
+	return found;		
+}
 
 /// Insert a new point in the tree
-const CoverTree::Node* CoverTree::Insert(const Vector& new_point, void* obj)
+CoverTree::Node* CoverTree::Insert(const Vector& new_point, void* obj)
 {
 	if (!root) {
 #ifdef DEBUG_COVER_TREE
@@ -216,7 +330,7 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point, void* obj)
 		new_point.print(stdout);
 		printf("\n");
 #endif
-		root = new Node(*this, new_point, std::numeric_limits<int>::max(), obj);
+		root = new Node(*this, new_point, std::numeric_limits<int>::max(), NULL, obj);
 		return root;
 	}
 	real distance = metric(new_point, root->point);
@@ -226,6 +340,26 @@ const CoverTree::Node* CoverTree::Insert(const Vector& new_point, void* obj)
 	return Insert(new_point, Q, level, obj);
 }
 
+/// Insert a new point in the tree along with its statistics
+CoverTree::Node* CoverTree::Insert(const Vector& new_point, const int& action, const Vector& next_state, const real& reward, const bool& absorb, void* obj)
+{
+	if (!root) {
+#ifdef DEBUG_COVER_TREE
+		printf("Adding root at:");
+		new_point.print(stdout);
+		printf("\n");
+#endif
+		root = new Node(*this, new_point, std::numeric_limits<int>::max(), NULL, obj);
+		root->stats.Insert(new_point, next_state, action, reward, absorb);
+		return root;
+	}
+	
+	real distance = metric(new_point, root->point);
+	int level = 1 + (int) ceil(log(distance) / log_c);
+	CoverSet Q;
+	Q.Insert(root, distance);
+	return Insert(new_point, action, next_state, reward, absorb, Q, level, obj);
+}
 
 /** Find the nearest node.
    
@@ -262,8 +396,6 @@ std::pair<const CoverTree::Node*, real> CoverTree::Node::NearestNeighbour(const 
 	return retval;
 
 }
-
-
 
 /// FInd the nearest neighbour in the tree
 const CoverTree::Node* CoverTree::NearestNeighbour(const Vector& query_point) const

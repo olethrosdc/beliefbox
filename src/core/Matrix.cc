@@ -506,7 +506,7 @@ real Matrix::det() const
 
 }
 
-/// 
+/// Matrix trace.
 real Matrix::tr() const
 {
 	assert(rows == columns);
@@ -519,6 +519,30 @@ real Matrix::tr() const
 		trace += (*this)(i,i);
 	}
 	return trace;
+}
+
+/// Kronecker product.
+Matrix Matrix::Kron(const Matrix& rhs) const
+{
+	int r_rows = rhs.Rows();
+	int r_cols = rhs.Columns();
+	
+	Matrix K(rows*r_rows,columns*r_cols);
+	
+	for(int i = 0; i < rows; ++i)
+	{
+		for(int j = 0; j < columns; ++j)
+		{
+			for(int k = 0; k < r_rows; ++k)
+			{
+				for(int l = 0; l < r_cols; ++l)
+				{
+					K(i*r_rows + k, j*r_cols + l) = (*this)(i,j)*rhs(k,l);
+				}
+			}
+		}
+	}
+	return K;
 }
 
 bool Matrix::isTriangular() const
@@ -941,6 +965,30 @@ Vector Matrix::ColumnMax() const
 		}
 	}
     return C;
+}
+
+void Matrix::Vec(const Vector& x)
+{
+	assert(!(x.Size()%Rows()));
+	for(int i = 0; i<x.Size(); ++i)
+	{
+		div_t divresult = div(i,Rows());
+		(*this)(divresult.rem,divresult.quot) = x(i);
+	}
+}
+
+/// Return a column vector with the matrix columns stacked.
+Vector Matrix::Vec() const
+{
+	Vector R(Columns()*Rows());
+	for(int j=0; j<Columns(); ++j)
+	{
+		for(int i=0; i<Rows(); ++i)
+		{
+			R(i + j*Rows()) = (*this)(i,j);
+		}
+	}
+	return R;
 }
 
 /// Return a row vector that is the row-wise maximum

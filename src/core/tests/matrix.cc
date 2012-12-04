@@ -28,7 +28,7 @@ void SpeedTest();
 
 int main()
 {
-    int N = 4;
+    int N = 3;
     int n_errors = 0;
     Matrix I = Matrix::Unity(N,N);
     Matrix W(N,N);
@@ -92,7 +92,7 @@ int main()
             X(i,j) = true_random(false);
         }
     }
-
+	
     printf ("# I = 0 ");
     if (Matrix::Null(N,N)!=I) {
         printf ("OK"); 
@@ -134,6 +134,10 @@ int main()
     ((const Matrix&) I*(const Vector&) u).print(stdout);
     printf ("# OK\n"); 
 
+	printf("W Kronecker I:");
+	W.Kron(I).print(stdout);
+	printf("#OK\n");
+	
     printf("V*z: ");
     Matrix V(2,4);
     Vector z(4);

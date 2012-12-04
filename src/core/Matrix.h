@@ -109,6 +109,7 @@ public:
     bool isLowerTriangular() const;
     real det() const;
 	real tr() const;
+	Matrix Kron(const Matrix& rhs) const;
     real ColumnSum(int c) const;
     real RowSum(int r) const;
     real compute_det_triangular() const;
@@ -127,6 +128,8 @@ public:
     void SortColumn(int r);
     int Rows() const;
     int Columns() const;
+	Vector Vec() const;
+	void Vec(const Vector& x);
 	Vector RowMax() const;
 	Vector ColumnMax() const;
 	Vector RowMin() const;
@@ -157,6 +160,11 @@ Matrix operator* (const Vector& lhs, const Matrix& rhs);
 Vector operator* (const Matrix& lhs, const Vector& rhs);
 real Mahalanobis2 (const Vector& x, const Matrix& A, const Vector& y);
 
+/// Kronecker product
+inline Matrix Kron (const Matrix& lhs, const Matrix& rhs)
+{
+	return lhs.Kron(rhs);
+}
 
 inline Matrix OuterProduct (const Vector& lhs, const Vector& rhs)
 {
