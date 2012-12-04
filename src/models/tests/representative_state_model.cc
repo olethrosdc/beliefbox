@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 {
     
     logmsg("Random MDP\n");
-    real random_mdp_error = TestRandomMDP(256, 16);
+    real random_mdp_error = TestRandomMDP(16, 16);
     printf("\n\n");
     logmsg("Chain MDP\n");
     real chain_mdp_error = TestChainMDP(5, 5);
@@ -60,11 +60,11 @@ int main(int argc, char** argv)
 real TestRandomMDP(int n_states, int n_samples)
 {
 	uint n_actions = 2;
-	real randomness = 0.01;
+	real randomness = 0.1;
 	real step_value = -0.1;
 	real pit_value = -1;
 	real goal_value = 1.0;
-	real discount_factor = 0.9;
+	real discount_factor = 0.95;
     real accuracy = 1e-12;
 	MersenneTwisterRNG rng;
     RandomMDP random_mdp(n_actions,
@@ -80,7 +80,7 @@ real TestRandomMDP(int n_states, int n_samples)
     RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(discount_factor, environment, n_samples, n_actions);
     
     ValueIteration VI(mdp, discount_factor);
-    VI.ComputeStateValues(accuracy);
+    VI.ComputeStateValuesStandard(accuracy);
     representative_model.ComputeStateValues(accuracy);
 
     real total_error = 0;
@@ -124,7 +124,8 @@ real TestChainMDP(int n_states, int n_samples)
     
     logmsg("Value iteration\n"); fflush(stdout);
     ValueIteration VI(mdp, discount_factor);
-    VI.ComputeStateValues(accuracy);
+    //VI.ComputeStateValues(accuracy);
+    VI.ComputeStateValuesStandard(accuracy);
 
     logmsg("Approximate VI\n");
     representative_model.ComputeStateValues(accuracy);
