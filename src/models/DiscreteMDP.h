@@ -58,6 +58,14 @@ public:
     MDP<int,int> (const std::vector<const MDP<int,int>*> &mdp_list,
                   const Vector& w);
 
+    inline int StateLowerBound() const
+    {
+        return 0;
+    }
+    inline int StateUpperBound() const
+    {
+        return n_states;
+    }
     inline int getNStates() const
     {
         return n_states;
@@ -125,7 +133,7 @@ public:
             next.insert(s2);
         }
     }
-    virtual void setTransitionProbabilities(int s, int a, const Vector& p)
+    virtual void setTransitionProbabilities(int s, int a, const Vector& p, real threshold = 0)
     {
         assert(s>=0 && s<n_states);
         int ID = getID (s, a);
@@ -133,7 +141,7 @@ public:
         for (int s2=0; s2<n_states; ++s2) {
             P(ID, s2) = p(s2);
             DiscreteStateSet& next = next_states[ID];
-            if (p(s2)==0) {
+            if (p(s2)<=threshold) {
                 next.erase(s2);
             } else {
                 next.insert(s2);

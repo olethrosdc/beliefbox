@@ -80,7 +80,7 @@ Gridworld::Gridworld(const char* fname,
     
     // set up the mdp
     
-    mdp = getMDP();
+    my_mdp = getMDP();
     Reset();
 }
 
@@ -293,7 +293,7 @@ Gridworld::~Gridworld() {
     for (uint i=0; i<rewards.size(); ++i) {
         delete rewards[i];
     }
-    delete mdp;
+    delete my_mdp;
 }
 
 void Gridworld::Reset()
@@ -309,9 +309,10 @@ void Gridworld::Reset()
     ox = x;
     oy = y;
     reward = 0.0;
+    my_mdp->Reset(state);
 }
 
-bool Gridworld::Act(int action)
+bool Gridworld::Act(const int& action)
 {
     int x = state % width;
     int y = (state - x) / width;
@@ -320,8 +321,8 @@ bool Gridworld::Act(int action)
     //std::cout << "(" << x << ", "<< y << ")" << " [" << whatIs(x,y) << "] a: " << action;
     total_time++;
     //real prev_reward = reward;
-    reward = mdp->generateReward(state, action);
-    state = mdp->generateState(state, action);
+    reward = my_mdp->generateReward(state, action);
+    state = my_mdp->generateState(state, action);
     x = state % width;
     y = (state - x) / width;
 
