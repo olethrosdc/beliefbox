@@ -17,7 +17,15 @@
 #include "ValueIteration.h"
 #include "Vector.h"
 
+/** RSM 
 
+    Model must implement
+    - const S& StateLowerBound()
+    - const S& StateUpperBound()
+    - real getExpectedReward(const S&, const A&);
+    - real getTransitionProbability(const S&, const A&);
+    
+ */
 template <class Model, class S, class A>
 class RepresentativeStateModel
 {
