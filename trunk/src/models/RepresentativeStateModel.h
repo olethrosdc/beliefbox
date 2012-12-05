@@ -75,6 +75,25 @@ public:
         BuildMDP();
     }
 
+    /// Build a model using a sampler
+    RepresentativeStateModel(real gamma_,
+                             const Model& model_,
+                             Sampler& sampler,
+                             uint n_states,
+                             uint n_actions_) :
+        gamma(gamma_),
+        model(model_),
+		n_actions(n_actions_),
+        mdp(NULL)
+    {
+        assert(n_actions > 0);
+        for (uint i=0; i<n_states; ++i) {
+            states.push_back(sampler.generate());
+        }
+        BuildMDP();
+    }
+
+
 	~RepresentativeStateModel()
 	{ 
 		if (mdp) {
