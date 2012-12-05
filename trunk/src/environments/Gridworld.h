@@ -30,7 +30,7 @@ public:
     enum MapElement {
         INVALID=-1, GRID, WALL, GOAL, PIT
     };
-    DiscreteMDP* mdp;
+    DiscreteMDP* my_mdp;
     uint terminal_state;
     Gridworld(const char* fname,
               real random_ = 0.0,
@@ -52,7 +52,7 @@ public:
         }
     }
     virtual void Reset();
-    virtual bool Act(int action);
+    virtual bool Act(const int& action);
     void Show();
     int getState(int x, int y) const
     {
@@ -75,6 +75,14 @@ public:
     {
         return "Gridworld";
     }
+	virtual real getTransitionProbability(const int& state, const int& action, const int& next_state) const
+	{
+		return my_mdp->getTransitionProbability(state, action, next_state);
+	}
+    virtual real getExpectedReward(const int& state, const int& action) const
+	{
+		return my_mdp->getExpectedReward(state, action);
+	}
 
 protected:
     void CalculateDimensions(const char* fname);

@@ -120,14 +120,9 @@ public:
     {
         return state_lower_bound;
     }
-	virtual real getTransitionProbability(const S& state, const A& action, const S& next_state) const
-	{
-		return 1.0;
-	}
-    virtual real getExpectedReward(const S& state, const A& action) const
-	{
-		return 0.123456789;
-	}
+	virtual real getTransitionProbability(const S& state, const A& action, const S& next_state) const = 0;
+
+    virtual real getExpectedReward(const S& state, const A& action) const = 0;
 
 };
 

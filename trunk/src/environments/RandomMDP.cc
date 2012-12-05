@@ -41,13 +41,13 @@ RandomMDP::RandomMDP(uint n_actions_,
 
     // set up the mdp
     std::cout << "Making the MPD\n";
-    mdp = getMDP();
+    mdp = generateMDP();
     mdp->Check();
     Reset();
     printf ("state: %d/%d\n", state, n_states);
 }
 	
-DiscreteMDP* RandomMDP::getMDP() const
+DiscreteMDP* RandomMDP::generateMDP() const
 {
     DiscreteMDP* mdp = new DiscreteMDP (n_states, n_actions, NULL);
     

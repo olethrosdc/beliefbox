@@ -38,6 +38,13 @@
 #include "RepresentativeStateModel.h"
 #include "Grid.h"
 #include "RandomMDP.h"
+#include "Gridworld.h"
+#include "OneDMaze.h"
+#include "DiscreteChain.h"
+#include "RiverSwim.h"
+#include "OptimisticTask.h"
+#include "InventoryManagement.h"
+#include "DoubleLoop.h"
 #include "ValueIteration.h"
 #include "MersenneTwister.h"
 #include "DiscreteChain.h"
@@ -49,10 +56,10 @@ int main(int argc, char** argv)
 {
     
     logmsg("Random MDP\n");
-    real random_mdp_error = TestRandomMDP(16, 16);
+    real random_mdp_error = TestRandomMDP(5, 10000);
     printf("\n\n");
-    logmsg("Chain MDP\n");
-    real chain_mdp_error = TestChainMDP(5, 5);
+    //logmsg("Chain MDP\n");
+    //real chain_mdp_error = TestChainMDP(5, 5);
     logmsg("Done\n");
     return 0;
 }
@@ -64,8 +71,8 @@ real TestRandomMDP(int n_states, int n_samples)
 	real step_value = -0.1;
 	real pit_value = -1;
 	real goal_value = 1.0;
-	real discount_factor = 0.95;
-    real accuracy = 1e-12;
+	real discount_factor = 0.5;
+    real accuracy = 1e-6;
 	MersenneTwisterRNG rng;
     RandomMDP random_mdp(n_actions,
                          n_states,
@@ -74,20 +81,33 @@ real TestRandomMDP(int n_states, int n_samples)
                          pit_value,
                          goal_value,
                          &rng);
-    
-    DiscreteEnvironment& environment = random_mdp;
-    DiscreteMDP* mdp = random_mdp.getMDP();
+    Gridworld gridworld("/home/olethros/projects/beliefbox/dat/maze5",
+                        randomness,
+                        pit_value,
+                        goal_value,
+                        step_value);
+    real total_error = 0;
+
+    DiscreteEnvironment& environment = gridworld;
+    n_states = environment.getNStates();
+    DiscreteMDP* mdp = environment.getMDP();
+#if 0
+    RepresentativeStateModel<DiscreteMDP, int, int> representative_model(discount_factor, *mdp, n_samples, n_actions);
+#else
     RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(discount_factor, environment, n_samples, n_actions);
-    
+#endif
+
+#if 0
     ValueIteration VI(mdp, discount_factor);
     VI.ComputeStateValuesStandard(accuracy);
+
     representative_model.ComputeStateValues(accuracy);
 
-    real total_error = 0;
+
     for (int i=0; i<n_states; ++i) {
         real V = VI.getValue(i);
         real V_approx = representative_model.getValue(i);
-        printf ("%f %f\n", V, V_approx);
+        printf ("%f %f # state-value\n", V, V_approx);
         total_error += abs(V - V_approx);
     }
 
@@ -99,7 +119,7 @@ real TestRandomMDP(int n_states, int n_samples)
             printf ("%d %d %f %f %f\n", i, a, V, V_approx, mdp->getExpectedReward(i, a));
         }
     }
-
+#endif
 
     delete mdp;
     return total_error;
@@ -110,7 +130,7 @@ real TestRandomMDP(int n_states, int n_samples)
 real TestChainMDP(int n_states, int n_samples)
 {
 	real discount_factor = 0.95;
-    real accuracy = 1e-12;
+    real accuracy = 1e-6;
 	MersenneTwisterRNG rng;
 
     logmsg("Creating chain\n");
@@ -119,8 +139,9 @@ real TestChainMDP(int n_states, int n_samples)
 
     logmsg("Building model\n");
     DiscreteMDP* mdp = chain.getMDP();
+    const DiscreteMDP& rmdp = *mdp;
     logmsg("Creating Representative States\n");
-    RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(discount_factor, environment, n_samples, environment.getNActions());
+    RepresentativeStateModel<DiscreteMDP, int, int> representative_model(discount_factor, rmdp, (uint) n_samples, (uint) environment.getNActions());
     
     logmsg("Value iteration\n"); fflush(stdout);
     ValueIteration VI(mdp, discount_factor);
@@ -135,7 +156,7 @@ real TestChainMDP(int n_states, int n_samples)
     for (int i=0; i<n_states; ++i) {
         real V = VI.getValue(i);
         real V_approx = representative_model.getValue(i);
-        printf ("%f %f\n", V, V_approx);
+        printf ("%f %f # state-value\n", V, V_approx);
         total_error += abs(V - V_approx);
     }
 

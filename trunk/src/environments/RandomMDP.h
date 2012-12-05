@@ -56,7 +56,13 @@ public:
 
     virtual ~RandomMDP();
 
-    virtual DiscreteMDP* getMDP() const;
+    /// Generate a new MDP
+    virtual DiscreteMDP* generateMDP() const;
+    
+    virtual DiscreteMDP* getMDP() const
+    {
+        return new DiscreteMDP(*mdp);
+    }
 
     /// put the environment in its natural state
     virtual void Reset();
@@ -73,14 +79,17 @@ public:
                                           const int& action,
                                           const int& next_state) const
     {
-        return mdp->getTransitionProbability(state, action, next_state);
+        real p = mdp->getTransitionProbability(state, action, next_state);
+        //printf ("# p(%d | %d, %d) = %f\n", next_state,
+        //state, action, p);
+        return p;
     }
     virtual real getExpectedReward(const int& state, const int& action) const
     {
         return mdp->getExpectedReward(state, action);
     }
 
-
+    
 protected:
     DiscreteMDP* mdp;
 };
