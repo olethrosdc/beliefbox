@@ -36,6 +36,7 @@ int main()
     Vector u(N);
     Matrix D(N,1);
     Vector v(N);
+    
     for (int i=0; i<N; ++i) {
         u[i] = i + 1;
         v[i] = i;
@@ -55,6 +56,11 @@ int main()
         printf("\n");
     }
     
+
+    Matrix A = (const Matrix&) W * (const Vector&) v;
+
+    A.print(stdout);
+
     
     Matrix X(N,N);
     for (int i=0; i<N; ++i) {
