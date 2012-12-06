@@ -24,6 +24,8 @@ class Demonstrations
 public:
     std::vector<Trajectory<S, A> > trajectories;
     Trajectory<S,A>* current_trajectory;
+    std::vector<real> total_rewards;
+    std::vector<real> discounted_rewards;
     Demonstrations() 
         : current_trajectory(NULL)
     {
@@ -72,7 +74,10 @@ public:
 				}
 			}
 		} while (running);
+        total_rewards.push_back(total_reward);
+        discounted_rewards.push_back(discounted_reward);
 	}
+
     int size() const
     {
         if (trajectories[trajectories.size() - 1].size() > 0) {

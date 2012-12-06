@@ -25,43 +25,75 @@
 #include <cstring>
 #include <getopt.h>
 
-/** This template has 6 types.
+template <class X, class A>
+class TotalRewardStatistic
+{
+public:
+    real getAverageTotalReward(Demonstrations<X, A>& data)
+    {
+        real r_d = 0;
+        for (uint i=0; i<data.total_rewards.size(); ++i) {
+            r_d += data.total_rewards[i];
+        }
+        r_d /= (real) data.total_rewards.size();
+        return r_d;
+    }
+
+    real distance(Demonstrations<X, A>& data,
+                  Demonstrations<X, A>& sample)
+    {
+        real r_d = getAverageTotalReward(data);
+        real r_s = getAverageTotalReward(sample);
+        return fabs(r_d - r_s);
+    }
+
+};
+
+
+/** This template has 5 types.
 
  G: The generator class, which must provide
  - M G::generate()
 
- S: The statistic class, which must provide
- - Vector S::evaluate(D& data)
- - real S::metric(Vector& x, Vector& y)
+ F: The statistic class, which must provide
 
  M: The model class, which must provide
- - M G::model()
-
- D: The data class
 
  P: The policy class which must provide
- - A P.Act(S)
-*/
 
+ X: The observation class
+ 
+ A: the action
+
+*/
 template <class G, class F, class M, class P, typename X, typename A>
 class ABCRL
 {
 public:
-	G& generator;
-	F& statistic;
-	ABCRL(G& generator_, F& statistic_)
-		: generator(generator_),
-		  statistic(statistic_)
+	G generator;
+	F statistic;
+	ABCRL()
 	{
 	}
-	M GetSample(Demonstrations<X,A>& data, real epsilon, int max_iter)
+	M GetSample(Demonstrations<X,A>& data,
+                P& policy,
+                real discounting,
+                real epsilon,
+                int max_iter)
 	{
-		real min_epsilon = INF;
+		//real min_epsilon = INF;
 		for (int iter=0; iter<max_iter; ++iter) {
-			M model = generator.Generate();
-			M model = 
-
+            M model = generator.generate();
+            Demonstrations<X, A> sample;
+            sample.Simulate(model, policy, discounting, -1);
+            real error = statistic.distance(data, sample);
+            logmsg("%f\n", error);
+            if (error <= epsilon) {
+                return model;
+            }
 		}
+        Swarning("No model generated\n");
+        return generator.generate();
 	}
 	
 };
@@ -80,22 +112,16 @@ int main(int argc, char* argv[])
 
 	MersenneTwisterRNG rng;
 
-
-	enum SamplingMethod 
-	{
-		UNIFORM,
-		UPPER_BOUND,
-		ERROR_BOUND
-	};
-
 	struct Options
 	{
 		real gamma;
+        real epsilon;
 		char* environment_name;
 	};
 
 	Options options;
 	options.gamma = 0.99;
+	options.epsilon = 0.1;
 	options.environment_name = NULL;
 
 	{
@@ -163,8 +189,6 @@ int main(int argc, char* argv[])
     }
     if (!strcmp(options.environment_name, "MountainCar")) {
         environment = new MountainCar();
-    } else if (!strcmp(options.environment_name, "Pendulum")) {
-        environment = new Pendulum();    
     } else {
         fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
         exit(-1);
@@ -174,8 +198,20 @@ int main(int argc, char* argv[])
 	AbstractPolicy<Vector, int>* policy;
 	// Start with a random policy!
 	policy = new RandomPolicy(environment->getNActions(), &rng);
+    //template <class G, class F, class M, class P, typename X, typename A>
+    MountainCar mountain_car(true);
+    Demonstrations<Vector, int> data;
+    data.Simulate(mountain_car, *policy, options.gamma, -1);
 
 
+    ABCRL<MountainCarGenerator, TotalRewardStatistic<Vector, int>, MountainCar, AbstractPolicy<Vector, int>, Vector, int> abcrl;
+
+
+    MountainCar sample = abcrl.GetSample(data,
+                                         *policy,
+                                         options.gamma,
+                                         options.epsilon,
+                                         10);
 	return 0;
 }
 #endif

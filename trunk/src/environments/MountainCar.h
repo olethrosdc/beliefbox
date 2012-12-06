@@ -69,6 +69,14 @@ public:
     }
 };
 
+class MountainCarGenerator
+{
+public:
+    MountainCar generate()
+    {
+        return MountainCar(true);
+    }
+};
 
 
 
