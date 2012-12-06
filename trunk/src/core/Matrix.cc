@@ -17,6 +17,7 @@
 #include <cmath>
 #include <exception>
 #include <stdexcept>
+#include <cstring>
 //#include <lapackpp/laslv.h>
 
 Matrix Matrix::Unity(int rows, int columns, enum BoundsCheckingStatus check)
@@ -105,10 +106,9 @@ Matrix::Matrix (const Vector& v, enum BoundsCheckingStatus check_)
 {
     rows = v.Size();
     columns = 1;
-    x = (real*) malloc(rows * sizeof(real));
-    for (int i=0; i<rows; ++i) {
-        x[i] = v[i];
-    }
+    size_t  N = rows * sizeof(real);
+    x = (real*) malloc(N);
+    memcpy(x, v.x, N);
 #ifdef REFERENCE_ACCESS
     MakeReferences();
 #endif
