@@ -85,9 +85,11 @@ public:
 		for (int iter=0; iter<max_iter; ++iter) {
             M model = generator.generate();
             Demonstrations<X, A> sample;
-            sample.Simulate(model, policy, discounting, -1);
+            for (int i=0; i<100; ++i) {
+                sample.Simulate(model, policy, discounting, -1);
+            }
             real error = statistic.distance(data, sample);
-            logmsg("%f\n", error);
+            printf("%f # error\n", error);
             if (error <= epsilon) {
                 return model;
             }
@@ -121,7 +123,7 @@ int main(int argc, char* argv[])
 
 	Options options;
 	options.gamma = 0.99;
-	options.epsilon = 0.1;
+	options.epsilon = 0.0;
 	options.environment_name = NULL;
 
 	{
@@ -201,8 +203,10 @@ int main(int argc, char* argv[])
     //template <class G, class F, class M, class P, typename X, typename A>
     MountainCar mountain_car(true);
     Demonstrations<Vector, int> data;
-    data.Simulate(mountain_car, *policy, options.gamma, -1);
 
+    for (int i=0; i<100; ++i) {
+        data.Simulate(mountain_car, *policy, options.gamma, -1);
+    }
 
     ABCRL<MountainCarGenerator, TotalRewardStatistic<Vector, int>, MountainCar, AbstractPolicy<Vector, int>, Vector, int> abcrl;
 
@@ -211,7 +215,7 @@ int main(int argc, char* argv[])
                                          *policy,
                                          options.gamma,
                                          options.epsilon,
-                                         10);
+                                         1000);
 	return 0;
 }
 #endif
