@@ -14,6 +14,7 @@
 #define PUDDLEWORLD_H
 
 #include "Environment.h"
+#include "MultivariateNormal.h"
 #include "Matrix.h"
 #include "Vector.h"
 #include "real.h"
@@ -96,7 +97,22 @@ public:
     /// Maybe use a better transition probability here.
 	virtual real getTransitionProbability(const Vector& state, const int& action, const Vector& next_state) const
     {
-        return 1.0; 
+		Vector input(2);
+		
+		switch(action){
+			case 0: input[0] = parameters.AGENTSPEED; break;
+			case 1: input[0] = -parameters.AGENTSPEED; break;
+			case 2: input[1] = parameters.AGENTSPEED; break;
+			case 3: input[1] = -parameters.AGENTSPEED; break;
+			default: Serror("Undefined action %d\n",action);
+		}
+		Vector mean = state + input;
+		
+		real p = parameters.MCNOISE*parameters.AGENTSPEED;
+		Matrix var = Matrix::Unity(state.Size(), state.Size())*pow(p,2.0);
+		MultivariateNormal S(mean, var.Inverse());
+				
+        return S.pdf(next_state); 
     }
 
     virtual real getExpectedReward(const Vector& state, const int& action) const 
