@@ -28,7 +28,7 @@
     
     The transition are random, in a way that depends on the randomness
     parameter. When randomness = 1, then all transitions are equally
-    probably.  When randomness = 0, the the MDP is deterministic, with
+    probably.  When randomness = 0, then the MDP is deterministic, with
     each action taking you to one and only one state.
  
     
