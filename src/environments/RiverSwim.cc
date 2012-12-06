@@ -30,7 +30,7 @@ void RiverSwim::Reset()
 	model->setState(state);
 }
 
-bool RiverSwim::Act(int action)
+bool RiverSwim::Act(const int& action)
 {
 #if 0
 	for (uint i=0; i<n_states; ++i) {

@@ -33,7 +33,7 @@
 #include "ContextBanditCollection.h"
 #include "HQLearning.h"
 #include "TdBma.h"
-#include "MDPModelClassPriors.h"
+//#include "MDPModelClassPriors.h"
 
 // -- Discrete environments -- //
 #include "RandomMDP.h"
@@ -478,6 +478,7 @@ int main (int argc, char** argv)
                 sampling->setSamplingThreshold(sampling_threshold);
             }
             algorithm = sampling;
+#if 0
         } else if (!strcmp(algorithm_name, "BMCSampling")) {
             MDPModelClassPriors* mcp_mdp = new MDPModelClassPriors(n_states,
                                             n_actions,
@@ -493,6 +494,7 @@ int main (int argc, char** argv)
                                         rng,
                                         max_samples,
                                         false);
+#endif
         } else if (!strcmp(algorithm_name, "ContextBanditGaussian")) {
             model= (MDPModel*)
                 new ContextBanditGaussian(n_states,

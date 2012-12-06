@@ -27,7 +27,7 @@ struct Grid
     Vector mid_point;
     int n_dimensions;
     Grid(Vector& lower_bound_, Vector& upper_bound_);
-    int getInterval(Vector& x);
+    int getInterval(const Vector& x) const;
 };
 
 /** A simple grid structure.
@@ -43,7 +43,7 @@ struct EvenGrid
     int n_intervals;
     int K; ///< Number of subdivisions per dimension.
     EvenGrid(const Vector& lower_bound_, const Vector& upper_bound_, int K_);
-    int getInterval(Vector& x) const;
+    int getInterval(const Vector& x) const;
     int getNIntervals() const;
     Vector getCenter(int interval) const;
 };

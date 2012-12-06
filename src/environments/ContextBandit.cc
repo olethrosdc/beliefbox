@@ -64,7 +64,7 @@ void ContextBandit::Reset()
 
 
 /// returns true if the action succeeds, false if we are in a terminal state
-bool ContextBandit::Act(int action)
+bool ContextBandit::Act(const int& action)
 {
     reward = mdp->Act(action);
     state = mdp->getState();

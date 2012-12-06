@@ -43,7 +43,7 @@ public:
     MountainCar(bool random_parameters = false);
     virtual ~MountainCar();
     virtual void Reset();
-    virtual bool Act(const int action);
+    virtual bool Act(const int& action);
     virtual void Simulate(const int action);
 
     const Vector& StateActionUpperBound() const

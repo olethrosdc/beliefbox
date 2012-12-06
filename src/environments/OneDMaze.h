@@ -34,7 +34,7 @@ public:
     virtual ~OneDMaze();
     
     virtual void Reset();
-    virtual bool Act(int action);
+    virtual bool Act(const int& action);
 
     virtual const char* Name()
     {

@@ -23,7 +23,7 @@ void DoubleLoop::Reset()
 	model->setState(state);
 }
 
-bool DoubleLoop::Act(int action)
+bool DoubleLoop::Act(const int& action)
 {
 #if 0
 	for (uint i=0; i<n_states; ++i) {

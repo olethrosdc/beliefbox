@@ -57,7 +57,8 @@ int main()
     }
     
 
-    Matrix A = (const Matrix&) W * (const Vector&) v;
+    Vector A = W * v;
+    //Matrix A = v * W;
 
     A.print(stdout);
 
@@ -133,7 +134,7 @@ int main()
     }
 
     printf("u'*I: ");
-    (Transpose(u)*I).print(stdout);
+    (Transpose(Matrix(u))*I).print(stdout);
     printf ("# vector transposition and multiplication OK\n"); 
 
     printf("I*u: ");
