@@ -44,6 +44,7 @@ public:
     {
         real r_d = getAverageTotalReward(data);
         real r_s = getAverageTotalReward(sample);
+		//printf ("%f %f ", r_d, r_s);
         return fabs(r_d - r_s);
     }
 
@@ -89,9 +90,11 @@ public:
                 sample.Simulate(model, policy, discounting, -1);
             }
             real error = statistic.distance(data, sample);
-            printf("%f # error\n", error);
+            //printf("%f # error\n", error);
             if (error <= epsilon) {
-                return model;
+				printf ("%f ", error); 
+				model.Show();
+                //return model;
             }
 		}
         Swarning("No model generated\n");
@@ -123,7 +126,7 @@ int main(int argc, char* argv[])
 
 	Options options;
 	options.gamma = 0.99;
-	options.epsilon = 0.0;
+	options.epsilon = 10.0;
 	options.environment_name = NULL;
 
 	{
@@ -204,6 +207,7 @@ int main(int argc, char* argv[])
     MountainCar mountain_car(true);
     Demonstrations<Vector, int> data;
 
+	mountain_car.Show();
     for (int i=0; i<100; ++i) {
         data.Simulate(mountain_car, *policy, options.gamma, -1);
     }

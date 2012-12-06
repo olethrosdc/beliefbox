@@ -79,8 +79,8 @@ MountainCar::~MountainCar()
 
 void MountainCar::Reset()
 {
-    state[0] = -0.5;// urandom(-, U_POS);
-    state[1] = 0.0;//urandom(L_VEL, U_VEL);
+    state[0] = urandom(parameters.L_POS, parameters.U_POS);
+    state[1] = urandom(parameters.L_VEL, parameters.U_VEL);
     endsim = false;
     reward = 0.0;
 }
