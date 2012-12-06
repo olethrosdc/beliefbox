@@ -80,7 +80,7 @@ void PuddleWorld::Reset()
 	reward   = -1;
 }
 
-bool PuddleWorld::Act(const int action)
+bool PuddleWorld::Act(const int& action)
 {
 	// make sure we tell the guy we have terminated
 	if(endsim){
@@ -146,7 +146,8 @@ void PuddleWorld::Simulate(const int action)
 	return;
 }
 
-real PuddleWorld::DistPointToPuddle(const int puddle){
+real PuddleWorld::DistPointToPuddle(const int puddle) const 
+{
 	Vector P0	= (parameters.U_POS_P).getRow(puddle);
 	Vector P1	= parameters.L_POS_P.getRow(puddle);
 	

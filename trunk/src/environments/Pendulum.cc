@@ -84,7 +84,7 @@ void Pendulum::penddot(Vector& xdot, real u, Vector& x)
    
 }
 
-bool Pendulum::Act(const int action)
+bool Pendulum::Act(const int& action)
 {
     // make sure we tell the guy we have terminated
     if (endsim) {

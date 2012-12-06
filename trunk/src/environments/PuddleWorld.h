@@ -72,9 +72,9 @@ public:
 	PuddleWorld(bool random_parameters = false);
 	virtual ~PuddleWorld();
 	virtual void Reset();
-	virtual bool Act(const int action);
+	virtual bool Act(const int& action);
 	virtual void Simulate(const int action);
-	real DistPointToPuddle(const int puddle);
+	real DistPointToPuddle(const int puddle) const;
 
 	Vector& StateActionUpperBound(){
 		return state_action_upper_bound;
@@ -91,6 +91,27 @@ public:
 	
 	virtual void setRandomness(real randomness){
 		parameters.MCNOISE = randomness;
+	}
+
+    /// Maybe use a better transition probability here.
+	virtual real getTransitionProbability(const Vector& state, const int& action, const Vector& next_state) const
+    {
+        return 1.0; 
+    }
+
+    virtual real getExpectedReward(const Vector& state, const int& action) const 
+    {
+        if(state[0] + state[1] >= 1.9){
+            return 0.0;
+        } else {
+            real reward = -1.0;
+            for(int i=0;i<parameters.NUMPUDDLES;i++){
+                real distance = DistPointToPuddle(i);
+                if(distance < parameters.RADIUSPUDDLES[i])
+                    reward += -400.0*(parameters.RADIUSPUDDLES[i] - distance);
+            }
+            return reward;
+        }
 	}
 };
 

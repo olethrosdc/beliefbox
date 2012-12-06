@@ -46,7 +46,7 @@ public:
              real Dt_ = 0.01);
     virtual ~Pendulum();
     virtual void Reset();
-    virtual bool Act(const int action);
+    virtual bool Act(const int& action);
     virtual void Simulate(const int action);
     const Vector& StateUpperBound() const
     {
@@ -72,6 +72,20 @@ public:
     {
         return action_lower_bound;
     }
+
+	virtual real getTransitionProbability(const Vector& state, const int& action, const Vector& next_state) const
+    {
+        return 1.0; 
+    }
+
+    virtual real getExpectedReward(const Vector& state, const int& action) const 
+    {
+        if (fabs(state[0]) > M_PI/2.0) {
+            return -1.0;
+        } else {
+            return 0.0;
+        }
+	}
 
 };
 
