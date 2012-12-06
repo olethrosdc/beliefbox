@@ -34,7 +34,7 @@ Grid::Grid(Vector& lower_bound_, Vector& upper_bound_)
     \f]
     where \f$I\f$ is an indicator function.
  */
-int Grid::getInterval(Vector& x)
+int Grid::getInterval(const Vector& x) const
 {
     int d = 1;
     int y = 0;
@@ -84,7 +84,7 @@ EvenGrid::EvenGrid(const Vector& lower_bound_, const Vector& upper_bound_, int K
     Note that each one of the extreme intervals implicitly includes
     plus or minus infinity. 
  */
-int EvenGrid::getInterval(Vector& x) const
+int EvenGrid::getInterval(const Vector& x) const
 {
     int d = 1;
     int y = 0;

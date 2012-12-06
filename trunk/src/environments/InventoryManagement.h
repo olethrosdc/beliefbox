@@ -43,12 +43,25 @@ public:
         local_mdp->setState(state);
     }
 
-    virtual bool Act(const int action) 
+    virtual bool Act(const int& action) 
     {
         reward = local_mdp->Act(action);
         state = local_mdp->getState();
         return true;
     }
+
+	virtual real getTransitionProbability(const int& state, const int& action, const int& next_state) const 
+    {
+        return local_mdp->getTransitionProbability(state, action, next_state);
+    }
+        
+
+    virtual real getExpectedReward(const int& state, const int& action) const 
+    {
+        return local_mdp->getExpectedReward(state, action);
+    }
+
+
     virtual const char* Name()
     {
         return "Inventory management";

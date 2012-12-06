@@ -120,9 +120,18 @@ public:
     {
         return state_lower_bound;
     }
-	virtual real getTransitionProbability(const S& state, const A& action, const S& next_state) const = 0;
+	virtual real getTransitionProbability(const S& state, const A& action, const S& next_state) const 
+    {
+        Swarning("Should be implemented\n");
+        return 1.0;
+    }
+        
 
-    virtual real getExpectedReward(const S& state, const A& action) const = 0;
+    virtual real getExpectedReward(const S& state, const A& action) const 
+    {
+        Swarning("Should be implemented\n");
+        return 0.0;
+    }
 
 };
 

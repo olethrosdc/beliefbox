@@ -84,7 +84,7 @@ void MountainCar::Reset()
     endsim = false;
     reward = 0.0;
 }
-bool MountainCar::Act(const int action)
+bool MountainCar::Act(const int& action)
 {
     // make sure we tell the guy we have terminated
     if (endsim) {

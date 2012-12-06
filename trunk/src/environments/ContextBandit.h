@@ -47,7 +47,7 @@ public:
     virtual void Reset();
     
     /// returns true if the action succeeds
-    virtual bool Act(int action);
+    virtual bool Act(const int& action);
 
     /// Get the MDP
     virtual DiscreteMDP* getMDP() const;

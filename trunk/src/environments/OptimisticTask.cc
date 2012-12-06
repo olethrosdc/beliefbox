@@ -17,7 +17,7 @@ void OptimisticTask::Reset()
     reward = 0;
 }
 
-bool OptimisticTask::Act(int action)
+bool OptimisticTask::Act(const int& action)
 {
     // get next state
     switch (state) {

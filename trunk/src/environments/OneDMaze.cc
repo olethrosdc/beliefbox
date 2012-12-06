@@ -31,7 +31,7 @@ void OneDMaze::Reset()
     state = 0;
 }
 
-bool OneDMaze::Act(int action)
+bool OneDMaze::Act(const int& action)
 {
     state = 0;
     reward = 0;

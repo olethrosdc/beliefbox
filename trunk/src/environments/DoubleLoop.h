@@ -32,11 +32,21 @@ public:
     virtual ~DoubleLoop();
     
     virtual void Reset();
-    virtual bool Act(int action);
+    virtual bool Act(const int&action);
 
     virtual const char* Name()
     {
         return "River Swim";
+    }
+	virtual real getTransitionProbability(const int& state, const int& action, const int& next_state) const 
+    {
+        return model->getTransitionProbability(state, action, next_state);
+    }
+        
+
+    virtual real getExpectedReward(const int& state, const int& action) const 
+    {
+        return model->getExpectedReward(state, action);
     }
 
     virtual DiscreteMDP* getMDP() const;

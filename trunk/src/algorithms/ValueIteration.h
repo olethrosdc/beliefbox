@@ -67,7 +67,7 @@ public:
     {
         return Q;
     }
-    inline Matrix getStateValues() const
+    inline Vector getStateValues() const
     {
         return V;
     }

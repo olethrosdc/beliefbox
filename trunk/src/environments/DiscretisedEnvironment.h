@@ -42,7 +42,7 @@ public:
         state = grid.getInterval(environment.getState());
     }
 
-    virtual bool Act(int action) {
+    virtual bool Act(const int& action) {
         bool flag = environment.Act(action);
         state = grid.getInterval(environment.getState());
         reward = environment.getReward();
