@@ -67,6 +67,17 @@ public:
     {
         parameters.MCNOISE = randomness;
     }
+	void Show()
+	{
+		printf("%f %f %f %f %f %f %f # params\n",
+			   parameters.U_POS,
+			   parameters.L_POS,
+			   parameters.U_VEL,
+			   parameters.L_VEL,
+			   parameters.INPUT,
+			   parameters.GRAVITY,
+			   parameters.MCNOISE);
+	}
 };
 
 class MountainCarGenerator
