@@ -27,6 +27,9 @@
     - const S& StateLowerBound()
     - const S& StateUpperBound()
 
+    Sampler
+    - The sampler
+
     S is the state class
     A is the action class
  */
@@ -75,7 +78,9 @@ public:
         BuildMDP();
     }
 
+
     /// Build a model using a sampler
+    template <class Sampler>
     RepresentativeStateModel(real gamma_,
                              const Model& model_,
                              Sampler& sampler,
@@ -88,7 +93,7 @@ public:
     {
         assert(n_actions > 0);
         for (uint i=0; i<n_states; ++i) {
-            states.push_back(sampler.generate());
+            states.push_back(sampler.Generate());
         }
         BuildMDP();
     }
