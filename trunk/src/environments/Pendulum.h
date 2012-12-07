@@ -17,7 +17,7 @@
 #include "Environment.h"
 #include "Vector.h"
 #include "real.h"
-
+#include "AbstractPolicy.h"
 class Pendulum : public Environment<Vector, int>
 {
 protected:
@@ -85,6 +85,16 @@ public:
             return 0.0;
         }
 	}
+	void Show()
+	{
+		printf("%f %f %f %f %f %f # params (Pendulum)\n",
+			   parameters.pendulum_mass,
+			   parameters.cart_mass,
+			   parameters.pendulum_length,
+			   parameters.gravity,
+			   parameters.max_noise,
+			   parameters.Dt);
+	}
 
 };
 
@@ -101,6 +111,44 @@ public:
 
 
 
-
+class HeuristicPendulumPolicy  : public AbstractPolicy<Vector, int>
+{
+protected:
+	int n_actions;
+    Vector state;
+public:
+	HeuristicPendulumPolicy()
+		: n_actions(2),
+          state(2)
+	{
+	}
+	virtual ~HeuristicPendulumPolicy()
+	{
+	}
+	virtual int SelectAction()
+	{
+        int action = 1;
+        if (state[0] + state[1] > 0) {
+            action = 2;
+        }
+        if (state[0] + state[1] < 0) {
+            action = 0;
+        }
+        return action;
+	}
+	virtual void Observe (const Vector& previous_state, const int& action, real r, const Vector& next_state) 
+	{
+        state = next_state;
+	}
+    virtual void Observe (real r, const Vector& next_state) 
+	{
+        state = next_state;
+	}
+	virtual void Reset() 
+	{
+        state(0) = 0;
+        state(1) = 0;
+	}
+};
 
 #endif
