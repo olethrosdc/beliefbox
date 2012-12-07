@@ -24,7 +24,7 @@
 #include "EasyClock.h"
 #include <cstring>
 #include <getopt.h>
-
+#include <vector>
 
 /** Options */
 struct Options
@@ -35,6 +35,8 @@ struct Options
     RandomNumberGenerator& rng; ///< random number generator
     int n_trajectories; ///< number of trajectories to take for each sample
     int n_samples; ///< number of sampled environments
+    int n_training; ///< number of training trajectories
+    int n_testing; ///< number of testing trajectories
 };
 
 
@@ -62,7 +64,7 @@ public:
     {
         real r_d = getAverageTotalReward(data);
         real r_s = getAverageTotalReward(sample);
-		//printf ("%f %f ", r_d, r_s);
+		//printf ("%f %f (r)", r_d, r_s);
         return fabs(r_d - r_s);
     }
 };
@@ -93,30 +95,33 @@ public:
 	ABCRL()
 	{
 	}
-	M GetSample(Demonstrations<X,A>& data,
-                P& policy,
-                real discounting,
-                real epsilon,
-                int n_trajectories,
-                int n_samples)
+	void GetSample(Demonstrations<X,A>& data,
+                   P& policy,
+                   real discounting,
+                   real epsilon,
+                   int n_trajectories,
+                   int n_samples,
+                   std::vector<M>& samples,
+                   std::vector<real>& values)
 	{
 		//real min_epsilon = INF;
-		for (int iter=0; iter<n_samples; ++iter) {
+        int n_models = 0;
+		for (int iter=0; iter<n_samples && n_models == 0; ++iter) {
             M model = generator.Generate();
             Demonstrations<X, A> sample;
             for (int i=0; i<n_trajectories; ++i) {
                 sample.Simulate(model, policy, discounting, -1);
             }
             real error = statistic.distance(data, sample);
-            //printf("%f # error\n", error);
             if (error <= epsilon) {
-				printf ("%f ", error); 
-				model.Show();
-                //return model;
+                n_models++;
+                samples.push_back(model);
+                values.push_back(statistic.getAverageTotalReward(sample));
+				//printf ("(e) %f ", error); 
+				//model.Show();
             }
 		}
-        Swarning("No model generated\n");
-        return generator.Generate();
+        if (n_models == 0) Swarning("No model generated\n");
 	}
 	
 };
@@ -128,35 +133,52 @@ void RunTest(Options& options)
 {
     G generator;
     M environment = generator.Generate();
+
 	// Place holder for the policy
 	// Start with a random policy!
+
 	RandomPolicy random_policy(environment.getNActions(), &options.rng);
-	AbstractPolicy<Vector, int>& policy = random_policy;
+	HeuristicPendulumPolicy pendulum_policy;
+	AbstractPolicy<Vector, int>& policy = pendulum_policy;// random_policy;
 
     //template <class G, class F, class M, class P, typename X, typename A>
-    MountainCar mountain_car(true);
-    Demonstrations<Vector, int> data;
+    Demonstrations<Vector, int> training_data;
 
-	mountain_car.Show();
-    for (int i=0; i<options.n_trajectories; ++i) {
-        data.Simulate(mountain_car, policy, options.gamma, -1);
+	printf("# training "); environment.Show();
+    for (int i=0; i<options.n_training; ++i) {
+        training_data.Simulate(environment, policy, options.gamma, -1);
     }
 
-    ABCRL<MountainCarGenerator, TotalRewardStatistic<Vector, int>, MountainCar, AbstractPolicy<Vector, int>, Vector, int> abcrl;
+    ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
 
 
-    MountainCar sample = abcrl.GetSample(data,
-                                         policy,
-                                         options.gamma,
-                                         options.epsilon,
-                                         options.n_trajectories,
-                                         options.n_samples);
+    std::vector<M> samples;
+    std::vector<real> values;
+    abcrl.GetSample(training_data,
+                    policy,
+                    options.gamma,
+                    options.epsilon,
+                    options.n_trajectories,
+                    options.n_samples,
+                    samples,
+                    values);
+
+    for (int i=0; i<options.n_testing; ++i) {
+        Demonstrations<Vector, int> data;
+        data.Simulate(environment, policy, options.gamma, -1);
+    }
+
 }
 
 static const char* const help_text = "Usage: test [options]\n\
 \nOptions:\n\
-    --environment: {MountainCar, Pendulum}\n\
-    --gamma:       reward discounting in [0,1]\n\
+    --environment:     {MountainCar, Pendulum}\n\
+    --discount:        reward discounting in [0,1]\n\
+    --threshold:       statistic threshold\n\
+    --n_trajectories:  number of trajectories per sample\n\
+    --n_samples:       number of sampled models\n\
+    --n_training:      number of training trajectories\n\
+    --n_testing:       number of test trajectories\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -168,8 +190,10 @@ int main(int argc, char* argv[])
          10.0,
          NULL,
          rng,
-         100,
-         100
+         1000,
+         128,
+         10,
+         10000
         };
 
 	{
@@ -180,8 +204,13 @@ int main(int argc, char* argv[])
             int this_option_optind = optind ? optind : 1;
             int option_index = 0;
             static struct option long_options[] = {
-                {"gamma", required_argument, 0, 0}, //0
+                {"discount", required_argument, 0, 0}, //0
                 {"environment", required_argument, 0, 0}, //1
+                {"threshold", required_argument, 0, 0}, //2
+                {"n_trajectories", required_argument, 0, 0}, //3
+                {"n_samples", required_argument, 0, 0}, //4
+                {"n_training", required_argument, 0, 0}, //5
+                {"n_testing", required_argument, 0, 0}, //6
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -200,6 +229,10 @@ int main(int argc, char* argv[])
                 switch (option_index) {
                 case 0: options.gamma = atof(optarg); break;
                 case 1: options.environment_name = optarg; break;
+                case 2: options.epsilon = atof(optarg); break;
+                case 3: options.n_trajectories = atoi(optarg); break;
+                case 4: options.n_samples = atoi(optarg); break;
+                case 5: options.n_training = atoi(optarg); break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
@@ -232,16 +265,46 @@ int main(int argc, char* argv[])
 
     
     if (!options.environment_name) {
-        fprintf(stderr, "Must specify environment\n");
+        Serror("Must specify environment\n");
         exit(-1);
     }
+    if (options.gamma < 0 || options.gamma > 1) {
+        Serror("gamma must be in [0,1]\n");
+        exit(-1);
+    }
+
+    if (options.n_samples < 1) {
+        Serror("n_samples must be >= 1\n");
+        exit(-1);
+    }
+
+    if (options.n_trajectories < 1) {
+        Serror("n_trajectories must be >= 1\n");
+        exit(-1);
+    }
+
+    if (options.n_training < 0) {
+        Serror("n_training must be >= 0\n");
+        exit(-1);
+    }
+
+    if (options.n_testing < 1) {
+        Serror("n_training must be >= 1\n");
+        exit(-1);
+    }
+
+    logmsg("Starting environment %s\n", options.environment_name);
+
     if (!strcmp(options.environment_name, "MountainCar")) {
+        logmsg("Testing mountain car\n");
         RunTest<MountainCarGenerator, MountainCar>(options);
+    } else if (!strcmp(options.environment_name, "Pendulum")) {
+        logmsg("Testing pendulum\n");
+        RunTest<PendulumGenerator, Pendulum>(options);
     } else {
         fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
         exit(-1);
     }
-
 
 	return 0;
 }

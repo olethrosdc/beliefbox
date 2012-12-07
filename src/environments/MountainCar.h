@@ -69,7 +69,7 @@ public:
     }
 	void Show()
 	{
-		printf("%f %f %f %f %f %f %f # params\n",
+		printf("%f %f %f %f %f %f %f # params (MountainCar)\n",
 			   parameters.U_POS,
 			   parameters.L_POS,
 			   parameters.U_VEL,
