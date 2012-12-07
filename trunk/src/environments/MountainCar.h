@@ -83,7 +83,7 @@ public:
 class MountainCarGenerator
 {
 public:
-    MountainCar generate()
+    MountainCar Generate()
     {
         return MountainCar(true);
     }

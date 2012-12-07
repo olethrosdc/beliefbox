@@ -13,29 +13,36 @@
 
 #include "Pendulum.h"
 #include "Random.h"
+#include "RandomSourceRNG.h"
 
-Pendulum::Pendulum(real pendulum_mass_,
-                   real cart_mass_,
-                   real pendulum_length_,
-                   real gravity_,
-                   real max_noise_,
-                   real Dt_)
+Pendulum::Parameters Pendulum::default_parameters = 
+    { 
+        2.0, // pendulum mass
+        8.0, // cart mass
+        0.5, // pendulum length
+        9.8, // gravity
+        0.01, // max noise
+        0.01 // interval
+    };
+
+Pendulum::Pendulum(bool random_parameters)
     : Environment<Vector, int>(2, 3),
-      pendulum_mass(pendulum_mass_),
-      cart_mass(cart_mass_),
-      pendulum_length(pendulum_length_),
-      gravity(gravity_), 
-      max_noise(max_noise_),
-      Dt(Dt_),
-      CCa (1.0 / (pendulum_mass + cart_mass))
+      parameters(default_parameters),
+      CCa (1.0 / (parameters.pendulum_mass + parameters.cart_mass))
 {
-    assert(pendulum_mass > 0);
-    assert(cart_mass > 0);
-    assert(pendulum_length > 0);
-    assert(gravity > 0);
-    assert(max_noise >= 0);
-    assert(Dt > 0);
+    if (random_parameters) {
+        RandomSourceRNG rng(false);
+        parameters.pendulum_mass = (0.5 + rng.uniform()) * default_parameters.pendulum_mass;
+        parameters.cart_mass = (0.5 + rng.uniform()) * default_parameters.cart_mass;
+        parameters.pendulum_length = (0.5 + rng.uniform()) * default_parameters.pendulum_length;
+        parameters.gravity = (0.5 + rng.uniform()) * 
+default_parameters.gravity;
+        parameters.max_noise = (0.5 + rng.uniform()) * default_parameters.max_noise;
+        parameters.Dt = (0.5 + rng.uniform()) * default_parameters.Dt;
+    }
+
     state.Resize(2);
+    state.Clear();
     state_upper_bound.Resize(2);
     state_lower_bound.Resize(2);
     state_upper_bound[0] = 4;
@@ -78,9 +85,9 @@ void Pendulum::penddot(Vector& xdot, real u, Vector& x)
     double cx = cos(x[0]);
     real dtheta2 =x[1]*x[1];
     xdot[0] = x[1]; 
-    xdot[1] = (gravity * sin(x[0]) - 
-               0.5*CCa * pendulum_mass * pendulum_length * dtheta2 * sin(2.0*x[0]) -  CCa * cos(x[0]) * u ) / 
-        ( 4.0/3.0*pendulum_length - CCa*pendulum_mass*pendulum_length*cx*cx ); 
+    xdot[1] = (parameters.gravity * sin(x[0]) - 
+               0.5*CCa * parameters.pendulum_mass * parameters.pendulum_length * dtheta2 * sin(2.0*x[0]) -  CCa * cos(x[0]) * u ) / 
+        ( 4.0/3.0*parameters.pendulum_length - CCa*parameters.pendulum_mass*parameters.pendulum_length*cx*cx ); 
    
 }
 
@@ -113,16 +120,16 @@ void Pendulum::Simulate(const int action)
     case 2:  input = +50.0; break;
     }
 
-    noise = urandom(-max_noise, max_noise);
+    noise = urandom(-parameters.max_noise, parameters.max_noise);
     input += noise;
 
     // Simulate for 0.1 seconds
-    for (t=0.0; t<=0.1; t+=Dt) {
+    for (t=0.0; t<=0.1; t+=parameters.Dt) {
 
         penddot(xdot, input, state);
     
-        state[0] += xdot[0] * Dt;
-        state[1] += xdot[1] * Dt;
+        state[0] += xdot[0] * parameters.Dt;
+        state[1] += xdot[1] * parameters.Dt;
 
     }
   

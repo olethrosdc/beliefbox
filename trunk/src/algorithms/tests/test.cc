@@ -25,6 +25,24 @@
 #include <cstring>
 #include <getopt.h>
 
+
+/** Options */
+struct Options
+{
+    real gamma; ///< discount factor
+    real epsilon; ///< stopping threshold
+    char* environment_name; ///< environment name
+    RandomNumberGenerator& rng; ///< random number generator
+    int n_trajectories; ///< number of trajectories to take for each sample
+    int n_samples; ///< number of sampled environments
+};
+
+
+/** The total reward statistic
+    
+    X - observation
+    A - action
+ */
 template <class X, class A>
 class TotalRewardStatistic
 {
@@ -47,7 +65,6 @@ public:
 		//printf ("%f %f ", r_d, r_s);
         return fabs(r_d - r_s);
     }
-
 };
 
 
@@ -80,13 +97,14 @@ public:
                 P& policy,
                 real discounting,
                 real epsilon,
-                int max_iter)
+                int n_trajectories,
+                int n_samples)
 	{
 		//real min_epsilon = INF;
-		for (int iter=0; iter<max_iter; ++iter) {
-            M model = generator.generate();
+		for (int iter=0; iter<n_samples; ++iter) {
+            M model = generator.Generate();
             Demonstrations<X, A> sample;
-            for (int i=0; i<100; ++i) {
+            for (int i=0; i<n_trajectories; ++i) {
                 sample.Simulate(model, policy, discounting, -1);
             }
             real error = statistic.distance(data, sample);
@@ -98,10 +116,42 @@ public:
             }
 		}
         Swarning("No model generated\n");
-        return generator.generate();
+        return generator.Generate();
 	}
 	
 };
+
+/** Run a test
+ */
+template <class G, class M>
+void RunTest(Options& options)
+{
+    G generator;
+    M environment = generator.Generate();
+	// Place holder for the policy
+	// Start with a random policy!
+	RandomPolicy random_policy(environment.getNActions(), &options.rng);
+	AbstractPolicy<Vector, int>& policy = random_policy;
+
+    //template <class G, class F, class M, class P, typename X, typename A>
+    MountainCar mountain_car(true);
+    Demonstrations<Vector, int> data;
+
+	mountain_car.Show();
+    for (int i=0; i<options.n_trajectories; ++i) {
+        data.Simulate(mountain_car, policy, options.gamma, -1);
+    }
+
+    ABCRL<MountainCarGenerator, TotalRewardStatistic<Vector, int>, MountainCar, AbstractPolicy<Vector, int>, Vector, int> abcrl;
+
+
+    MountainCar sample = abcrl.GetSample(data,
+                                         policy,
+                                         options.gamma,
+                                         options.epsilon,
+                                         options.n_trajectories,
+                                         options.n_samples);
+}
 
 static const char* const help_text = "Usage: test [options]\n\
 \nOptions:\n\
@@ -111,23 +161,16 @@ static const char* const help_text = "Usage: test [options]\n\
 
 int main(int argc, char* argv[])
 {
-    
-	// Create a new environment
-	Environment<Vector, int>* environment;
-
+ 
 	MersenneTwisterRNG rng;
-
-	struct Options
-	{
-		real gamma;
-        real epsilon;
-		char* environment_name;
-	};
-
-	Options options;
-	options.gamma = 0.99;
-	options.epsilon = 10.0;
-	options.environment_name = NULL;
+	Options options = 
+        {0.99,
+         10.0,
+         NULL,
+         rng,
+         100,
+         100
+        };
 
 	{
         // options
@@ -193,33 +236,13 @@ int main(int argc, char* argv[])
         exit(-1);
     }
     if (!strcmp(options.environment_name, "MountainCar")) {
-        environment = new MountainCar();
+        RunTest<MountainCarGenerator, MountainCar>(options);
     } else {
         fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
         exit(-1);
     }
 
-	// Place holder for the policy
-	AbstractPolicy<Vector, int>* policy;
-	// Start with a random policy!
-	policy = new RandomPolicy(environment->getNActions(), &rng);
-    //template <class G, class F, class M, class P, typename X, typename A>
-    MountainCar mountain_car(true);
-    Demonstrations<Vector, int> data;
 
-	mountain_car.Show();
-    for (int i=0; i<100; ++i) {
-        data.Simulate(mountain_car, *policy, options.gamma, -1);
-    }
-
-    ABCRL<MountainCarGenerator, TotalRewardStatistic<Vector, int>, MountainCar, AbstractPolicy<Vector, int>, Vector, int> abcrl;
-
-
-    MountainCar sample = abcrl.GetSample(data,
-                                         *policy,
-                                         options.gamma,
-                                         options.epsilon,
-                                         1000);
 	return 0;
 }
 #endif
