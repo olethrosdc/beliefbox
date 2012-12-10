@@ -52,7 +52,7 @@ protected:
     real delta;
     real C;
 public:
-    TotalRewardStatistic(real delta_ = 0)
+    TotalRewardStatistic(real delta_ = 0.5)
         : delta(delta_), C(0.5*log(2.0/delta))
     {
     }
@@ -74,7 +74,7 @@ public:
         real r_s = getAverageTotalReward(sample);
 		//printf ("%f %f (r)", r_d, r_s);
         
-        return fabs(r_d - r_s) + sqrt(log(2/delta) / 2)*;
+        return fabs(r_d - r_s) + sqrt(C * (1.0 / (real) data.size() + 1.0 / (real) sample.size()));
     }
 };
 
@@ -115,7 +115,7 @@ public:
 	{
 		//real min_epsilon = INF;
         int n_models = 0;
-		for (int iter=0; iter<n_samples && n_models == 0; ++iter) {
+		for (int iter=0; iter<n_samples || n_models == 0; ++iter) {
             M model = generator.Generate();
             Demonstrations<X, A> sample;
             for (int i=0; i<n_trajectories; ++i) {
@@ -126,14 +126,33 @@ public:
                 n_models++;
                 samples.push_back(model);
                 values.push_back(statistic.getAverageTotalReward(sample));
-				//printf ("(e) %f ", error); 
-				//model.Show();
+				//printf ("# %d (e) %f ", n_models, error); 
+				model.Show();
             }
 		}
-        if (n_models == 0) Swarning("No model generated\n");
+        if (n_models == 0) {
+			Swarning("No model generated: %d\n", samples.size());
+		}
 	}
 	
 };
+
+
+template <class X, class A, class M, class P>
+real EvaluatePolicy(M& environment, P& policy, real gamma, int n_testing)
+{
+	int n_samples = 0;
+	real discounted_reward = 0;
+    for (int i=0; i<n_testing; ++i) {
+        Demonstrations<Vector, int> data;
+        data.Simulate(environment, policy, gamma, -1);
+		for (uint t=0; t<data.discounted_rewards.size(); ++t) {
+			discounted_reward += data.discounted_rewards[t];
+			n_samples++;
+		}
+    }
+	return discounted_reward / (real) n_samples;
+}
 
 /** Run a test
  */
@@ -143,17 +162,17 @@ void RunTest(Options& options)
     G generator;
     M environment = generator.Generate();
 
-	// Place holder for the policy
+	// Placeholder for the policy
 	// Start with a random policy!
-
 	RandomPolicy random_policy(environment.getNActions(), &options.rng);
+	// Start with a simple heuristic
 	HeuristicPendulumPolicy pendulum_policy;
-	AbstractPolicy<Vector, int>& policy = pendulum_policy;// random_policy;
+	AbstractPolicy<Vector, int>& policy = pendulum_policy; //random_policy;
 
     //template <class G, class F, class M, class P, typename X, typename A>
     Demonstrations<Vector, int> training_data;
 
-	printf("# training "); environment.Show();
+	logmsg("Training\n"); environment.Show();
     for (int i=0; i<options.n_training; ++i) {
         training_data.Simulate(environment, policy, options.gamma, -1);
     }
@@ -172,11 +191,19 @@ void RunTest(Options& options)
                     samples,
                     values);
 
-    for (int i=0; i<options.n_testing; ++i) {
-        Demonstrations<Vector, int> data;
-        data.Simulate(environment, policy, options.gamma, -1);
-    }
-    
+	real value = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
+	Vector V(samples.size());
+	Vector hV(samples.size());
+	for (int i=0; i<V.Size(); ++i) {
+		V(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], policy, options.gamma, options.n_testing);
+		hV(i) = values[i];
+		printf ("%f %f # sampled value\n", hV(i), V(i));
+	}
+    printf ("%f %f # empirical values\n",
+			hV.Sum()/(real) hV.Size(),
+			V.Sum()/(real) V.Size());
+	printf("%f # actual value\n", value);
+
 }
 
 static const char* const help_text = "Usage: test [options]\n\
