@@ -192,8 +192,8 @@ void RunTest(Options& options)
                     values);
 
 	real value = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
-	Vector V(samples.size());
-	Vector hV(samples.size());
+	Vector V((uint) samples.size());
+	Vector hV((uint) samples.size());
 	for (int i=0; i<V.Size(); ++i) {
 		V(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], policy, options.gamma, options.n_testing);
 		hV(i) = values[i];
