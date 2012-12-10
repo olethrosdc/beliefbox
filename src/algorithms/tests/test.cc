@@ -48,7 +48,15 @@ struct Options
 template <class X, class A>
 class TotalRewardStatistic
 {
+protected:
+    real delta;
+    real C;
 public:
+    TotalRewardStatistic(real delta_ = 0)
+        : delta(delta_), C(0.5*log(2.0/delta))
+    {
+    }
+    
     real getAverageTotalReward(Demonstrations<X, A>& data)
     {
         real r_d = 0;
@@ -65,7 +73,8 @@ public:
         real r_d = getAverageTotalReward(data);
         real r_s = getAverageTotalReward(sample);
 		//printf ("%f %f (r)", r_d, r_s);
-        return fabs(r_d - r_s);
+        
+        return fabs(r_d - r_s) + sqrt(log(2/delta) / 2)*;
     }
 };
 
@@ -167,7 +176,7 @@ void RunTest(Options& options)
         Demonstrations<Vector, int> data;
         data.Simulate(environment, policy, options.gamma, -1);
     }
-
+    
 }
 
 static const char* const help_text = "Usage: test [options]\n\
@@ -233,6 +242,7 @@ int main(int argc, char* argv[])
                 case 3: options.n_trajectories = atoi(optarg); break;
                 case 4: options.n_samples = atoi(optarg); break;
                 case 5: options.n_training = atoi(optarg); break;
+                case 6: options.n_testing = atoi(optarg); break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
