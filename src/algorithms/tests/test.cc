@@ -215,7 +215,7 @@ void RunTest(Options& options)
 
     real LSTD_V = EvaluateLSTD(environment, policy, training_data, options.gamma, options.n_testing);
 
-	printf("%f # LSTD value\n", value);
+	printf("%f # LSTD value\n", LSTD_V);
 }
 
 real EvaluateLSTD(Environment<Vector, int>& environment,
