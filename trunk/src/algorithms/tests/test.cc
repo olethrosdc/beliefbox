@@ -10,18 +10,27 @@
  ***************************************************************************/
 
 #ifdef MAKE_MAIN
+#include "LSPI.h"
+#include "Grid.h"
+#include "BasisSet.h"
+
 #include "RSAPI.h"
 #include "Rollout.h"
 #include "Demonstrations.h"
+
 #include "MountainCar.h"
 #include "Pendulum.h"
+
 #include "RandomPolicy.h"
+
 #include "MersenneTwister.h"
 #include "RandomNumberGenerator.h"
+
 #include "KNNClassifier.h"
 #include "ClassifierMixture.h"
 #include "ClassifierPolicy.h"
 #include "EasyClock.h"
+
 #include <cstring>
 #include <getopt.h>
 #include <vector>
@@ -131,7 +140,7 @@ public:
             }
 		}
         if (n_models == 0) {
-			Swarning("No model generated: %d\n", samples.size());
+			Swarning("No model generated: %d\n", (int) samples.size());
 		}
 	}
 	
@@ -204,7 +213,35 @@ void RunTest(Options& options)
 			V.Sum()/(real) V.Size());
 	printf("%f # actual value\n", value);
 
+    Vector LSTD_V = EvaluateLSTD(environment, policy, training_data, options.gamma, options.delta);
 }
+
+Vector EvaluateLSTD(Environment<Vector, int>& environment,
+                    AbstractPolicy<Vector, int>& policy,
+                    Demonstrations<Vector, int>& data,
+                    real gamma,
+                    real delta)
+{
+    int state_dimension = environment.getNStates();
+    int n_actions = environment.getNActions();
+    Vector S_L = environment.StateLowerBound();
+    Vector S_U = environment.StateUpperBound();
+    real accuracy = 0.01;
+    int max_iteration = 100;
+
+    printf("# State dimension: %d\n", state_dimension);
+    printf("# S_L: "); S_L.print(stdout);
+    printf("# S_U: "); S_U.print(stdout);
+	 
+    EvenGrid Discretisation(S_L, S_U, 10);
+    RBFBasisSet RBFs(Discretisation);
+    
+    Vector w = LSTDQ(gamma, delta, state_dimension, n_actions, max_iteration,
+                 RBFs, data);
+    return w;
+}
+
+
 
 static const char* const help_text = "Usage: test [options]\n\
 \nOptions:\n\

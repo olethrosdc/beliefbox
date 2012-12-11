@@ -51,7 +51,7 @@ LSPI::~LSPI()
 {
 }
 
-Vector LSPI::BasisFunction(Vector state, int action)
+Vector LSPI::BasisFunction(const Vector& state, int action)
 {
 	bfs->Evaluate(state);
 	Vector Phi_state = bfs->F();
@@ -161,7 +161,7 @@ void LSPI::PolicyIteration()
 	}
 }
 
-real LSPI::getValue(Vector state, int action)
+real LSPI::getValue(const Vector& state, int action)
 {
 	return Product(BasisFunction(state,action),w);
 }

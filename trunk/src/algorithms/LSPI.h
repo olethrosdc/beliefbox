@@ -43,12 +43,12 @@ public:
 	LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_);
 	~LSPI();
 	
-	Vector BasisFunction(Vector state, int action);
+	Vector BasisFunction(const Vector& state, int action);
 	void LSTDQ();
 	void LSTDQ_OPT();
 	void PolicyIteration();
 	void Reset();
-	real getValue(Vector state, int action);
+	real getValue(const Vector& state, int action);
 	FixedContinuousPolicy& ReturnPolicy()
 	{
 		return policy;

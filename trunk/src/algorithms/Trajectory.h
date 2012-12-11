@@ -10,7 +10,7 @@ class Trajectory
 {
 public:
     std::vector<std::pair<S, A> > x;
-    
+    std::vector<real> rewards;
     Trajectory()
     {
     }
@@ -19,6 +19,13 @@ public:
     {
         //std::cerr << "Adding: " << s << ", " << a << std::endl;
         x.push_back(std::pair<S, A>(s, a));
+    }
+
+    void Observe(S s, A a, real r)
+    {
+        //std::cerr << "Adding: " << s << ", " << a << std::endl;
+        x.push_back(std::pair<S, A>(s, a));
+        rewards.push_back(r);
     }
     
 	uint size() const
@@ -36,6 +43,11 @@ public:
 	{
 		assert (t < x.size());
 		return x[t].second;
+	}
+
+	real reward(uint t) const
+	{
+		return rewards[t];
 	}
 };
 
