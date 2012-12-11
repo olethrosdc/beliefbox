@@ -37,6 +37,11 @@ public:
         //fprintf(stderr, "Size of trajectories: %d\n", trajectories.size())
         current_trajectory->Observe(s, a);
     }
+    void Observe(S s, A a, real r)
+    {
+        //fprintf(stderr, "Size of trajectories: %d\n", trajectories.size())
+        current_trajectory->Observe(s, a, r);
+    }
     void NewEpisode()
     {
         //fprintf(stderr, "Adding Episode in Trajectories\n");
@@ -64,7 +69,7 @@ public:
 			}
 			policy.Observe(reward, state);
             A action = policy.SelectAction();
-			Observe(state, action);
+			Observe(state, action, reward);
 			running = environment.Act(action);
 			if (horizon >= 0 && t >= horizon) {
 				running = false;
