@@ -47,6 +47,7 @@ public:
 
 	real reward(uint t) const
 	{
+		assert (t < rewards.size());
 		return rewards[t];
 	}
 };

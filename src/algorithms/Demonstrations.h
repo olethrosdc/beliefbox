@@ -83,13 +83,37 @@ public:
         discounted_rewards.push_back(discounted_reward);
 	}
 
-    int size() const
+    uint size() const
     {
         if (trajectories[trajectories.size() - 1].size() > 0) {
             return trajectories.size();
         }
         return trajectories.size()  - 1;
     }
+
+	S state(uint i, uint t) const
+	{
+		assert (i < size());
+		return trajectories[i].state(t);
+	}
+
+	A action(uint i, uint t) const
+	{
+		assert (i < size());
+		return trajectories[i].action(t);
+	}
+
+	real reward(uint i, uint t) const
+	{	
+		assert (i < size());
+		return trajectories[i].action(t);
+	}
+
+	uint length(uint i) const
+	{
+		return trajectories[i].size();
+	}
+
 };
 
 #endif

@@ -10,7 +10,7 @@
  ***************************************************************************/
 
 #ifdef MAKE_MAIN
-#include "LSPI.h"
+#include "LSTDQ.h"
 #include "Grid.h"
 #include "BasisSet.h"
 
@@ -213,21 +213,21 @@ void RunTest(Options& options)
 			V.Sum()/(real) V.Size());
 	printf("%f # actual value\n", value);
 
-    Vector LSTD_V = EvaluateLSTD(environment, policy, training_data, options.gamma, options.delta);
+    real LSTD_V = EvaluateLSTD(environment, policy, training_data, options.gamma, options.n_testing);
+
+	printf("%f # LSTD value\n", value);
 }
 
-Vector EvaluateLSTD(Environment<Vector, int>& environment,
-                    AbstractPolicy<Vector, int>& policy,
-                    Demonstrations<Vector, int>& data,
-                    real gamma,
-                    real delta)
+real EvaluateLSTD(Environment<Vector, int>& environment,
+				  AbstractPolicy<Vector, int>& policy,
+				  Demonstrations<Vector, int>& data,
+				  real gamma,
+				  int n_test_samples)
 {
     int state_dimension = environment.getNStates();
     int n_actions = environment.getNActions();
     Vector S_L = environment.StateLowerBound();
     Vector S_U = environment.StateUpperBound();
-    real accuracy = 0.01;
-    int max_iteration = 100;
 
     printf("# State dimension: %d\n", state_dimension);
     printf("# S_L: "); S_L.print(stdout);
@@ -235,10 +235,24 @@ Vector EvaluateLSTD(Environment<Vector, int>& environment,
 	 
     EvenGrid Discretisation(S_L, S_U, 10);
     RBFBasisSet RBFs(Discretisation);
-    
-    Vector w = LSTDQ(gamma, delta, state_dimension, n_actions, max_iteration,
-                 RBFs, data);
-    return w;
+	LSTDQ lstdq(gamma,
+				state_dimension,
+				n_actions,
+				RBFs,
+				data);
+	
+	lstdq.Calculate();
+	
+	real V = 0;
+	for (int i=0; i<n_test_samples; ++i) {
+		environment.Reset();
+		Vector state = environment.getState();
+		policy.Reset();
+		policy.setState(state);
+		V += lstdq.getValue(state, policy.SelectAction());
+	}
+	V /= (real) n_test_samples; 
+	return V;
 }
 
 
