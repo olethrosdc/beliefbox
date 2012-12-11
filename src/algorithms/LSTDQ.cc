@@ -74,17 +74,24 @@ void LSTDQ::Calculate()
     Vector Phi_;
     Vector Phi;
     Matrix res;
-    A.Clear();
+    //A.Clear();
+    A = Matrix::Unity(n_basis,n_basis) * 1e-6;
     b.Clear();
-
+	
     for(uint i=0; i<Samples.size(); ++i) {
-        for(uint t=0; t<Samples.length(i) - 1; ++t) {
-            Phi_ = BasisFunction(Samples.state(i,t), Samples.action(i,t));
-            Vector s = Samples.state(i, t+1);
-            Phi = BasisFunction(s, policy.SelectAction(s));
+		logmsg ("Trajectory %d\n", i);
+        for(int t=0; t<(int) Samples.length(i) - 1; ++t) {
+			Vector s_t = Samples.state(i,t); 
+			int a_t = Samples.action(i,t);
+            Phi_ = BasisFunction(s_t, a_t);
+            Vector s2 = Samples.state(i, t+1);
+			real r_t = Samples.reward(i,t);
+            Phi = BasisFunction(s2, policy.SelectAction(s2));
             res = OuterProduct(Phi_,(Phi_ - (Phi*gamma)));
             A += res;
-            b += Phi_*Samples.reward(i,t);
+            b += Phi_*r_t;
+			//s_t.print(stdout);
+			//printf ("a: %d r: %f\n", a_t, r_t);
         }
     }
     const Matrix w_ = A.Inverse_LU();
@@ -101,7 +108,9 @@ void LSTDQ::Calculate_Opt()
     b.Clear();
     
     for(uint i=0; i<Samples.size(); ++i) {
-        for(uint t=0; t<Samples.length(i); ++t) {
+		logmsg ("Trajectory %d\n", i);
+        for(int t=0; t<(int) Samples.length(i) - 1; ++t) {
+			logmsg ("Time %d/%d\n", t, Samples.length(i));
             Phi_ = BasisFunction(Samples.state(i,t), Samples.action(i,t));
             Vector s = Samples.state(i, t+1);
             Phi = BasisFunction(s,policy.SelectAction(s));
@@ -117,8 +126,12 @@ void LSTDQ::Calculate_Opt()
     w = w_*b;
 }
 
+/// This seems to return zero all the time!
 real LSTDQ::getValue(const Vector& state, int action) const
 {
+	//Vector phi = BasisFunction(state,action);
+	//printf ("PHI: "); phi.print(stdout);
+	//printf("W: "); w.print(stdout);
     return Product(BasisFunction(state,action),w);
 }
 

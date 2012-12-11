@@ -619,7 +619,7 @@ void MatrixProduct (const Vector* lhs, const Vector* rhs, Matrix* res)
 {
   	int nl = lhs->n;
 	int nr = rhs->n;
-	assert((nl == res.Rows())&&(nr == res.Columns()));
+	assert((nl == res->Rows())&&(nr == res->Columns()));
     for (int i=0; i<nl; i++) { // columns
         for (int j=0; j<nr; j++) { //rows
             (*res)(i,j) = lhs->x[i] * rhs->x[j];
