@@ -241,7 +241,8 @@ real EvaluateLSTD(Environment<Vector, int>& environment,
 				RBFs,
 				data);
 	
-	lstdq.Calculate();
+	lstdq.Calculate_Opt();
+	//lstdq.Calculate();
 	
 	real V = 0;
 	for (int i=0; i<n_test_samples; ++i) {
@@ -249,8 +250,11 @@ real EvaluateLSTD(Environment<Vector, int>& environment,
 		Vector state = environment.getState();
 		policy.Reset();
 		policy.setState(state);
-		V += lstdq.getValue(state, policy.SelectAction());
+		real Vi = lstdq.getValue(state, policy.SelectAction());
+		printf ("%f ", Vi);
+		V += Vi;
 	}
+	printf("# LSTD values\n");
 	V /= (real) n_test_samples; 
 	return V;
 }

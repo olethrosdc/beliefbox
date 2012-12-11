@@ -94,19 +94,24 @@ public:
 	S state(uint i, uint t) const
 	{
 		assert (i < size());
+		assert (t < length(i));
+		assert (t < trajectories[i].size());
 		return trajectories[i].state(t);
 	}
 
 	A action(uint i, uint t) const
 	{
 		assert (i < size());
+		assert (t < length(i));
+		assert (t < trajectories[i].size());
 		return trajectories[i].action(t);
 	}
 
 	real reward(uint i, uint t) const
 	{	
 		assert (i < size());
-		return trajectories[i].action(t);
+		assert (t < trajectories[i].rewards.size());
+		return trajectories[i].reward(t);
 	}
 
 	uint length(uint i) const
