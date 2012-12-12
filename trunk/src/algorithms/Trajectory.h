@@ -11,7 +11,9 @@ class Trajectory
 public:
     std::vector<std::pair<S, A> > x;
     std::vector<real> rewards;
-    Trajectory()
+    bool endsim; ///< whether we enter a terminal state at the end.
+
+    Trajectory() : endsim(false)
     {
     }
 
@@ -48,6 +50,16 @@ public:
 		assert (t < rewards.size());
 		return rewards[t];
 	}
+    
+    void Terminate()
+    {
+        endsim = true;
+    }
+
+    bool terminated() const
+    {
+        return endsim;
+    }
 };
 
 #endif

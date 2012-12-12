@@ -42,6 +42,12 @@ public:
         //fprintf(stderr, "Size of trajectories: %d\n", trajectories.size())
         current_trajectory->Observe(s, a, r);
     }
+    void Terminate()
+    {
+        //fprintf(stderr, "Size of trajectories: %d\n", trajectories.size())
+        current_trajectory->Terminate();
+    }
+
     void NewEpisode()
     {
         //fprintf(stderr, "Adding Episode in Trajectories\n");
@@ -59,18 +65,35 @@ public:
 		real total_reward = 0.0;
 		real discounted_reward = 0.0;
 		int t = 0;
+        real reward = 0.0;
 		do {
+            // get current state
 			S state = environment.getState();
-			real reward = environment.getReward();
+
+            // choose an action
+			policy.Observe(reward, state);
+            A action = policy.SelectAction();
+			running = environment.Act(action);
+
+            // get reward
+            reward = environment.getReward();
+            // save sample
+			Observe(state, action, reward);
+
 			total_reward += reward;
 			discounted_reward += discount * reward;
 			if (horizon >= 0) {
 				discount *= gamma;
 			}
-			policy.Observe(reward, state);
-            A action = policy.SelectAction();
-			Observe(state, action, reward);
-			running = environment.Act(action);
+
+            if (!running) {
+                S state = environment.getState();
+                real reward = 0.0; // environment.getReward();
+                policy.Observe(reward, state);
+                A action = policy.SelectAction();
+                Observe(state, action, reward);
+                Terminate();
+            }
 			if (horizon >= 0 && t >= horizon) {
 				running = false;
 			} else if (horizon < 0) {
@@ -118,6 +141,11 @@ public:
 	{
 		return trajectories[i].size();
 	}
+
+    bool terminated(uint i) const
+    {
+        return trajectories[i].terminated();
+    }
 
 };
 

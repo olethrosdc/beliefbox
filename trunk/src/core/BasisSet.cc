@@ -11,11 +11,11 @@
 
 #include "BasisSet.h"
 
-RBFBasisSet::RBFBasisSet(const EvenGrid& grid)
+RBFBasisSet::RBFBasisSet(const EvenGrid& grid, real scale)
 {
 	n_bases = 0;
     for (int i=0; i<grid.getNIntervals(); ++i) {
-        AddCenter(grid.getCenter(i), grid.delta * 2.0);
+        AddCenter(grid.getCenter(i), grid.delta * scale);
     }
     //logmsg("Added %d RBFs\n", centers.size());
 }
