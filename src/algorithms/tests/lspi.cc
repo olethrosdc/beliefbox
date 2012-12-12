@@ -86,15 +86,7 @@ int main(int argc, char* argv[])
 	Environment<Vector,int>* environment;
 	
 	MersenneTwisterRNG rng;
-#if 0
-    srand(1228517343);
-    srand48(1228517343);
-    rng.manualSeed(18517339);
-#else
-    srand(time(NULL));
-    srand48(time(NULL));
-    rng.manualSeed(time(NULL));
-#endif
+	int seed = time(NULL);
 
 	int max_iteration = 100;
 	real gamma = 0.999;
@@ -123,6 +115,7 @@ int main(int argc, char* argv[])
 				{"grids", required_argument, 0, 0}, //6
 				{"eval_iter", required_argument, 0, 0}, //7
 				{"algorithm", required_argument, 0, 0}, //8
+				{"seed", required_argument, 0, 0}, //9
 				{0, 0, 0, 0}
 			};
 			c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -146,7 +139,8 @@ int main(int argc, char* argv[])
 						case 5: delta = atof(optarg); break;
 						case 6: grids = atoi(optarg); break;
 						case 7: eval_iter = atoi(optarg); break;
-						case 8: algorithm = atoi(optarg); break;
+					    case 8: algorithm = atoi(optarg); break;
+					    case 9: seed = atoi(optarg); break;
 						default:
 							fprintf (stderr, "Invalid options\n");
 							exit(0);
@@ -175,7 +169,12 @@ int main(int argc, char* argv[])
             printf ("\n");
         }		
 	}
-	
+
+    srand(seed);
+    srand48(seed);
+    rng.manualSeed(seed);
+	setRandomSeed(seed);
+
 	if (!environment_name) {
         fprintf(stderr, "Must specify environment\n");
         exit(-1);

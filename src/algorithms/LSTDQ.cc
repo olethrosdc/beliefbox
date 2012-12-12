@@ -74,7 +74,6 @@ void LSTDQ::Calculate()
     Vector Phi_;
     Vector Phi;
     Matrix res;
-    //A.Clear();
     A = Matrix::Unity(n_basis,n_basis) * 1e-6;
     b.Clear();
 	
@@ -85,24 +84,16 @@ void LSTDQ::Calculate()
             int a_t = Samples.action(i,t);
             Phi_ = BasisFunction(s_t, a_t);
             if (Samples.terminated(i) && t >= Samples.length(i) - 3) {
-                //int t = Samples.length(i) - 1;
                 res =  OuterProduct(Phi_, Phi_);
-                //printf ("a: %d  # TERMINATE\n", a_t);
             } else {
                 Vector s2 = Samples.state(i, t+1);
                 Phi = BasisFunction(s2, policy.SelectAction(s2));
                 res = OuterProduct(Phi_,(Phi_ - (Phi*gamma)));
             }
-            real r_t = Samples.reward(i,t);
             A += res;
-            b += Phi_*r_t;
-			//s_t.print(stdout);
-			//printf ("%d %f\n", t, r_t);
+            b += Phi_* Samples.reward(i,t);
         }
     }
-    //logmsg("A %dx%d:\n", A.Rows(), A.Columns());
-    //A.print(stdout);
-    //logmsg("A END\n");
     const Matrix w_ = A.Inverse_LU();
     w = w_*b;
 }
