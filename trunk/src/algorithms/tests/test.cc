@@ -178,7 +178,7 @@ void RunTest(Options& options)
 	RandomPolicy random_policy(environment.getNActions(), &options.rng);
 	// Start with a simple heuristic
 	HeuristicPendulumPolicy pendulum_policy;
-	AbstractPolicy<Vector, int>& policy = pendulum_policy;
+	AbstractPolicy<Vector, int>& policy = random_policy; //pendulum_policy;
 
     //template <class G, class F, class M, class P, typename X, typename A>
     Demonstrations<Vector, int> training_data;
