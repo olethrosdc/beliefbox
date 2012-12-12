@@ -70,11 +70,16 @@ Pendulum::~Pendulum()
 void Pendulum::Reset()
 {
     reward = 1.0;
+#if 1
     // Theta
     state[0] =  urandom(-0.01, 0.01);
-
     // dTheta/dt
     state[1] = urandom(-0.001, 0.001);
+#else
+	for (int i=0; i<2; ++i) {
+		state[i] = urandom(state_lower_bound[i], state_upper_bound[i]);
+	}
+#endif
     endsim = false;
 }
 
