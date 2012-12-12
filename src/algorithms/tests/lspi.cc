@@ -222,13 +222,27 @@ int main(int argc, char* argv[])
 //        
         RBFBasisSet* RBFs = new RBFBasisSet(Discretisation);
         LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs,rollout);
-        lspi->PolicyIteration();
-        
-		PerformanceStatistics run_statistics = Evaluate(environment,
-														lspi->ReturnPolicy(),
-														gamma,
-														1000);
-		statistics.Observe(run_statistics);
+        //lspi->PolicyIteration();
+        lspi->LSTDQ();
+        real V = 0;
+        int n_eval = 10000;
+        for (int i=0; i<n_eval; ++i) {
+            environment->Reset();
+            Vector state = environment->getState();
+            real Vi = lspi->getValue(state, rand()%n_actions);
+            printf ("%f ", Vi);
+            V += Vi;
+         
+        }
+        printf("# V samples\n");
+        printf("%f # V\n", V / (real) n_eval);
+        for (int i=0; i<1000; ++i) {
+            PerformanceStatistics run_statistics = Evaluate(environment,
+                                                            lspi->ReturnPolicy(),
+                                                            gamma,
+                                                            1000);
+            statistics.Observe(run_statistics);
+        }
 	
         statistics.Show();
         delete policy;
@@ -254,13 +268,16 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
 	int t;
 	real discount = 1;
 	environment->Reset();
+    policy.Reset();
     for (t=0; t < T; ++t, ++statistics.run_time) {
 		Vector state = environment->getState();
 		real reward = environment->getReward();
         //printf("%d %f # r_t\n", t, reward);
-		statistics.total_reward += reward;
-		statistics.discounted_reward += reward*discount;
-		discount *=gamma;
+        if (t > 0) {
+            statistics.total_reward += reward;
+            statistics.discounted_reward += reward*discount;
+            discount *=gamma;
+        }
 		policy.setState(state);
 		int action = policy.SelectAction();
 		bool action_ok = environment->Act(action);

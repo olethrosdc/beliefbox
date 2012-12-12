@@ -46,6 +46,8 @@ struct Options
     int n_samples; ///< number of sampled environments
     int n_training; ///< number of training trajectories
     int n_testing; ///< number of testing trajectories
+    int grid; ///< grid size for features
+    real scale; ///< scale of RBF basis
 };
 
 
@@ -176,7 +178,7 @@ void RunTest(Options& options)
 	RandomPolicy random_policy(environment.getNActions(), &options.rng);
 	// Start with a simple heuristic
 	HeuristicPendulumPolicy pendulum_policy;
-	AbstractPolicy<Vector, int>& policy = pendulum_policy; //random_policy;
+	AbstractPolicy<Vector, int>& policy = random_policy;
 
     //template <class G, class F, class M, class P, typename X, typename A>
     Demonstrations<Vector, int> training_data;
@@ -213,16 +215,14 @@ void RunTest(Options& options)
 			V.Sum()/(real) V.Size());
 	printf("%f # actual value\n", value);
 
-    real LSTD_V = EvaluateLSTD(environment, policy, training_data, options.gamma, options.n_testing);
-
+    real LSTD_V = EvaluateLSTD(environment, policy, training_data, options);
 	printf("%f # LSTD value\n", LSTD_V);
 }
 
 real EvaluateLSTD(Environment<Vector, int>& environment,
 				  AbstractPolicy<Vector, int>& policy,
 				  Demonstrations<Vector, int>& data,
-				  real gamma,
-				  int n_test_samples)
+                  Options& options)
 {
     int state_dimension = environment.getNStates();
     int n_actions = environment.getNActions();
@@ -233,29 +233,29 @@ real EvaluateLSTD(Environment<Vector, int>& environment,
     printf("# S_L: "); S_L.print(stdout);
     printf("# S_U: "); S_U.print(stdout);
 	 
-    EvenGrid Discretisation(S_L, S_U, 10);
-    RBFBasisSet RBFs(Discretisation);
-	LSTDQ lstdq(gamma,
+    EvenGrid Discretisation(S_L, S_U, options.grid);
+    RBFBasisSet RBFs(Discretisation, options.scale);
+	LSTDQ lstdq(options.gamma,
 				state_dimension,
 				n_actions,
 				RBFs,
 				data);
 	
-	lstdq.Calculate_Opt();
-	//lstdq.Calculate();
+	//lstdq.Calculate_Opt();
+	lstdq.Calculate();
 	
 	real V = 0;
-	for (int i=0; i<n_test_samples; ++i) {
+	for (int i=0; i<options.n_testing; ++i) {
 		environment.Reset();
 		Vector state = environment.getState();
 		policy.Reset();
 		policy.setState(state);
-		real Vi = lstdq.getValue(state, policy.SelectAction());
+		real Vi = lstdq.getValue(state, rand()%n_actions);
 		printf ("%f ", Vi);
 		V += Vi;
 	}
 	printf("# LSTD values\n");
-	V /= (real) n_test_samples; 
+	V /= (real) options.n_testing;
 	return V;
 }
 
@@ -270,6 +270,9 @@ static const char* const help_text = "Usage: test [options]\n\
     --n_samples:       number of sampled models\n\
     --n_training:      number of training trajectories\n\
     --n_testing:       number of test trajectories\n\
+    --seed:            seed all the RNGs with this\n\
+    --grid:            number of grid intervals\n\
+    --bandwidth:       bandwidth of LSTD\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -284,7 +287,9 @@ int main(int argc, char* argv[])
          1000,
          128,
          10,
-         10000
+         10000,
+         5,
+         0.5
         };
 
 	{
@@ -302,6 +307,8 @@ int main(int argc, char* argv[])
                 {"n_samples", required_argument, 0, 0}, //4
                 {"n_training", required_argument, 0, 0}, //5
                 {"n_testing", required_argument, 0, 0}, //6
+                {"grid", required_argument, 0, 0}, //7
+                {"scale", required_argument, 0, 0}, //8
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -325,6 +332,8 @@ int main(int argc, char* argv[])
                 case 4: options.n_samples = atoi(optarg); break;
                 case 5: options.n_training = atoi(optarg); break;
                 case 6: options.n_testing = atoi(optarg); break;
+                case 7: options.grid = atoi(optarg); break;
+                case 8: options.scale = atof(optarg); break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);

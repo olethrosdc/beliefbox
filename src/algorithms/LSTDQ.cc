@@ -79,21 +79,30 @@ void LSTDQ::Calculate()
     b.Clear();
 	
     for(uint i=0; i<Samples.size(); ++i) {
-		logmsg ("Trajectory %d\n", i);
+		//logmsg ("Trajectory %d\n", i);
         for(int t=0; t<(int) Samples.length(i) - 1; ++t) {
-			Vector s_t = Samples.state(i,t); 
-			int a_t = Samples.action(i,t);
+            Vector s_t = Samples.state(i,t); 
+            int a_t = Samples.action(i,t);
             Phi_ = BasisFunction(s_t, a_t);
-            Vector s2 = Samples.state(i, t+1);
-			real r_t = Samples.reward(i,t);
-            Phi = BasisFunction(s2, policy.SelectAction(s2));
-            res = OuterProduct(Phi_,(Phi_ - (Phi*gamma)));
+            if (Samples.terminated(i) && t >= Samples.length(i) - 3) {
+                //int t = Samples.length(i) - 1;
+                res =  OuterProduct(Phi_, Phi_);
+                //printf ("a: %d  # TERMINATE\n", a_t);
+            } else {
+                Vector s2 = Samples.state(i, t+1);
+                Phi = BasisFunction(s2, policy.SelectAction(s2));
+                res = OuterProduct(Phi_,(Phi_ - (Phi*gamma)));
+            }
+            real r_t = Samples.reward(i,t);
             A += res;
             b += Phi_*r_t;
 			//s_t.print(stdout);
-			//printf ("a: %d r: %f\n", a_t, r_t);
+			//printf ("%d %f\n", t, r_t);
         }
     }
+    //logmsg("A %dx%d:\n", A.Rows(), A.Columns());
+    //A.print(stdout);
+    //logmsg("A END\n");
     const Matrix w_ = A.Inverse_LU();
     w = w_*b;
 }
@@ -108,9 +117,9 @@ void LSTDQ::Calculate_Opt()
     b.Clear();
     
     for(uint i=0; i<Samples.size(); ++i) {
-		logmsg ("Trajectory %d\n", i);
+		//logmsg ("Trajectory %d\n", i);
         for(int t=0; t<(int) Samples.length(i) - 1; ++t) {
-			logmsg ("Time %d/%d\n", t, Samples.length(i));
+			//logmsg ("Time %d/%d\n", t, Samples.length(i));
             Phi_ = BasisFunction(Samples.state(i,t), Samples.action(i,t));
             Vector s = Samples.state(i, t+1);
             Phi = BasisFunction(s,policy.SelectAction(s));

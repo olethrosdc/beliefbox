@@ -69,7 +69,7 @@ Pendulum::~Pendulum()
 
 void Pendulum::Reset()
 {
-    reward = 0.0;
+    reward = 1.0;
     // Theta
     state[0] =  urandom(-0.01, 0.01);
 

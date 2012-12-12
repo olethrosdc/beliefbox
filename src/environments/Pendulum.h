@@ -18,6 +18,8 @@
 #include "Vector.h"
 #include "real.h"
 #include "AbstractPolicy.h"
+#include "Random.h"
+
 class Pendulum : public Environment<Vector, int>
 {
 protected:
@@ -128,6 +130,9 @@ public:
 	virtual int SelectAction()
 	{
         int action = 1;
+        if (urandom() < 0.1) {
+            return rand()%3;
+        }
         if (state[0] + state[1] > 0) {
             action = 2;
         }

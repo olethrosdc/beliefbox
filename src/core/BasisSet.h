@@ -39,7 +39,7 @@ public:
     /// Get the density at point x
     real Evaluate(const Vector& x)
     {
-		Vector d = pow(x - center,2) / (beta);
+		Vector d = pow((x - center)/beta, 2);
 		real r = d.Sum();
         //real d = EuclideanNorm(&x, &center);
         return exp(-r);
@@ -47,8 +47,8 @@ public:
     /// Evaluate the log density
     real logEvaluate(const Vector& x)
     {
-		Vector d = pow(x - center,2) / (beta);
-		d.print(stdout);
+		Vector d = pow((x - center)/beta,2);
+		//d.print(stdout);
 		return d.Sum();
     //    return (-beta) * EuclideanNorm(&x, &center);		
     }
@@ -71,7 +71,7 @@ public:
         valid_log_features(false),
         n_bases(0)
     {  }
-    RBFBasisSet(const EvenGrid& grid);
+    RBFBasisSet(const EvenGrid& grid, real scale = 0.5);
     ~RBFBasisSet();
 	void AddCenter(const Vector& v, const Vector& b);
     void AddCenter(const Vector& v, real b);
