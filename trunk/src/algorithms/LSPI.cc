@@ -80,7 +80,6 @@ void LSPI::LSTDQ()
 			Phi_ = BasisFunction(Samples->getState(i,j), Samples->getAction(i,j));
 			if(Samples->getEndsim(i,j)){
 				res = OuterProduct(Phi_, Phi_);
-                printf("# TERMINATE\n");
 			}
 			else{
 				Phi = BasisFunction(Samples->getNextState(i,j),policy.SelectAction(Samples->getNextState(i,j)));
@@ -88,7 +87,6 @@ void LSPI::LSTDQ()
 			}
 			A += res;
 			b += Phi_*Samples->getReward(i,j);
-            printf ("%d %f\n", j, Samples->getReward(i,j));
 		}
 	}
 	const Matrix w_ = A.Inverse_LU();

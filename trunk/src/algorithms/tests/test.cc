@@ -20,6 +20,7 @@
 
 #include "MountainCar.h"
 #include "Pendulum.h"
+#include "PuddleWorld.h"
 
 #include "RandomPolicy.h"
 
@@ -177,7 +178,7 @@ void RunTest(Options& options)
 	// Start with a random policy!
 	RandomPolicy random_policy(environment.getNActions(), &options.rng);
 	// Start with a simple heuristic
-	HeuristicPendulumPolicy pendulum_policy;
+	//HeuristicPendulumPolicy pendulum_policy;
 	AbstractPolicy<Vector, int>& policy = random_policy; //pendulum_policy;
 
     //template <class G, class F, class M, class P, typename X, typename A>
@@ -271,8 +272,8 @@ static const char* const help_text = "Usage: test [options]\n\
     --n_training:      number of training trajectories\n\
     --n_testing:       number of test trajectories\n\
     --seed:            seed all the RNGs with this\n\
-    --grid:            number of grid intervals\n\
-    --bandwidth:       bandwidth of LSTD\n\
+    --grid:            number of grid intervals for LSTD\n\
+    --scale:           RBF scale for LSTD\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -370,6 +371,7 @@ int main(int argc, char* argv[])
 	srand(seed);
     srand48(seed);
     rng.manualSeed(seed);
+	setRandomSeed(seed);
 
     if (!options.environment_name) {
         Serror("Must specify environment\n");
@@ -408,6 +410,9 @@ int main(int argc, char* argv[])
     } else if (!strcmp(options.environment_name, "Pendulum")) {
         logmsg("Testing pendulum\n");
         RunTest<PendulumGenerator, Pendulum>(options);
+    } else if (!strcmp(options.environment_name, "PuddleWorld")) {
+        logmsg("Testing puddle world\n");
+        RunTest<PuddleWorldGenerator, PuddleWorld>(options);
     } else {
         fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
         exit(-1);
