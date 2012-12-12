@@ -178,7 +178,7 @@ void RunTest(Options& options)
 	RandomPolicy random_policy(environment.getNActions(), &options.rng);
 	// Start with a simple heuristic
 	HeuristicPendulumPolicy pendulum_policy;
-	AbstractPolicy<Vector, int>& policy = random_policy;
+	AbstractPolicy<Vector, int>& policy = pendulum_policy;
 
     //template <class G, class F, class M, class P, typename X, typename A>
     Demonstrations<Vector, int> training_data;
@@ -251,10 +251,10 @@ real EvaluateLSTD(Environment<Vector, int>& environment,
 		policy.Reset();
 		policy.setState(state);
 		real Vi = lstdq.getValue(state, rand()%n_actions);
-		printf ("%f ", Vi);
+		//printf ("%f ", Vi);
 		V += Vi;
 	}
-	printf("# LSTD values\n");
+	//printf("# LSTD values\n");
 	V /= (real) options.n_testing;
 	return V;
 }
@@ -263,7 +263,7 @@ real EvaluateLSTD(Environment<Vector, int>& environment,
 
 static const char* const help_text = "Usage: test [options]\n\
 \nOptions:\n\
-    --environment:     {MountainCar, Pendulum}\n\
+    --environment:     {MountainCar, Pendulum, Puddleworld}\n\
     --discount:        reward discounting in [0,1]\n\
     --threshold:       statistic threshold\n\
     --n_trajectories:  number of trajectories per sample\n\
@@ -277,19 +277,20 @@ static const char* const help_text = "Usage: test [options]\n\
 
 int main(int argc, char* argv[])
 {
- 
+	int seed = time(NULL);
+
 	MersenneTwisterRNG rng;
 	Options options = 
-        {0.99,
-         10.0,
-         NULL,
-         rng,
-         1000,
-         128,
-         10,
-         10000,
-         5,
-         0.5
+        {0.99, // idscount
+         10.0, // threshold
+         NULL, // envionment
+         rng, // rng
+         1000, // trajectories per sample
+         128, // samples
+         10, // training trajectories
+         10000, // test trajectories
+         5, // grid size
+         0.5 // rbf scale
         };
 
 	{
@@ -309,6 +310,7 @@ int main(int argc, char* argv[])
                 {"n_testing", required_argument, 0, 0}, //6
                 {"grid", required_argument, 0, 0}, //7
                 {"scale", required_argument, 0, 0}, //8
+				{"seed", required_argument, 0, 0}, //9
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -334,6 +336,7 @@ int main(int argc, char* argv[])
                 case 6: options.n_testing = atoi(optarg); break;
                 case 7: options.grid = atoi(optarg); break;
                 case 8: options.scale = atof(optarg); break;
+				case 9: seed = atoi(optarg); break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
@@ -364,7 +367,10 @@ int main(int argc, char* argv[])
         }
     }
 
-    
+	srand(seed);
+    srand48(seed);
+    rng.manualSeed(seed);
+
     if (!options.environment_name) {
         Serror("Must specify environment\n");
         exit(-1);
