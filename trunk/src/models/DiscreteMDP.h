@@ -32,7 +32,7 @@ typedef std::set<int>& DiscreteStateSetRef;
 template<>
 class MDP<int, int> {
 protected:
-  real reward; ///< current reward
+	real reward; ///< current reward
     int state; ///< current state;
     int n_states; ///< number of states (or dimensionality of state space)
     int n_actions; ///< number of actions (or dimensionality of action space)

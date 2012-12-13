@@ -364,7 +364,7 @@ int main (int argc, char** argv)
 
 
         // making sure the number of states & actions is correct
-        n_states = environment->getNStates();
+        n_states  = environment->getNStates();
         n_actions = environment->getNActions();
         
         std::cout <<  "Creating environment: " << environment_name
@@ -791,7 +791,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             if (episode >= 0) {
                 statistics.ep_stats[episode].steps++;
                 statistics.ep_stats[episode].total_reward += reward;
-            statistics.ep_stats[episode].discounted_reward += discount * reward;
+				statistics.ep_stats[episode].discounted_reward += discount * reward;
             }
             total_reward += reward;
             discounted_reward += discount * reward;

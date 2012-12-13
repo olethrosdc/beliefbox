@@ -39,6 +39,7 @@ public:
     /// Get the density at point x
     real Evaluate(const Vector& x)
     {
+
 		Vector d = pow((x - center)/beta, 2);
 		real r = d.Sum();
         //real d = EuclideanNorm(&x, &center);
@@ -47,8 +48,10 @@ public:
     /// Evaluate the log density
     real logEvaluate(const Vector& x)
     {
+
 		Vector d = pow((x - center)/beta,2);
 		//d.print(stdout);
+
 		return d.Sum();
     //    return (-beta) * EuclideanNorm(&x, &center);		
     }
@@ -58,8 +61,7 @@ class RBFBasisSet
 {
 protected:
     std::vector<RBF*> centers;
-//	  std::vector<real> log_features;
-//    std::vector<real> features;
+
 	Vector log_features;
 	Vector features;
     bool valid_features;
@@ -83,7 +85,7 @@ public:
     }
     real log_F(int j)
     {
-        assert(j>=0 && j < n_bases);
+        assert(j >= 0 && j < n_bases);
         assert(valid_log_features);
         return log_features[j];
     }
@@ -93,7 +95,7 @@ public:
 	}
     real F(int j)
     {
-        assert(j>=0 && j < n_bases);
+        assert(j >= 0 && j < n_bases);
         assert(valid_features);
         return features[j];
     }

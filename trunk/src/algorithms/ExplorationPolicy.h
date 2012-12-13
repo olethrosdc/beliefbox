@@ -22,14 +22,14 @@
 class ContinuousStateExplorationPolicy 
 {
 protected:
-    real (*getValue)(const Vector&, int);
+    real (*getValue)(const Vector&, const int&);
 public:
-    virtual ~ContinuousStateExplorationPolicy()
-    {}
-    ContinuousStateExplorationPolicy(real (*getValue_)(const Vector&, int))
+	ContinuousStateExplorationPolicy(real (*getValue_)(const Vector&, const int&))
     {
         getValue = getValue_;
     }
+    virtual ~ContinuousStateExplorationPolicy()
+    {}
     virtual int SelectAction() = 0;
 };
 
@@ -41,7 +41,7 @@ public:
     real epsilon;
     Vector Q;
     Vector state;
-    ContinuousStateEpsilonGreedy(real (*getValue_)(const Vector&, int),
+    ContinuousStateEpsilonGreedy(real (*getValue_)(const Vector&, const int&),
                                  int n_states,
                                  int n_actions,
                                  real epsilon_)
@@ -56,7 +56,16 @@ public:
     virtual ~ContinuousStateEpsilonGreedy()
     {}
 
-
+	real getEpsilon()
+    {
+        return epsilon;
+    }
+    real setEpsilon(real epsilon_)
+    {
+        epsilon = epsilon_;
+        assert(epsilon >= 0 && epsilon <= 1);
+        return epsilon;
+    }
     virtual void setGeometricSchedule(real alpha_, real beta_)
         
     {
@@ -149,9 +158,7 @@ public:
     {
         Q = Q_;
     }
-
     virtual void setGeometricSchedule(real alpha_, real beta_)
-        
     {
         alpha = alpha_;
         beta = beta_;

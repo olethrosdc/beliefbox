@@ -1,5 +1,4 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: Policy.h,v 1.8 2006/10/23 08:33:24 olethros Exp cdimitrakakis $*/
 // copyright (c) 2012 by Nikolaos Tziortziotis <ntziorzi@gmail.com>
 /***************************************************************************
  *                                                                         *

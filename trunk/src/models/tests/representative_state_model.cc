@@ -92,17 +92,16 @@ real TestRandomMDP(int n_states, int n_samples)
     n_states = environment.getNStates();
     DiscreteMDP* mdp = environment.getMDP();
 #if 0
-    RepresentativeStateModel<DiscreteMDP, int, int> representative_model(discount_factor, *mdp, n_samples, n_actions);
+    RepresentativeStateModel<DiscreteMDP, int, int> representative_model(discount_factor, accuracy, *mdp, n_samples, n_actions);
 #else
-    RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(discount_factor, environment, n_samples, n_actions);
+    RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(discount_factor, accuracy, environment, n_samples, n_actions);
 #endif
 
 #if 0
     ValueIteration VI(mdp, discount_factor);
     VI.ComputeStateValuesStandard(accuracy);
 
-    representative_model.ComputeStateValues(accuracy);
-
+    representative_model.ComputeStateValues();
 
     for (int i=0; i<n_states; ++i) {
         real V = VI.getValue(i);
@@ -141,7 +140,7 @@ real TestChainMDP(int n_states, int n_samples)
     DiscreteMDP* mdp = chain.getMDP();
     const DiscreteMDP& rmdp = *mdp;
     logmsg("Creating Representative States\n");
-    RepresentativeStateModel<DiscreteMDP, int, int> representative_model(discount_factor, rmdp, (uint) n_samples, (uint) environment.getNActions());
+    RepresentativeStateModel<DiscreteMDP, int, int> representative_model(discount_factor, accuracy, rmdp, (uint) n_samples, (uint) environment.getNActions());
     
     logmsg("Value iteration\n"); fflush(stdout);
     ValueIteration VI(mdp, discount_factor);
@@ -149,7 +148,7 @@ real TestChainMDP(int n_states, int n_samples)
     VI.ComputeStateValuesStandard(accuracy);
 
     logmsg("Approximate VI\n");
-    representative_model.ComputeStateValues(accuracy);
+    representative_model.ComputeStateValues();
 
     real total_error = 0;
     logmsg("state values\n");

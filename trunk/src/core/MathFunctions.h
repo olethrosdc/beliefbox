@@ -63,6 +63,27 @@ int ArgMin (int n, T* x)
     }
     return arg_min;
 }
+
+/// Return the indeces of the minimum numbers in an array
+template<typename T>
+std::vector<int> ArgMins(int n, T* x) 
+{
+	std::vector<int> arg_min;
+	T min = x[0];
+	arg_min.push_back(0);
+	for (int i=1; i<n; i++) {
+		if (min > x[i]) {
+			arg_min.empty();
+			arg_min.push_back(i);
+			min = x[i];
+		}
+		else if (min == x[i]) {
+			arg_min.push_back(i);
+		}
+	}
+	return arg_min;
+}
+
 /// Return the index of the maximum number in an array
 template<typename T>
 int ArgMax (int n, T* x)
@@ -76,6 +97,26 @@ int ArgMax (int n, T* x)
         }
     }
     return arg_max;
+}
+
+/// Return the indeces of the maximum numbers in an array
+template<typename T>
+std::vector<int> ArgMaxs(int n, T* x) 
+{
+	std::vector<int> arg_max;
+	T max = x[0];
+	arg_max.push_back(0);
+	for (int i=1; i<n; i++) {
+		if (max < x[i]) {
+			arg_max.empty();
+			arg_max.push_back(i);
+			max = x[i];
+		}
+		else if (max == x[i]) {
+			arg_max.push_back(i);
+		}
+	}
+	return arg_max;
 }
 
 template<typename T>
@@ -93,6 +134,27 @@ int ArgMin (const std::vector<T>& x)
     return arg_min;
 }
 
+/// Return the indeces of the minimum numbers in an array
+template<typename T>
+std::vector<int> ArgMins(const std::vector<T>& x) 
+{
+	int n = x.size();
+	std::vector<int> arg_min;
+	T min = x[0];
+	arg_min.push_back(0);
+	for (int i=1; i<n; i++) {
+		if (min > x[i]) {
+			arg_min.empty();
+			arg_min.push_back(i);
+			min = x[i];
+		}
+		else if (min == x[i]) {
+			arg_min.push_back(i);
+		}
+	}
+	return arg_min;
+}
+
 /// Return the index of the maximum number in an array
 template<typename T>
 int ArgMax (const std::vector<T>& x)
@@ -101,12 +163,33 @@ int ArgMax (const std::vector<T>& x)
     T max = x[0];
     int arg_max = 0;
     for (int i=1; i<n; i++) {
-        if (max<x[i]) {
+        if (max < x[i]) {
             max = x[i];
             arg_max = i;
         }
     }
     return arg_max;
+}
+
+/// Return the indeces of the maximum numbers in an array
+template<typename T>
+std::vector<int> ArgMaxs(const std::vector<T>& x) 
+{
+	int n = x.size();
+	std::vector<int> arg_max;
+	T max = x[0];
+	arg_max.push_back(0);
+	for (int i=1; i<n; i++) {
+		if (max < x[i]) {
+			arg_max.empty();
+			arg_max.push_back(i);
+			max = x[i];
+		}
+		else if (max == x[i]) {
+			arg_max.push_back(i);
+		}
+	}
+	return arg_max;
 }
 
 template<typename T>

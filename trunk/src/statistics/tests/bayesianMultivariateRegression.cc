@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 		for(int j = 0; j < n_dimensions_y; ++j) {
 			real ZX  = distribution_x->generate();
 			X[i][j] = urandom(2.0,7.0);
-			Y[i][j] = 2.0*X[i][j] + ZX;
+			Y[i][j] = pow(X[i][j],2.0) + ZX;
 		}
 		X[i][n_dimensions_y] = 1.0;
 	}

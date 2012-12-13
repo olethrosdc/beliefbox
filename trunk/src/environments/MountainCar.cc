@@ -94,7 +94,6 @@ bool MountainCar::Act(const int& action)
     
     // run
     Simulate(action);
-
 	//if (endsim) {
     //return false;
     //}
@@ -111,6 +110,7 @@ void MountainCar::Simulate(const int action)
     case 2: input = 1.0; break;
     default: Serror("Undefined action %d\n", action);
     }
+
 
     real noise = urandom(-parameters.MCNOISE, parameters.MCNOISE);
     input += noise;
@@ -131,7 +131,7 @@ void MountainCar::Simulate(const int action)
         state[0] = parameters.L_POS + 0.01;
         state[1] = 0.01;
     }
-    //printf ("S: %f %f\n", state[0], state[1]);
+
     if (state[0] == parameters.U_POS) {
         reward = 0.0;
         endsim = true;
@@ -140,7 +140,6 @@ void MountainCar::Simulate(const int action)
         endsim = false;
     }
   
-
     return;
   
 }
