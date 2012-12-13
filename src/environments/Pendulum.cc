@@ -33,15 +33,15 @@ Pendulum::Pendulum(bool random_parameters)
 {
     if (random_parameters) {
         //RandomSourceRNG rng(false);
-		MersenneTwisterRNG rng;
-		rng.manualSeed(12315);
-        parameters.pendulum_mass = (0.5 + rng.uniform()) * default_parameters.pendulum_mass;
-        parameters.cart_mass = (0.5 + rng.uniform()) * default_parameters.cart_mass;
-        parameters.pendulum_length = (0.5 + rng.uniform()) * default_parameters.pendulum_length;
-        parameters.gravity = (0.5 + rng.uniform()) * 
+		//MersenneTwisterRNG rng;
+		//rng.manualSeed(12315);
+        parameters.pendulum_mass = (0.5 + urandom()) * default_parameters.pendulum_mass;
+        parameters.cart_mass = (0.5 + urandom()) * default_parameters.cart_mass;
+        parameters.pendulum_length = (0.5 + urandom()) * default_parameters.pendulum_length;
+        parameters.gravity = (0.5 + urandom()) * 
 default_parameters.gravity;
-        parameters.max_noise = (0.5 + rng.uniform()) * default_parameters.max_noise;
-        parameters.Dt = (0.5 + rng.uniform()) * default_parameters.Dt;
+        parameters.max_noise = (0.5 + urandom()) * default_parameters.max_noise;
+        parameters.Dt = (0.5 + urandom()) * default_parameters.Dt;
     }
 
     state.Resize(2);
