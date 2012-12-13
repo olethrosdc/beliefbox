@@ -23,6 +23,7 @@ Wishart::Wishart()
     
 }
 
+/// We initialise k to the number of rows, otherwise the prior is improper
 Wishart::Wishart(real n_, const Matrix& V, bool is_covariance)
     : k(V.Rows()),
       n(n_)
