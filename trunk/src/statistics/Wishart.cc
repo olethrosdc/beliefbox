@@ -28,6 +28,9 @@ Wishart::Wishart(real n_, const Matrix& V, bool is_covariance)
     : k(V.Rows()),
       n(n_)
 {
+    if (n < k) {
+        n = k;
+    }
     assert(V.Rows() == V.Columns());
     if (is_covariance) {
         setCovariance(V);

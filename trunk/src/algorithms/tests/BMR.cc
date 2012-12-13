@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 	real N0					= 0.1;
 	real a					= 0.1;
 	uint n_runs				= 1;
-    int n_episodes			= 10;
+    int n_episodes			= 100;
 	uint episode_steps		= 1000;
     uint n_steps			= 100000;
 	uint b_functions		= 0;
@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
 	std::cout << "Starting evaluation" << std::endl;
     // remember to use n_runs
     Statistics statistics;
-    statistics.ep_stats.resize(n_episodes);
+    statistics.ep_stats.resize(1);
     statistics.reward.resize(n_steps,0.0);
     statistics.n_runs.resize(n_steps,0);
 	
