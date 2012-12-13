@@ -36,6 +36,8 @@ public:
 	};
 	std::vector<Observations> esamples;
 	std::vector<std::vector<Observations> > Samples;
+	std::vector<real> total_rewards;
+	std::vector<real> discounted_rewards;
 //public:
 	S start_state; ///< initial state
 	A start_action; ///< initial action
@@ -111,10 +113,9 @@ public:
 	
 	void Sample(const int period)
     {
+		total_reward = 0;
+		discounted_reward = 0;
 		real discount_factor = 1;
-		if (period > 0) {
-			discount_factor = pow(gamma, T);
-		}
         environment->Reset();
 		//environment->setState(start_state);
 		running = true;
@@ -137,7 +138,7 @@ public:
 				Act(policy->SelectAction(), discount_factor);
 			}
 
-			if (period < 0) {
+			if (period >= 0) {
 				discount_factor*= gamma;
 			}
 			++t;
@@ -148,6 +149,8 @@ public:
         //logmsg("Stopping after %d steps\n", t);
 		if(sampling){
 			Samples.push_back(esamples);
+			total_rewards.push_back(total_reward);
+			discounted_rewards.push_back(discounted_reward);
 		}
 		//logmsg("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward); end_state.print(stdout);
 	}

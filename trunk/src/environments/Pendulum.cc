@@ -14,6 +14,7 @@
 #include "Pendulum.h"
 #include "Random.h"
 #include "RandomSourceRNG.h"
+#include "MersenneTwister.h"
 
 Pendulum::Parameters Pendulum::default_parameters = 
     { 
@@ -31,7 +32,9 @@ Pendulum::Pendulum(bool random_parameters)
       CCa (1.0 / (parameters.pendulum_mass + parameters.cart_mass))
 {
     if (random_parameters) {
-        RandomSourceRNG rng(false);
+        //RandomSourceRNG rng(false);
+		MersenneTwisterRNG rng;
+		rng.manualSeed(12315);
         parameters.pendulum_mass = (0.5 + rng.uniform()) * default_parameters.pendulum_mass;
         parameters.cart_mass = (0.5 + rng.uniform()) * default_parameters.cart_mass;
         parameters.pendulum_length = (0.5 + rng.uniform()) * default_parameters.pendulum_length;
