@@ -32,14 +32,14 @@ MountainCar::Parameters MountainCar::default_parameters =
                                  
 {
     if (random_parameters) {
-        RandomSourceRNG rng(false);
-        parameters.U_POS = (0.5 + rng.uniform()) * default_parameters.U_POS;
-        parameters.L_POS = (0.5 + rng.uniform()) * default_parameters.L_POS;
-        parameters.U_VEL = (0.5 + rng.uniform()) * default_parameters.U_VEL;
-        parameters.L_VEL = (0.5 + rng.uniform()) * default_parameters.L_VEL;
-        parameters.INPUT = (0.5 + rng.uniform()) * default_parameters.INPUT;
-        parameters.GRAVITY = (0.5 + rng.uniform()) * default_parameters.GRAVITY;
-        parameters.MCNOISE = (0.5 + rng.uniform()) * default_parameters.MCNOISE;
+        //RandomSourceRNG rng(false);
+        parameters.U_POS = (0.5 + urandom()) * default_parameters.U_POS;
+        parameters.L_POS = (0.5 + urandom()) * default_parameters.L_POS;
+        parameters.U_VEL = (0.5 + urandom()) * default_parameters.U_VEL;
+        parameters.L_VEL = (0.5 + urandom()) * default_parameters.L_VEL;
+        parameters.INPUT = (0.5 + urandom()) * default_parameters.INPUT;
+        parameters.GRAVITY = (0.5 + urandom()) * default_parameters.GRAVITY;
+        parameters.MCNOISE = (0.5 + urandom()) * default_parameters.MCNOISE;
     }
     state.Resize(n_states);
 	state.Clear();
