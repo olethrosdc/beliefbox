@@ -13,10 +13,11 @@
 #define DEMONSTRATIONS_H
 
 
-#include "Trajectory.h"
 #include "Environment.h"
 #include "AbstractPolicy.h"
 #include "Random.h"
+#include "Trajectory.h"
+
 
 template <class S, class A>
 class Demonstrations

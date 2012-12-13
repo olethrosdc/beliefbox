@@ -42,6 +42,7 @@ public:
     explicit Vector (int N_, enum BoundsCheckingStatus check = DEFAULT_CHECK_BOUNDS);
     explicit Vector (uint N_, enum BoundsCheckingStatus check = DEFAULT_CHECK_BOUNDS);
     static Vector Unity(int N_, enum BoundsCheckingStatus check = DEFAULT_CHECK_BOUNDS);
+	static Vector Null(int N_, enum BoundsCheckingStatus check = DEFAULT_CHECK_BOUNDS);
     explicit Vector (real x, enum BoundsCheckingStatus check = DEFAULT_CHECK_BOUNDS);
 
     Vector (const Vector& rhs);
@@ -216,10 +217,22 @@ inline int ArgMax(const Vector* v)
     return ArgMax(v->Size(), v->x);
 }
 
+/// Get maximum elements
+inline std::vector<int> ArgMaxs(const Vector* v)
+{
+	return ArgMaxs(v->Size(), v->x);
+}
+
 /// Get minimum element
 inline int ArgMin(const Vector* v)
 {
     return ArgMin(v->Size(), v->x);
+}
+
+/// Get minimum elements
+inline std::vector<int> ArgMins(const Vector* v)
+{
+	return ArgMins(v->Size(), v->x);
 }
 
 inline real Span(const Vector* v)
@@ -245,11 +258,24 @@ inline int ArgMax(const Vector& v)
     return ArgMax(v.Size(), v.x);
 }
 
+/// Get maximum elements
+inline std::vector<int> ArgMaxs(const Vector& v)
+{
+	return ArgMaxs(v.Size(), v.x);
+}
+
 /// Get minimum element
 inline int ArgMin(const Vector& v)
 {
     return ArgMin(v.Size(), v.x);
 }
+
+/// Get minimum elements
+inline std::vector<int> ArgMins(const Vector& v)
+{
+	return ArgMins(v.Size(), v.x);
+}
+
 
 inline real Span(const Vector& v)
 {

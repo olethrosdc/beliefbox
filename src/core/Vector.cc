@@ -20,6 +20,10 @@ Vector Vector::Unity(int N_, enum BoundsCheckingStatus check)
     return v;
 }
 
+Vector Vector::Null(int N_, enum BoundsCheckingStatus check)
+{
+	return Vector(N_, check);
+}
 
 Vector* NewVector (int n)
 {

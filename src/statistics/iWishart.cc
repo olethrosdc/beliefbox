@@ -33,6 +33,8 @@ iWishart::iWishart(real n_, const Matrix& V, bool is_covariance)
     } else {
         setPrecision(V);
     }
+	if(n < k)
+		n = k;
 }
 
 iWishart::~iWishart()

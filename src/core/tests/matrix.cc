@@ -39,7 +39,7 @@ int main()
     
     for (int i=0; i<N; ++i) {
         u[i] = i + 1;
-        v[i] = i;
+        v[i] = i*2;
     }
     
     Matrix Res = OuterProduct(u, v);

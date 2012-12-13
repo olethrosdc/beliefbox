@@ -67,6 +67,12 @@ public:
     {
         parameters.MCNOISE = randomness;
     }
+
+	virtual const char* Name() const
+    {
+        return "Mountain Car";
+    }
+
 	void Show()
 	{
 		printf("%f %f %f %f %f %f %f # params (MountainCar)\n",
