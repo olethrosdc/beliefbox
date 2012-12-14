@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
         exit(-1);
     }
 
-	  statistics;
+    AveragePerformanceStatistics statistics;
 	for (int i=0; i<eval_iter; ++i) {
 		
         // Place holder for the policy
@@ -224,19 +224,21 @@ int main(int argc, char* argv[])
         RBFBasisSet* RBFs = new RBFBasisSet(Discretisation);
         LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs,rollout);
         //lspi->PolicyIteration();
-        lspi->LSTDQ();
+        lspi->LSTDQ(0.1);
         real V = 0;
         int n_eval = 10000;
         for (int i=0; i<n_eval; ++i) {
             environment->Reset();
             Vector state = environment->getState();
             real Vi = lspi->getValue(state, rand()%n_actions);
-            printf ("%f ", Vi);
+            //printf ("%f ", Vi);
             V += Vi;
          
         }
-        printf("# V samples\n");
+        //printf("# V samples\n");
         printf("%f # V\n", V / (real) n_eval);
+        fflush(stdout);
+        fflush(stderr);
         for (int i=0; i<1000; ++i) {
             PerformanceStatistics run_statistics = Evaluate(environment,
                                                             lspi->ReturnPolicy(),

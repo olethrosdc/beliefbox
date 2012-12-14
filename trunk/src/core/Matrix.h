@@ -109,6 +109,8 @@ public:
     bool isLowerTriangular() const;
     real det() const;
 	real tr() const;
+    real L1Norm() const;
+    real L2Norm() const;
 	Matrix Kron(const Matrix& rhs) const;
     real ColumnSum(int c) const;
     real RowSum(int r) const;
