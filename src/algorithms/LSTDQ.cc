@@ -87,7 +87,9 @@ void LSTDQ::Calculate()
                 res =  OuterProduct(Phi_, Phi_);
             } else {
                 Vector s2 = Samples.state(i, t+1);
-                Phi = BasisFunction(s2, policy.SelectAction(s2));
+                //int a2 = policy.SelectAction(s2);
+                int a2 = Samples.action(i, t+1);
+                Phi = BasisFunction(s2, a2);
                 res = OuterProduct(Phi_,(Phi_ - (Phi*gamma)));
             }
             A += res;

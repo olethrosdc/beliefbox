@@ -1104,6 +1104,30 @@ void Matrix::SortColumn(int c)
     }
 }
 
+real Matrix::L1Norm() const
+{
+    real s = 0.0;
+    for (int i=0; i<rows; ++i) {
+        for (int j=0; j<columns; ++j) {
+            s += abs((*this)(i, j));
+        }
+    }                                           
+    return s;
+}
+
+
+real Matrix::L2Norm() const
+{
+    real s = 0.0;
+    for (int i=0; i<rows; ++i) {
+        for (int j=0; j<columns; ++j) {
+            real d = (*this)(i, j);
+            s += d * d;
+        }
+    }
+    return s;
+}
+
 /// Quick estimation of \f$d = x'Ayf\f$.
 ///
 /// This is much faster than writing d * x * A *  y explicitly.
