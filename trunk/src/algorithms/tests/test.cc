@@ -138,9 +138,15 @@ public:
                 n_models++;
                 samples.push_back(model);
                 values.push_back(statistic.getAverageTotalReward(sample));
-				//printf ("# %d (e) %f ", n_models, error); 
+				printf ("# %d (e) %f %f\n", n_models, error, epsilon); 
 				model.Show();
             }
+			if(iter > n_samples) {
+				iter = 0;
+				epsilon *= 2.0;
+				printf("# e -> %f\n", epsilon);
+				fflush(stdout);
+			}
 		}
         if (n_models == 0) {
 			Swarning("No model generated: %d\n", (int) samples.size());
