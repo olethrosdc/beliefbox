@@ -40,7 +40,7 @@ class RepresentativeStateModel
 protected:
     real gamma;					///< discount factor
 	real threshold; 			///< Value iteration accuracy threshold
-	Model model;				///< model to use to build discrete approximation from
+	Model& model;				///< model to use to build discrete approximation from
 	uint init_samples;			///< initial number of collected samples 
     std::vector<S> states;		///< set of representative states
 	uint n_actions;				///< number of actions (Note: what to do for continuous?)
@@ -48,7 +48,7 @@ protected:
 	DiscreteMDP* mdp;			///< pointer to approximate model
 public:
     /// Build a model from a set of representative states
-    RepresentativeStateModel(real gamma_, real threshold_, Model model_, const std::vector<S>& states_, uint n_actions_) :
+    RepresentativeStateModel(real gamma_, real threshold_, Model& model_, const std::vector<S>& states_, uint n_actions_) :
         gamma(gamma_),
 		threshold(threshold_),
         model(model_),
@@ -65,7 +65,7 @@ public:
     /// Build a model from n_states representative states
     RepresentativeStateModel(real gamma_,
 							 real threshold_,
-							 Model model_,
+							 Model& model_,
                              uint n_states,
                              uint n_actions_) :
         gamma(gamma_),
@@ -80,8 +80,9 @@ public:
 		init_samples = n_states;
         //logmsg("[%d %d]\n", lower_bound, upper_bound);
         for (uint i=0; i<n_states; ++i) {
-            //S state = i % n_states;
+            //S state = i % (int) upper_bound;
             S state = urandom(lower_bound, upper_bound);
+            printf("%d -> %d\n", i, state);
             states.push_back(state);
         }
         BuildMDP();
@@ -149,14 +150,16 @@ public:
 		for (int i=0; i<n_states; ++i) {
 			for (uint a=0; a<n_actions; ++a) {
                 // Set rewards
+                //logmsg("Getting reward\n");
                 real r_ia = model.getExpectedReward(states[i], a);
+                //logmsg("Got it!\n");
                 mdp->setFixedReward(i, a, r_ia);
 
                 // Set transition probabilities
 				for (int j=0; j<n_states; ++j) {
-					p(j) = model.getTransitionProbability(states[i], a, states[j]);
+					p(j) =  model.getTransitionProbability(states[i], a, states[j]);
 				}
-//                logmsg ("s:%d a:%d r:(%f %f) ", i, a, r_ia,  model.getExpectedReward(states[i], a)); p.print(stdout);
+                //logmsg ("s:%d a:%d r:(%f %f) ", i, a, r_ia,  model.getExpectedReward(states[i], a)); p.print(stdout);
                 real sum = p.Sum();
 				if (sum > 0) {
                     p /= sum;
@@ -165,7 +168,7 @@ public:
                     p += 1.0;
                     p /= p.Sum();
                 }
-//				logmsg ("s:%d a:%d r:(%f %f) ", i, a, r_ia,  model.getExpectedReward(states[i], a)); p.print(stdout);
+				logmsg ("s:%d a:%d r:(%f %f) ", i, a, r_ia,  model.getExpectedReward(states[i], a)); p.print(stdout);
                 mdp->setTransitionProbabilities(i, a, p, 1e-3);
 			}
 		}
@@ -183,10 +186,13 @@ public:
 	void ComputeStateValues(int max_iter = -1)
     {
 		ValueIteration value_iteration(mdp, gamma);
-		value_iteration.ComputeStateValues(threshold, max_iter);
+		value_iteration.ComputeStateValuesStandard(threshold, max_iter);
+        for (int i=0; i<(int) states.size(); ++i) {
+            printf("%f\n", value_iteration.getValue(i));
+        }
 		V = value_iteration.V;
-		printf("Value state\n");
-        logmsg("AV: "); V.print(stdout);
+		//printf("Value state\n");
+        //logmsg("AV: "); V.print(stdout);
 	}
 
 	real getValue(const S& state, const A& action)

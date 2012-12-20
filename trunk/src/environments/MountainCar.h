@@ -84,6 +84,15 @@ public:
 			   parameters.GRAVITY,
 			   parameters.MCNOISE);
 	}
+    virtual real getTransitionProbability(const Vector& state, const int& action, const Vector& next_state) const
+    {
+        return 1.0;
+    }
+
+    virtual real getExpectedReward(const Vector& state, const int& action) const
+    {
+        return 0.0;
+    }
 };
 
 class MountainCarGenerator

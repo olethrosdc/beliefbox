@@ -20,7 +20,8 @@
 
 
 
-class Gridworld : public Environment<int, int> {
+class Gridworld : public Environment<int, int>
+{
 public:
     uint ox, oy;
     int total_time;
