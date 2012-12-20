@@ -58,13 +58,22 @@ public:
     }
 
     /// put the environment in its "natural: state
-    virtual void Reset() = 0;
+    virtual void Reset() 
+    {
+        Serror("Not implemented\n");
+        exit(-1);
+    }
 	
     /// returns true if the action succeeds, false if it does not.
     ///
     /// The usual of false is that the environment is in a terminal
     /// absorbing state.
-    virtual bool Act(const A& action) = 0;
+    virtual bool Act(const A& action) 
+    {
+        Serror("Not implemented\n");
+        exit(-1);
+        return false;
+    }
     
     /// Return a full MDP model of the environment.  This may not be
     /// possible for some environments.  The MDP is required to be
@@ -120,17 +129,19 @@ public:
     {
         return state_lower_bound;
     }
-	virtual real getTransitionProbability(const S& state, const A& action, const S& next_state) const 
+	virtual real getTransitionProbability(const S& state, const A& action, const S& next_state) const
     {
-        Swarning("Should be implemented\n");
-        return 1.0;
+            Serror("Should be implemented\n");
+            exit(-1);
+            return 1.0;
     }
-        
+    
 
-    virtual real getExpectedReward(const S& state, const A& action) const 
+    virtual real getExpectedReward(const S& state, const A& action) const
     {
-        Swarning("Should be implemented\n");
-        return 0.0;
+      Serror("Should be implemented\n");
+      exit(-1);
+      return 0.0;
     }
 
 };

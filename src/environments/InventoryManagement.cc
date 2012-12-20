@@ -21,11 +21,11 @@ InventoryManagement::InventoryManagement(int period_,
                                          int max_items_,
                                          real demand_,
                                          real margin_)
-    : period(period_), max_items(max_items_), demand(demand_), margin(margin_)
+    : 
+    DiscreteEnvironment(max_items_ + 1, max_items_ + 1),
+    period(period_), max_items(max_items_), demand(demand_), margin(margin_)
 {
-    n_actions = max_items + 1;
-    n_states = max_items + 1;
-    
+
     assert (max_items > 1);
     assert (margin >= 1);
     assert (demand >= 0 && demand <= 1);

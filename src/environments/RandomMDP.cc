@@ -45,6 +45,8 @@ RandomMDP::RandomMDP(uint n_actions_,
     mdp->Check();
     Reset();
     printf ("state: %d/%d\n", state, n_states);
+    printf("States: [%d, %d)\n", state_lower_bound, state_upper_bound);
+
 }
 	
 DiscreteMDP* RandomMDP::generateMDP() const
