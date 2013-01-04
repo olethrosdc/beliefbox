@@ -100,7 +100,7 @@ class MountainCarGenerator
 public:
     MountainCar Generate()
     {
-        return MountainCar(false);
+        return MountainCar(true);
     }
 };
 

@@ -107,7 +107,7 @@ class PendulumGenerator
 public:
     Pendulum Generate()
     {
-        return Pendulum(false);
+        return Pendulum(true);
     }
 };
 
