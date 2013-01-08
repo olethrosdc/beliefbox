@@ -21,6 +21,7 @@
 
 #include "MountainCar.h"
 #include "Pendulum.h"
+#include "PuddleWorld.h"
 
 #include "RandomPolicy.h"
 
@@ -49,6 +50,8 @@ struct Options
     int n_testing; ///< number of testing trajectories
     int grid; ///< grid size for features
     real scale; ///< scale of RBF basis
+    real accuracy; ///< value/policy iteration accuracy
+    int lspi_iterations; ///< number of lspi iterations
 };
 
 
@@ -69,7 +72,7 @@ public:
     {
     }
     
-    real getAverageTotalReward(Rollout<X, A, AbstractPolicy<X, A> >& data)
+    real getAverageTotalReward(Demonstrations<X, A>& data)
     {
         real r_d = 0;
         for (uint i=0; i<data.total_rewards.size(); ++i) {
@@ -79,14 +82,14 @@ public:
         return r_d;
     }
 
-    real distance(Rollout<X, A, AbstractPolicy<X, A> >& data,
-				  Rollout<X, A, AbstractPolicy<X, A> >& sample)
+    real distance(Demonstrations<X, A>& data,
+                  Demonstrations<X, A>& sample)
     {
         real r_d = getAverageTotalReward(data);
         real r_s = getAverageTotalReward(sample);
 		//printf ("%f %f (r)", r_d, r_s);
         
-        return fabs(r_d - r_s) + sqrt(C * (1.0 / (real) data.getNRollouts() + 1.0 / (real) sample.getNRollouts()));
+        return fabs(r_d - r_s) + sqrt(C * (1.0 / (real) data.size() + 1.0 / (real) sample.size()));
     }
 };
 
@@ -116,7 +119,7 @@ public:
 	ABCRL()
 	{
 	}
-	void GetSample(Rollout<X, A, AbstractPolicy<X, A> >& data,
+	void GetSample(Demonstrations<X,A>& data,
                    P& policy,
                    real discounting,
                    real epsilon,
@@ -129,16 +132,24 @@ public:
         int n_models = 0;
 		for (int iter=0; iter<n_samples || n_models == 0; ++iter) {
             M model = generator.Generate();
-            Rollout<X, A, AbstractPolicy<X, A> > sample(model.getState(), &policy, &model, discounting, true);
-			sample.Sampling(n_trajectories, -1);
+            Demonstrations<X, A> sample;
+            for (int i=0; i<n_trajectories; ++i) {
+                sample.Simulate(model, policy, discounting, -1);
+            }
             real error = statistic.distance(data, sample);
             if (error <= epsilon) {
                 n_models++;
                 samples.push_back(model);
                 values.push_back(statistic.getAverageTotalReward(sample));
-				//printf ("# %d (e) %f ", n_models, error); 
+				printf ("# %d (e) %f %f\n", n_models, error, epsilon); 
 				model.Show();
             }
+			if(iter > n_samples) {
+				iter = 0;
+				epsilon *= 2.0;
+				printf("# e -> %f\n", epsilon);
+				fflush(stdout);
+			}
 		}
         if (n_models == 0) {
 			Swarning("No model generated: %d\n", (int) samples.size());
@@ -169,23 +180,41 @@ real EvaluatePolicy(M& environment, P& policy, real gamma, int n_testing)
 template <class G, class M>
 void RunTest(Options& options)
 {
+
     G generator;
     M environment = generator.Generate();
+
+
+
+    int state_dimension = environment.getNStates();
+    //int n_actions = environment.getNActions();
+    Vector S_L = environment.StateLowerBound();
+    Vector S_U = environment.StateUpperBound();
+
+    printf("# State dimension: %d\n", state_dimension);
+    printf("# S_L: "); S_L.print(stdout);
+    printf("# S_U: "); S_U.print(stdout);
+	 
+    EvenGrid Discretisation(S_L, S_U, options.grid);
+    RBFBasisSet RBFs(Discretisation, options.scale);
+
+
 
 	// Placeholder for the policy
 	// Start with a random policy!
 	RandomPolicy random_policy(environment.getNActions(), &options.rng);
+
 	// Start with a simple heuristic
 	HeuristicPendulumPolicy pendulum_policy;
 	AbstractPolicy<Vector, int>& policy = random_policy;
 
     //template <class G, class F, class M, class P, typename X, typename A>
-	environment.Reset();
-    Rollout<Vector, int, AbstractPolicy<Vector, int> > training_data(environment.getState(), &policy, &environment, options.gamma, true);
+    Demonstrations<Vector, int> training_data;
 
 	logmsg("Training\n"); environment.Show();
-	training_data.Sampling(options.n_training, -1);
-
+    for (int i=0; i<options.n_training; ++i) {
+        training_data.Simulate(environment, policy, options.gamma, -1);
+    }
 
     ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
 
@@ -207,8 +236,31 @@ void RunTest(Options& options)
 	for (int i=0; i<V.Size(); ++i) {
 		V(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], policy, options.gamma, options.n_testing);
 		hV(i) = values[i];
-		printf ("%f %f # sampled value\n", hV(i), V(i));
+
+        AbstractPolicy<Vector, int>* lspi_policy
+            =  getLSPIPolicy(samples[i],
+                             policy,
+                             training_data,
+                             RBFs,
+                             options);
+        
+        real V_lspi = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], *lspi_policy, options.gamma, options.n_testing);
+
+        real V_lspi_real = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *lspi_policy, options.gamma, options.n_testing);
+		printf ("%f %f %f %f# sampled value\n", hV(i), V(i), V_lspi, V_lspi_real);
+
 	}
+
+    AbstractPolicy<Vector, int>* oracle_lspi_policy
+        =  getLSPIPolicy(environment,
+                         policy,
+                         training_data,
+                         RBFs,
+                         options);
+    real V_lspi_oracle = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *oracle_lspi_policy, options.gamma, options.n_testing);
+    
+	printf("%f # LSPI value\n", V_lspi_oracle);
+
     printf ("%f %f # empirical values\n",
 			hV.Sum()/(real) hV.Size(),
 			V.Sum()/(real) V.Size());
@@ -216,11 +268,44 @@ void RunTest(Options& options)
 
     real LSTD_V = EvaluateLSTD(environment, policy, training_data, options);
 	printf("%f # LSTD value\n", LSTD_V);
+
+    
+}
+
+
+AbstractPolicy<Vector, int>*
+getLSPIPolicy(Environment<Vector, int>& environment,
+              AbstractPolicy<Vector, int>& policy,
+              Demonstrations<Vector, int>& data,
+              RBFBasisSet& RBFs,
+              Options& options)
+{
+    int state_dimension = environment.getNStates();
+    int n_actions = environment.getNActions();
+    Vector S_L = environment.StateLowerBound();
+    Vector S_U = environment.StateUpperBound();
+
+    printf("# State dimension: %d\n", state_dimension);
+    printf("# S_L: "); S_L.print(stdout);
+    printf("# S_U: "); S_U.print(stdout);
+	 
+    
+    Rollout<Vector, int, AbstractPolicy<Vector, int> > rollout (urandom(S_L, S_U), &policy, &environment, options.gamma, true);
+    
+    rollout.Sampling(options.n_trajectories, -1);
+    
+    logmsg("Total number of collected rollout samples -> %d\n", rollout.getNSamples());
+    EvenGrid Discretisation(S_L, S_U, options.grid);
+    LSPI lspi(options.gamma, options.accuracy, state_dimension, n_actions, options.lspi_iterations, &RBFs, &rollout);
+    lspi.PolicyIteration();
+    AbstractPolicy<Vector, int> * lspi_policy = new FixedContinuousPolicy(lspi.ReturnPolicy());
+
+    return lspi_policy;
 }
 
 real EvaluateLSTD(Environment<Vector, int>& environment,
 				  AbstractPolicy<Vector, int>& policy,
-				  Rollout<Vector, int, AbstractPolicy<Vector, int> >& data,
+				  Demonstrations<Vector, int>& data,
                   Options& options)
 {
     int state_dimension = environment.getNStates();
@@ -234,24 +319,27 @@ real EvaluateLSTD(Environment<Vector, int>& environment,
 	 
     EvenGrid Discretisation(S_L, S_U, options.grid);
     RBFBasisSet RBFs(Discretisation, options.scale);
-	real delta = 0.01;
-	int max_iteration = 25;
+	LSTDQ lstdq(options.gamma,
+				state_dimension,
+				n_actions,
+				RBFs,
+				data);
 	
-	LSPI lspi(options.gamma, delta, state_dimension, n_actions, max_iteration, &RBFs, &data);
-	//lspi->PolicyIteration();
-	lspi.LSTDQ();
+	//lstdq.Calculate_Opt();
+	lstdq.Calculate();
+	
 	real V = 0;
-	int n_eval = 10000;
-	for (int i=0; i<n_eval; ++i) {
+	for (int i=0; i<options.n_testing; ++i) {
 		environment.Reset();
 		Vector state = environment.getState();
-		real Vi = lspi.getValue(state, rand()%n_actions);
+		policy.Reset();
+		policy.setState(state);
+		real Vi = lstdq.getValue(state, rand()%n_actions);
 		//printf ("%f ", Vi);
 		V += Vi;
 	}
-	//printf("# V samples\n");
-	V /= (real) n_eval;
-	//printf("%f # V value\n", V);
+	//printf("# LSTD values\n");
+	V /= (real) options.n_testing;
 	return V;
 }
 
@@ -259,7 +347,7 @@ real EvaluateLSTD(Environment<Vector, int>& environment,
 
 static const char* const help_text = "Usage: test [options]\n\
 \nOptions:\n\
-    --environment:     {MountainCar, Pendulum}\n\
+    --environment:     {MountainCar, Pendulum, Puddleworld}\n\
     --discount:        reward discounting in [0,1]\n\
     --threshold:       statistic threshold\n\
     --n_trajectories:  number of trajectories per sample\n\
@@ -267,8 +355,8 @@ static const char* const help_text = "Usage: test [options]\n\
     --n_training:      number of training trajectories\n\
     --n_testing:       number of test trajectories\n\
     --seed:            seed all the RNGs with this\n\
-    --grid:            number of grid intervals\n\
-    --bandwidth:       bandwidth of LSTD\n\
+    --grid:            number of grid intervals for LSTD\n\
+    --scale:           RBF scale for LSTD\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -277,16 +365,18 @@ int main(int argc, char* argv[])
 
 	MersenneTwisterRNG rng;
 	Options options = 
-        {0.99,
-         10.0,
-         NULL,
-         rng,
-         1000,
-         128,
-         10,
-         10000,
-         5,
-         0.5
+        {0.99, // idscount
+         10.0, // threshold
+         NULL, // envionment
+         rng, // rng
+         1000, // trajectories per sample
+         128, // samples
+         10, // training trajectories
+         10000, // test trajectories
+         5, // grid size
+         0.5, // rbf scale
+         1e-6, // accuracy
+         100 // lspi iterations
         };
 
 	{
@@ -366,6 +456,7 @@ int main(int argc, char* argv[])
 	srand(seed);
     srand48(seed);
     rng.manualSeed(seed);
+	setRandomSeed(seed);
 
     if (!options.environment_name) {
         Serror("Must specify environment\n");
@@ -404,6 +495,9 @@ int main(int argc, char* argv[])
     } else if (!strcmp(options.environment_name, "Pendulum")) {
         logmsg("Testing pendulum\n");
         RunTest<PendulumGenerator, Pendulum>(options);
+    } else if (!strcmp(options.environment_name, "PuddleWorld")) {
+        logmsg("Testing puddle world\n");
+        RunTest<PuddleWorldGenerator, PuddleWorld>(options);
     } else {
         fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
         exit(-1);
