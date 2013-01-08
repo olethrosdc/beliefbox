@@ -223,8 +223,8 @@ int main(int argc, char* argv[])
 //        
         RBFBasisSet* RBFs = new RBFBasisSet(Discretisation);
         LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs,rollout);
-        //lspi->PolicyIteration();
-        lspi->LSTDQ(0.1);
+        lspi->PolicyIteration();
+        //lspi->LSTDQ(0.1);
         real V = 0;
         int n_eval = 10000;
         for (int i=0; i<n_eval; ++i) {
