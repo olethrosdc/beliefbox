@@ -231,9 +231,11 @@ void RunTest(Options& options)
                     samples,
                     values);
 
-	real value = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
+	real V_initial = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
 	Vector V((uint) samples.size());
 	Vector hV((uint) samples.size());
+	Vector V_LSPI((uint) samples.size());
+	Vector hV_LSPI((uint) samples.size());
 	for (int i=0; i<V.Size(); ++i) {
 		V(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], policy, options.gamma, options.n_testing);
 		hV(i) = values[i];
@@ -245,11 +247,11 @@ void RunTest(Options& options)
                              RBFs,
                              options);
         
-        real V_lspi = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], *lspi_policy, options.gamma, options.n_testing);
+        hV_LSPI(i)= EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], *lspi_policy, options.gamma, options.n_testing);
 
-        real V_lspi_real = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *lspi_policy, options.gamma, options.n_testing);
-		printf ("%f %f %f %f# sampled value\n", hV(i), V(i), V_lspi, V_lspi_real);
-
+        V_LSPI(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *lspi_policy, options.gamma, options.n_testing);
+		printf ("%f %f %f %f# sampled value\n", hV(i), V(i), hV_LSPI(i), V_LSPI(i));
+        fflush(stdout);
 	}
 
     AbstractPolicy<Vector, int>* oracle_lspi_policy
@@ -259,18 +261,15 @@ void RunTest(Options& options)
                          RBFs,
                          options);
     real V_lspi_oracle = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *oracle_lspi_policy, options.gamma, options.n_testing);
-    
-	printf("%f # LSPI value\n", V_lspi_oracle);
-
-    printf ("%f %f # empirical values\n",
+    real V_LSTD = EvaluateLSTD(environment, policy, training_data, options);    
+    printf ("%f %f %f %f %f %f %f # hV V V_oracle hV_LSPI V_LSPI V_LSPI_oracle V_LSTD\n",
 			hV.Sum()/(real) hV.Size(),
-			V.Sum()/(real) V.Size());
-	printf("%f # actual value\n", value);
-
-    real LSTD_V = EvaluateLSTD(environment, policy, training_data, options);
-	printf("%f # LSTD value\n", LSTD_V);
-
-    
+			V.Sum()/(real) V.Size(),
+            V_initial,
+            hV_LSPI.Sum() / (real) hV_LSPI.Size(),
+            V_LSPI.Sum() / (real) V_LSPI.Size(),
+            V_lspi_oracle,
+            V_LSTD);
 }
 
 
