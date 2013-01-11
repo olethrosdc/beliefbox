@@ -292,7 +292,7 @@ getLSPIPolicy(Environment<Vector, int>& environment,
     
     Rollout<Vector, int, AbstractPolicy<Vector, int> > rollout (urandom(S_L, S_U), &policy, &environment, options.gamma, true);
     
-    rollout.Sampling(options.n_trajectories, -1);
+    rollout.Sampling(options.n_training, -1);
     
     logmsg("Total number of collected rollout samples -> %d\n", rollout.getNSamples());
     EvenGrid Discretisation(S_L, S_U, options.grid);
