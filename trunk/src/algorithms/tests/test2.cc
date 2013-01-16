@@ -133,7 +133,7 @@ getLSPIPolicy(Environment<Vector, int>* training_environment,
     LSPI lspi(options.gamma, options.accuracy, state_dimension, n_actions, options.lspi_iterations, &RBFs, rollout);
     lspi.PolicyIteration();
     AbstractPolicy<Vector, int> * lspi_policy = new FixedContinuousPolicy(lspi.ReturnPolicy());
-
+    delete rollout;
     return lspi_policy;
 }
 
