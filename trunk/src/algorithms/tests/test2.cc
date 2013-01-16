@@ -53,6 +53,7 @@ struct Options
     real accuracy; ///< value/policy iteration accuracy
     int lspi_iterations; ///< number of lspi iterations
     int n_evaluations; ///< number of evaluations
+    bool reuse_training_data; ///< reuse training data in lspi
 };
 
 
@@ -94,6 +95,47 @@ public:
     }
 };
 
+/** get LSPI policy
+
+    If the environment is given, then always rollout from the environment.
+    If the data is given, and options.use_training_data is true,
+    then add these rollouts to the original data.
+ */
+AbstractPolicy<Vector, int>*
+getLSPIPolicy(Environment<Vector, int>* training_environment,
+              AbstractPolicy<Vector, int>& policy,
+              Rollout<Vector, int, AbstractPolicy<Vector, int> >* data,
+              RBFBasisSet& RBFs,
+              Options& options)
+{
+    Environment<Vector, int>* environment;
+    if (training_environment) {
+        environment = training_environment;
+    } else {
+        environment = data->environment;
+    }
+    int state_dimension = environment->getNStates();
+    int n_actions = environment->getNActions();
+    Vector S_L = environment->StateLowerBound();
+    Vector S_U = environment->StateUpperBound();
+
+    Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout;
+    if (data && options.reuse_training_data) {
+        // copy the old data in the new rollout!
+        rollout = new Rollout<Vector, int, AbstractPolicy<Vector, int> > (*data);
+    } else {
+        rollout = new Rollout<Vector, int, AbstractPolicy<Vector, int> > (urandom(S_L, S_U), &policy, environment, options.gamma, true);
+    }
+    rollout->Sampling(options.n_training, -1);
+    
+    logmsg("Total number of collected rollout samples -> %d\n", rollout->getNSamples());
+    EvenGrid Discretisation(S_L, S_U, options.grid);
+    LSPI lspi(options.gamma, options.accuracy, state_dimension, n_actions, options.lspi_iterations, &RBFs, rollout);
+    lspi.PolicyIteration();
+    AbstractPolicy<Vector, int> * lspi_policy = new FixedContinuousPolicy(lspi.ReturnPolicy());
+
+    return lspi_policy;
+}
 
 /** This template has 5 types.
 
@@ -211,11 +253,14 @@ void RunTest(Options& options)
 
     //template <class G, class F, class M, class P, typename X, typename A>
     Demonstrations<Vector, int> training_data;
-
 	logmsg("Training\n"); environment.Show();
     for (int i=0; i<options.n_training; ++i) {
         training_data.Simulate(environment, policy, options.gamma, -1);
     }
+    
+    Rollout<Vector, int, AbstractPolicy<Vector, int> > training_rollouts(urandom(S_L, S_U), &policy, &environment, options.gamma, true);
+    training_rollouts.Sampling(options.n_training, -1);
+
 
     ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
 
@@ -241,9 +286,9 @@ void RunTest(Options& options)
 		hV(i) = values[i];
 
         AbstractPolicy<Vector, int>* lspi_policy
-            =  getLSPIPolicy(samples[i],
+            =  getLSPIPolicy(&samples[i],
                              policy,
-                             training_data,
+                             &training_rollouts,
                              RBFs,
                              options);
         
@@ -255,9 +300,9 @@ void RunTest(Options& options)
 	}
 
     AbstractPolicy<Vector, int>* oracle_lspi_policy
-        =  getLSPIPolicy(environment,
+        =  getLSPIPolicy(NULL,
                          policy,
-                         training_data,
+                         &training_rollouts,
                          RBFs,
                          options);
     real V_lspi_oracle = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *oracle_lspi_policy, options.gamma, options.n_testing);
@@ -273,35 +318,6 @@ void RunTest(Options& options)
 }
 
 
-AbstractPolicy<Vector, int>*
-getLSPIPolicy(Environment<Vector, int>& environment,
-              AbstractPolicy<Vector, int>& policy,
-              Demonstrations<Vector, int>& data,
-              RBFBasisSet& RBFs,
-              Options& options)
-{
-    int state_dimension = environment.getNStates();
-    int n_actions = environment.getNActions();
-    Vector S_L = environment.StateLowerBound();
-    Vector S_U = environment.StateUpperBound();
-
-    printf("# State dimension: %d\n", state_dimension);
-    printf("# S_L: "); S_L.print(stdout);
-    printf("# S_U: "); S_U.print(stdout);
-	 
-    
-    Rollout<Vector, int, AbstractPolicy<Vector, int> > rollout (urandom(S_L, S_U), &policy, &environment, options.gamma, true);
-    
-    rollout.Sampling(options.n_training, -1);
-    
-    logmsg("Total number of collected rollout samples -> %d\n", rollout.getNSamples());
-    EvenGrid Discretisation(S_L, S_U, options.grid);
-    LSPI lspi(options.gamma, options.accuracy, state_dimension, n_actions, options.lspi_iterations, &RBFs, &rollout);
-    lspi.PolicyIteration();
-    AbstractPolicy<Vector, int> * lspi_policy = new FixedContinuousPolicy(lspi.ReturnPolicy());
-
-    return lspi_policy;
-}
 
 real EvaluateLSTD(Environment<Vector, int>& environment,
 				  AbstractPolicy<Vector, int>& policy,
@@ -347,17 +363,18 @@ real EvaluateLSTD(Environment<Vector, int>& environment,
 
 static const char* const help_text = "Usage: test [options]\n\
 \nOptions:\n\
-    --environment:     {MountainCar, Pendulum, Puddleworld}\n\
-    --discount:        reward discounting in [0,1]\n\
-    --threshold:       statistic threshold\n\
-    --n_trajectories:  number of trajectories per sample\n\
-    --n_samples:       number of sampled models\n\
-    --n_training:      number of training trajectories\n\
-    --n_testing:       number of test trajectories\n\
-    --seed:            seed all the RNGs with this\n\
-    --grid:            number of grid intervals for LSTD\n\
-    --scale:           RBF scale for LSTD\n\
-    --n_evaluations:   number of evaluations\n\
+    --environment:           {MountainCar, Pendulum, Puddleworld}\n\
+    --discount:              reward discounting in [0,1]\n\
+    --threshold:             statistic threshold\n\
+    --n_trajectories:        number of trajectories per sample\n\
+    --n_samples:             number of sampled models\n\
+    --n_training:            number of training trajectories\n\
+    --n_testing:             number of test trajectories\n\
+    --seed:                  seed all the RNGs with this\n\
+    --grid:                  number of grid intervals for LSTD\n\
+    --scale:                 RBF scale for LSTD\n\
+    --n_evaluations:         number of evaluations\n\
+    --reuse_training_data:   reuse the training data in LSPI samples\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -402,6 +419,7 @@ int main(int argc, char* argv[])
 				{"accuracy", required_argument, 0, 0}, //10
 				{"lspi_iterations", required_argument, 0, 0}, //11
 				{"n_evaluations", required_argument, 0, 0}, //12
+                {"reuse_training_data", no_argument, 0, 0}, //13
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -431,6 +449,7 @@ int main(int argc, char* argv[])
                 case 10: options.accuracy = atof(optarg); break;
                 case 11: options.lspi_iterations = atoi(optarg); break;
                 case 12: options.n_evaluations = atoi(optarg); break;
+                case 13: options.reuse_training_data = true; break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
