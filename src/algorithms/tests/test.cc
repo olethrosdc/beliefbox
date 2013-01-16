@@ -11,6 +11,7 @@
 
 #ifdef MAKE_MAIN
 #include "LSTDQ.h"
+#include "LSPI.h"
 #include "Grid.h"
 #include "BasisSet.h"
 
@@ -49,6 +50,9 @@ struct Options
     int n_testing; ///< number of testing trajectories
     int grid; ///< grid size for features
     real scale; ///< scale of RBF basis
+    real accuracy; ///< value/policy iteration accuracy
+    int lspi_iterations; ///< number of lspi iterations
+    int n_evaluations; ///< number of evaluations
 };
 
 
@@ -56,7 +60,7 @@ struct Options
     
     X - observation
     A - action
- */
+*/
 template <class X, class A>
 class TotalRewardStatistic
 {
@@ -93,18 +97,18 @@ public:
 
 /** This template has 5 types.
 
- G: The generator class, which must provide
- - M G::generate()
+    G: The generator class, which must provide
+    - M G::generate()
 
- F: The statistic class, which must provide
+    F: The statistic class, which must provide
 
- M: The model class, which must provide
+    M: The model class, which must provide
 
- P: The policy class which must provide
+    P: The policy class which must provide
 
- X: The observation class
+    X: The observation class
  
- A: the action
+    A: the action
 
 */
 template <class G, class F, class M, class P, typename X, typename A>
@@ -177,12 +181,30 @@ real EvaluatePolicy(M& environment, P& policy, real gamma, int n_testing)
 template <class G, class M>
 void RunTest(Options& options)
 {
+
     G generator;
     M environment = generator.Generate();
+
+
+
+    int state_dimension = environment.getNStates();
+    //int n_actions = environment.getNActions();
+    Vector S_L = environment.StateLowerBound();
+    Vector S_U = environment.StateUpperBound();
+
+    printf("# State dimension: %d\n", state_dimension);
+    printf("# S_L: "); S_L.print(stdout);
+    printf("# S_U: "); S_U.print(stdout);
+	 
+    EvenGrid Discretisation(S_L, S_U, options.grid);
+    RBFBasisSet RBFs(Discretisation, options.scale);
+
+
 
 	// Placeholder for the policy
 	// Start with a random policy!
 	RandomPolicy random_policy(environment.getNActions(), &options.rng);
+
 	// Start with a simple heuristic
 	HeuristicPendulumPolicy pendulum_policy;
 	AbstractPolicy<Vector, int>& policy = random_policy;
@@ -209,21 +231,76 @@ void RunTest(Options& options)
                     samples,
                     values);
 
-	real value = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
+	real V_initial = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
 	Vector V((uint) samples.size());
 	Vector hV((uint) samples.size());
+	Vector V_LSPI((uint) samples.size());
+	Vector hV_LSPI((uint) samples.size());
 	for (int i=0; i<V.Size(); ++i) {
 		V(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], policy, options.gamma, options.n_testing);
 		hV(i) = values[i];
-		printf ("%f %f # sampled value\n", hV(i), V(i));
-	}
-    printf ("%f %f # empirical values\n",
-			hV.Sum()/(real) hV.Size(),
-			V.Sum()/(real) V.Size());
-	printf("%f # actual value\n", value);
 
-    real LSTD_V = EvaluateLSTD(environment, policy, training_data, options);
-	printf("%f # LSTD value\n", LSTD_V);
+        AbstractPolicy<Vector, int>* lspi_policy
+            =  getLSPIPolicy(samples[i],
+                             policy,
+                             training_data,
+                             RBFs,
+                             options);
+        
+        hV_LSPI(i)= EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], *lspi_policy, options.gamma, options.n_testing);
+
+        V_LSPI(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *lspi_policy, options.gamma, options.n_testing);
+		printf ("%f %f %f %f# sampled value\n", hV(i), V(i), hV_LSPI(i), V_LSPI(i));
+        fflush(stdout);
+	}
+
+    AbstractPolicy<Vector, int>* oracle_lspi_policy
+        =  getLSPIPolicy(environment,
+                         policy,
+                         training_data,
+                         RBFs,
+                         options);
+    real V_lspi_oracle = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *oracle_lspi_policy, options.gamma, options.n_testing);
+    real V_LSTD = EvaluateLSTD(environment, policy, training_data, options);    
+    printf ("%f %f %f %f %f %f %f # hV V V_oracle hV_LSPI V_LSPI V_LSPI_oracle V_LSTD\n",
+			hV.Sum()/(real) hV.Size(),
+			V.Sum()/(real) V.Size(),
+            V_initial,
+            hV_LSPI.Sum() / (real) hV_LSPI.Size(),
+            V_LSPI.Sum() / (real) V_LSPI.Size(),
+            V_lspi_oracle,
+            V_LSTD);
+}
+
+
+AbstractPolicy<Vector, int>*
+getLSPIPolicy(Environment<Vector, int>& environment,
+              AbstractPolicy<Vector, int>& policy,
+              Demonstrations<Vector, int>& data,
+              RBFBasisSet& RBFs,
+              Options& options)
+{
+    int state_dimension = environment.getNStates();
+    int n_actions = environment.getNActions();
+    Vector S_L = environment.StateLowerBound();
+    Vector S_U = environment.StateUpperBound();
+
+    printf("# State dimension: %d\n", state_dimension);
+    printf("# S_L: "); S_L.print(stdout);
+    printf("# S_U: "); S_U.print(stdout);
+	 
+    
+    Rollout<Vector, int, AbstractPolicy<Vector, int> > rollout (urandom(S_L, S_U), &policy, &environment, options.gamma, true);
+    
+    rollout.Sampling(options.n_training, -1);
+    
+    logmsg("Total number of collected rollout samples -> %d\n", rollout.getNSamples());
+    EvenGrid Discretisation(S_L, S_U, options.grid);
+    LSPI lspi(options.gamma, options.accuracy, state_dimension, n_actions, options.lspi_iterations, &RBFs, &rollout);
+    lspi.PolicyIteration();
+    AbstractPolicy<Vector, int> * lspi_policy = new FixedContinuousPolicy(lspi.ReturnPolicy());
+
+    return lspi_policy;
 }
 
 real EvaluateLSTD(Environment<Vector, int>& environment,
@@ -280,6 +357,7 @@ static const char* const help_text = "Usage: test [options]\n\
     --seed:            seed all the RNGs with this\n\
     --grid:            number of grid intervals for LSTD\n\
     --scale:           RBF scale for LSTD\n\
+    --n_evaluations:   number of evaluations\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -297,7 +375,10 @@ int main(int argc, char* argv[])
          10, // training trajectories
          10000, // test trajectories
          5, // grid size
-         0.5 // rbf scale
+         0.5, // rbf scale
+         1e-6, // accuracy
+         100, // lspi iterations
+         1000 // number of evaluations
         };
 
 	{
@@ -318,6 +399,9 @@ int main(int argc, char* argv[])
                 {"grid", required_argument, 0, 0}, //7
                 {"scale", required_argument, 0, 0}, //8
 				{"seed", required_argument, 0, 0}, //9
+				{"accuracy", required_argument, 0, 0}, //10
+				{"lspi_iterations", required_argument, 0, 0}, //11
+				{"n_evaluations", required_argument, 0, 0}, //12
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -344,6 +428,9 @@ int main(int argc, char* argv[])
                 case 7: options.grid = atoi(optarg); break;
                 case 8: options.scale = atof(optarg); break;
 				case 9: seed = atoi(optarg); break;
+                case 10: options.accuracy = atof(optarg); break;
+                case 11: options.lspi_iterations = atoi(optarg); break;
+                case 12: options.n_evaluations = atoi(optarg); break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
@@ -355,9 +442,9 @@ int main(int argc, char* argv[])
             case '2':
                 if (digit_optind != 0 && digit_optind != this_option_optind)
                     printf ("digits occur in two different argv-elements.\n");
-            digit_optind = this_option_optind;
-            printf ("option %c\n", c);
-            break;
+                digit_optind = this_option_optind;
+                printf ("option %c\n", c);
+                break;
             default:
                 std::cout << help_text;
                 exit (-1);
@@ -410,20 +497,21 @@ int main(int argc, char* argv[])
 
     logmsg("Starting environment %s\n", options.environment_name);
 
-    if (!strcmp(options.environment_name, "MountainCar")) {
-        logmsg("Testing mountain car\n");
-        RunTest<MountainCarGenerator, MountainCar>(options);
-    } else if (!strcmp(options.environment_name, "Pendulum")) {
-        logmsg("Testing pendulum\n");
-        RunTest<PendulumGenerator, Pendulum>(options);
-    } else if (!strcmp(options.environment_name, "PuddleWorld")) {
-        logmsg("Testing puddle world\n");
-        RunTest<PuddleWorldGenerator, PuddleWorld>(options);
-    } else {
-        fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
-        exit(-1);
+    for (int i=0; i<options.n_evaluations; ++i) {
+        if (!strcmp(options.environment_name, "MountainCar")) {
+            logmsg("Testing mountain car\n");
+            RunTest<MountainCarGenerator, MountainCar>(options);
+        } else if (!strcmp(options.environment_name, "Pendulum")) {
+            logmsg("Testing pendulum\n");
+            RunTest<PendulumGenerator, Pendulum>(options);
+        } else if (!strcmp(options.environment_name, "PuddleWorld")) {
+            logmsg("Testing puddle world\n");
+            RunTest<PuddleWorldGenerator, PuddleWorld>(options);
+        } else {
+            fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
+            exit(-1);
+        }
     }
-
 	return 0;
 }
 #endif
