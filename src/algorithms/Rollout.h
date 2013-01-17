@@ -111,13 +111,15 @@ public:
 		discounted_reward += reward * discount_factor;
 	}
 	
-	void Sample(const int period)
+	void Sample(const int period, bool use_start_state = true)
     {
 		total_reward = 0;
 		discounted_reward = 0;
 		real discount_factor = 1;
         environment->Reset();
-		//environment->setState(start_state);
+        if (use_start_state) {
+            environment->setState(start_state);
+        }
 		running = true;
 		int t = 0;
 		//logmsg("Period, %d, start state: ", period); start_state.print(stdout);
@@ -154,14 +156,36 @@ public:
 		}
 		//logmsg("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward); end_state.print(stdout);
 	}
+    /// Always sample from the same starting state
 	void Sampling(const int episodes, const int period)
 	{
 		for(int i = 0; i<episodes; ++i)
 		{
-			start_state = urandom(environment->StateUpperBound(), environment->StateLowerBound());
-			Sample(period);
+			Sample(period, true);
 		}
 	}
+
+    /// Sample uniformly within the environment bounds
+	void UniformSampling(const int episodes, const int period)
+	{
+		for(int i = 0; i<episodes; ++i)
+		{
+			SetState(urandom(environment->StateUpperBound(), environment->StateLowerBound()));
+			Sample(period, true);
+		}
+	}
+
+    /// The starting state equal to the starting distribution
+    void StartingDistributionSampling(const int episodes, const int period)
+	{
+		for(int i = 0; i<episodes; ++i)
+		{
+			SetState(urandom(environment->StateUpperBound(), environment->StateLowerBound()));
+			Sample(period, true);
+		}
+	}
+
+
 	void SetState(const S& start_state_)
 	{
 		start_state = start_state_;
