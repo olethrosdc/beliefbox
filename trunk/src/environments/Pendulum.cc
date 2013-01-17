@@ -48,10 +48,10 @@ default_parameters.gravity;
     state.Clear();
     state_upper_bound.Resize(2);
     state_lower_bound.Resize(2);
-    state_upper_bound[0] = 4;
-    state_upper_bound[1] = 10;
-    state_lower_bound[0] = -4;
-    state_lower_bound[1] = -10;
+    state_upper_bound[0] = 1.6;
+    state_upper_bound[1] = -1.5;//10;
+    state_lower_bound[0] = -1.6;
+    state_lower_bound[1] = 1.5;//-10;
 
 	action_upper_bound.Resize(n_actions);
 	action_lower_bound.Resize(n_actions);

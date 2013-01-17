@@ -207,14 +207,17 @@ real EvaluatePolicy(M& environment, P& policy, real gamma, int n_testing)
 {
 	int n_samples = 0;
 	real discounted_reward = 0;
+    real average_steps = 0;
     for (int i=0; i<n_testing; ++i) {
         Demonstrations<Vector, int> data;
         data.Simulate(environment, policy, gamma, -1);
-		for (uint t=0; t<data.discounted_rewards.size(); ++t) {
+		for (uint t=0; t<data.size(); ++t) {
+            average_steps += data.length(t);
 			discounted_reward += data.discounted_rewards[t];
 			n_samples++;
 		}
     }
+    logmsg("Average steps: %f\n", average_steps / (real) n_samples);
 	return discounted_reward / (real) n_samples;
 }
 
