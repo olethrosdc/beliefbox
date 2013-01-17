@@ -383,7 +383,7 @@ int main(int argc, char* argv[])
 
 	MersenneTwisterRNG rng;
 	Options options = 
-        {0.99, // idscount
+        {0.99, // discount
          10.0, // threshold
          NULL, // envionment
          rng, // rng
