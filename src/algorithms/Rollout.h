@@ -180,8 +180,7 @@ public:
 	{
 		for(int i = 0; i<episodes; ++i)
 		{
-			SetState(urandom(environment->StateUpperBound(), environment->StateLowerBound()));
-			Sample(period, true);
+			Sample(period, false);
 		}
 	}
 
