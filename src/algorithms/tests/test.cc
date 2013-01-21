@@ -126,7 +126,9 @@ getLSPIPolicy(Environment<Vector, int>* training_environment,
     } else {
         rollout = new Rollout<Vector, int, AbstractPolicy<Vector, int> > (urandom(S_L, S_U), &policy, environment, options.gamma, true);
     }
-    rollout->UniformSampling(options.n_training, -1);
+    if (training_environment) {
+        rollout->UniformSampling(options.n_training, -1);
+    }
     
     logmsg("Total number of collected rollout samples -> %d\n", rollout->getNSamples());
     EvenGrid Discretisation(S_L, S_U, options.grid);
