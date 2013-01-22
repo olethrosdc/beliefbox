@@ -102,7 +102,7 @@ public:
 			}
 			++t;
 		} while (running);
-		logmsg("Terminating after %d steps\n", t);
+		//logmsg("Terminating after %d steps\n", t);
         total_rewards.push_back(total_reward);
         discounted_rewards.push_back(discounted_reward);
 	}
