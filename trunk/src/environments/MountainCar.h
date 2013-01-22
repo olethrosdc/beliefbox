@@ -98,9 +98,9 @@ public:
 class MountainCarGenerator
 {
 public:
-    MountainCar Generate()
+    MountainCar Generate(bool random=true)
     {
-        return MountainCar(true);
+      return MountainCar(random);
     }
 };
 

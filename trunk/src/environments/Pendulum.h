@@ -105,9 +105,9 @@ public:
 class PendulumGenerator
 {
 public:
-    Pendulum Generate()
+    Pendulum Generate(bool random=true)
     {
-        return Pendulum(true);
+        return Pendulum(random);
     }
 };
 
