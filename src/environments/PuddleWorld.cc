@@ -21,11 +21,12 @@ PuddleWorld:: PuddleWorld(bool random_parameters)
  : Environment<Vector, int>(2,4)
    //parameters(default_parameters)
 {	
-    printf("Entering actual constructor\n");
+    //printf("Entering actual constructor\n");
 
 	default_parameters = SetDefaultParameters();
-    
+    parameters = default_parameters;    
 	if(random_parameters){
+        //logmsg("Using random parameters\n");
 		RandomSourceRNG rng(false);
 		parameters.U_POS_X = (0.5 + rng.uniform()) * default_parameters.U_POS_X;
 		parameters.L_POS_X = (0.5 + rng.uniform()) * default_parameters.L_POS_X;
@@ -38,9 +39,7 @@ PuddleWorld:: PuddleWorld(bool random_parameters)
 		for(int i=0;i<default_parameters.NUMPUDDLES;i++)
 			parameters.RADIUSPUDDLES(i) = (0.5 + rng.uniform()) * default_parameters.RADIUSPUDDLES(i);
 		parameters.AGENTSPEED	= (0.5 + rng.uniform()) * default_parameters.AGENTSPEED;
-	} else {
-        parameters = default_parameters;
-    }
+	} 
 	
 	state.Resize(n_states);
 	state.Clear();
