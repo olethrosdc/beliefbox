@@ -152,7 +152,7 @@ public:
 		MR[a]	= MR_;
 		VR[a]	= VR_;
 	}
-	const void SetModelParameters(const std::vector<Matrix>& M_, const std::vector<Matrix>& V_, const std::vector<Matrix>& MR_,  const std::vector<Matrix>& VR_)
+	const void SetModelParameters(const std::vector<Matrix>& M_, const std::vector<Matrix>& V_, const std::vector<Vector>& MR_,  const std::vector<Matrix>& VR_)
 	{
 		int n_actions = environment->getNActions();
 		for( int i=0; i<n_actions; ++i) {

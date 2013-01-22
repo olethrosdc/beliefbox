@@ -39,7 +39,7 @@ BayesianMultivariate::BayesianMultivariate(int n_actions_,
 					  baseline(baseline_),
 					  use_geometric_schedule(false)
 {
-	assert(n_grids > 0);
+	//assert(n_grids > 0);
 	assert( gamma >= 0.0 && gamma <= 1.0);
 //  RepresentativeStateModel<LinearModel<Vector, int>, Vector, int> RR(gamma, *lm, n_states, n_actions);
 //	real (RepresentativeStateModel<LinearModel<Vector, int>, Vector, int>::* getValue_)(const Vector&, const int&) = &RepresentativeStateModel<LinearModel<Vector, int>, Vector, int>::getValue; 

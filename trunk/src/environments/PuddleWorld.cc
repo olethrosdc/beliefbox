@@ -33,6 +33,8 @@ PuddleWorld:: PuddleWorld(bool random_parameters)
 		parameters.L_POS_Y = (0.5 + rng.uniform()) * default_parameters.L_POS_Y;
 		parameters.MCNOISE = (0.5 + rng.uniform()) * default_parameters.MCNOISE;
 
+        parameters.RADIUSPUDDLES.Resize(default_parameters.NUMPUDDLES);
+
 		for(int i=0;i<default_parameters.NUMPUDDLES;i++)
 			parameters.RADIUSPUDDLES(i) = (0.5 + rng.uniform()) * default_parameters.RADIUSPUDDLES(i);
 		parameters.AGENTSPEED	= (0.5 + rng.uniform()) * default_parameters.AGENTSPEED;
