@@ -96,13 +96,13 @@ public:
                 Terminate();
             }
 			if (horizon >= 0 && t >= horizon) {
-				running = false;
-			} else if (horizon < 0) {
-				if (urandom() < 1.0 - gamma) {
-					running = false;
-				}
+			  running = false;
+			} else if (horizon < 0 && urandom() < 1.0 - gamma) {
+			  running = false;
 			}
+			++t;
 		} while (running);
+		logmsg("Terminating after %d steps\n", t);
         total_rewards.push_back(total_reward);
         discounted_rewards.push_back(discounted_reward);
 	}

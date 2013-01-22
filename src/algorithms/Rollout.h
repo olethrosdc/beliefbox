@@ -148,7 +148,7 @@ public:
 				running = false;
             }
 		}
-        //logmsg("Stopping after %d steps\n", t);
+		//logmsg("Rollout stopping after %d steps\n", t);
 		if(sampling){
 			Samples.push_back(esamples);
 			total_rewards.push_back(total_reward);
