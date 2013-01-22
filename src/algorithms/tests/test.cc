@@ -175,7 +175,7 @@ public:
 	{
 		//real min_epsilon = INF;
         int n_models = 0;
-		for (int iter=0; iter<n_samples || n_models == 0; ++iter) {
+		for (int iter=0; n_models == 0; ++iter) {
             M model = generator.Generate();
             Demonstrations<X, A> sample;
             for (int i=0; i<n_trajectories; ++i) {
@@ -286,8 +286,8 @@ void RunTest(Options& options)
 	Vector V_LSPI((uint) samples.size());
 	Vector hV_LSPI((uint) samples.size());
 	for (int i=0; i<V.Size(); ++i) {
-		V(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], policy, options.gamma, options.n_testing);
-		hV(i) = values[i];
+		//V(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], policy, options.gamma, options.n_testing);
+		//hV(i) = values[i];
 
         AbstractPolicy<Vector, int>* lspi_policy
             =  getLSPIPolicy(&samples[i],
@@ -296,8 +296,8 @@ void RunTest(Options& options)
                              RBFs,
                              options);
         
-        hV_LSPI(i)= EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], *lspi_policy, options.gamma, options.n_testing);
-
+        //hV_LSPI(i)= EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], *lspi_policy, options.gamma, options.n_testing);
+        
         V_LSPI(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *lspi_policy, options.gamma, options.n_testing);
 		printf ("%f %f %f %f# sampled value\n", hV(i), V(i), hV_LSPI(i), V_LSPI(i));
         fflush(stdout);
@@ -310,7 +310,7 @@ void RunTest(Options& options)
                          RBFs,
                          options);
     real V_lspi_oracle = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *oracle_lspi_policy, options.gamma, options.n_testing);
-    real V_LSTD = EvaluateLSTD(environment, policy, training_data, options);    
+    //real V_LSTD = EvaluateLSTD(environment, policy, training_data, options);    
     printf ("%f %f %f %f %f %f %f # hV V V_oracle hV_LSPI V_LSPI V_LSPI_oracle V_LSTD\n",
 			hV.Sum()/(real) hV.Size(),
 			V.Sum()/(real) V.Size(),
@@ -381,8 +381,8 @@ void RunOnlineTest(Options& options)
 	Vector V_LSPI((uint) samples.size());
 	Vector hV_LSPI((uint) samples.size());
 	for (int i=0; i<V.Size(); ++i) {
-		V(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], policy, options.gamma, options.n_testing);
-		hV(i) = values[i];
+		//V(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], policy, options.gamma, options.n_testing);
+		//hV(i) = values[i];
 
         AbstractPolicy<Vector, int>* lspi_policy
             =  getLSPIPolicy(&samples[i],
@@ -391,7 +391,7 @@ void RunOnlineTest(Options& options)
                              RBFs,
                              options);
         
-        hV_LSPI(i)= EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], *lspi_policy, options.gamma, options.n_testing);
+        //hV_LSPI(i)= EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], *lspi_policy, options.gamma, options.n_testing);
 
         V_LSPI(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *lspi_policy, options.gamma, options.n_testing);
 		printf ("%f %f %f %f# sampled value\n", hV(i), V(i), hV_LSPI(i), V_LSPI(i));
@@ -405,7 +405,7 @@ void RunOnlineTest(Options& options)
                          RBFs,
                          options);
     real V_lspi_oracle = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *oracle_lspi_policy, options.gamma, options.n_testing);
-    real V_LSTD = EvaluateLSTD(environment, policy, training_data, options);    
+    //real V_LSTD = EvaluateLSTD(environment, policy, training_data, options);    
     printf ("%f %f %f %f %f %f %f # hV V V_oracle hV_LSPI V_LSPI V_LSPI_oracle V_LSTD\n",
 			hV.Sum()/(real) hV.Size(),
 			V.Sum()/(real) V.Size(),
