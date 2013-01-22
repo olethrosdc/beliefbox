@@ -110,9 +110,9 @@ bool Pendulum::Act(const int& action)
     // run
     Simulate(action);
 	
-	//if (endsim) {
-    //		return false;
-    //	}
+    if (endsim) {
+    		return false;
+    	}
     return true;
 }
 
