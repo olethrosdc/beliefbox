@@ -156,9 +156,9 @@ public:
 class PuddleWorldGenerator
 {
 public:
-    PuddleWorld Generate()
+    PuddleWorld Generate(bool random=true)
     {
-        return PuddleWorld(true);
+        return PuddleWorld(random);
     }
 };
 
