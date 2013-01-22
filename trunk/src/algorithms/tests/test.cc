@@ -210,7 +210,7 @@ real EvaluatePolicy(M& environment, P& policy, real gamma, int n_testing)
   int n_samples = 0;
   real discounted_reward = 0;
   real average_steps = 0;
-  int horizon =  (int) ceil(1.0/(1.0 - gamma));
+  int horizon =  (int) ceil(10.0/(1.0 - gamma));
   printf("Evaluating policy with horizon %d\n", horizon);
   Demonstrations<Vector, int> data;
   for (int i=0; i<n_testing; ++i) {
