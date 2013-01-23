@@ -55,9 +55,9 @@ struct Options
     int n_evaluations; ///< number of evaluations
     bool reuse_training_data; ///< reuse training data in lspi
     Options(RandomNumberGenerator& rng_) :
-        discount(0.99),
-        threshold(1.0),
-        environment(NULL),
+        gamma(0.99),
+        epsilon(1.0),
+        environment_name(NULL),
         rng(rng_), n_trajectories(1000),
         n_samples(128),
         n_training(10),
