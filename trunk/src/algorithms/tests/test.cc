@@ -54,6 +54,8 @@ struct Options
     int lspi_iterations; ///< number of lspi iterations
     int n_evaluations; ///< number of evaluations
     bool reuse_training_data; ///< reuse training data in lspi
+    int n_episodes; ///< number of episodes
+    bool sampling; ///< use sampling online
     Options(RandomNumberGenerator& rng_) :
         gamma(0.99),
         epsilon(1.0),
@@ -67,7 +69,8 @@ struct Options
         accuracy(1e-6),
         lspi_iterations(100),
         n_evaluations(100),
-        reuse_training_data(false)
+        reuse_training_data(false),
+        sampling(false)
     {
     }
 };
@@ -216,7 +219,49 @@ public:
             Swarning("No model generated: %d\n", (int) samples.size());
         }
     }
-	
+    void GetSample(std::vector<Demonstrations<X,A> >& data_list,
+                   std::vector<P*>& policy_list,
+                   real discounting,
+                   real epsilon,
+                   int n_trajectories,
+                   int n_samples,
+                   std::vector<M>& samples,
+                   std::vector<real>& values)
+    {
+        assert(policy_list.size() == data_list.size());
+
+        int list_size = data_list.size();
+        //real min_epsilon = INF;
+        int n_models = 0;
+        for (int iter=0; n_models == 0; ++iter) {
+            M model = generator.Generate();
+            real error = 0.0;
+            for (int k=0; k<list_size; ++k) {
+                Demonstrations<X, A> sample;
+                for (int i=0; i<n_trajectories; ++i) {
+                    sample.Simulate(model, *policy_list[k], discounting, -1);
+                }
+                error += statistic.distance(data_list[k], sample);
+            }
+            error /= (real) list_size;
+
+            if (error <= epsilon) {
+                n_models++;
+                samples.push_back(model);
+                model.Show();
+            }
+            if(iter > n_samples) {
+                iter = 0;
+                epsilon *= 2.0;
+                printf("# e -> %f\n", epsilon);
+                fflush(stdout);
+            }
+        }
+        if (n_models == 0) {
+            Swarning("No model generated: %d\n", (int) samples.size());
+        }
+    }
+
 };
 
 
@@ -340,11 +385,15 @@ void RunTest(Options& options)
 template <class G, class M>
 void RunOnlineTest(Options& options)
 {
-    
+    int n_episodes_per_iteration = 1;
+    int rollout_horizon = -1;
+
     // First, generate the environment
     G generator;
     M environment = generator.Generate();
-
+    printf("# generated environment: ");
+    environment.Show();
+    
     int state_dimension = environment.getNStates();
     //int n_actions = environment.getNActions();
     Vector S_L = environment.StateLowerBound();
@@ -358,75 +407,68 @@ void RunOnlineTest(Options& options)
     EvenGrid Discretisation(S_L, S_U, options.grid);
     RBFBasisSet RBFs(Discretisation, options.scale);
 
-    // Start with a random policy!
-    RandomPolicy random_policy(environment.getNActions(), &options.rng);
 
-    // Policy placeholder
-    AbstractPolicy<Vector, int>& policy = random_policy;
-
-    //template <class G, class F, class M, class P, typename X, typename A>
-    Demonstrations<Vector, int> training_data;
-    logmsg("Training\n"); environment.Show();
-    for (int i=0; i<options.n_training; ++i) {
-        training_data.Simulate(environment, policy, options.gamma, -1);
-    }
+    std::vector<AbstractPolicy<Vector, int>* > policy_list;   
+    std::vector<Demonstrations<Vector, int> > training_data_list;
     
-    Rollout<Vector, int, AbstractPolicy<Vector, int> > training_rollouts(urandom(S_L, S_U), &policy, &environment, options.gamma, true);
-    training_rollouts.StartingDistributionSampling(options.n_training, -1);
+    // Add the random policy to the list.
+    policy_list.push_back(new RandomPolicy (environment.getNActions(), &options.rng));
 
-
-    ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
-
-
-    std::vector<M> samples;
-    std::vector<real> values;
-    abcrl.GetSample(training_data,
-                    policy,
-                    options.gamma,
-                    options.epsilon,
-                    options.n_trajectories,
-                    options.n_samples,
-                    samples,
-                    values);
-
-    logmsg("Evaluating initial policy\n");
-    real V_initial = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
-    Vector V((uint) samples.size());
-    Vector hV((uint) samples.size());
-    Vector V_LSPI((uint) samples.size());
-    Vector hV_LSPI((uint) samples.size());
-    for (int i=0; i<V.Size(); ++i) {
-        //V(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], policy, options.gamma, options.n_testing);
-        //hV(i) = values[i];
-
-        AbstractPolicy<Vector, int>* lspi_policy
-            =  getLSPIPolicy(&samples[i],
-                             policy,
-                             &training_rollouts,
-                             RBFs,
-                             options);
-        
-        //hV_LSPI(i)= EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(samples[i], *lspi_policy, options.gamma, options.n_testing);
-        logmsg("Evaluating Sampled policy\n");
-        V_LSPI(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *lspi_policy, options.gamma, options.n_testing);
-        printf ("%f %f %f %f# sampled value\n", hV(i), V(i), hV_LSPI(i), V_LSPI(i));
+    {
+        real V = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *(policy_list.back()), options.gamma, options.n_testing);
+        printf ("%f # value\n",
+                V);
+    }
+    Rollout<Vector, int, AbstractPolicy<Vector, int> > training_rollouts(urandom(S_L, S_U), policy_list.back(), &environment, options.gamma, true);
+    
+    for (int episode=0; episode < options.n_training; ++episode) {
+        logmsg("Episode %d\n", episode); 
+        AbstractPolicy<Vector, int>& policy = *(policy_list.back());
+        if (options.sampling) {
+            // for sampling
+            training_data_list.push_back(Demonstrations<Vector, int> ());
+            Demonstrations<Vector, int>& training_data = training_data_list.back();
+            for (int i=0; i<n_episodes_per_iteration; ++i) {
+                training_data.Simulate(environment, policy, options.gamma, rollout_horizon);
+            }
+            ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
+            std::vector<M> samples;
+            std::vector<real> values;
+            abcrl.GetSample(training_data_list,
+                            policy_list,
+                            options.gamma,
+                            options.epsilon,
+                            options.n_trajectories,
+                            options.n_samples,
+                            samples,
+                            values);
+            AbstractPolicy<Vector, int>* sampled_policy
+                =  getLSPIPolicy(&samples[0],
+                                 policy_list[0],
+                                 NULL,
+                                 RBFs,
+                                 options);
+            policy_list.push_back(sampled_policy);
+        } else {
+training_rollouts.StartingDistributionSampling(n_episodes_per_iteration, rollout_horizon);
+            AbstractPolicy<Vector, int>* lspi_policy
+                =  getLSPIPolicy(NULL,
+                                 policy,
+                                 &training_rollouts,
+                                 RBFs,
+                                 options);
+            policy_list.push_back(lspi_policy);
+            training_rollouts.policy = lspi_policy;
+        }
+        real V = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *(policy_list.back()), options.gamma, options.n_testing);
+        printf ("%f # value\n",
+                V);
         fflush(stdout);
     }
-
-    AbstractPolicy<Vector, int>* oracle_lspi_policy
-        =  getLSPIPolicy(NULL,
-                         policy,
-                         &training_rollouts,
-                         RBFs,
-                         options);
-    logmsg("Evaluating LSPI policy\n");
-    real V_lspi_oracle = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *oracle_lspi_policy, options.gamma, options.n_testing);
-    printf ("%f %f %f # V V_LSPI V_LSPI_oracle\n",
-            V_initial,
-            V_LSPI.Sum() / (real) V_LSPI.Size(),
-            V_lspi_oracle);
+    for (uint i=0; i<policy_list.size(); ++i) {
+        delete policy_list[i];
+    }
 }
-
 
 real EvaluateLSTD(Environment<Vector, int>& environment,
                   AbstractPolicy<Vector, int>& policy,
@@ -485,6 +527,7 @@ static const char* const help_text = "Usage: test [options]\n\
     --n_evaluations:         number of evaluations\n\
     --reuse_training_data:   reuse the training data in LSPI samples\n\
     --online:                do the online test\n\
+    --sampling:              use sampling\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -517,6 +560,7 @@ int main(int argc, char* argv[])
                 {"n_evaluations", required_argument, 0, 0}, //12
                 {"reuse_training_data", no_argument, 0, 0}, //13
                 {"online", no_argument, 0, 0}, //14
+                {"sampling", no_argument, 0, 0}, //15
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -548,6 +592,7 @@ int main(int argc, char* argv[])
                 case 12: options.n_evaluations = atoi(optarg); break;
                 case 13: options.reuse_training_data = true; break;
                 case 14: online_test = true; break;
+                case 15: options.sampling = true; break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
