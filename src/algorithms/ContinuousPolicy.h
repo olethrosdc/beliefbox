@@ -55,6 +55,8 @@ class FixedContinuousPolicy : public ContinuousPolicy
 {
 public:
 	Vector p;
+    bool epsilon_greedy;
+    real epsilon;
 	FixedContinuousPolicy(int n_dimension_, int n_actions_, RBFBasisSet* bfs_);
 	FixedContinuousPolicy(int n_dimension_, int n_actions_, RBFBasisSet* bfs_, const Vector& weights_);
 	virtual ~FixedContinuousPolicy();
@@ -81,6 +83,11 @@ public:
 		return weights;
 	}
 	inline void StatePolicy();
+    void setEpsilonGreedy(real epsilon_) 
+    {
+        epsilon_greedy = true;
+        epsilon = epsilon;
+    }
 };
 
 #endif

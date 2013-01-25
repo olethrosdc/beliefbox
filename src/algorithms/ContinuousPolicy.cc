@@ -18,15 +18,18 @@
 
 ///Create an uniform policy with a given number of basis functions.
 FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension, int n_actions_, RBFBasisSet* bfs_)
-	: ContinuousPolicy(n_dimension, n_actions_, bfs_ )
+	: ContinuousPolicy(n_dimension, n_actions_, bfs_ ),
+      epsilon_greedy(false),
+      epsilon(0.0)
 {
-	Vector w(n_actions*(bfs_->size()));
-	weights = w;
+    weights.Resize(n_actions*(bfs_->size() + 1));
 	p.Resize(n_actions);
 }
 
 FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension_, int n_actions_, RBFBasisSet* bfs_, const Vector& weights_)
-	: ContinuousPolicy(n_dimension_, n_actions_, bfs_, weights_) 
+	: ContinuousPolicy(n_dimension_, n_actions_, bfs_, weights_),
+      epsilon_greedy(false),
+      epsilon(0.0)
 {
 	p.Resize(n_actions);
 }
@@ -39,6 +42,9 @@ FixedContinuousPolicy::~FixedContinuousPolicy()
 int FixedContinuousPolicy::SelectAction()
 {
 	StatePolicy();
+    if (epsilon_greedy && urandom() < epsilon) {
+        return urandom(0, n_actions);
+    }
     return  MultinomialDistribution::generateInt(p);
 }
 
@@ -46,6 +52,9 @@ int FixedContinuousPolicy::SelectAction(const Vector& next_state)
 {
 	state = next_state;	
 	StatePolicy();
+    if (epsilon_greedy && urandom() < epsilon) {
+        return urandom(0, n_actions);
+    }
 	return  MultinomialDistribution::generateInt(p);
 }
 
