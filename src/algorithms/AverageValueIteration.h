@@ -24,7 +24,6 @@ public:
     const bool RELATIVE;
     const bool SYNCHRONOUS;
     const DiscreteMDP* mdp;
-    real gamma;
     int n_states;
     int n_actions;
     bool max_iter_reached;
@@ -44,7 +43,6 @@ public:
     ~AverageValueIteration();
     void Reset();
     void ComputeStateValues(real threshold, int max_iter=-1);
-    void ComputeStateActionValues(real threshold, int max_iter=-1);
     inline real getValue (int state, int action)
     {
         assert(state>=0 && state < n_states);

@@ -83,7 +83,7 @@ void LSTDQ::Calculate()
             Vector s_t = Samples.state(i,t); 
             int a_t = Samples.action(i,t);
             Phi_ = BasisFunction(s_t, a_t);
-            if (Samples.terminated(i) && t >= Samples.length(i) - 3) {
+            if (Samples.terminated(i) && t >= (int) Samples.length(i) - 3) {
                 res =  OuterProduct(Phi_, Phi_);
             } else {
                 Vector s2 = Samples.state(i, t+1);

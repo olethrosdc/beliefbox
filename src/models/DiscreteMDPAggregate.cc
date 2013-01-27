@@ -52,7 +52,7 @@ void DiscreteMDPAggregate::BuildRandomAggregate()
         while (zeros && X[s].size()!=0) {
             s = (s+1) % n_states;
         }
-        SMART_ASSERT(s>=0 && s<n_states);
+        //DISABLED_ASSERT(s>=0 && s<n_states);
             
         X[s].add(i);
         state_map[i] = s;
@@ -112,7 +112,7 @@ void DiscreteMDPAggregate::BuildGridworldAggregate(Gridworld& gridworld)
         while (zeros && X[s].size()!=0) {
             s = (s+1) % n_states;
         }
-        SMART_ASSERT(s>=0 && s<n_states);
+        //DISABLED_ASSERT(s>=0 && s<n_states);
         X[s].add(i);
         state_map[i] = s;
     }

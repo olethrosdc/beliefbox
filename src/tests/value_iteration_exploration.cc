@@ -284,7 +284,7 @@ int test_belief_mdp(int T, real gamma, real prior)
             int  t = f+s;
             if (t<T) {
                 int n = get_bionomial_index(f, s);
-                SMART_ASSERT(n>=0 && n<n_states)(n)(n_states);
+                //DISABLED_ASSERT(n>=0 && n<n_states)(n)(n_states);
                 pairs[n].f = f;
                 pairs[n].s = s;
                 belief[n] = new SimpleBelief(low_value, high_value, 1.0 - prior,  prior);
@@ -581,7 +581,7 @@ int play_belief_mdp(int T, real gamma, SimpleBelief& initial_belief)
             int  t = f+s;
             if (t<T) {
                 int n = get_bionomial_index(f, s);
-                SMART_ASSERT(n>=0 && n<n_states)(n)(n_states);
+                //DISABLED_ASSERT(n>=0 && n<n_states)(n)(n_states);
                 pairs[n].f = f;
                 pairs[n].s = s;
                 belief[n] = new SimpleBelief(initial_belief);
@@ -679,7 +679,7 @@ int play_belief_mdp_quick(int T, real gamma, SimpleBelief& initial_belief)
             int  t = f+s;
             if (t<T) {
                 int n = get_bionomial_index(f, s);
-                SMART_ASSERT(n>=0 && n<n_states)(n)(n_states);
+                //DISABLED_ASSERT(n>=0 && n<n_states)(n)(n_states);
                 pairs[n].f = f;
                 pairs[n].s = s;
                 belief[n] = new SimpleBelief(initial_belief);

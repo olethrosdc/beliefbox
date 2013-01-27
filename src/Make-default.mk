@@ -5,7 +5,7 @@ PACKAGES = core algorithms geometry models statistics environments #florian
 # Compiler and Linker
 CC = g++
 CXX = g++
-LD = g++
+LD = ld
 AR = ar -rus
 DEP = g++ -MM -D__DEPEND__
 
@@ -25,8 +25,8 @@ MYINCS = -I$(INCS_EXPORT)
 DBG_OPT=OPT
 
 # Add -pg flag for profiling
-CFLAGS_DBG = -fPIC -g -Wall -DUSE_DOUBLE 
-CFLAGS_OPT = -fPIC -g -O3 -Wall -DUSE_DOUBLE -DNDEBUG 
+CFLAGS_DBG = -fPIC -g -Wall -DUSE_DOUBLE -Wno-overloaded-virtual
+CFLAGS_OPT = -fPIC -g -O3 -Wall -DUSE_DOUBLE -DNDEBUG -Wno-overloaded-virtual
 #CFLAGS_DBG = -fPIC -g -Wall -pipe -pg
 #CFLAGS_OPT = -fPIC -g -O3 -Wall -DNDEBUG -pipe -pg
 CFLAGS=$(CFLAGS_$(DBG_OPT))

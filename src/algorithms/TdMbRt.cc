@@ -36,9 +36,9 @@ TdMbRt::TdMbRt(const int n_states_,
 	N(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
 	U(0.5)
 {
-	make_assert(ALPHA >= 0 && ALPHA <= 1);
-	make_assert(GAMMA >= 0 && GAMMA <= 1);
-	make_assert(DEFAULT_LAMBDA >= 0 && DEFAULT_LAMBDA <= 1);
+	assert(ALPHA >= 0 && ALPHA <= 1);
+	assert(GAMMA >= 0 && GAMMA <= 1);
+	assert(DEFAULT_LAMBDA >= 0 && DEFAULT_LAMBDA <= 1);
 
 	Reset();
 

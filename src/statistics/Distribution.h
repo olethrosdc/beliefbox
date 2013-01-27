@@ -38,17 +38,6 @@ public:
     }
 };
 
-typedef AbstractDistribution<Object> ObjectDistribution;
-
-class DiscreteObjectDistribution : public ObjectDistribution
-{
-public:
-    DiscreteObjectDistribution() {}
-    virtual ~DiscreteObjectDistribution() {};
-    virtual void generate(Object& x) const = 0;
-    virtual real pdf(Object& x) const =0;
-};
-
 /// Vector distribtuions
 typedef AbstractDistribution<Vector> VectorDistribution;
 

@@ -46,6 +46,7 @@
 #ifndef SMART_ASSERT_H
 #define SMART_ASSERT_H
 
+#if 0
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -85,11 +86,11 @@ public:
 };
 
 /// Make an assertion
-static Assert make_assert (bool flag) {
+static Assert assert (bool flag) {
 	return Assert(flag);
 }
 
-Assert _dummy_make_assert();
+Assert _dummy_assert();
 
 // Must define the macros afterwards
 /// Clever macro A
@@ -102,7 +103,7 @@ Assert _dummy_make_assert();
 /// High-level macro
 #define SMART_ASSERT( expr) \
 if ( (expr) ) ; \
-else make_assert( #expr).print_context( __FILE__, __LINE__).SMART_ASSERT_A
+else assert( #expr).print_context( __FILE__, __LINE__).SMART_ASSERT_A
 
-
+#endif
 #endif

@@ -34,9 +34,9 @@ TdBma::TdBma(const int n_states_,
 	Variances(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
 	Deviations(n_states_, n_actions_, Matrix::CHECK_BOUNDS)
 {
-	make_assert(ALPHA >= 0 && ALPHA <= 1);
-	make_assert(GAMMA >= 0 && GAMMA <= 1);
-	make_assert(lambda >= 0 && lambda <= 1);
+	assert(ALPHA >= 0 && ALPHA <= 1);
+	assert(GAMMA >= 0 && GAMMA <= 1);
+	assert(lambda >= 0 && lambda <= 1);
 
 	Reset();
 

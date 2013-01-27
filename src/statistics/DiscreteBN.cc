@@ -219,7 +219,7 @@ void DiscreteBN::_calculate_depth()
         depth[n] = n_variables;
     }
     for (int n=0; n<n_variables; n++) {
-        HalfEdgeListIterator e = graph.getFirstParent(n);
+      //HalfEdgeListIterator e = graph.getFirstParent(n);
         if (graph.n_parents(n) == 0) {
             depth[n] = 0;
             HalfEdgeListIterator c = graph.getFirstChild(n);

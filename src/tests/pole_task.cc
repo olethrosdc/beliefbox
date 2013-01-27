@@ -354,7 +354,7 @@ int main (int argc, char** argv)
     pole_cart.Reset();
 	
     // paramters for policy
-    SMART_ASSERT(zeta>=0.0 && zeta<=1.0)(zeta);
+    //DISABLED_ASSERT(zeta>=0.0 && zeta<=1.0)(zeta);
     std::cerr << "zeta : " << zeta << std::endl;
         
     real* average_score = new real [max_episodes];

@@ -1,7 +1,7 @@
 #include "ranlib.h"
-#include <cstdio>
-#include <cmath>
-#include <cstdlib>
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 #define ABS(x) ((x) >= 0 ? (x) : -(x))
 #define min(a,b) ((a) <= (b) ? (a) : (b))
 #define max(a,b) ((a) >= (b) ? (a) : (b))
