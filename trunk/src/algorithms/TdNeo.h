@@ -66,7 +66,7 @@ private:
 
 	double GetProbability(int i, int n)
 	{
-		make_assert(n != 0 && n >= i);
+		assert(n != 0 && n >= i);
 		return ((double) (i + U)) / ((double) (n * (1 + U)));
 	}
 

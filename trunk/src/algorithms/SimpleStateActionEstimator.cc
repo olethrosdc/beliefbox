@@ -21,7 +21,6 @@
 SimpleStateActionEstimator::SimpleStateActionEstimator(int n_states, int n_actions, real gamma, real init_val) : StateActionEstimator(n_states, n_actions)
 {
     this->init_val = init_val;
-    this->alpha = alpha;
 
     Q_data = new real [n_actions*n_states];
     Q = new real* [n_states];
@@ -93,8 +92,8 @@ MaxStateActionEstimator::~MaxStateActionEstimator()
  */
 void MaxStateActionEstimator::Observe(int s_p, int a_p, real r, int s, int a)
 {
-    SMART_ASSERT(s>=0);
-    SMART_ASSERT(a>=0);
+    //DISABLED_ASSERT(s>=0);
+    //DISABLED_ASSERT(a>=0);
     real Er = MaxActionValue(s);
     real TD = r + gamma*Er - Q[s_p][a_p];
     Q[s_p][a_p] += alpha * TD;
@@ -117,8 +116,8 @@ SarsaStateActionEstimator::SarsaStateActionEstimator(int n_states, int n_actions
  */
 void SarsaStateActionEstimator::Observe(int s_p, int a_p, real r, int s, int a)
 {
-    SMART_ASSERT(s>=0);
-    SMART_ASSERT(a>=0);
+    //DISABLED_ASSERT(s>=0);
+    //DISABLED_ASSERT(a>=0);
     real Er = Q[s][a];
     real TD = r + gamma*Er - Q[s_p][a_p];
     Q[s_p][a_p] += alpha * TD;

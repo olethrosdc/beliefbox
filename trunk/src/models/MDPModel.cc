@@ -114,7 +114,7 @@ void GradientDescentMDPModel::AddTransition(int s, int a, real r, int s2)
     real* Ps=P[ID];
         
         
-    SMART_ASSERT(s2>=0 && s2<n_states);
+    //DISABLED_ASSERT(s2>=0 && s2<n_states);
     // update transition probabilities
     real sum = 0.0f;
     for (int i=0; i<n_states; i++) {

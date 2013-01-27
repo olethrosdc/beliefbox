@@ -88,7 +88,8 @@ public:
 		v[j] = 0.0;
 	  } 
 	  v[dst] = 1.0;
-	  std::pair<SourceMapIterator, bool> ret = sources.insert(std::make_pair(src, v));
+	  //std::pair<SourceMapIterator, bool> ret = 
+	  sources.insert(std::make_pair(src, v));
 	  return 1.0;
 	} else {
 	  i->second[dst]++;

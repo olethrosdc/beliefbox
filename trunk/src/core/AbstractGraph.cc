@@ -27,7 +27,7 @@
 
 AbstractGraph::AbstractGraph(int N, bool directional)
     {
-        SMART_ASSERT (N>0)(N);
+        //DISABLED_ASSERT (N>0)(N);
         this->N = N;
         this->directional = directional;
 #if GRAPH_DEBUG_LEVEL > 90

@@ -142,7 +142,7 @@ DiscreteMDP::~MDP()
  */
 void DiscreteMDP::AperiodicityTransform(real tau)
 {
-    SMART_ASSERT(tau > 0 && tau < 1)(tau);
+    //DISABLED_ASSERT(tau > 0 && tau < 1)(tau);
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
 			reward_distribution.setFixedReward(s, a, tau * reward_distribution.expected(s, a));

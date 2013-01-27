@@ -86,7 +86,7 @@ public:
     void setEpsilonGreedy(real epsilon_) 
     {
         epsilon_greedy = true;
-        epsilon = epsilon;
+        epsilon = epsilon_;
     }
 };
 

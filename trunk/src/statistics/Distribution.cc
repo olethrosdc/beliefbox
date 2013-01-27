@@ -109,7 +109,7 @@ DiscreteDistribution::DiscreteDistribution() {
 DiscreteDistribution::DiscreteDistribution(int N) {
     p = NULL;
     n_outcomes = 0;
-    SMART_ASSERT (N>0)(N);
+    //DISABLED_ASSERT (N>0)(N);
     p = (real*) malloc (sizeof(real) * N);
     n_outcomes = N;
     real invN = 1.0/((real) N);
@@ -144,7 +144,7 @@ real DiscreteDistribution::generate() const
             return (real) i;
         }
     }
-    SMART_ASSERT (0)(sum);
+    //DISABLED_ASSERT (0)(sum);
     return 0.0;
 }
 

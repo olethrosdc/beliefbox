@@ -67,7 +67,7 @@ public:
 			 const Vector& upper_bound_x_);
         Node(Node* prev_, 
 			 const Vector& lower_bound_x, const Vector& upper_bound_x);
-        ~Node();
+        virtual ~Node();
         real Observe(const Vector& x,
 					 const Vector& y,
 					 real reward,

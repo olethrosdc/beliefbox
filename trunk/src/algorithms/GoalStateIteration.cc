@@ -19,10 +19,7 @@
 GoalStateIteration::GoalStateIteration(const DiscreteMDP* mdp)
 {
     assert (mdp);
-    assert (gamma>=0 && gamma <=1);
     this->mdp = mdp;
-    this->gamma = gamma;
-    this->baseline = baseline;
     n_actions = mdp->getNActions();
     n_states = mdp->getNStates();
     Reset();
@@ -59,7 +56,7 @@ void GoalStateIteration::ComputeStateValues(int goal_state, real threshold, int 
                 continue;
             }
             real Q_a_max = -RAND_MAX;
-            int a_max = 0;
+            //int a_max = 0;
             for (int a=0; a<n_actions; a++) {
                 real S = 0.0;
                 DiscreteStateSet next = mdp->getNextStates(s, a);
@@ -72,7 +69,7 @@ void GoalStateIteration::ComputeStateValues(int goal_state, real threshold, int 
                     S += P * R;
                 }
                 if (a==0 || Q_a_max < S) {
-                    a_max = a;
+		  //a_max = a;
                     Q_a_max = S;
                 }
             }
@@ -98,7 +95,7 @@ real GoalStateIteration::GetMaximumDistanceFromState(int goal_state, real thresh
             continue;
         }
         real Q_a_max = -RAND_MAX;
-        int a_max = 0;
+        //int a_max = 0;
         for (int a=0; a<n_actions; a++) {
             real S = 0.0;
             DiscreteStateSet next = mdp->getNextStates(s, a);
@@ -111,7 +108,7 @@ real GoalStateIteration::GetMaximumDistanceFromState(int goal_state, real thresh
                 S += P * R;
             }
             if (a==0 || Q_a_max < S) {
-                a_max = a;
+	      //a_max = a;
                 Q_a_max = S;
             }
         }

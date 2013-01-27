@@ -1,4 +1,4 @@
-#include <cmath>
+#include <math.h>
 float sdot(long n,float *sx,long incx,float *sy,long incy)
 {
 static long i,ix,iy,m,mp1;

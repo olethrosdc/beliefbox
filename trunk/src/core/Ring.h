@@ -246,7 +246,7 @@ public:
 		  x += max_size;
 
         //        std::cout << x << std::endl;
-        SMART_ASSERT(x >= 0 && x < max_size)(x)(max_size);
+        //DISABLED_ASSERT(x >= 0 && x < max_size)(x)(max_size);
 
         return data[x];
     }

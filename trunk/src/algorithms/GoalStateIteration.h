@@ -22,14 +22,12 @@ class GoalStateIteration
 {
 public:
     const DiscreteMDP* mdp;
-    real gamma;
     int n_states;
     int n_actions;
     std::vector<real> V;
     std::vector<real> dV;
     std::vector<real> pV;
     real Delta;
-    real baseline;
     GoalStateIteration(const DiscreteMDP* mdp);
     ~GoalStateIteration();
     void Reset();

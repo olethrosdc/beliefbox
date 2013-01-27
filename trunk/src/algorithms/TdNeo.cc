@@ -37,9 +37,9 @@ TdNeo::TdNeo(const int n_states_,
 	U(0.5),
 	MEANS(n_states_, n_actions_, Matrix::CHECK_BOUNDS)
 {
-	make_assert(ALPHA >= 0 && ALPHA <= 1);
-	make_assert(GAMMA >= 0 && GAMMA <= 1);
-	make_assert(DEFAULT_LAMBDA >= 0 && DEFAULT_LAMBDA <= 1);
+	assert(ALPHA >= 0 && ALPHA <= 1);
+	assert(GAMMA >= 0 && GAMMA <= 1);
+	assert(DEFAULT_LAMBDA >= 0 && DEFAULT_LAMBDA <= 1);
 
 	Reset();
 

@@ -1,6 +1,9 @@
+#if 0
 #include "SmartAssert.h"
 
-Assert _dummy_make_assert()
+Assert _dummy_assert()
 {
-	return make_assert(false);
+	return assert(false);
 }
+
+#endif

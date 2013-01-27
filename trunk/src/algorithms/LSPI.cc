@@ -69,7 +69,7 @@ void LSPI::LSTDQ()
 	Vector Phi_;
 	Vector Phi;
 	Matrix res;
-    real difference = 0;
+
     A = Matrix::Unity(n_basis,n_basis) * 1e-6;
     b.Clear();
         

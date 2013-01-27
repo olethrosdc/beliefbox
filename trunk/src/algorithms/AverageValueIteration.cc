@@ -20,13 +20,11 @@
 
 #undef RECALCULATE_P_B
 
-AverageValueIteration::AverageValueIteration(const DiscreteMDP* mdp, bool relative, bool synchronous) : RELATIVE(relative), SYNCHRONOUS(synchronous)
+AverageValueIteration::AverageValueIteration(const DiscreteMDP* mdp, bool relative, bool synchronous) : RELATIVE(relative), SYNCHRONOUS(synchronous), baseline(0)
 {
     assert (mdp);
     assert (gamma>=0 && gamma <=1);
     this->mdp = mdp;
-    this->gamma = gamma;
-    this->baseline = baseline;
     n_actions = mdp->getNActions();
     n_states = mdp->getNStates();
     Reset();
@@ -175,62 +173,5 @@ void AverageValueIteration::ComputeStateValues(real threshold, int max_iter)
 }
 
 
-/** ComputeStateActionValues
-   
-    threshold - exit when difference in Q is smaller than the threshold
-    max_iter - exit when the number of iterations reaches max_iter
 
-*/
-
-void AverageValueIteration::ComputeStateActionValues(real threshold, int max_iter)
-{
-    int N = n_states * n_actions;
-
-    for (int s=0; s<n_states; s++) {
-        for (int a=0; a<n_actions; a++) {
-            dQ[s][a] = 0.0;
-        }
-    }
-    std::vector<real> p_b(n_states);
-    real sum = 0.0;
-    for (int s=0; s<n_states; s++) {
-        p_b[s] = urandom();
-        sum += p_b[s];
-    }
-    for (int s=0; s<n_states; s++) {
-        p_b[s] /= sum;
-    }
-    do {
-        Delta = 0.0;
-        baseline = V[0];///= real(n_states);
-        for (int s0=0; s0<n_states; s0++) {
-            int s = s0;
-            for (int a=0; a<n_actions; a++) {
-                real sum = 0.0;
-
-                DiscreteStateSet next = mdp->getNextStates(s, a);
-                for (DiscreteStateSet::iterator i=next.begin();
-                     i!=next.end();
-                     ++i) {
-                    int s2 = *i;
-                    real P = mdp->getTransitionProbability(s, a, s2);
-                    //if (P > 0) {
-                    real R = mdp->getExpectedReward(s, a) - baseline;
-                    real Q_a_max = Max(n_actions, Q[s2]);
-                    sum += P*(R + gamma*Q_a_max);
-                    //}
-
-                }
-                Q[s][a] = sum;
-                dQ[s][a] = pQ[s][a] - sum;
-                pQ[s][a] = sum;
-                //baseline += 0.1 *(V[s] - baseline);
-            }
-        }
-        
-        Delta = Max(N, &dQ_data[0]) - Min(N, &dQ_data[0]);			
-        max_iter--;
-    } while(Delta >= threshold && max_iter > 0);
-    //printf ("Delta = %f, iter left = %d\n", Delta, max_iter);
-}
 
