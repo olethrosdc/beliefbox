@@ -173,12 +173,13 @@ real ContextTree::Node::Observe(Ring<int>& history,
 
     // Go deeper when there has been at least one observations
     // node. 
+    real threshold = pow(3,(real) depth); 
     //real threshold = sqrt((real) depth);//2;
-    real threshold = log((real) depth);//2;
-
+    //real threshold = log((real) depth);//2;
+    
     // Always go deepr, no matter what
     //real threshold = 0; 
-
+    
     // Go deeper if the context is long enough and the number of
     // observations justifies it.
 	if (x != history.end() && S >  threshold) {
@@ -235,6 +236,7 @@ ContextTree::ContextTree(int n_branches_, int n_symbols_, int max_depth_)
 
 ContextTree::~ContextTree()
 {
+    Show();
 	delete root;
 }
 
@@ -246,7 +248,7 @@ real ContextTree::Observe(int x, int y)
 
 void ContextTree::Show()
 {
-    root->Show();
+    //root->Show();
 	std::cout << "Total contexts: " << NChildren() << std::endl;
 }
 
