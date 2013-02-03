@@ -444,7 +444,7 @@ void RunOnlineTest(Options& options)
                             values);
             AbstractPolicy<Vector, int>* sampled_policy
                 =  getLSPIPolicy(&samples[0],
-                                 policy_list[0],
+                                 *policy_list[0],
                                  NULL,
                                  RBFs,
                                  options);
