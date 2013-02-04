@@ -475,7 +475,7 @@ void CoverTree::Show() const
 /** Default constructor */
 CoverTree::CoverTree(real c)
 {
-    assert (c > 0);
+    assert (c > 1);
     log_c = c;
 	root = NULL;
 	tree_level = std::numeric_limits<int>::max();
