@@ -267,7 +267,7 @@ int main (int argc, char** argv)
     assert (lambda >= 0 && lambda <= 1);
     assert (randomness >= 0 && randomness <= 1);
     assert (n_runs > 0);
-    assert (n_episodes > 0);
+    assert (n_episodes >= 0);
     assert (n_steps > 0);
     assert (grid_size > 0);
 
@@ -298,7 +298,9 @@ int main (int argc, char** argv)
     std::cout << "Starting evaluation" << std::endl;
     // remember to use n_runs
     Statistics statistics;
-    statistics.ep_stats.resize(n_episodes);
+    if (n_episodes > 0) {
+        statistics.ep_stats.resize(n_episodes);
+    }
     statistics.reward.resize(n_steps);
     statistics.n_runs.resize(n_steps);
     for (uint i=0; i<n_steps; ++i) {
@@ -568,6 +570,10 @@ int main (int argc, char** argv)
                                                       algorithm,
                                                       environment,
                                                       gamma);
+        if (statistics.ep_stats.size() < run_statistics.ep_stats.size())  {
+            statistics.ep_stats.resize(run_statistics.ep_stats.size());
+        }
+
         for (uint i=0; i<run_statistics.ep_stats.size(); ++i) {
             statistics.ep_stats[i].total_reward += run_statistics.ep_stats[i].total_reward;
             statistics.ep_stats[i].discounted_reward += run_statistics.ep_stats[i].discounted_reward;
@@ -746,7 +752,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
     
 
     Statistics statistics;
-    statistics.ep_stats.reserve(n_episodes); 
+    if (n_episodes > 0) {
+        statistics.ep_stats.reserve(n_episodes); 
+    }
     statistics.reward.reserve(n_steps);
 
     FixedDiscretePolicy* oracle_policy = NULL;
@@ -811,10 +819,15 @@ Statistics EvaluateAlgorithm (int episode_steps,
             action_ok = true;
             current_time = 0;
             printf ("# episode %d complete\n", episode);
-            if (n_episodes >= 0 && episode >= n_episodes) {
+            if (n_episodes > 0 && episode >= n_episodes) {
                 logmsg (" Breaking after %d episodes,  %d steps\n",
                          episode, step);
                 break;
+            } else {
+                statistics.ep_stats.resize(episode + 1);
+                statistics.ep_stats[episode].total_reward = 0.0;
+                statistics.ep_stats[episode].discounted_reward = 0.0;
+                statistics.ep_stats[episode].steps = 0;
             }
             step++;
         }
@@ -823,6 +836,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         real reward = environment->getReward();
         statistics.reward.resize(step + 1);
         statistics.reward[step] = reward;
+
         statistics.ep_stats[episode].steps++;
         statistics.ep_stats[episode].total_reward += reward;
         statistics.ep_stats[episode].discounted_reward += discount * reward;
@@ -850,10 +864,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
     if ((int) statistics.ep_stats.size() != n_episodes) {
         statistics.ep_stats.resize(statistics.ep_stats.size() - 1);
     }
-    printf ("# Exiting after %d episodes, %d steps (%d %d)\n",
-            episode, n_steps,
-            (int) statistics.ep_stats.size(),
-            (int) statistics.reward.size());
+    printf ("# Exiting after %d episodes, %d steps\n",
+            episode, n_steps);
 
     delete oracle_policy;
 
