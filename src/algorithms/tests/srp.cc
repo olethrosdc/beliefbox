@@ -439,7 +439,8 @@ int main (int argc, char** argv)
                                   n_actions,
                                   gamma,
                                   discrete_mdp,
-                                  rng);
+                                  rng,
+								  epsilon);
         } else if (!strcmp(algorithm_name, "LSampling")) {
             discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
                                                   dirichlet_mass,
