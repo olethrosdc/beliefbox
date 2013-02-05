@@ -18,18 +18,19 @@
     \param n_states_ number of states.
     \param n_actions_ number of actions.
     \param gamma_ discount factor.
-    \param epsilon_ error probability to use in the bounds
+    \param delta_ error probability to use in the bounds
     \rng 
 */
 UCRL2::UCRL2(int n_states_,
              int n_actions_,
              real gamma_,
              DiscreteMDPCounts* model_,
-             RandomNumberGenerator* rng_)
+             RandomNumberGenerator* rng_, 
+			 real delta)
     : n_states(n_states_),
       n_actions(n_actions_),
       gamma(gamma_),
-      confidence_interval(1.0),
+      confidence_interval(delta),
       model(model_),
 	  rng(rng_),
       total_steps(0),
@@ -50,7 +51,7 @@ void UCRL2::Reset()
 {
     state = -1;
     n_resets++;
-    confidence_interval = 1.0 / (real) n_resets;
+    //confidence_interval = 1.0 / (real) n_resets;
     //model->Reset();
 }
 /// Full observation
@@ -87,12 +88,12 @@ int UCRL2::Act(real reward, int next_state)
     if (total_steps >= next_update) {
         update_interval += n_states;
         next_update = total_steps + update_interval;
-        printf(" # next update: %d (interval %d)\n", next_update, update_interval);
+        //printf(" # next update: %d (interval %d)\n", next_update, update_interval);
         if (known_rewards) {
             value_iteration->ComputeStateValuesKnownRewards(confidence_interval, 1e-3, -1);
         } else {
             value_iteration->ComputeStateValues(confidence_interval, 1e-3, -1);
-            confidence_interval *= 0.5;
+            //confidence_interval *= 0.5;
         }
         //const DiscreteMDP* mdp = model->getMeanMDP();
         //ValueIteration mean_vi(mdp, gamma);
