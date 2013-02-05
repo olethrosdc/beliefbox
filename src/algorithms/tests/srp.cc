@@ -126,7 +126,7 @@ int main (int argc, char** argv)
     real pit_value = -1.0;
     real goal_value = 1.0;
     real step_value = 0.0;
-    real epsilon = 0.01;
+    real epsilon = 0.0;
     uint n_runs = 10;
     uint n_episodes = 1000;
     uint n_steps = 100000;
@@ -256,7 +256,7 @@ int main (int argc, char** argv)
     assert (lambda >= 0 && lambda <= 1);
     assert (randomness >= 0 && randomness <= 1);
     assert (n_runs > 0);
-    assert (n_episodes > 0);
+    assert (n_episodes >= 0);
     assert (n_steps > 0);
     assert (grid_size > 0);
 
@@ -287,7 +287,9 @@ int main (int argc, char** argv)
     std::cout << "Starting evaluation" << std::endl;
     // remember to use n_runs
     Statistics statistics;
-    statistics.ep_stats.resize(n_episodes);
+    if (n_episodes > 0) {
+        statistics.ep_stats.resize(n_episodes);
+    }
     statistics.reward.resize(n_steps);
     statistics.n_runs.resize(n_steps);
     for (uint i=0; i<n_steps; ++i) {
@@ -537,6 +539,10 @@ int main (int argc, char** argv)
                                                       gamma,
                                                       adversary);
         //delete actual_mdp;
+        if (statistics.ep_stats.size() < run_statistics.ep_stats.size())  {
+            statistics.ep_stats.resize(run_statistics.ep_stats.size());
+        }
+            
         for (uint i=0; i<run_statistics.ep_stats.size(); ++i) {
             statistics.ep_stats[i].total_reward += run_statistics.ep_stats[i].total_reward;
             statistics.ep_stats[i].discounted_reward += run_statistics.ep_stats[i].discounted_reward;
@@ -576,6 +582,9 @@ int main (int argc, char** argv)
         std::cout << statistics.n_runs[i] << " "
                   << statistics.reward[i] << " # INST_PAYOFF"
                   << std::endl;
+        if (statistics.n_runs[i] == 0) {
+            break;
+        }
     }
 
     std::cout << "Done" << std::endl;
@@ -601,7 +610,9 @@ Statistics EvaluateAlgorithm (int n_episodes,
     std::cout << "# evaluating..." << environment->Name() << std::endl;
     
     Statistics statistics;
-    statistics.ep_stats.reserve(n_episodes); 
+    if (n_episodes > 0) {
+        statistics.ep_stats.reserve(n_episodes); 
+    }
     statistics.reward.reserve(n_steps);
 
     FixedDiscretePolicy* oracle_policy = NULL;
@@ -652,7 +663,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
             episode++;
             printf ("# episode %d complete, step %d\n", episode, step);
 
-            if (n_episodes >= 0 && episode >= n_episodes) {
+            if (n_episodes > 0 && episode >= n_episodes) {
                 logmsg ("Breaking after %d episodes,  %d steps\n", episode, step);
                 break;
             } else {
@@ -711,7 +722,6 @@ Statistics EvaluateAlgorithm (int n_episodes,
 
         action_ok = environment->Act(action);
         if (urandom() < 1.0 - gamma) {
-        //if (current_time > (real) (1.0 / (1.0 - gamma))) {
             action_ok = false;
         }
         current_time++;
@@ -721,10 +731,8 @@ Statistics EvaluateAlgorithm (int n_episodes,
     if ((int) statistics.ep_stats.size() != n_episodes) {
         statistics.ep_stats.resize(statistics.ep_stats.size() - 1);
     }
-    printf ("# Exiting after %d episodes, %d steps (%d %d)\n",
-            episode, n_steps,
-            (int) statistics.ep_stats.size(),
-            (int) statistics.reward.size());
+    printf ("# Exiting after %d episodes, %d steps\n",
+            episode, n_steps);
 
     delete oracle_policy;
     return statistics;
