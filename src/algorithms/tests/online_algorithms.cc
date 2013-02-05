@@ -131,7 +131,7 @@ int main (int argc, char** argv)
     uint n_runs = 10;
     uint n_episodes = 1000;
     uint n_steps = 100000;
-    uint episode_steps = 1000;
+    uint episode_steps = -1;
     uint grid_size = 4;
     //bool use_upper_bound = false;
     real dirichlet_mass = 0.5;
@@ -444,7 +444,8 @@ int main (int argc, char** argv)
                                   n_actions,
                                   gamma,
                                   discrete_mdp,
-                                  rng);
+                                  rng, 
+								  epsilon);
         } else if (!strcmp(algorithm_name, "LSampling")) {
             discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
                                                   dirichlet_mass,

@@ -58,7 +58,8 @@ public:
           int n_actions_,
           real gamma_,
           DiscreteMDPCounts* model_,
-          RandomNumberGenerator* rng_);
+          RandomNumberGenerator* rng_,
+		  real delta);
     virtual ~UCRL2();
     virtual void Reset();
     /// Full observation
