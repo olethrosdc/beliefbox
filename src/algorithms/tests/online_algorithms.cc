@@ -110,6 +110,7 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --step_value:   value at each time step (* 0)\n\
     --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0.01)\n\
     --reward_prior: {Beta, Fixed, *Normal}\n\
+    --max_samples:  maximum number of samples (*1) for Sampling\n\
     --initial_reward: [0]\n\
     \n\
     * denotes default parameter\n\
