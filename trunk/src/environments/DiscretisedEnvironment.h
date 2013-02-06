@@ -46,7 +46,7 @@ public:
         bool flag = environment.Act(action);
         state = grid.getInterval(environment.getState());
         reward = environment.getReward();
-        printf("# s: %d, a: %d, r:%f\n", state, action, reward);
+        //printf("# s: %d, a: %d, r:%f\n", state, action, reward);
         return flag;
     }
 
