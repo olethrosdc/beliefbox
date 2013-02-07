@@ -23,7 +23,6 @@
 AverageValueIteration::AverageValueIteration(const DiscreteMDP* mdp, bool relative, bool synchronous) : RELATIVE(relative), SYNCHRONOUS(synchronous), baseline(0)
 {
     assert (mdp);
-    assert (gamma>=0 && gamma <=1);
     this->mdp = mdp;
     n_actions = mdp->getNActions();
     n_states = mdp->getNStates();

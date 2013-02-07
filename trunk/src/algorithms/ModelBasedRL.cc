@@ -36,6 +36,14 @@ ModelBasedRL::ModelBasedRL(int n_states_,
 }
 ModelBasedRL::~ModelBasedRL()
 {
+    mdp = model->getMeanMDP();
+    value_iteration->setMDP(mdp);
+    value_iteration->ComputeStateValuesStandard(1e-6);
+    for (int s=0; s<n_states; ++s) {
+        printf ("%f ", value_iteration->getValue(s));
+    }
+    printf ("# V expected\n");
+    
     delete value_iteration;
 }
 void ModelBasedRL::Reset()

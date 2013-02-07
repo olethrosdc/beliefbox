@@ -44,6 +44,8 @@
 #include "OptimisticTask.h"
 #include "InventoryManagement.h"
 #include "DoubleLoop.h"
+#include "Blackjack.h"
+
 
 // -- Continuous environments -- //
 #include "MountainCar.h"
@@ -341,7 +343,7 @@ int main (int argc, char** argv)
         } else if (!strcmp(environment_name, "Chain")) { 
             environment = new DiscreteChain (n_states);
         } else if (!strcmp(environment_name, "Optimistic")) { 
-            environment = new OptimisticTask (0.1, 0.01);
+            environment = new OptimisticTask (0.1, 0.1);
         } else if (!strcmp(environment_name, "RiverSwim")) { 
             environment = new RiverSwim();
         } else if (!strcmp(environment_name, "DoubleLoop")) { 
@@ -355,6 +357,8 @@ int main (int argc, char** argv)
                                                   max_items,
                                                   demand,
                                                   margin);
+        } else if (!strcmp(environment_name, "Blackjack")) { 
+            environment = new Blackjack ();
         } else if (!strcmp(environment_name, "MountainCar")) { 
             environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car, grid_size);
         } else if (!strcmp(environment_name, "Pendulum")) { 
@@ -588,9 +592,9 @@ int main (int argc, char** argv)
             statistics.reward[i] += run_statistics.reward[i];
             statistics.n_runs[i]++;
         }
-        if (model) {
+
 #if 0
-            if (discrete_mdp) {
+        if (model && discrete_mdp) {
                 int n_samples = max_samples;
 
                 real threshold = 10e-6; //0;
@@ -697,13 +701,13 @@ int main (int argc, char** argv)
                     delete mdp_samples[i];
                 }
 
-            }
+        }
 #endif
+        delete algorithm;
+        if (model) {
             delete model;
-            model = NULL;
         }
         delete environment;
-        delete algorithm;
         delete exploration_policy;
     }
     
@@ -763,13 +767,13 @@ Statistics EvaluateAlgorithm (int episode_steps,
     if (!algorithm) {
         const DiscreteMDP* mdp = environment->getMDP();
         ValueIteration value_iteration(mdp, gamma);
-        value_iteration.ComputeStateValues(1e-9);
+        value_iteration.ComputeStateValuesStandard(1e-9);
         oracle_policy = value_iteration.getPolicy();
         //oracle_policy = new FixedSoftmaxPolicy(value_iteration.Q, 1.0);
-        //for (int i=0; i<mdp->getNStates(); ++i) {
-        //printf ("%f ", value_iteration.getValue(i));
-        //}
-        //printf ("#V REWARD\n");
+        for (int i=0; i<mdp->getNStates(); ++i) {
+        printf ("%f ", value_iteration.getValue(i));
+        }
+        printf ("# V optimal\n");
         delete mdp;
     }
 
@@ -785,7 +789,9 @@ Statistics EvaluateAlgorithm (int episode_steps,
     for (uint step = 0; step < n_steps; ++step) {
         if (episode_steps > 0 && current_time >= episode_steps) {
             action_ok = false;
-            algorithm->Reset();
+            if (algorithm) {
+                algorithm->Reset();
+            }
             environment->Reset();
         }
         if (!action_ok) {
@@ -820,7 +826,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             }
             action_ok = true;
             current_time = 0;
-            printf ("# episode %d complete\n", episode);
+            //printf ("# episode %d complete\n", episode);
             if (n_episodes > 0 && episode >= n_episodes) {
                 logmsg (" Breaking after %d episodes,  %d steps\n",
                          episode, step);

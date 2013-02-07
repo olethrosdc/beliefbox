@@ -64,12 +64,25 @@ SampleBasedRL::SampleBasedRL(int n_states_,
 }
 SampleBasedRL::~SampleBasedRL()
 {
-    CalculateUpperBound(1e-6, 1e4);
+
+    for (int i=0; i<max_samples; ++i) {
+        delete mdp_list[i];
+        mdp_list[i] = model->generate();
+        logmsg("Generating MDP model %d\n", i);
+        for (int s=0; s<n_states; ++s) {
+            for (int a=0; a<n_actions; ++a) {
+                printf ("%f ", mdp_list[i]->getExpectedReward(s, a));
+            }
+            printf("# state %d\n", s);
+        }
+    }
+
+    CalculateUpperBound(1e-6, -1);//1e4);
     for (int s=0; s<n_states; ++s) {
         printf ("%f ", UpperBound(s));
     }
     printf(" # SampleBasedRL upper bound\n");
-    CalculateLowerBound(1e-6,1e4);
+    CalculateLowerBound(1e-6, -1);//1e4);
     for (int s=0; s<n_states; ++s) {
         printf ("%f ", LowerBound(s));
     }
@@ -241,6 +254,7 @@ int SampleBasedRL::Act(real reward, int next_state)
     // choose action
     if (urandom()<epsilon_t) {
         next_action = rng->discrete_uniform(n_actions);
+        //printf("RANDOM %d\n", next_action);
     } else {
         next_action = ArgMax(tmpQ);
     }
