@@ -93,11 +93,11 @@ DiscreteMDP* DiscreteChain::getMDP() const
             }
         }
         if (s < n_states - 1) {
-            mdp->addFixedReward(s, 0, start);
-            mdp->addFixedReward(s, 1, 0.0);
+            mdp->addFixedReward(s, 0, start * (1 - slip));
+            mdp->addFixedReward(s, 1, start * slip);
         } else {
-            mdp->addFixedReward(s, 0, start);
-            mdp->addFixedReward(s, 1, end);
+            mdp->addFixedReward(s, 0, start * (1 - slip) + slip * end);
+            mdp->addFixedReward(s, 1, end * (1 - slip) + slip * start);
         }
     }
     
