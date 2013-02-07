@@ -44,7 +44,7 @@
 #include "OptimisticTask.h"
 #include "InventoryManagement.h"
 #include "DoubleLoop.h"
-#include "Blackjack.h"
+//#include "Blackjack.h"
 
 
 // -- Continuous environments -- //
@@ -357,8 +357,8 @@ int main (int argc, char** argv)
                                                   max_items,
                                                   demand,
                                                   margin);
-        } else if (!strcmp(environment_name, "Blackjack")) { 
-            environment = new Blackjack ();
+			//} else if (!strcmp(environment_name, "Blackjack")) { 
+            //environment = new Blackjack ();
         } else if (!strcmp(environment_name, "MountainCar")) { 
             environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car, grid_size);
         } else if (!strcmp(environment_name, "Pendulum")) { 

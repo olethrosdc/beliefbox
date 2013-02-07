@@ -65,6 +65,7 @@ SampleBasedRL::SampleBasedRL(int n_states_,
 SampleBasedRL::~SampleBasedRL()
 {
 
+#if 0
     for (int i=0; i<max_samples; ++i) {
         delete mdp_list[i];
         mdp_list[i] = model->generate();
@@ -77,16 +78,17 @@ SampleBasedRL::~SampleBasedRL()
         }
     }
 
-    CalculateUpperBound(1e-6, -1);//1e4);
+    CalculateUpperBound(1e-6, 1e4);
     for (int s=0; s<n_states; ++s) {
         printf ("%f ", UpperBound(s));
     }
     printf(" # SampleBasedRL upper bound\n");
-    CalculateLowerBound(1e-6, -1);//1e4);
+    CalculateLowerBound(1e-6, 1e4);
     for (int s=0; s<n_states; ++s) {
         printf ("%f ", LowerBound(s));
     }
     printf(" # SampleBasedRL lower bound\n");
+#endif
     for (int i=0; i<max_samples; ++i) {
         delete mdp_list[i];
         delete value_iteration[i];
