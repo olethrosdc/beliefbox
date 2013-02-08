@@ -61,7 +61,7 @@ public:
                                                int max_iter=-1)
     {
         ComputeStateValuesAugmentedMDP(delta,
-                                       0.0,
+                                       1.0,
                                        threshold,
                                        max_iter);
     }
