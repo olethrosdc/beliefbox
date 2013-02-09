@@ -25,6 +25,8 @@ Student::Student(const int dimension)
       mu(k),
       T(Matrix::Unity(k, k))
 {
+  //det = T.det();
+  T.LUDecomposition(det);
 }
 
 /// Constructor
@@ -35,7 +37,8 @@ Student::Student(const int degrees, const Vector& location, const Matrix& precis
       mu(location),
       T(precision)
 {
-    T.LUDecomposition(det);
+  //det = T.det();
+  T.LUDecomposition(det);
 }
 
 Student::~Student()
@@ -58,22 +61,31 @@ void Student::setPrecision(const Matrix& precision)
 {
     T = precision;
     T.LUDecomposition(det);
-    //printf("New Precision det:%f\n", det);
+	//det = T.det();
+    printf("New Precision det:%f\n", det);
     //T.print(stdout);
 }
 
-/** Obtain the logarithm of the pdf at x.   
+/** Obtain the logarithm of the pdf at \f$x \in R^k\f$
+	
+	\f[
+	f(x, T, d) = 
+	\frac{\Gamma((d+k)/2)}{\Gamma(d/2)}
+	|T|^{1/2} (d\pi)^{k/2} 
+	\left(1 + x^\top T x / d
+	\right)^{-(d+k)/2}
+	\f]
  */
 real Student::log_pdf(const Vector& x) const
 {
-    Vector delta = x - mu;
+  Vector delta = x - mu;
     real degree = (real) n;
     real g = 1 + Mahalanobis2(delta, T, delta) / degree;
-    real log_c = logGamma(0.5 * (degree + k))
+    real log_c = logGamma(0.5 * (degree + (real) k))
         + 0.5 * log(det)
         - logGamma(0.5 * degree)
-        - (0.5 * k)*log(n*M_PI); // something is maybe missing here
-    real log_p = log_c - (0.5 * (degree + k)) * log(g);
+	  - (0.5 * (real) k)*log(degree * M_PI); // something is maybe missing here
+    real log_p = log_c - 0.5 * (degree + k) * log(g);
     return log_p;
 }
 
