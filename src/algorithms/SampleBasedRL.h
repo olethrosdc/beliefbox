@@ -140,6 +140,7 @@ public:
 #if 0
         logmsg("Setting reward matrix\n");
         rewards.print(stdout);
+		model->ShowModel();
 #endif
     }
 

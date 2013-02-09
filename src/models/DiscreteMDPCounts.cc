@@ -75,13 +75,16 @@ DiscreteMDP* DiscreteMDPCounts::CreateMDP() const
 
 void DiscreteMDPCounts::setFixedRewards(const Matrix& rewards)
 {
-    for (int s=0; s<n_states; ++s)  {
+	//logmsg("Setting fixed rewards\n");
+    for (int s=0; s<n_states; ++s) {
         for (int a=0; a<n_actions; ++a)  {
             int ID = getID(s, a);
             delete ER[ID];
             ER[ID] = new UnknownSingularDistribution();
             ER[ID]->Observe(rewards(s,a));
             mean_mdp.reward_distribution.setFixedReward(s, a, rewards(s,a));
+			//printf("R: %d %d %f -> %f\n",
+			//	   s, a, rewards(s,a), ER[ID]->getMean());
         }
     }
 }

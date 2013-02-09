@@ -72,7 +72,7 @@ void OptimisticValueIteration::ComputeStateValuesAugmentedMDP(real delta,
         for (int a=0; a<n_actions; a++) {
             int N_sa = (int) ceil(mdp->getNVisits(s, a));
             real r_sa = mdp->getExpectedReward(s,a);
-            real r_gap = HoeffdingBound(1, N_sa, delta);
+            real r_gap = HoeffdingBound(1, N_sa, reward_delta);
             Vector P_sa = mdp->getTransitionProbabilities(s, a);
             real gap = WeissmanBound(n_states, N_sa, delta);
             for (int k=0; k<n_states; k++) {

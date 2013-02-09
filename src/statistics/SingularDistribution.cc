@@ -101,3 +101,12 @@ real UnknownSingularDistribution::generate() const
     }
     return prior->generate();
 }
+
+real UnknownSingularDistribution::getMean() const
+{
+    if (observed) {
+        return Q.m;
+    }
+    return prior->getMean();
+}
+

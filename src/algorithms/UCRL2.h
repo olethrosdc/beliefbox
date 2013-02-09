@@ -77,9 +77,14 @@ public:
 
     virtual void setFixedRewards(const Matrix& rewards)
     {
-      //logmsg("Setting fixed rewards\n");
         known_rewards = true;
         this->rewards = rewards;
+#if 0
+		rewards.print(stdout);
+		model->setFixedRewards(rewards);
+		model->ShowModel();
+#endif
+		value_iteration->ComputeStateValuesKnownRewards(confidence_interval, 1e-6, -1);
     }
     
 };
