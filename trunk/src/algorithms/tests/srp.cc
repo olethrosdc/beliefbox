@@ -644,7 +644,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
         if (!action_ok) {
             int state = environment->getState();
             real reward = environment->getReward();
-            printf ("%d %f # initial reward\n", state, reward);
+            //printf ("%d %f # initial reward\n", state, reward);
             if (algorithm) {
                 algorithm->Act(reward, state);
             } else {
@@ -665,7 +665,7 @@ Statistics EvaluateAlgorithm (int n_episodes,
 
             //printf ("%d %d %f\n", state, action, reward);
             episode++;
-            printf ("# episode %d complete, step %d\n", episode, step);
+            //printf ("# episode %d complete, step %d\n", episode, step);
 
             if (n_episodes > 0 && episode >= n_episodes) {
                 logmsg ("Breaking after %d episodes,  %d steps\n", episode, step);

@@ -54,8 +54,14 @@ public:
     }
     virtual real log_pdf(const std::vector<real> & x) const;
     virtual real log_pdf(const std::vector<real> & x);
-    virtual Distribution* clone() { return NULL; /*  does nothing */}
-    virtual real getMean() const {return 0.0f;}
+    virtual Distribution* clone() { 
+		Serror ("Not implemented\n");
+		return NULL; /*  does nothing */}
+    virtual real getMean() const 
+	{
+		Serror("Not implemented\n");
+		return 0;
+	}
     virtual void setMean (real mean) ///< set the mean
     {
         Serror ("Cannot set mean\n");

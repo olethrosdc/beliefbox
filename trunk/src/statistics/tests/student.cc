@@ -24,7 +24,7 @@ int main ()
   T(0,1)=-2;
   T(1,0)=-2;
   Vector x(2);
-  student.setDegrees(2);
+  student.setDegrees(10);
   student.setPrecision(T);
   for (real u=0; u<=10; u+=1.0) {
 	x(0) = u;
