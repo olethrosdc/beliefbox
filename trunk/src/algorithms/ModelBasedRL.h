@@ -76,6 +76,13 @@ public:
             return 0.0;
         }
     }
+
+    virtual void setFixedRewards(const Matrix& rewards) 
+    {
+        model->setFixedRewards(rewards);
+        value_iteration->ComputeStateValues(1e-6, -1);
+    }
+
     
 };
 

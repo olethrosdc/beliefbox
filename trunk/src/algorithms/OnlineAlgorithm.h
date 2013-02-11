@@ -53,11 +53,10 @@ public:
     /// it calls Observe as a side-effect.
     virtual A Act(real reward, S next_state) = 0;
     virtual real getValue (S state, A action) = 0;
-    /// Some algorithms may implement a different strategy when the reward matrix SxA is given.
+    /// Some algorithms may implement a different strategy when the reward matrix SxA is given. Implementation is not obligatory.
     virtual void setFixedRewards(const Matrix& rewards) 
     {
-        printf("Setting fixed rewards!\n");
-        // nothing to do here.
+        Swarning("not implemented\n");
     }
 };
 

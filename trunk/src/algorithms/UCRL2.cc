@@ -93,7 +93,6 @@ int UCRL2::Act(real reward, int next_state)
             value_iteration->ComputeStateValuesKnownRewards(confidence_interval, 1e-6, -1);
         } else {
             value_iteration->ComputeStateValues(confidence_interval, 1e-6, -1);
-            //confidence_interval *= 0.5;
         }
         //const DiscreteMDP* mdp = model->getMeanMDP();
         //ValueIteration mean_vi(mdp, gamma);
