@@ -86,13 +86,13 @@ int UCRL2::Act(real reward, int next_state)
     state = next_state;
     total_steps++;
     if (total_steps >= next_update) {
-        update_interval += n_states;
+	  update_interval += 1; //n_states;
         next_update = total_steps + update_interval;
         //printf(" # next update: %d (interval %d)\n", next_update, update_interval);
         if (known_rewards) {
-            value_iteration->ComputeStateValuesKnownRewards(confidence_interval, 1e-3, -1);
+            value_iteration->ComputeStateValuesKnownRewards(confidence_interval, 1e-6, -1);
         } else {
-            value_iteration->ComputeStateValues(confidence_interval, 1e-3, -1);
+            value_iteration->ComputeStateValues(confidence_interval, 1e-6, -1);
             //confidence_interval *= 0.5;
         }
         //const DiscreteMDP* mdp = model->getMeanMDP();
