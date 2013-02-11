@@ -3,9 +3,9 @@
 
 PACKAGES = core algorithms geometry models statistics environments #florian
 # Compiler and Linker
-CC = clang
-CXX = clang++ #g++
-LD = ld #clang #g++
+CC = clang++ # - some people may have to use clang instead
+CXX = clang++ 
+LD = clang # - you can link with 'ld' too
 AR = ar -rus
 DEP = clang -MM -D__DEPEND__
 

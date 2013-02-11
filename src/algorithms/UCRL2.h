@@ -79,9 +79,9 @@ public:
     {
         known_rewards = true;
         this->rewards = rewards;
+		model->setFixedRewards(rewards);
 #if 0
 		rewards.print(stdout);
-		model->setFixedRewards(rewards);
 		model->ShowModel();
 #endif
 		value_iteration->ComputeStateValuesKnownRewards(confidence_interval, 1e-6, -1);
