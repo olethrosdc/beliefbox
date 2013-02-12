@@ -26,7 +26,10 @@ public:
     /// Initializes the random number generator with the computer clock.
     virtual void seed() {}
     /// Initializes the random number generator with the given long "the_seed_".
-    virtual void manualSeed(ulong the_seed_) {}
+    virtual void manualSeed(ulong the_seed_)
+    {
+        position = the_seed_ % pool.size();
+    }
 
     /// Returns the starting seed used.
     virtual ulong getInitialSeed()

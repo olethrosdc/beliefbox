@@ -27,6 +27,7 @@
 
 #include "MersenneTwister.h"
 #include "RandomNumberGenerator.h"
+#include "RandomNumberFile.h"
 
 #include "KNNClassifier.h"
 #include "ClassifierMixture.h"
@@ -67,7 +68,7 @@ struct Options
         grid(5),
         scale(0.5),
         accuracy(1e-6),
-        lspi_iterations(100),
+        lspi_iterations(25),
         n_evaluations(100),
         reuse_training_data(false),
         sampling(false)
@@ -352,7 +353,7 @@ void RunTest(Options& options)
     estimation_options.n_training = 2000;
     logmsg("Running estimation policy with %d simulated trajectories\n", estimation_options.n_training);
     for (int i=0; i<V_LSPI.Size(); ++i) {
-
+        logmsg("Estimating policy\n");
         AbstractPolicy<Vector, int>* lspi_policy
             =  getLSPIPolicy(&samples[i],
                              policy,
@@ -386,12 +387,12 @@ template <class G, class M>
 void RunOnlineTest(Options& options)
 {
     int n_episodes_per_iteration = 1;
-    int rollout_horizon = -1;
+    int rollout_horizon = 1000;
 
     // First, generate the environment
     G generator;
     M environment = generator.Generate();
-    printf("# generated environment: ");
+    logmsg("generated environment: ");
     environment.Show();
     
     int state_dimension = environment.getNStates();
@@ -399,9 +400,9 @@ void RunOnlineTest(Options& options)
     Vector S_L = environment.StateLowerBound();
     Vector S_U = environment.StateUpperBound();
 
-    printf("# State dimension: %d\n", state_dimension);
-    printf("# S_L: "); S_L.print(stdout);
-    printf("# S_U: "); S_U.print(stdout);
+    logmsg("State dimension: %d\n", state_dimension);
+    logmsg("S_L: "); S_L.print(stdout);
+    logmsg("S_U: "); S_U.print(stdout);
 	 
     // Discretise it according to the grid scale
     EvenGrid Discretisation(S_L, S_U, options.grid);
@@ -414,13 +415,9 @@ void RunOnlineTest(Options& options)
     // Add the random policy to the list.
     policy_list.push_back(new RandomPolicy (environment.getNActions(), &options.rng));
 
-    {
-        real V = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *(policy_list.back()), options.gamma, options.n_testing);
-        printf ("%f # value\n",
-                V);
-    }
     Rollout<Vector, int, AbstractPolicy<Vector, int> > training_rollouts(urandom(S_L, S_U), policy_list.back(), &environment, options.gamma, true);
     
+    logmsg("Running for %d episodes\n", options.n_training);
     for (int episode=0; episode < options.n_training; ++episode) {
         logmsg("Episode %d\n", episode); 
         AbstractPolicy<Vector, int>& policy = *(policy_list.back());
@@ -431,6 +428,10 @@ void RunOnlineTest(Options& options)
             for (int i=0; i<n_episodes_per_iteration; ++i) {
                 training_data.Simulate(environment, policy, options.gamma, rollout_horizon);
             }
+            printf("%f %f %d # total, discounted reward, steps\n",
+                   training_data.total_rewards.back(),
+                   training_data.discounted_rewards.back(),
+                   training_data.steps.back());
             ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
             std::vector<M> samples;
             std::vector<real> values;
@@ -462,10 +463,6 @@ training_rollouts.StartingDistributionSampling(n_episodes_per_iteration, rollout
             policy_list.push_back(lspi_policy);
             training_rollouts.policy = lspi_policy;
         }
-        real V = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *(policy_list.back()), options.gamma, options.n_testing);
-        printf ("%f # value\n",
-                V);
-        fflush(stdout);
     }
     for (uint i=0; i<policy_list.size(); ++i) {
         delete policy_list[i];
@@ -524,6 +521,7 @@ static const char* const help_text = "Usage: test [options]\n\
     --n_training:            number of training trajectories\n\
     --n_testing:             number of test trajectories\n\
     --seed:                  seed all the RNGs with this\n\
+    --seed_file:             select a binary file to choose seeds from (use in conjunction with --seed to select the n-th seed in the file)\n\
     --grid:                  number of grid intervals for LSTD\n\
     --scale:                 RBF scale for LSTD\n\
     --n_evaluations:         number of evaluations\n\
@@ -534,8 +532,11 @@ static const char* const help_text = "Usage: test [options]\n\
 
 int main(int argc, char* argv[])
 {
-    int seed = time(NULL);
+    ulong seed = time(NULL);
+    char* seed_filename = 0;
+
     bool online_test = false;
+
 
     MersenneTwisterRNG rng;
     Options options(rng);
@@ -563,6 +564,7 @@ int main(int argc, char* argv[])
                 {"reuse_training_data", no_argument, 0, 0}, //13
                 {"online", no_argument, 0, 0}, //14
                 {"sampling", no_argument, 0, 0}, //15
+                {"seed_file", required_argument, 0, 0}, //16
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -595,6 +597,7 @@ int main(int argc, char* argv[])
                 case 13: options.reuse_training_data = true; break;
                 case 14: online_test = true; break;
                 case 15: options.sampling = true; break;
+                case 16: seed_filename = optarg; break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
@@ -625,6 +628,14 @@ int main(int argc, char* argv[])
         }
     }
 
+    
+    if (seed_filename) {
+        RandomNumberFile rnf(seed_filename);
+        rnf.manualSeed(seed);
+        seed = rnf.random();
+    }
+    
+    logmsg("seed: %ld\n", seed);
     srand(seed);
     srand48(seed);
     rng.manualSeed(seed);
@@ -663,6 +674,7 @@ int main(int argc, char* argv[])
 
     if (online_test) {
         for (int i=0; i<options.n_evaluations; ++i) {
+            logmsg("run %d/%d\n", i, options.n_evaluations);
             if (!strcmp(options.environment_name, "MountainCar")) {
                 logmsg("Testing mountain car\n");
                 RunOnlineTest<MountainCarGenerator, MountainCar>(options);

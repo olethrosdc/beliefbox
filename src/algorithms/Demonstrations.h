@@ -27,6 +27,7 @@ public:
     Trajectory<S,A>* current_trajectory;
     std::vector<real> total_rewards;
     std::vector<real> discounted_rewards;
+    std::vector<int> steps;
     Demonstrations() 
         : current_trajectory(NULL)
     {
@@ -105,6 +106,7 @@ public:
 		//logmsg("Terminating after %d steps\n", t);
         total_rewards.push_back(total_reward);
         discounted_rewards.push_back(discounted_reward);
+        steps.push_back(t);
 	}
 
     uint size() const
