@@ -31,6 +31,11 @@ public:
 	{ 
 		this->state = state;
 	}
+    virtual void setEpsilonGreedy(real epsilon_)
+    {
+        Serror("Not implented\n");
+        exit(-1);
+    }
 };
 
 
