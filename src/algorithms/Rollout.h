@@ -38,6 +38,7 @@ public:
 	std::vector<std::vector<Observations> > Samples;
 	std::vector<real> total_rewards;
 	std::vector<real> discounted_rewards;
+    std::vector<int> total_steps;
 //public:
 	S start_state; ///< initial state
 	A start_action; ///< initial action
@@ -153,6 +154,7 @@ public:
 			Samples.push_back(esamples);
 			total_rewards.push_back(total_reward);
 			discounted_rewards.push_back(discounted_reward);
+            total_steps.push_back(t);
 		}
 		//logmsg("Length: %d, R: %f, U: %f, State: ", T, total_reward, discounted_reward); end_state.print(stdout);
 	}

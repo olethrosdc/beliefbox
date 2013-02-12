@@ -417,9 +417,11 @@ void RunOnlineTest(Options& options)
 
     Rollout<Vector, int, AbstractPolicy<Vector, int> > training_rollouts(urandom(S_L, S_U), policy_list.back(), &environment, options.gamma, true);
     
+    real epsilon_greedy = 1.0;
     logmsg("Running for %d episodes\n", options.n_training);
     for (int episode=0; episode < options.n_training; ++episode) {
         logmsg("Episode %d\n", episode); 
+        fflush(stdout);
         AbstractPolicy<Vector, int>& policy = *(policy_list.back());
         if (options.sampling) {
             // for sampling
@@ -428,7 +430,7 @@ void RunOnlineTest(Options& options)
             for (int i=0; i<n_episodes_per_iteration; ++i) {
                 training_data.Simulate(environment, policy, options.gamma, rollout_horizon);
             }
-            printf("%f %f %d # total, discounted reward, steps\n",
+            printf("%f %f %d # total, discounted reward, steps ABC\n",
                    training_data.total_rewards.back(),
                    training_data.discounted_rewards.back(),
                    training_data.steps.back());
@@ -454,12 +456,20 @@ void RunOnlineTest(Options& options)
             policy_list.push_back(sampled_policy);
         } else {
 training_rollouts.StartingDistributionSampling(n_episodes_per_iteration, rollout_horizon);
+            printf("%f %f %d # total, discounted reward, steps LSPI\n",
+                   training_rollouts.total_rewards.back(),
+                   training_rollouts.discounted_rewards.back(),
+                   training_rollouts.total_steps.back());
+
             AbstractPolicy<Vector, int>* lspi_policy
                 =  getLSPIPolicy(NULL,
                                  policy,
                                  &training_rollouts,
                                  RBFs,
                                  options);
+            epsilon_greedy *= pow(0.99, (real) training_rollouts.total_steps.back());
+            lspi_policy->setEpsilonGreedy(epsilon_greedy);
+            logmsg("New epsilon %f\n", epsilon_greedy);
             policy_list.push_back(lspi_policy);
             training_rollouts.policy = lspi_policy;
         }

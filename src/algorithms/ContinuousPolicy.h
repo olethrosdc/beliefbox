@@ -83,7 +83,7 @@ public:
 		return weights;
 	}
 	inline void StatePolicy();
-    void setEpsilonGreedy(real epsilon_) 
+    virtual void setEpsilonGreedy(real epsilon_) 
     {
         epsilon_greedy = true;
         epsilon = epsilon_;
