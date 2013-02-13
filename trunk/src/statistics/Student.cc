@@ -62,7 +62,7 @@ void Student::setPrecision(const Matrix& precision)
     T = precision;
     T.LUDecomposition(det);
 	//det = T.det();
-    printf("New Precision det:%f\n", det);
+    //printf("New Precision det:%f\n", det);
     //T.print(stdout);
 }
 
