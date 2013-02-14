@@ -57,6 +57,7 @@ struct Options
     bool reuse_training_data; ///< reuse training data in lspi
     int n_episodes; ///< number of episodes
     bool sampling; ///< use sampling online
+    real delta; ///< error probability bound
     Options(RandomNumberGenerator& rng_) :
         gamma(0.99),
         epsilon(1.0),
@@ -71,7 +72,8 @@ struct Options
         lspi_iterations(25),
         n_evaluations(100),
         reuse_training_data(false),
-        sampling(false)
+        sampling(false),
+        delta(0.5)
     {
     }
 };
@@ -89,8 +91,8 @@ protected:
     real delta;
     real C;
 public:
-    TotalRewardStatistic(real delta_ = 0.5)
-        : delta(delta_), C(0.5*log(2.0/delta))
+    TotalRewardStatistic(real delta_ = 1.0)
+        : delta(delta_), C(0.5*log(1.0/delta))
     {
     }
     
@@ -109,9 +111,10 @@ public:
     {
         real r_d = getAverageTotalReward(data);
         real r_s = getAverageTotalReward(sample);
-        //printf ("%f %f (r)", r_d, r_s);
+        real bound = sqrt(C * (1.0 / (real) data.size() + 1.0 / (real) sample.size()));
+        //printf ("%f %f (r) %f\n", r_d, r_s, bound);
         
-        return fabs(r_d - r_s) + sqrt(C * (1.0 / (real) data.size() + 1.0 / (real) sample.size()));
+        return fabs(r_d - r_s) + bound;
     }
 };
 
@@ -332,7 +335,7 @@ void RunTest(Options& options)
 
 
     ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
-
+    
 
     std::vector<M> samples;
     std::vector<real> values;
@@ -538,6 +541,7 @@ static const char* const help_text = "Usage: test [options]\n\
     --reuse_training_data:   reuse the training data in LSPI samples\n\
     --online:                do the online test\n\
     --sampling:              use sampling\n\
+    --delta:                 error bound probability\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -575,6 +579,7 @@ int main(int argc, char* argv[])
                 {"online", no_argument, 0, 0}, //14
                 {"sampling", no_argument, 0, 0}, //15
                 {"seed_file", required_argument, 0, 0}, //16
+                {"delta", required_argument, 0, 0}, //17
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -608,6 +613,7 @@ int main(int argc, char* argv[])
                 case 14: online_test = true; break;
                 case 15: options.sampling = true; break;
                 case 16: seed_filename = optarg; break;
+                case 17: options.delta = atof(optarg); break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
