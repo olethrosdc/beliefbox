@@ -95,7 +95,11 @@ public:
         : delta(delta_), C(0.5*log(1.0/delta))
     {
     }
-    
+    void setBound(real delta_)
+    {
+        delta = delta_;
+        C = 0.5*log(1.0/delta);
+    }
     real getAverageTotalReward(Demonstrations<X, A>& data)
     {
         real r_d = 0;
@@ -111,10 +115,12 @@ public:
     {
         real r_d = getAverageTotalReward(data);
         real r_s = getAverageTotalReward(sample);
-        real bound = sqrt(C * (1.0 / (real) data.size() + 1.0 / (real) sample.size()));
-        //printf ("%f %f (r) %f\n", r_d, r_s, bound);
+        real bound = sqrt(C * (1.0 / (real) data.size()
+                               + 1.0 / (real) sample.size()));
+        real distance = fabs(r_d - r_s) - bound;
+        printf ("%f %f (r) %f => %f \n", r_d, r_s, bound, distance);
         
-        return fabs(r_d - r_s) + bound;
+        return fabs(r_d - r_s) - bound;
     }
 };
 
@@ -191,6 +197,7 @@ public:
                    P& policy,
                    real discounting,
                    real epsilon,
+                   real delta,
                    int n_trajectories,
                    int n_samples,
                    std::vector<M>& samples,
@@ -198,6 +205,7 @@ public:
     {
         //real min_epsilon = INF;
         int n_models = 0;
+        statistic.setBound(delta);
         for (int iter=0; n_models == 0; ++iter) {
             M model = generator.Generate();
             Demonstrations<X, A> sample;
@@ -227,6 +235,7 @@ public:
                    std::vector<P*>& policy_list,
                    real discounting,
                    real epsilon,
+                   real delta,
                    int n_trajectories,
                    int n_samples,
                    std::vector<M>& samples,
@@ -237,6 +246,7 @@ public:
         int list_size = data_list.size();
         //real min_epsilon = INF;
         int n_models = 0;
+        statistic.setBound(delta);
         for (int iter=0; n_models == 0; ++iter) {
             M model = generator.Generate();
             real error = 0.0;
@@ -343,6 +353,7 @@ void RunTest(Options& options)
                     policy,
                     options.gamma,
                     options.epsilon,
+                    options.delta,
                     options.n_trajectories,
                     options.n_samples,
                     samples,
@@ -394,7 +405,7 @@ void RunOnlineTest(Options& options)
 
     // First, generate the environment
     G generator;
-    M environment = generator.Generate();
+    M environment = generator.Generate(false);
     logmsg("generated environment: ");
     environment.Show();
     
@@ -444,6 +455,7 @@ void RunOnlineTest(Options& options)
                             policy_list,
                             options.gamma,
                             options.epsilon,
+                            options.delta,
                             options.n_trajectories,
                             options.n_samples,
                             samples,
