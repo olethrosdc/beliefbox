@@ -95,10 +95,10 @@ public:
         : delta(delta_), C(0.5*log(1.0/delta))
     {
     }
-    void setBound(real delta_)
+    void setBound(real delta_, real gamma)
     {
         delta = delta_;
-        C = 0.5*log(1.0/delta);
+        C = 0.5*log(1.0/delta) / (1.0 - gamma);
     }
     real getAverageTotalReward(Demonstrations<X, A>& data)
     {
@@ -205,7 +205,7 @@ public:
     {
         //real min_epsilon = INF;
         int n_models = 0;
-        statistic.setBound(delta);
+        statistic.setBound(delta, discounting);
         for (int iter=0; n_models == 0; ++iter) {
             M model = generator.Generate();
             Demonstrations<X, A> sample;
@@ -246,7 +246,7 @@ public:
         int list_size = data_list.size();
         //real min_epsilon = INF;
         int n_models = 0;
-        statistic.setBound(delta);
+        statistic.setBound(delta, discounting);
         for (int iter=0; n_models == 0; ++iter) {
             M model = generator.Generate();
             real error = 0.0;
