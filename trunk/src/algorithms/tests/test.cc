@@ -120,7 +120,7 @@ public:
         real distance = fabs(r_d - r_s) - bound;
         //printf ("%f %f (r) %f => %f \n", r_d, r_s, bound, distance);
         
-        return fabs(r_d - r_s) - bound;
+        return distance; 
     }
 };
 
