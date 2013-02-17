@@ -58,6 +58,7 @@ struct Options
     int n_episodes; ///< number of episodes
     bool sampling; ///< use sampling online
     real delta; ///< error probability bound
+	real R_max; ///< maximum reward
     Options(RandomNumberGenerator& rng_) :
         gamma(0.99),
         epsilon(1.0),
@@ -73,7 +74,8 @@ struct Options
         n_evaluations(100),
         reuse_training_data(false),
         sampling(false),
-        delta(0.5)
+        delta(0.5),
+		R_max(1.0)
     {
     }
 };
@@ -95,10 +97,10 @@ public:
         : delta(delta_), C(0.5*log(1.0/delta))
     {
     }
-    void setBound(real delta_, real gamma)
+    void setBound(real delta_, real gamma, real R_max)
     {
         delta = delta_;
-        C = 0.5*log(1.0/delta) / (1.0 - gamma);
+        C = 0.5 * R_max * R_max * log(1.0/delta) / (1.0 - gamma);
     }
     real getAverageTotalReward(Demonstrations<X, A>& data)
     {
@@ -198,6 +200,7 @@ public:
                    real discounting,
                    real epsilon,
                    real delta,
+				   real R_max,
                    int n_trajectories,
                    int n_samples,
                    std::vector<M>& samples,
@@ -205,7 +208,7 @@ public:
     {
         //real min_epsilon = INF;
         int n_models = 0;
-        statistic.setBound(delta, discounting);
+        statistic.setBound(delta, discounting, R_max);
         for (int iter=0; n_models == 0; ++iter) {
             M model = generator.Generate();
             Demonstrations<X, A> sample;
@@ -236,6 +239,7 @@ public:
                    real discounting,
                    real epsilon,
                    real delta,
+				   real R_max,
                    int n_trajectories,
                    int n_samples,
                    std::vector<M>& samples,
@@ -246,7 +250,7 @@ public:
         int list_size = data_list.size();
         //real min_epsilon = INF;
         int n_models = 0;
-        statistic.setBound(delta, discounting);
+        statistic.setBound(delta, discounting, R_max);
         for (int iter=0; n_models == 0; ++iter) {
             M model = generator.Generate();
             real error = 0.0;
@@ -354,6 +358,7 @@ void RunTest(Options& options)
                     options.gamma,
                     options.epsilon,
                     options.delta,
+					options.R_max,
                     options.n_trajectories,
                     options.n_samples,
                     samples,
@@ -456,6 +461,7 @@ void RunOnlineTest(Options& options)
                             options.gamma,
                             options.epsilon,
                             options.delta,
+							options.R_max,
                             options.n_trajectories,
                             options.n_samples,
                             samples,
@@ -554,6 +560,7 @@ static const char* const help_text = "Usage: test [options]\n\
     --online:                do the online test\n\
     --sampling:              use sampling\n\
     --delta:                 error bound probability\n\
+    --Rmax:                  maximum reward value\n\
 \n";
 
 int main(int argc, char* argv[])
@@ -592,6 +599,7 @@ int main(int argc, char* argv[])
                 {"sampling", no_argument, 0, 0}, //15
                 {"seed_file", required_argument, 0, 0}, //16
                 {"delta", required_argument, 0, 0}, //17
+				{"Rmax", required_argument, 0, 0}, //18
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -626,6 +634,7 @@ int main(int argc, char* argv[])
                 case 15: options.sampling = true; break;
                 case 16: seed_filename = optarg; break;
                 case 17: options.delta = atof(optarg); break;
+				case 18: options.R_max = atof(optarg); break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
