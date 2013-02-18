@@ -49,6 +49,10 @@ public:
     virtual void Reset();
     virtual bool Act(const int& action);
     virtual void Simulate(const int action);
+	virtual const char* Name() const
+    {
+        return "Mountain Car";
+    }
     const Vector& StateUpperBound() const
     {
         return state_upper_bound;
