@@ -44,6 +44,8 @@
 #include "OptimisticTask.h"
 #include "InventoryManagement.h"
 #include "DoubleLoop.h"
+#include "Bike.h"
+
 //#include "Blackjack.h"
 
 
@@ -317,6 +319,10 @@ int main (int argc, char** argv)
         continuous_mountain_car.setRandomness(randomness);
         continuous_mountain_car.Reset();
 
+        Bike continuous_bicycle;
+        continuous_bicycle.setRandomness(randomness);
+        continuous_bicycle.Reset();
+
         Pendulum continuous_pendulum;
         continuous_pendulum.setRandomness(randomness);
         continuous_pendulum.Reset();
@@ -361,6 +367,8 @@ int main (int argc, char** argv)
             //environment = new Blackjack ();
         } else if (!strcmp(environment_name, "MountainCar")) { 
             environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car, grid_size);
+        } else if (!strcmp(environment_name, "Bicycle")) { 
+            environment = new DiscretisedEnvironment<Bike> (continuous_bicycle, grid_size);
         } else if (!strcmp(environment_name, "Pendulum")) { 
             environment = new DiscretisedEnvironment<Pendulum> (continuous_pendulum, grid_size);
         } else if (!strcmp(environment_name, "Puddle")) { 
@@ -860,7 +868,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             oracle_policy->Observe(reward, state);
             action = oracle_policy->SelectAction();
         }
-        if (0) {
+        if (1) {
             printf ("%d %d %d %f # t-state-action-reward\n", step, state, action, reward);
         }
         action_ok = environment->Act(action);

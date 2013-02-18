@@ -229,6 +229,10 @@ void Bike::Simulate(const int action)
 		else reward = (0.95 - sqr(psi_goal)) * parameters.R_FACTOR; 
 		endsim = false;
 	}
+
+    //    printf("%f %f %f %f %f %f %f %f # bike state\n", 
+           //           xf, yf,
+           //           theta, theta_dot, omega, omega_dot, omega_d_dot, psi_goal);
 	
 	state[0] = theta;
 	state[1] = theta_dot;
