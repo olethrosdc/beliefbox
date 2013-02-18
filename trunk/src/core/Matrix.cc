@@ -174,6 +174,7 @@ Matrix& Matrix::operator= (const Matrix& rhs)
     const int K = M*N;
     
     x = (real*) realloc (x, sizeof(real)*K);
+    assert(x);
 #ifdef REFERENCE_ACCESS
     x_list = (real**) realloc(x_list, rows * sizeof(real*));
     for (int i=0; i<rows; ++i) {
@@ -211,6 +212,7 @@ void Matrix::Resize (int rows_, int columns_)
     const int K = M*N;
     
     x = (real*) realloc (x, sizeof(real)*K);
+    assert(x);
 
     for (int m=0; m<M; ++m) {
         for (int n=0; n<N; ++n) {
