@@ -14,35 +14,36 @@
 #include "RandomSourceRNG.h"
 #include "MersenneTwister.h"
 
+#define sqr(x)   ((x)*(x))
 Bike::Parameters Bike::default_parameters = 
-	{
-		-1.0, // r1
-		0.0, // r2
-		+0.01, // r3
-		0.0001, // r_factor
-		20, // n0
-		0.01, // dt
-		(10.0/3.6), // v 
-		9.82, // g
-		0.3, // dC
-		0.66, // c
-		0.94, // h
-		15.0, // Mc
-		1.7, // Md
-		60.0, // Mp
-		75.0, // M
-		0.34,      /* tyre radius */  
-		1.11,     /* distance between the point where the front and back tyre touch the ground */
-		3.1415927, // pi
-		1000, // x_goal
-		0, // y_goal
-		10, // r_goal
-		0.04 // max_noise
-	};
+{
+-1.0,
+ 0.0,
++0.01,
+0.0001,
+20,
+0.01,
+(10.0/3.6), 
+9.82,
+0.3,
+0.66,
+0.94,
+15.0,
+1.7,
+60.0,
+75.0,
+0.34,      /* tyre radius */  
+1.11,     /* distance between the point where the front and back tyre touch the ground */
+3.1415927,
+1000,
+0,
+10,
+0.04
+};
 
 
 Bike::Bike(bool random_parameters)
-  : Environment<Vector, int>(5, 9), parameters(default_parameters)
+: Environment<Vector, int>(6, 9), parameters(default_parameters)
 {
     if (random_parameters) {
         //RandomSourceRNG rng(false);
@@ -72,6 +73,7 @@ Bike::Bike(bool random_parameters)
 	
     state.Resize(n_states);
     state.Clear();
+	Reset();
     state_upper_bound.Resize(n_states);
     state_lower_bound.Resize(n_states);
 	
@@ -81,19 +83,19 @@ Bike::Bike(bool random_parameters)
 	I_dv	= ((3.0/2)*parameters.Md*parameters.R*parameters.R); 
 	I_dl    = ((1.0/2)*parameters.Md*parameters.R*parameters.R);  
 	
-	state_lower_bound[0] = -1.5; 
-	state_lower_bound[1] = -3;
-	state_lower_bound[2] = -0.2;
-	state_lower_bound[3] = -0.5;
-	state_lower_bound[4] = -2.0;
-	//	state_lower_bound[5] = ;
+	state_lower_bound[0] = -(80.0/180.0)*parameters.pi;
+	state_lower_bound[1] = -2.0*parameters.pi;
+	state_lower_bound[2] = -parameters.pi/15.0;
+	state_lower_bound[3] = -2.0*parameters.pi;
+	state_lower_bound[4] = -parameters.pi;
+	state_lower_bound[5] = -2;// -parameters.pi;
 
-	state_upper_bound[0] = 1.5;
-	state_upper_bound[1] = 3;
-	state_upper_bound[2] = 0.2;
-	state_upper_bound[3] = 0.5;
-	state_upper_bound[4] = 2.0;
-	//	state_upper_bound[5] = 
+	state_upper_bound[0] = (80.0/180.0)*parameters.pi;
+	state_upper_bound[1] = 2*parameters.pi;
+	state_upper_bound[2] = parameters.pi/15.0;
+	state_upper_bound[3] = 2*parameters.pi;
+	state_upper_bound[4] = parameters.pi;
+	state_upper_bound[5] = 2;// parameters.pi;
 
 	action_upper_bound.Resize(n_actions);
 	action_lower_bound.Resize(n_actions);
@@ -121,12 +123,13 @@ void Bike::Reset()
 	xf = 0; yf = parameters.l;
 	psi =  atan((xb-xf)/(yf-yb));
 	psi_goal = calc_angle_to_goal(xf, xb, yf, yb);
+	psi_goal = parameters.pi / 2.0;
 	state[0] = theta;
 	state[1] = theta_dot;
 	state[2] = omega;
 	state[3] = omega_dot;
 	state[4] = omega_d_dot;
-	//	state[5] = psi_goal;
+	state[5] = 1;
     endsim = false;
 }
 
@@ -168,9 +171,9 @@ void Bike::Simulate(const int action)
 	/* Main physics eq. in the bicycle model coming here: */
 	phi = omega + atan(d/parameters.h);
 	omega_d_dot = ( parameters.h*parameters.M*parameters.g*sin(phi) 
-					- cos(phi)*(I_dc*sigma_dot*theta_dot + sign(theta)*parameters.v*parameters.v*
-								(parameters.Md*parameters.R*(1.0/rf + 1.0/rb) +  parameters.M*parameters.h/rCM))
-					) / I_bike;
+				   - cos(phi)*(I_dc*sigma_dot*theta_dot + sign(theta)*parameters.v*parameters.v*
+							   (parameters.Md*parameters.R*(1.0/rf + 1.0/rb) +  parameters.M*parameters.h/rCM))
+				   ) / I_bike;
 	theta_d_dot =  (T - I_dv*omega_dot*sigma_dot) /  I_dl;
 	
 	/*--- Eulers method ---*/
@@ -180,7 +183,7 @@ void Bike::Simulate(const int action)
 	theta += theta_dot * parameters.dt;
 	
 	if (fabs(theta) > 1.3963) { /* handlebars cannot turn more than 
-								   80 degrees */
+	 80 degrees */
 		theta = sign(theta) * 1.3963;
 	}
 	
@@ -199,7 +202,7 @@ void Bike::Simulate(const int action)
 	yb += parameters.v * parameters.dt * (cos(psi + temp));
 	
 	/* Round off errors accumulate so the length of the bike changes over many
-	   iterations. The following take care of that: */
+	 iterations. The following take care of that: */
 	temp = sqrt((xf-xb)*(xf-xb)+(yf-yb)*(yf-yb));
 	if (fabs(temp - parameters.l) > 0.01) {
 		xb += (xb-xf)*(parameters.l-temp)/temp;
@@ -214,7 +217,6 @@ void Bike::Simulate(const int action)
 	}
 	
 	psi_goal = calc_angle_to_goal(xf, xb, yf, yb);
-	
 	/*-- Calculation of the reinforcement  signal --*/
 	if (fabs(omega) > (parameters.pi/15)) { /* the bike has fallen over */
 		reward = parameters.R1;
@@ -224,7 +226,7 @@ void Bike::Simulate(const int action)
 		temp = calc_dist_to_goal(xf, xb, yf, yb);
 		
 		if (temp < 1e-3) reward = parameters.R3;
-		else reward = (0.95 - sqrt(psi_goal)) * parameters.R_FACTOR; 
+		else reward = (0.95 - sqr(psi_goal)) * parameters.R_FACTOR; 
 		endsim = false;
 	}
 	
@@ -233,7 +235,7 @@ void Bike::Simulate(const int action)
 	state[2] = omega;
 	state[3] = omega_dot;
 	state[4] = omega_d_dot;
-	//	state[5] = psi_goal;
+	state[5] = psi_goal;
 }
 
 float Bike::calc_dist_to_goal(float xf, float xb, float yf, float yb)
@@ -241,7 +243,7 @@ float Bike::calc_dist_to_goal(float xf, float xb, float yf, float yb)
 	float temp;
 	
 	temp = sqrt(std::max(0.0, (parameters.x_goal-xf)*(parameters.x_goal-xf) + (parameters.y_goal-yf)*(parameters.y_goal-yf) 
-						 - parameters.radius_goal*parameters.radius_goal)); 
+					- parameters.radius_goal*parameters.radius_goal)); 
 	return(temp);
 }
 
@@ -251,21 +253,20 @@ float Bike::calc_angle_to_goal(float xf, float xb, float yf, float yb)
 	real temp, scalar, tvaer;
 	
 	temp = (xf-xb)*(parameters.x_goal-xf) + (yf-yb)*(parameters.y_goal-yf); 
-	scalar =  temp / (parameters.l * sqrt(sqrt(parameters.x_goal-xf)+sqrt(parameters.y_goal-yf)));
+	scalar =  temp / (parameters.l * sqrt(sqr(parameters.x_goal-xf)+sqr(parameters.y_goal-yf)));
 	tvaer = (-yf+yb)*(parameters.x_goal-xf) + (xf-xb)*(parameters.y_goal-yf); 
-	
+
 	if (tvaer <= 0) temp = scalar - 1;
 	else temp = fabs(scalar - 1);
-	
 	/* These angles are neither in degrees nor radians, but something
-	   strange invented in order to save CPU-time. The measure is arranged the
-	   same way as radians, but with a slightly different negative factor. 
+     strange invented in order to save CPU-time. The measure is arranged the
+     same way as radians, but with a slightly different negative factor. 
 	 
-	   Say, the goal is to the east.
-	   If the agent rides to the east then  temp = 0
-	   - " -          - " -   north              = -1
-	   - " -                  west               = -2 or 2
-	   - " -                  south              =  1 */ 
+     Say, the goal is to the east.
+     If the agent rides to the east then  temp = 0
+     - " -          - " -   north              = -1
+     - " -                  west               = -2 or 2
+     - " -                  south              =  1 */ 
 	
 	return(temp);
 }
