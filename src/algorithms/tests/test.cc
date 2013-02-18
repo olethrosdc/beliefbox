@@ -22,6 +22,7 @@
 #include "MountainCar.h"
 #include "Pendulum.h"
 #include "PuddleWorld.h"
+#include "Bike.h"
 
 #include "RandomPolicy.h"
 
@@ -721,6 +722,9 @@ int main(int argc, char* argv[])
             } else if (!strcmp(options.environment_name, "PuddleWorld")) {
                 logmsg("Testing puddle world\n");
                 RunOnlineTest<PuddleWorldGenerator, PuddleWorld>(options);
+            } else if (!strcmp(options.environment_name, "Bicycle")) {
+                logmsg("Testing Bike\n");
+                RunOnlineTest<BikeGenerator, Bike>(options);
             } else {
                 fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
                 exit(-1);
@@ -737,6 +741,9 @@ int main(int argc, char* argv[])
             } else if (!strcmp(options.environment_name, "PuddleWorld")) {
                 logmsg("Testing puddle world\n");
                 RunTest<PuddleWorldGenerator, PuddleWorld>(options);
+            } else if (!strcmp(options.environment_name, "Bicycle")) {
+                logmsg("Testing Bike\n");
+                RunTest<BikeGenerator, Bike>(options);
             } else {
                 fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
                 exit(-1);
