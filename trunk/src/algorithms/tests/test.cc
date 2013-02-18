@@ -121,7 +121,7 @@ public:
         real bound = sqrt(C * (1.0 / (real) data.size()
                                + 1.0 / (real) sample.size()));
         real distance = fabs(r_d - r_s) - bound;
-        printf ("%f %f (r) %f => %f \n", r_d, r_s, bound, distance);
+        //printf ("%f %f (r) %f => %f \n", r_d, r_s, bound, distance);
         
         return distance; 
     }

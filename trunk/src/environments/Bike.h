@@ -57,7 +57,7 @@ protected:
 	real theta, theta_dot, theta_d_dot;
 	real psi, psi_goal;
 	real xf, yf, xb, yb;	///Tyre position
-    static const int n_states = 5;     // state dimensions
+    static const int n_states = 6;     // state dimensions
     static const int n_actions = 9;     // action dimensions
     Vector state_action_upper_bound;
     Vector state_action_lower_bound;
@@ -71,11 +71,7 @@ public:
 	virtual ~Bike();
     virtual void Reset();
     virtual bool Act(const int& action);
-    virtual void Simulate(const int action);
-	virtual void setRandomness(real w)
-	{
-		parameters.max_noise = w;
-	}
+    virtual void Simulate(const int action);	
     const Vector& StateUpperBound() const
     {
         return state_upper_bound;
@@ -100,7 +96,6 @@ public:
     {
         return action_lower_bound;
     }
-	
 	virtual real getTransitionProbability(const Vector& state, const int& action, const Vector& next_state) const
     {
         return 1.0; 
@@ -110,9 +105,17 @@ public:
     {
         return 0.0;
 	}
+	virtual void setRandomness(real randomness)
+    {
+        parameters.max_noise = randomness;
+    }	
+	virtual const char* Name() const
+    {
+        return "Bike";
+    }	
 	void Show()
 	{
-		printf("%f %f %f %f %d %f # params (Pendulum)\n",
+		printf("%f %f %f %f %d %f # params (Bike)\n",
 			   parameters.R1,
 			   parameters.R2,
 			   parameters.R3,
@@ -128,13 +131,10 @@ public:
 class BikeGenerator
 {
 public:
-    Bike Generate(bool random=true)
-    {
-      return Bike(random);
-    }
+	Bike Generate(bool random = true)
+	{
+		return Bike(random);
+	}
 };
-
-
-
 
 #endif

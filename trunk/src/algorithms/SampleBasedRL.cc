@@ -33,7 +33,7 @@ SampleBasedRL::SampleBasedRL(int n_states_,
       max_samples(max_samples_),
       rng(rng_),
       T(0),
-      update_interval(1),
+      update_interval(n_states + 1),
       next_update(0),
       use_upper_bound(use_upper_bound_),
       use_sampling_threshold(false),
@@ -230,9 +230,9 @@ int SampleBasedRL::Act(real reward, int next_state)
         next_update = T + update_interval;
         Resample();
         if (use_upper_bound) {
-            CalculateUpperBound(1e-6, 1e3);
+            CalculateUpperBound(1e-3, 1e3);
         } else {
-            CalculateLowerBound(1e-6, 1e3);
+            CalculateLowerBound(1e-3, 1e3);
         }
     }
 
