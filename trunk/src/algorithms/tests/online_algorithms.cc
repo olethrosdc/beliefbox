@@ -45,6 +45,7 @@
 #include "InventoryManagement.h"
 #include "DoubleLoop.h"
 #include "Bike.h"
+#include "Acrobot.h"
 
 //#include "Blackjack.h"
 
@@ -53,6 +54,7 @@
 #include "MountainCar.h"
 #include "Pendulum.h"
 #include "PuddleWorld.h"
+#include "CartPole.h"
 #include "DiscretisedEnvironment.h"
 
 // -- Randomness -- //
@@ -97,7 +99,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
     --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma}\n\
-    --environment:  {Puddle, MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory, DoubleLoop}\n\
+    --environment:  {Acrobot, Puddle, CartPole, Pendulum, MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory, DoubleLoop}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
     --gamma:        reward discounting in [0,1] (* 0.95)\n\
@@ -327,6 +329,14 @@ int main (int argc, char** argv)
         continuous_pendulum.setRandomness(randomness);
         continuous_pendulum.Reset();
 
+        CartPole continuous_cart_pole;
+        continuous_cart_pole.setRandomness(randomness);
+        continuous_cart_pole.Reset();
+
+        Acrobot continuous_acrobot;
+        continuous_acrobot.setRandomness(randomness);
+        continuous_acrobot.Reset();
+
         PuddleWorld continuous_puddle_world;
         continuous_puddle_world.Reset();
 
@@ -371,8 +381,12 @@ int main (int argc, char** argv)
             environment = new DiscretisedEnvironment<Bike> (continuous_bicycle, grid_size);
         } else if (!strcmp(environment_name, "Pendulum")) { 
             environment = new DiscretisedEnvironment<Pendulum> (continuous_pendulum, grid_size);
+        } else if (!strcmp(environment_name, "CartPole")) { 
+            environment = new DiscretisedEnvironment<CartPole> (continuous_cart_pole, grid_size);
         } else if (!strcmp(environment_name, "Puddle")) { 
             environment = new DiscretisedEnvironment<PuddleWorld> (continuous_puddle_world, grid_size);
+        } else if (!strcmp(environment_name, "Acrobot")) { 
+            environment = new DiscretisedEnvironment<Acrobot> (continuous_acrobot, grid_size);
         } else {
             fprintf(stderr, "Uknown environment %s\n", environment_name);
         }
@@ -868,7 +882,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             oracle_policy->Observe(reward, state);
             action = oracle_policy->SelectAction();
         }
-        if (1) {
+        if (0) {
             printf ("%d %d %d %f # t-state-action-reward\n", step, state, action, reward);
         }
         action_ok = environment->Act(action);
