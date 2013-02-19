@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2008-2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2013 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // copyright (c) 2003-2008 Michail G. Lagoudakis
 // $Revision$
 /***************************************************************************
@@ -11,12 +11,12 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "Pendulum.h"
+#include "CartPole.h"
 #include "Random.h"
 #include "RandomSourceRNG.h"
 #include "MersenneTwister.h"
 
-Pendulum::Parameters Pendulum::default_parameters = 
+CartPole::Parameters CartPole::default_parameters = 
     { 
         2.0, // pendulum mass
         8.0, // cart mass
@@ -26,8 +26,8 @@ Pendulum::Parameters Pendulum::default_parameters =
         0.01 // interval
     };
 
-Pendulum::Pendulum(bool random_parameters)
-    : Environment<Vector, int>(2, 3),
+CartPole::CartPole(bool random_parameters)
+    : Environment<Vector, int>(4, 3),
       parameters(default_parameters),
       CCa (1.0 / (parameters.pendulum_mass + parameters.cart_mass))
 {
@@ -44,14 +44,18 @@ default_parameters.gravity;
         parameters.Dt = (0.5 + urandom()) * default_parameters.Dt;
     }
 
-    state.Resize(2);
+    state.Resize(n_states);
     state.Clear();
-    state_upper_bound.Resize(2);
-    state_lower_bound.Resize(2);
+    state_upper_bound.Resize(n_states);
+    state_lower_bound.Resize(n_states);
     state_upper_bound[0] = 1.6;
     state_lower_bound[0] = -1.6;
     state_lower_bound[1] = -1.5;//-10;
     state_upper_bound[1] = 1.5;//10;
+    state_lower_bound[2] = -2.4;
+    state_upper_bound[2] = 2.4; 
+    state_lower_bound[3] = -10;
+    state_upper_bound[3] = 10; 
 
 	action_upper_bound.Resize(n_actions);
 	action_lower_bound.Resize(n_actions);
@@ -65,12 +69,12 @@ default_parameters.gravity;
     endsim = false;
 }
 
-Pendulum::~Pendulum()
+CartPole::~CartPole()
 {
     // nothing to do
 }
 
-void Pendulum::Reset()
+void CartPole::Reset()
 {
     reward = 1.0;
 #if 1
@@ -78,6 +82,8 @@ void Pendulum::Reset()
     state[0] =  urandom(-0.01, 0.01);
     // dTheta/dt
     state[1] = urandom(-0.001, 0.001);
+    state[2] = 0;
+    state[3] = 0;
 #else
 	for (int i=0; i<2; ++i) {
 		state[i] = urandom(state_lower_bound[i], state_upper_bound[i]);
@@ -86,20 +92,22 @@ void Pendulum::Reset()
     endsim = false;
 }
 
-void Pendulum::penddot(Vector& xdot, real u, Vector& x)
+void CartPole::penddot(Vector& xdot, real u, Vector& x)
 {
     // Nonlinear model 
      
     double cx = cos(x[0]);
+    double sx = sin(x[0]);
     real dtheta2 =x[1]*x[1];
     xdot[0] = x[1]; 
-    xdot[1] = (parameters.gravity * sin(x[0]) - 
-               0.5*CCa * parameters.pendulum_mass * parameters.pendulum_length * dtheta2 * sin(2.0*x[0]) -  CCa * cos(x[0]) * u ) / 
+    xdot[1] = (parameters.gravity * sx - 
+               0.5*CCa * parameters.pendulum_mass * parameters.pendulum_length * dtheta2 * sin(2.0*x[0]) -  CCa * cx * u ) / 
         ( 4.0/3.0*parameters.pendulum_length - CCa*parameters.pendulum_mass*parameters.pendulum_length*cx*cx ); 
+    xdot[2] = sx;
    
 }
 
-bool Pendulum::Act(const int& action)
+bool CartPole::Act(const int& action)
 {
     // make sure we tell the guy we have terminated
     if (endsim) {
@@ -116,9 +124,9 @@ bool Pendulum::Act(const int& action)
     return true;
 }
 
-void Pendulum::Simulate(const int action)
+void CartPole::Simulate(const int action)
 {
-    Vector xdot(2);
+    Vector xdot(3);
     real input=0.0, noise, t;
 
     //printf ("# s: %f %f, a: %d\n", state[0], state[1], action);
@@ -135,17 +143,20 @@ void Pendulum::Simulate(const int action)
     for (t=0.0; t<=0.1; t+=parameters.Dt) {
 
         penddot(xdot, input, state);
-    
+        
         state[0] += xdot[0] * parameters.Dt;
         state[1] += xdot[1] * parameters.Dt;
-
+        state[2] += state[3] * parameters.Dt;
+        state[3] += (input + xdot[2]) * parameters.Dt;
     }
   
-    if (fabs(state[0]) > M_PI/2.0) {
-        reward = -1.0;
-        endsim = true;
-    } else {
+    if ((fabs(state[0]) > M_PI/2.0) 
+        || (fabs(state[2]) > 2.4)) {
         reward = 0.0;
+        endsim = true;
+    } 
+    else {
+        reward = 1.0;
         endsim = false;
     }
 }
