@@ -11,8 +11,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef PENDULUM_H
-#define PENDULUM_H
+#ifndef CART_POLE_H
+#define CART_POLE_H
 
 #include "Environment.h"
 #include "Vector.h"
@@ -20,7 +20,7 @@
 #include "AbstractPolicy.h"
 #include "Random.h"
 
-class Pendulum : public Environment<Vector, int>
+class CartPole : public Environment<Vector, int>
 {
 protected:
     struct Parameters {
@@ -34,7 +34,7 @@ protected:
     static Parameters default_parameters;
     Parameters parameters;
     real CCa;		            ///< inverse total mass  
-    static const int n_states = 2;     // state dimensions
+    static const int n_states = 4;     // state dimensions
     static const int n_actions = 3;     // action dimensions
     Vector state_action_upper_bound;
     Vector state_action_lower_bound;
@@ -44,14 +44,14 @@ protected:
     void penddot(Vector& xdot, real u, Vector& x);
     void pendulum_simulate(int action);
 public:
-    Pendulum(bool random_parameters = false);
-    virtual ~Pendulum();
+    CartPole(bool random_parameters = false);
+    virtual ~CartPole();
     virtual void Reset();
     virtual bool Act(const int& action);
     virtual void Simulate(const int action);
 	virtual const char* Name() const
     {
-        return "Pendulum";
+        return "Cart Pole";
     }
     const Vector& StateUpperBound() const
     {
@@ -93,7 +93,7 @@ public:
 	}
 	void Show()
 	{
-		printf("%f %f %f %f %f %f # params (Pendulum)\n",
+		printf("%f %f %f %f %f %f # params (CartPole)\n",
 			   parameters.pendulum_mass,
 			   parameters.cart_mass,
 			   parameters.pendulum_length,
@@ -106,29 +106,29 @@ public:
 
 
 
-class PendulumGenerator
+class CartPoleGenerator
 {
 public:
-    Pendulum Generate(bool random=true)
+    CartPole Generate(bool random=true)
     {
-        return Pendulum(random);
+        return CartPole(random);
     }
 };
 
 
 
-class HeuristicPendulumPolicy  : public AbstractPolicy<Vector, int>
+class HeuristicCartPolePolicy  : public AbstractPolicy<Vector, int>
 {
 protected:
 	int n_actions;
     Vector state;
 public:
-	HeuristicPendulumPolicy()
+	HeuristicCartPolePolicy()
 		: n_actions(2),
           state(2)
 	{
 	}
-	virtual ~HeuristicPendulumPolicy()
+	virtual ~HeuristicCartPolePolicy()
 	{
 	}
 	virtual int SelectAction()
