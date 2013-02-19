@@ -12,7 +12,6 @@
 
 #include "Acrobot.h"
 #include "Random.h"
-#include "Math.h"
 #include "RandomSourceRNG.h"
 #include "MersenneTwister.h"
   
