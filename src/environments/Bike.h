@@ -130,9 +130,9 @@ public:
 class BikeGenerator
 {
 public:
-	Bike Generate()
+	Bike Generate(bool random = true)
 	{
-		return Bike(true);
+		return Bike(random);
 	}
 };
 
