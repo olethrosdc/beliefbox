@@ -49,10 +49,10 @@ public:
     virtual void Reset();
     virtual bool Act(const int& action);
     virtual void Simulate(const int action);
-	virtual const char* Name() const
-    {
-        return "Pendulum";
-    }
+	virtual void setRandomness(real w)
+	{
+		parameters.max_noise = w;
+	}
     const Vector& StateUpperBound() const
     {
         return state_upper_bound;
@@ -91,6 +91,10 @@ public:
             return 0.0;
         }
 	}
+	virtual const char* Name() const
+    {
+        return "Pendulum";
+    }
 	void Show()
 	{
 		printf("%f %f %f %f %f %f # params (Pendulum)\n",

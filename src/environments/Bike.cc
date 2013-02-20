@@ -37,13 +37,12 @@ Bike::Parameters Bike::default_parameters =
 3.1415927,
 1000,
 0,
-10,
-0.04
+10
 };
 
 
 Bike::Bike(bool random_parameters)
-: Environment<Vector, int>(6, 9), parameters(default_parameters)
+: Environment<Vector, int>(6, 5), parameters(default_parameters)
 {
     if (random_parameters) {
         //RandomSourceRNG rng(false);
@@ -88,15 +87,16 @@ Bike::Bike(bool random_parameters)
 	state_lower_bound[2] = -parameters.pi/15.0;
 	state_lower_bound[3] = -2.0*parameters.pi;
 	state_lower_bound[4] = -parameters.pi;
-	state_lower_bound[5] = -2;// -parameters.pi;
+	state_lower_bound[5] = -2.0;// -parameters.pi;
 
 	state_upper_bound[0] = (80.0/180.0)*parameters.pi;
-	state_upper_bound[1] = 2*parameters.pi;
+	state_upper_bound[1] = 2.0*parameters.pi;
 	state_upper_bound[2] = parameters.pi/15.0;
-	state_upper_bound[3] = 2*parameters.pi;
+	state_upper_bound[3] = 2.0*parameters.pi;
 	state_upper_bound[4] = parameters.pi;
-	state_upper_bound[5] = 2;// parameters.pi;
-
+	state_upper_bound[5] = 2.0; // parameters.pi;
+	state_upper_bound.print(stdout);
+	state_lower_bound.print(stdout);
 	action_upper_bound.Resize(n_actions);
 	action_lower_bound.Resize(n_actions);
 	action_upper_bound += 1;
@@ -117,19 +117,19 @@ Bike::~Bike()
 void Bike::Reset()
 {
 	reward = -1.0;
-	omega = omega_dot = omega_d_dot = 0;
-	theta =  theta_dot = theta_d_dot = 0;
-	xb = 0; yb = 0;
-	xf = 0; yf = parameters.l;
+	omega = omega_dot = omega_d_dot = 0.0;
+	theta =  theta_dot = theta_d_dot = 0.0;
+	xb = 0.0; yb = parameters.l;
+	xf = 0.0; yf = 0.0; // parameters.l;
 	psi =  atan((xb-xf)/(yf-yb));
 	psi_goal = calc_angle_to_goal(xf, xb, yf, yb);
-	psi_goal = parameters.pi / 2.0;
+//	psi_goal = parameters.pi / 2.0;
 	state[0] = theta;
 	state[1] = theta_dot;
 	state[2] = omega;
 	state[3] = omega_dot;
 	state[4] = omega_d_dot;
-	state[5] = 1;
+	state[5] = psi_goal;
     endsim = false;
 }
 
@@ -152,51 +152,71 @@ bool Bike::Act(const int& action)
 
 void Bike::Simulate(const int action)
 {
-	static double rCM, rf, rb;
-	static float T, d, phi;
+	static real rCM, rf, rb;
+	static real T, d, phi;
 	real temp;
-	
-	T = 2*((action / 3)-1);
-	d = 0.02*((action % 3)-1);
-	d = d + parameters.max_noise*(0.5-random()); /* Max noise is 2 cm */
-	
-	if (theta == 0) {
-		rCM = rf = rb = 9999999; /* just a large number */
+
+	if(action == 0) {
+		T = -2.0;
+		d = 0.0;
+	}
+	else if(action == 1) {
+		T = 2.0;
+		d = 0.0;
+	}
+	else if(action == 2) {
+		T = 0.0; 
+		d = -0.02;
+	}
+	else if(action == 3) {
+		T = 0.0;
+		d = 0.02;
+	}
+	else {
+		T = 0.0;
+		d = 0.0;
+	}
+	//T = 2.0*(((real)action / 3.0)-1.0);
+//	d = 0.02*((real)(action % 3)-1.0);
+	d = d + 0.04*(0.5-urandom()); /* Max noise is 2 cm */
+//	state.print(stdout);
+	if (state[0] == 0.0) {
+		rCM = rf = rb = 9999999.0; /* just a large number */
 	} else {
-		rCM = sqrt(pow(parameters.l-parameters.c,2) + parameters.l*parameters.l/(pow(tan(theta),2)));
-		rf = parameters.l / fabs(sin(theta));
-		rb = parameters.l / fabs(tan(theta));
+		rCM = sqrt(pow(parameters.l-parameters.c,2.0) + parameters.l*parameters.l/(pow(tan(state[0]),2.0)));
+		rf = parameters.l / fabs(sin(state[0]));
+		rb = parameters.l / fabs(tan(state[0]));
 	} /* rCM, rf and rb are always positiv */
 	
 	/* Main physics eq. in the bicycle model coming here: */
-	phi = omega + atan(d/parameters.h);
-	omega_d_dot = ( parameters.h*parameters.M*parameters.g*sin(phi) 
-				   - cos(phi)*(I_dc*sigma_dot*theta_dot + sign(theta)*parameters.v*parameters.v*
+	phi = state[2] + atan(d/parameters.h);
+	state[4] = ( parameters.h*parameters.M*parameters.g*sin(phi) 
+				   - cos(phi)*(I_dc*sigma_dot*state[1] + sign(state[0])*parameters.v*parameters.v*
 							   (parameters.Md*parameters.R*(1.0/rf + 1.0/rb) +  parameters.M*parameters.h/rCM))
 				   ) / I_bike;
-	theta_d_dot =  (T - I_dv*omega_dot*sigma_dot) /  I_dl;
+	theta_d_dot =  (T - I_dv*state[3]*sigma_dot) /  I_dl;
 	
 	/*--- Eulers method ---*/
-	omega_dot += omega_d_dot * parameters.dt;
-	omega += omega_dot * parameters.dt;
-	theta_dot += theta_d_dot * parameters.dt;
-	theta += theta_dot * parameters.dt;
+	state[3] += state[4] * parameters.dt;
+	state[2] += state[3] * parameters.dt;
+	state[1] += theta_d_dot * parameters.dt;
+	state[0] += state[1] * parameters.dt;
 	
-	if (fabs(theta) > 1.3963) { /* handlebars cannot turn more than 
+	if (fabs(state[0]) > 1.3963) { /* handlebars cannot turn more than 
 	 80 degrees */
-		theta = sign(theta) * 1.3963;
+		state[0] = sign(state[0]) * 1.3963;
 	}
 	
 	/* New position of front tyre */
-	temp = parameters.v*parameters.dt/(2*rf);                             
-	if (temp > 1) temp = sign(psi + theta) * parameters.pi/2;
-	else temp = sign(psi + theta) * asin(temp); 
-	xf += parameters.v * parameters.dt * (-sin(psi + theta + temp));
-	yf += parameters.v * parameters.dt * cos(psi + theta + temp);
+	temp = parameters.v*parameters.dt/(2.0*rf);                             
+	if (temp > 1) temp = sign(psi + state[0]) * parameters.pi/2.0;
+	else temp = sign(psi + state[0]) * asin(temp); 
+	xf += parameters.v * parameters.dt * (-sin(psi + state[0] + temp));
+	yf += parameters.v * parameters.dt * cos(psi + state[0] + temp);
 	
 	/* New position of back tyre */
-	temp = parameters.v*parameters.dt/(2*rb);               
-	if (temp > 1) temp = sign(psi) * parameters.pi/2;
+	temp = parameters.v*parameters.dt/(2.0*rb);               
+	if (temp > 1) temp = sign(psi) * parameters.pi/2.0;
 	else temp = sign(psi) * asin(temp); 
 	xb += parameters.v * parameters.dt * (-sin(psi + temp));
 	yb += parameters.v * parameters.dt * (cos(psi + temp));
@@ -210,15 +230,15 @@ void Bike::Simulate(const int action)
 	}
 	
 	temp = yf - yb;
-	if ((xf == xb) && (temp < 0)) psi = parameters.pi;
+	if ((xf == xb) && (temp < 0.0)) psi = parameters.pi;
 	else {
-		if (temp > 0) psi = atan((xb-xf)/temp);
-		else psi = sign(xb-xf)*(parameters.pi/2) - atan(temp/(xb-xf));
+		if (temp > 0.0) psi = atan((xb-xf)/temp);
+		else psi = sign(xb-xf)*(parameters.pi/2.0) - atan(temp/(xb-xf));
 	}
 	
-	psi_goal = calc_angle_to_goal(xf, xb, yf, yb);
+	state[5] = calc_angle_to_goal(xf, xb, yf, yb);
 	/*-- Calculation of the reinforcement  signal --*/
-	if (fabs(omega) > (parameters.pi/15)) { /* the bike has fallen over */
+	if (fabs(state[2]) > (parameters.pi/15.0)) { /* the bike has fallen over */
 		reward = parameters.R1;
 		endsim = true;
 		/* a good place to print some info to a file or the screen */  
@@ -226,20 +246,10 @@ void Bike::Simulate(const int action)
 		temp = calc_dist_to_goal(xf, xb, yf, yb);
 		
 		if (temp < 1e-3) reward = parameters.R3;
-		else reward = (0.95 - sqr(psi_goal)) * parameters.R_FACTOR; 
+		else reward = (0.95 - sqr(state[5])) * parameters.R_FACTOR; 
 		endsim = false;
 	}
-
-    //    printf("%f %f %f %f %f %f %f %f # bike state\n", 
-           //           xf, yf,
-           //           theta, theta_dot, omega, omega_dot, omega_d_dot, psi_goal);
-	
-	state[0] = theta;
-	state[1] = theta_dot;
-	state[2] = omega;
-	state[3] = omega_dot;
-	state[4] = omega_d_dot;
-	state[5] = psi_goal;
+//	printf("reward = %f\n",reward);
 }
 
 float Bike::calc_dist_to_goal(float xf, float xb, float yf, float yb)
@@ -257,11 +267,13 @@ float Bike::calc_angle_to_goal(float xf, float xb, float yf, float yb)
 	real temp, scalar, tvaer;
 	
 	temp = (xf-xb)*(parameters.x_goal-xf) + (yf-yb)*(parameters.y_goal-yf); 
+//	printf("temp = %f\n",temp);
 	scalar =  temp / (parameters.l * sqrt(sqr(parameters.x_goal-xf)+sqr(parameters.y_goal-yf)));
+//	printf("scalar = %f\n",scalar);
 	tvaer = (-yf+yb)*(parameters.x_goal-xf) + (xf-xb)*(parameters.y_goal-yf); 
-
-	if (tvaer <= 0) temp = scalar - 1;
-	else temp = fabs(scalar - 1);
+//	printf("tvaer = %f\n",tvaer);
+	if (tvaer <= 0.0) temp = scalar - 1.0;
+	else temp = fabs(scalar - 1.0);
 	/* These angles are neither in degrees nor radians, but something
      strange invented in order to save CPU-time. The measure is arranged the
      same way as radians, but with a slightly different negative factor. 
@@ -274,3 +286,15 @@ float Bike::calc_angle_to_goal(float xf, float xb, float yf, float yb)
 	
 	return(temp);
 }
+
+real Bike::sign(const real& num) {
+	if(num == 0) {
+		return 0.0;
+	} else if(num > 0.0) {
+		return 1.0;
+	} else {
+		return -1.0;
+	}
+	
+}
+

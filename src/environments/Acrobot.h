@@ -99,7 +99,7 @@ public:
     }	
 	void Show()
 	{
-		printf("%f %f %f %f %f %f # params (Acrobot)\n",
+		printf("%f %f %f %f %f %f # params (Bike)\n",
 			   parameters.m1,
 			   parameters.m2,
 			   parameters.l1,
@@ -113,9 +113,9 @@ public:
 class AcrobotGenerator
 	{
 	public:
-		Acrobot Generate(bool random=true)
+		Acrobot Generate()
 		{
-			return Acrobot(random);
+			return Acrobot(true);
 		}
 	};
 

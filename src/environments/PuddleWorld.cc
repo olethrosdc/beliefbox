@@ -17,7 +17,7 @@
 
 //PuddleWorld::Parameters PuddleWorld::default_parameters = SetDefaultParameters();
 
-PuddleWorld:: PuddleWorld(bool random_parameters)
+PuddleWorld::PuddleWorld(bool random_parameters)
  : Environment<Vector, int>(2,4)
    //parameters(default_parameters)
 {	
@@ -38,8 +38,10 @@ PuddleWorld:: PuddleWorld(bool random_parameters)
 
 		for(int i=0;i<default_parameters.NUMPUDDLES;i++)
 			parameters.RADIUSPUDDLES(i) = (0.5 + rng.uniform()) * default_parameters.RADIUSPUDDLES(i);
-		parameters.AGENTSPEED	= (0.5 + rng.uniform()) * default_parameters.AGENTSPEED;
-	} 
+			parameters.AGENTSPEED	= (0.5 + rng.uniform()) * default_parameters.AGENTSPEED;
+		} else {
+			parameters = default_parameters;
+		}
 	
 	state.Resize(n_states);
 	state.Clear();
@@ -110,8 +112,8 @@ void PuddleWorld::Simulate(const int action)
     default: Serror("Undefined action %d\n",action);
 	}
 	
-	state += input;
-	
+	state = state + input;
+
 	//We add noise in the transition.
 	NormalDistribution R;
 	state[0] = state[0] + (R.generate())*parameters.MCNOISE*parameters.AGENTSPEED;
@@ -149,7 +151,7 @@ void PuddleWorld::Simulate(const int action)
 
 real PuddleWorld::DistPointToPuddle(const int puddle) const 
 {
-	Vector P0	= (parameters.U_POS_P).getRow(puddle);
+	Vector P0	= parameters.U_POS_P.getRow(puddle);
 	Vector P1	= parameters.L_POS_P.getRow(puddle);
 	
 	Vector v	= P1 - P0;

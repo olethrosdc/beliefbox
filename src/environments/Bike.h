@@ -58,14 +58,13 @@ protected:
 	real psi, psi_goal;
 	real xf, yf, xb, yb;	///Tyre position
     static const int n_states = 6;     // state dimensions
-    static const int n_actions = 9;     // action dimensions
+    static const int n_actions = 5;     // action dimensions
     Vector state_action_upper_bound;
     Vector state_action_lower_bound;
     Vector action_upper_bound;
     Vector action_lower_bound;
     void Simulate();
-    void penddot(Vector& xdot, real u, Vector& x);
-    void pendulum_simulate(int action);
+	real sign(const real& num);
 public:
 	Bike(bool random_parameters = false);
 	virtual ~Bike();
@@ -131,9 +130,9 @@ public:
 class BikeGenerator
 {
 public:
-	Bike Generate(bool random = true)
+	Bike Generate()
 	{
-		return Bike(random);
+		return Bike(true);
 	}
 };
 

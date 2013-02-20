@@ -81,7 +81,10 @@ void MountainCar::Reset()
 {
     state[0] = urandom(parameters.L_POS, parameters.U_POS);
     state[1] = urandom(parameters.L_VEL, parameters.U_VEL);
-    endsim = false;
+   // state[0] = -0.5;
+//	state[1] = 0.0;
+
+	endsim = false;
     reward = 0.0;
 }
 bool MountainCar::Act(const int& action)
@@ -94,9 +97,10 @@ bool MountainCar::Act(const int& action)
     
     // run
     Simulate(action);
-	//if (endsim) {
-    //return false;
-    //}
+	
+	if (endsim) {
+		return false;
+    }
     return true;
 }
 
