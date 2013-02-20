@@ -32,9 +32,7 @@ protected:
     };
     static Parameters default_parameters;
     Parameters parameters;
-	static const real FOURTHIRDS		= 4.0/3.0;
-	static const int n_states	= 4;     // state dimensions
-    static const int n_actions	= 3;     // action dimensions
+    static const real FOURTHIRDS		= 4.0/3.0;
     Vector state_action_upper_bound;
     Vector state_action_lower_bound;
     Vector action_upper_bound;
@@ -123,9 +121,8 @@ protected:
 	int n_actions;
     Vector state;
 public:
-	HeuristicCartPoleNPolicy()
-	: n_actions(2),
-	state(2)
+	HeuristicCartPolePolicy()
+	: n_actions(2), state(2)
 	{
 	}
 	virtual ~HeuristicCartPolePolicy()

@@ -372,10 +372,10 @@ void RunTest(Options& options)
     real V_initial = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
     Vector V_LSPI((uint) samples.size());
     Options estimation_options = options;
-    estimation_options.n_training = 2000;
+    estimation_options.n_training = 100;
     logmsg("Running estimation policy with %d simulated trajectories\n", estimation_options.n_training);
     for (int i=0; i<V_LSPI.Size(); ++i) {
-        logmsg("Estimating policy\n");
+        logmsg("Estimating policy from simulation\n");
         AbstractPolicy<Vector, int>* lspi_policy
             =  getLSPIPolicy(&samples[i],
                              policy,
@@ -470,7 +470,7 @@ void RunOnlineTest(Options& options)
                             samples,
                             values);
             Options estimation_options = options;
-            estimation_options.n_training = 2000;
+            estimation_options.n_training = 100;
             AbstractPolicy<Vector, int>* sampled_policy
                 =  getLSPIPolicy(&samples[0],
                                  *policy_list[0],
