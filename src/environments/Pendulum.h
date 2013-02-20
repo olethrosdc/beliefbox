@@ -34,8 +34,6 @@ protected:
     static Parameters default_parameters;
     Parameters parameters;
     real CCa;		            ///< inverse total mass  
-    static const int n_states = 2;     // state dimensions
-    static const int n_actions = 3;     // action dimensions
     Vector state_action_upper_bound;
     Vector state_action_lower_bound;
     Vector action_upper_bound;
