@@ -23,6 +23,8 @@
 #include "Pendulum.h"
 #include "PuddleWorld.h"
 #include "Bike.h"
+#include "Acrobot.h"
+#include "CartPole.h"
 
 #include "RandomPolicy.h"
 
@@ -545,7 +547,7 @@ real EvaluateLSTD(Environment<Vector, int>& environment,
 
 static const char* const help_text = "Usage: test [options]\n\
 \nOptions:\n\
-    --environment:           {MountainCar, Pendulum, Puddleworld}\n\
+    --environment:           {MountainCar, Pendulum, Puddle, Bicycle, CartPole, Acrobot}\n\
     --discount:              reward discounting in [0,1]\n\
     --threshold:             statistic threshold\n\
     --n_trajectories:        number of trajectories per sample\n\
@@ -725,6 +727,12 @@ int main(int argc, char* argv[])
             } else if (!strcmp(options.environment_name, "Bicycle")) {
                 logmsg("Testing Bike\n");
                 RunOnlineTest<BikeGenerator, Bike>(options);
+            } else if (!strcmp(options.environment_name, "CartPole")) {
+                logmsg("Testing CartPole\n");
+                RunOnlineTest<CartPoleGenerator, CartPole>(options);
+            } else if (!strcmp(options.environment_name, "Acrobot")) {
+                logmsg("Testing Acrobot\n");
+                RunOnlineTest<AcrobotGenerator, Acrobot>(options);
             } else {
                 fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
                 exit(-1);
@@ -744,6 +752,12 @@ int main(int argc, char* argv[])
             } else if (!strcmp(options.environment_name, "Bicycle")) {
                 logmsg("Testing Bike\n");
                 RunTest<BikeGenerator, Bike>(options);
+            } else if (!strcmp(options.environment_name, "CartPole")) {
+                logmsg("Testing CartPole\n");
+                RunTest<CartPoleGenerator, CartPole>(options);
+            } else if (!strcmp(options.environment_name, "Acrobot")) {
+                logmsg("Testing Acrobot\n");
+                RunTest<AcrobotGenerator, Acrobot>(options);
             } else {
                 fprintf(stderr, "Invalid environment name %s\n", options.environment_name);
                 exit(-1);

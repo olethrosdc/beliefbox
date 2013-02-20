@@ -388,7 +388,8 @@ int main (int argc, char** argv)
         } else if (!strcmp(environment_name, "Acrobot")) { 
             environment = new DiscretisedEnvironment<Acrobot> (continuous_acrobot, grid_size);
         } else {
-            fprintf(stderr, "Uknown environment %s\n", environment_name);
+            Serror("Unknown environment %s\n", environment_name);
+			exit(-1);
         }
 
 
@@ -589,6 +590,7 @@ int main (int argc, char** argv)
                                   exploration_policy);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
+			exit(-1);
         }
 
         //std::cerr << "run : " << run << std::endl;
