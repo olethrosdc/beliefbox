@@ -113,9 +113,9 @@ public:
 class AcrobotGenerator
 	{
 	public:
-		Acrobot Generate()
+		Acrobot Generate(bool random = true)
 		{
-			return Acrobot(true);
+			return Acrobot(random);
 		}
 	};
 
