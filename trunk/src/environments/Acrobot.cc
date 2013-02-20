@@ -140,45 +140,45 @@ void Acrobot::Simulate(const int action)
 	while (!endsim && count < 4) {
 		count++;
 		
-		d1 = parameters.m1 * pow(parameters.lc1, 2.0) + parameters.m2 * ( pow(parameters.l1, 2.0) + pow(parameters.lc2, 2.0) + 2.0 * parameters.l1 * parameters.lc2 * cos(theta2)) + parameters.I1 + parameters.I2;
-		d2 = parameters.m2 * (pow(parameters.lc2, 2.0) + parameters.l1 * parameters.lc2 * cos(theta2)) + parameters.I2;
+		d1 = parameters.m1 * pow(parameters.lc1, 2.0) + parameters.m2 * ( pow(parameters.l1, 2.0) + pow(parameters.lc2, 2.0) + 2.0 * parameters.l1 * parameters.lc2 * cos(state[1])) + parameters.I1 + parameters.I2;
+		d2 = parameters.m2 * (pow(parameters.lc2, 2.0) + parameters.l1 * parameters.lc2 * cos(state[1])) + parameters.I2;
 		
-		phi_2 = parameters.m2 * parameters.lc2 * parameters.g * cos(theta1 + theta2 - M_PI / 2.0);
-		phi_1 = -(parameters.m2 * parameters.l1 * parameters.lc2 * pow(theta2Dot, 2.0) * sin(theta2) - 2.0 * parameters.m2 * parameters.l1 * parameters.lc2 * theta1Dot * theta2Dot * sin(theta2)) + (parameters.m1 * parameters.lc1 + parameters.m2 * parameters.l1) * parameters.g * cos(theta1 - M_PI / 2.0) + phi_2;
+		phi_2 = parameters.m2 * parameters.lc2 * parameters.g * cos(state[0] + state[1] - M_PI / 2.0);
+		phi_1 = -(parameters.m2 * parameters.l1 * parameters.lc2 * pow(state[3], 2.0) * sin(state[1]) - 2.0 * parameters.m2 * parameters.l1 * parameters.lc2 * state[2] * state[3] * sin(state[1])) + (parameters.m1 * parameters.lc1 + parameters.m2 * parameters.l1) * parameters.g * cos(state[0] - M_PI / 2.0) + phi_2;
 		
-		theta2_ddot = (torque + (d2 / d1) * phi_1 - parameters.m2 * parameters.l1 * parameters.lc2 * pow(theta1Dot, 2.0) * sin(theta2) - phi_2) / (parameters.m2 * pow(parameters.lc2, 2.0) + parameters.I2 - pow(d2, 2.0) / d1);
+		theta2_ddot = (torque + (d2 / d1) * phi_1 - parameters.m2 * parameters.l1 * parameters.lc2 * pow(state[2], 2.0) * sin(state[1]) - phi_2) / (parameters.m2 * pow(parameters.lc2, 2.0) + parameters.I2 - pow(d2, 2.0) / d1);
 		theta1_ddot = -(d2 * theta2_ddot + phi_1) / d1;
 		
-		theta1Dot += theta1_ddot * parameters.dt;
-		theta2Dot += theta2_ddot * parameters.dt;
+		state[2] += theta1_ddot * parameters.dt;
+		state[3] += theta2_ddot * parameters.dt;
 		
-		theta1 += theta1Dot * parameters.dt;
-		theta2 += theta2Dot * parameters.dt;
+		state[0] += state[2] * parameters.dt;
+		state[1] += state[3] * parameters.dt;
 	}
-	if (abs(theta1Dot) > parameters.maxTheta1Dot) {
-		theta1Dot = signum(theta1Dot) * parameters.maxTheta1Dot;
+	if (abs(state[2]) > parameters.maxTheta1Dot) {
+		state[2] = signum(state[2]) * parameters.maxTheta1Dot;
 	}
 	
-	if (abs(theta2Dot) > parameters.maxTheta2Dot) {
-		theta2Dot = signum(theta2Dot) * parameters.maxTheta2Dot;
+	if (abs(state[3]) > parameters.maxTheta2Dot) {
+		state[3] = signum(state[3]) * parameters.maxTheta2Dot;
 	}
 	/* Put a hard constraint on the Acrobot physics, thetas MUST be in [-PI,+PI]
 	 * if they reach a top then angular velocity becomes zero
 	 */
-	if (abs(theta2) > M_PI) {
-		theta2 = signum(theta2) * M_PI;
-		theta2Dot = 0;
+	if (abs(state[1]) > M_PI) {
+		state[1] = signum(state[1]) * M_PI;
+		state[3] = 0;
 	}
-	if (abs(theta1) > M_PI) {
-		theta1 = signum(theta1) * M_PI;
-		theta1Dot = 0;
+	if (abs(state[0]) > M_PI) {
+		state[0] = signum(state[0]) * M_PI;
+		state[2] = 0;
 	}
 
-	real feet_height = -(parameters.l1 * cos(theta1) + parameters.l2 * cos(theta2));
+	real feet_height = -(parameters.l1 * cos(state[0]) + parameters.l2 * cos(state[1]));
 	
-	real firstJointEndHeight = parameters.l1 * cos(theta1);
+	real firstJointEndHeight = parameters.l1 * cos(state[0]);
 	//Second Joint height (relative to first joint)
-	real secondJointEndHeight = parameters.l2 * sin(M_PI / 2 - theta1 - theta2);
+	real secondJointEndHeight = parameters.l2 * sin(M_PI / 2 - state[0] - state[1]);
 	feet_height = -(firstJointEndHeight + secondJointEndHeight);
 
 	if (feet_height > parameters.acrobotGoalPosition) {
@@ -189,10 +189,6 @@ void Acrobot::Simulate(const int action)
 		endsim = false;
 		reward = -1;
 	}
-	state[0] = theta1;
-	state[1] = theta2;
-	state[2] = theta1Dot;
-	state[3] = theta2Dot;
 }
 
 real Acrobot::signum(const real& num) {

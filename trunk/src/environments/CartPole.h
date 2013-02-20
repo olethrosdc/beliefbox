@@ -1,7 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2008-2009 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-// copyright (c) 2003-2008 Michail G. Lagoudakis
-// $Revision$
+// copyright (c) 2013 by Nikolaos Tziortziotis <ntziorzi@cs.uoi.gr>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -24,22 +22,24 @@ class CartPole : public Environment<Vector, int>
 {
 protected:
     struct Parameters {
-        real pendulum_mass; 		///< pendulum mass (kg)
-        real cart_mass;             ///< cart mass (kg)
-        real pendulum_length;       ///< pendulum length (m)
-        real gravity;  	            ///< gravity constant (g)
-        real max_noise;             ///< noise
-        real Dt;                    ///< time constant
+        real GRAVITY; 		
+        real MASSCART;         
+        real MASSPOLE;       
+        real LENGTH;             
+        real FORCE_MAG;                   
+		real TAU;
+		real noise;
     };
     static Parameters default_parameters;
     Parameters parameters;
-    real CCa;		            ///< inverse total mass  
-    static const int n_states = 4;     // state dimensions
-    static const int n_actions = 3;     // action dimensions
+	static const real FOURTHIRDS		= 4.0/3.0;
+	static const int n_states	= 4;     // state dimensions
+    static const int n_actions	= 3;     // action dimensions
     Vector state_action_upper_bound;
     Vector state_action_lower_bound;
     Vector action_upper_bound;
     Vector action_lower_bound;
+	real TOTAL_MASS, POLEMASS_LENGTH;
     void Simulate();
     void penddot(Vector& xdot, real u, Vector& x);
     void pendulum_simulate(int action);
@@ -51,7 +51,7 @@ public:
     virtual void Simulate(const int action);
 	virtual const char* Name() const
     {
-        return "Cart Pole";
+        return "Cart Pole RL";
     }
     const Vector& StateUpperBound() const
     {
@@ -77,42 +77,42 @@ public:
     {
         return action_lower_bound;
     }
-
+	
 	virtual real getTransitionProbability(const Vector& state, const int& action, const Vector& next_state) const
     {
         return 1.0; 
     }
-
+	
     virtual real getExpectedReward(const Vector& state, const int& action) const 
     {
-        if (fabs(state[0]) > M_PI/2.0) {
+        if (fabs(state[0]) > 0.2094) {
             return -1.0;
         } else {
-            return 0.0;
+            return 1.0;
         }
 	}
 	void Show()
 	{
 		printf("%f %f %f %f %f %f # params (CartPole)\n",
-			   parameters.pendulum_mass,
-			   parameters.cart_mass,
-			   parameters.pendulum_length,
-			   parameters.gravity,
-			   parameters.max_noise,
-			   parameters.Dt);
+			   parameters.GRAVITY,
+			   parameters.MASSCART,
+			   parameters.MASSPOLE,
+			   parameters.LENGTH,
+			   parameters.FORCE_MAG,
+			   parameters.TAU);
 	}
-
+	
 };
 
 
 
 class CartPoleGenerator
 {
-public:
-    CartPole Generate(bool random=true)
-    {
-        return CartPole(random);
-    }
+	public:
+		CartPole Generate(bool random=true)
+		{
+			return CartPole(random);
+		}
 };
 
 
@@ -123,9 +123,9 @@ protected:
 	int n_actions;
     Vector state;
 public:
-	HeuristicCartPolePolicy()
-		: n_actions(2),
-          state(2)
+	HeuristicCartPoleNPolicy()
+	: n_actions(2),
+	state(2)
 	{
 	}
 	virtual ~HeuristicCartPolePolicy()

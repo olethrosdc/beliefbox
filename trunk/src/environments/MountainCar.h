@@ -39,6 +39,7 @@ protected:
     Vector action_upper_bound;
     Vector action_lower_bound;
     void Simulate();
+	bool endsim;
 public:
     MountainCar(bool random_parameters = false);
     virtual ~MountainCar();

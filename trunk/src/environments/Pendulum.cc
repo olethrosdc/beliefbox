@@ -48,10 +48,10 @@ default_parameters.gravity;
     state.Clear();
     state_upper_bound.Resize(2);
     state_lower_bound.Resize(2);
-    state_upper_bound[0] = 1.6;
-    state_lower_bound[0] = -1.6;
-    state_lower_bound[1] = -1.5;//-10;
-    state_upper_bound[1] = 1.5;//10;
+    state_upper_bound[0] = M_PI/2.0; //4;
+    state_upper_bound[1] = 10;
+    state_lower_bound[0] = -M_PI/2.0;//-4;
+    state_lower_bound[1] = -10;
 
 	action_upper_bound.Resize(n_actions);
 	action_lower_bound.Resize(n_actions);
@@ -73,11 +73,17 @@ Pendulum::~Pendulum()
 void Pendulum::Reset()
 {
     reward = 1.0;
+	//    // Theta
+//	    state[0] =  urandom(-0.01, 0.01);
+//	    // dTheta/dt
+//	    state[1] = urandom(-0.001, 0.001);
 #if 1
     // Theta
     state[0] =  urandom(-0.01, 0.01);
+//	state[0] =  (2*urandom() - 1)*0.2;
     // dTheta/dt
     state[1] = urandom(-0.001, 0.001);
+//	state[1] =  (2*urandom() - 1)*0.2;
 #else
 	for (int i=0; i<2; ++i) {
 		state[i] = urandom(state_lower_bound[i], state_upper_bound[i]);
@@ -110,9 +116,9 @@ bool Pendulum::Act(const int& action)
     // run
     Simulate(action);
 	
-    if (endsim) {
-    		return false;
-    	}
+	if (endsim) {
+		return false;
+	}
     return true;
 }
 

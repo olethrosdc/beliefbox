@@ -65,7 +65,7 @@ protected:
         p.RADIUSPUDDLES[0]  = 0.1;
         p.RADIUSPUDDLES[1]  = 0.1;
         p.AGENTSPEED        = 0.05;
-        p.MCNOISE           = 0.1;
+        p.MCNOISE           = 0.01;
         return p;
     };
     void Simulate();
@@ -129,6 +129,11 @@ public:
             return reward;
         }
     }
+	virtual const char* Name() const
+    {
+        return "Puddle World";
+    }
+	
     void Show() const
     {
         printf("%f %f %f %f | %d | %f %f %f %f | %f %f %f %f | %f %f | %f %f # params Puddle\n", 
