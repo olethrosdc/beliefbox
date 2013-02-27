@@ -690,6 +690,7 @@ std::vector<Matrix> Matrix::LUDecomposition(real& determinant, real epsilon)
     Matrix& X = (*this);
 
 
+    // pivot non-zero elements
     for (int k=0; k<n-1; ++k) {
         real d = X(k,k);
         int m = k;
@@ -905,7 +906,7 @@ Matrix Matrix::Inverse(const Matrix& L, const Matrix& U) const
             X(i, c) = (Y(i, c) - s) / U(i, i);
         }
     }
-    
+
     return X;
 }
 

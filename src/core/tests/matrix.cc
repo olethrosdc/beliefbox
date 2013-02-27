@@ -49,10 +49,10 @@ int main()
     Matrix three_by_four(N + 1, N + 2);
     for (int i=0; i<N; ++i) {
         for (int j=0; j<N; ++j) {
-            W(i,j) = true_random(false);
+            W(i,j) = urandom();
             printf ("%f ", W(i,j));
         }
-        D(i,0)=true_random(false);
+        D(i,0) = urandom();
         printf("\n");
     }
     
@@ -66,7 +66,7 @@ int main()
     Matrix X(N,N);
     for (int i=0; i<N; ++i) {
         for (int j=0; j<N; ++j) {
-            X(i,j) = true_random(false);
+            X(i,j) = urandom();
         }
     }
 
@@ -96,7 +96,7 @@ int main()
 
     for (int i=0; i<N; ++i) {
         for (int j=0; j<N; ++j) {
-            X(i,j) = true_random(false);
+            X(i,j) = urandom();
         }
     }
 	
@@ -142,7 +142,7 @@ int main()
     printf ("# OK\n"); 
 
 	printf("W Kronecker I:");
-	W.Kron(I).print(stdout);
+    W.Kron(I).print(stdout);
 	printf("#OK\n");
 	
     printf("V*z: ");
@@ -150,11 +150,11 @@ int main()
     Vector z(4);
     for (int i=0; i<V.Rows(); ++i) {
         for (int j=0; j<V.Columns(); ++j) {
-            V(i,j) = true_random(false);
+            V(i,j) = urandom();
         }
     }
     for (int j=0; j<z.Size(); ++j) {
-        z(j)= true_random(false);
+        z(j)= urandom();
     }
     ((const Matrix&) V*(const Vector&) z).print(stdout);
 
@@ -279,7 +279,47 @@ int main()
 
 void SpeedTest()
 {
-    for (int iter=0; iter<100; iter++) {
+    {
+        int N = 768;
+        
+        Matrix A = Matrix::Unity(N, N);
+        for (int i=0; i<N; ++i) {
+            for (int j=0; j<N; ++j) {
+                A(i,j) += urandom();
+            }
+        }
+        
+        A = Transpose(A) * A;
+        {
+            double start_time = GetCPU();
+            real det;
+            Matrix tmp(A);
+            std::vector<Matrix> Z = tmp.LUDecomposition(det, 1e-6);
+            double mid_time = GetCPU();
+            Matrix C = A.Inverse(Z[0], Z[1]);
+            double end_time = GetCPU();
+            printf("Cholesky: %f %f %f\n",
+                   mid_time - start_time,
+                   end_time - mid_time,
+                   end_time - start_time);
+        }
+
+        {
+            double start_time = GetCPU();
+            Matrix U = A.Cholesky(1e-6);
+            double mid_time = GetCPU();
+            Matrix L(U, false);
+            L.Transpose();
+            Matrix C = A.Inverse(L, U);
+            double end_time = GetCPU();
+            printf("LU: %f %f %f\n",
+                   mid_time - start_time,
+                   end_time - mid_time,
+                   end_time - start_time);
+        }
+
+    }
+    for (int iter=0; iter<1; iter++) {
 
         int K = ceil(urandom() * 100);
         int M = ceil(urandom() * 100);
