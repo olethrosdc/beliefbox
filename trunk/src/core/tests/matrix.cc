@@ -11,6 +11,10 @@
  ***************************************************************************/
 
 #ifdef MAKE_MAIN
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_cblas.h>
+
 
 #include "Matrix.h"
 #include "MatrixNorm.h"
@@ -290,6 +294,34 @@ void SpeedTest()
         }
         
         A = Transpose(A) * A;
+
+        {
+            int s;
+            gsl_matrix * M = gsl_matrix_alloc (N, N);
+            gsl_matrix * inverse = gsl_matrix_alloc (N, N);
+            gsl_permutation * perm = gsl_permutation_alloc (N);
+            
+            for (int i=0; i<N; ++i) {
+                for (int j=0; j<N; ++j) {
+                    gsl_matrix_set(M, i, j, A(i,j));
+                }
+            }
+            double start_time = GetCPU();
+            // Make LU decomposition of matrix m
+            gsl_linalg_LU_decomp (M, perm, &s);
+            double mid_time = GetCPU();
+            // Invert the matrix m
+            gsl_linalg_LU_invert (M, perm, inverse);
+            double end_time = GetCPU();
+            printf("GSL: %f %f %f\n",
+                   mid_time - start_time,
+                   end_time - mid_time,
+                   end_time - start_time);
+            gsl_matrix_free(M);
+            gsl_matrix_free(inverse);
+            gsl_permutation_free(perm);
+        }
+
         {
             double start_time = GetCPU();
             real det;
@@ -360,4 +392,15 @@ void SpeedTest()
           AMD 64 3200 | Intel Atom N270
 REFERENCE 9.5 (10.5)  | 55 (56)
 MULTIPLIC 7.5 (8.3)   | 62 (62)
+
+Multiplication
+--------------
+Cholesky: 1.760000 6.190000 7.950000
+LU: 1.610000 8.520000 10.130000
+Total time: 28.140000
+
+Cholesky: 1.760000 6.240000 8.000000
+LU: 1.330000 8.830000 10.160000
+Total time: 25.840000
+
 */
