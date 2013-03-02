@@ -257,7 +257,16 @@ bool Matrix::operator!= (const Matrix& rhs) const
     return !(*this==rhs);
 }
 
-/// Create a matrix through the addition of two other matrices.
+/** Create a matrix through the addition of two other matrices.
+	
+	We distinguish four cases.
+
+	1. \f$C = A + B\f$. Then \f$C = A; C += B\f$
+	2. \f$C = A^\top + B\f$. Then \f$C = A^\top; C += B\f$.
+	3. \f$C = A + B^\top\f$. Then \f$C = B^\top; C += A\f$.
+	4. \f$C = A^\top + B^\top\f$. Then \f$C^\top = A; C^\top = B\f$.
+
+ */
 Matrix Matrix::operator+ (const Matrix& rhs)
 {
     if (Columns() != rhs.Columns() 
@@ -268,12 +277,35 @@ Matrix Matrix::operator+ (const Matrix& rhs)
     int N = Columns();
     
     Matrix lhs(M, N);
-    
+#if 1
+	gsl_matrix_const_view A_view
+		= gsl_matrix_const_view_array(x, rows, columns);
+	gsl_matrix_const_view B_view
+		= gsl_matrix_const_view_array(rhs.x, rhs.rows, rhs.columns);
+	gsl_matrix_view C_view
+		= gsl_matrix_view_array(lhs.x, lhs.rows, lhs.columns);
+	
+	if (!transposed && !lhs.transposed) {
+		gsl_matrix_memcpy(&C_view.matrix, &A_view.matrix);
+		gsl_matrix_add(&C_view.matrix, &B_view.matrix);
+	} else if (transposed && !lhs.transposed) {
+		gsl_matrix_transpose_memcpy(&C_view.matrix, &A_view.matrix);
+		gsl_matrix_add(&C_view.matrix, &B_view.matrix);
+	} else if (!transposed && lhs.transposed) {
+		gsl_matrix_transpose_memcpy(&C_view.matrix, &B_view.matrix);
+		gsl_matrix_add(&C_view.matrix, &A_view.matrix);
+	} else {
+		gsl_matrix_memcpy(&C_view.matrix, &A_view.matrix);
+		gsl_matrix_add(&C_view.matrix, &B_view.matrix);
+		lhs.transposed = true;
+	}
+#else
     for (int m=0; m<M; ++m) {
         for (int n=0; n<N; ++n) {
             lhs(m, n) = (*this)(m,n) + rhs(m,n);
         }
     }
+#endif
     return lhs;
 }
 
