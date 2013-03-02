@@ -24,6 +24,36 @@
 
 int main (int argc, char** argv)
 {
+	//Vector mean(2);
+//	Matrix sigma(2,2);
+//	sigma(0,0) = 0.25;
+//	sigma(0,1) = 0.3;
+//	sigma(1,0) = 0.3;
+//	sigma(1,1) = 1;
+//	
+//	int n = 31*31;
+//	Matrix X(n,2);
+//	int count = 0;
+//	for(real i=-3.0; i<=3.1; i = i+0.2) {
+//		for(real j=-3.0; j<=3.1; j = j + 0.2) {
+//			printf("count = %d\n",count);
+//			X(count,0) = i;
+//			X(count,1) = j;
+//			count++;
+//		}
+//	}
+//	printf("dafdasdf\n");
+//
+//	MultivariateNormal m_normal(mean, sigma.Inverse());
+//	Matrix F(n,1);
+//	for(int i = 0; i<n; ++i) {
+//		F(i,0) = m_normal.pdf(X.getRow(i));
+//	}
+//	
+//	printf("X\n");
+//	X.print(stdout);
+//	printf("Result\n");
+//	F.print(stdout);
     if (argc !=  4) {
         Serror ("Usage: normal n_sample scaling n_dimension\n");
         exit(-1);

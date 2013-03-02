@@ -11,6 +11,7 @@
 
 #include "BayesianMultivariateRegression.h"
 #include "SpecialFunctions.h"
+#include "Student.h"
 
 BayesianMultivariateRegression::BayesianMultivariateRegression(int m_, int d_, Matrix S0_, real N0_, real a_)
 	:m(m_), d(d_), S0(S0_), N0(N0_), a(a_)
@@ -31,7 +32,9 @@ void BayesianMultivariateRegression::AddElement(const Vector& y, const Vector& x
 {
 	assert(y.Size() == d);
 	assert(x.Size() == m);
+	
 	N++;
+	
 	Sxx = Sxx + OuterProduct(x,x);
 	inv_Sxx = Sxx.Inverse();
 	Syx = Syx + OuterProduct(y,x);
@@ -54,32 +57,111 @@ Matrix BayesianMultivariateRegression::generate()
 	return A;
 }
 
+Vector BayesianMultivariateRegression::generate(const Vector& x)
+{	
+	Matrix mean = generate();
+
+	return mean*x;
+}
+
 void BayesianMultivariateRegression::generate(Matrix& MM, Matrix& VV)
 {
 	iWishart iwishart(N + N0, Sy_x + S0, true);
 	VV = iwishart.generate();
+
+	MultivariateNormal multivariate_normal(M.Vec(), Kron(VV.Inverse(),K));
+
+	Vector mean = multivariate_normal.generate();
+	MM.Vec(mean);
+}
+
+real BayesianMultivariateRegression::Posterior(const Vector& x, const Vector& y)
+{
+	iWishart iwishart(N + N0, Sy_x + S0, true);
+	Matrix VV = iwishart.generate();
+	Matrix MM = Matrix::Null(d,m);
+	
 	MultivariateNormal multivariate_normal(M.Vec(), Kron(VV.Inverse(),K));
 	Vector mean = multivariate_normal.generate();
 	MM.Vec(mean);
+	
+	MultivariateNormal m_normal((MM*x),VV.Inverse());
+
+	return m_normal.pdf(y);
+	//real result = LogPredictiveDistribution(x,y);
+//	printf("Log Prediction = %f and Prediction = %f\n",result,exp(result));
+//	return exp(result);
 }
 
 real BayesianMultivariateRegression::PredictiveDistribution(const Vector& x, const Vector& y)
 {
 	assert(x.Size() == m);
-	
 	real n = (N + N0 + 1.0) / 2.0;
 
     const Matrix mean = M;
 	const Vector residual = y - mean*x;
 
-	const Matrix inv_Sxx_new = (Sxx + OuterProduct(x,x)).Inverse();
+	Matrix xxx = OuterProduct(x,x);
+	const Matrix inv_Sxx_new = (Sxx + xxx).Inverse();
 	const Vector xSxx = inv_Sxx_new*x;
 	real c = Product(x,xSxx);
 	c = 1.0 - c;
-	const Matrix r1 = (Sy_x.Inverse()*c);
+
+	Matrix r1 = Sy_x.Inverse();
+	r1 = r1*c;
 	Vector r2 = r1*residual;
+	real r3 = Product(residual, r2);
+	real r4 = (Sy_x * (M_PI / c)).det();
+//	real r5 = Gamma(n);
 	
-	return (Gamma(n) / Gamma(n - d/2.0)) * (1.0 / sqrt((Sy_x * (M_PI / c)).det()))*pow(Product(residual,r2) + 1.0 , -n);
+//	return (Gamma(n) / Gamma(n - d/2.0)) * (pow(r4,-0.5))*pow((r3+ 1.0) , -n);
+	return (pow(r4,-0.5))*pow((r3+ 1.0) , -n);	
+}
+
+real BayesianMultivariateRegression::LogPredictiveDistribution(const Vector& x, const Vector& y) {
+	//Degree 
+	real degrees = (real)(N + N0 + 1);
+	//Mean
+	Vector mu = M*x;
+	printf("Output\n");
+	y.print(stdout);
+	printf("Mean\n");
+	mu.print(stdout);
+	//Precision 
+	Matrix t = Sxx + OuterProduct(x,x);
+	t = t.Inverse_LU();
+	Vector Temp = t * x;	
+	real c	= Product(x,Temp);
+	c		= 1.0 - c;
+	
+//	c =1.0;
+	printf("Precision\n");
+	Matrix precision1 = (Sy_x + S0).Inverse();
+	precision1.print(stdout);
+//	printf("C = %f\n",c);
+	Matrix precision = (Sy_x + S0).Inverse() * (c);
+	Matrix variance  = ((Sy_x + S0)*((1.0/c)));
+	
+	printf("Precision\n");
+	precision.print(stdout);
+	printf("Degree => %f\n",degrees);
+//	Student s(degrees, mu, precision);
+//	return s.pdf(y);
+	
+	Vector delta = y - mu;
+	real g = 1 + Mahalanobis2(delta, precision, delta)/degrees;
+//	real g = 1 + Mahalanobis2(delta, precision, delta);
+
+	real d = (real)y.Size();
+	
+	real log_c =  logGamma(0.5 *(degrees + d) )
+				- 0.5 * log(variance.det())
+				- logGamma(0.5 * degrees)
+				- (0.5 * d) * log(degrees*M_PI);
+	real log_p = log_c - (0.5*degrees)*log(g);
+	//real log_c = logGamma(0.5 * degrees) - 0.5 * log(variance.det()) - logGamma(0.5* degrees - 0.5*d);
+//	real log_p = log_c - (0.5*degrees)*g;
+	return log_p;
 }
 
 void BayesianMultivariateRegression::Reset()

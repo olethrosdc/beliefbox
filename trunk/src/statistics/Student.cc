@@ -31,7 +31,7 @@ Student::Student(const int dimension)
 
 /// Constructor
 Student::Student(const int degrees, const Vector& location, const Matrix& precision)
-    : sampler(new MultivariateNormal(mu.Size())),
+    : sampler(new MultivariateNormal(location.Size())),
       n(degrees),
       k(mu.Size()),
       mu(location),
@@ -80,7 +80,7 @@ real Student::log_pdf(const Vector& x) const
 {
   Vector delta = x - mu;
     real degree = (real) n;
-    real g = 1 + Mahalanobis2(delta, T, delta) / degree;
+    real g = 1.0 + Mahalanobis2(delta, T, delta) / degree;
     real l1 = logGamma(0.5 * (degree + (real) k));
 	real l2 = - logGamma(0.5 * degree);
 	real l3 = + 0.5 * log(det);
