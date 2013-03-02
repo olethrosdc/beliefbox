@@ -15,6 +15,8 @@
 #include "real.h"
 #include "Vector.h"
 #include "Matrix.h"
+#include "Random.h"
+#include "BasisSet.h"
 #include "BayesianMultivariateRegression.h"
 
 #undef DEBUG_COVER_TREE
@@ -50,60 +52,81 @@ public:
 	{
 		return L1Norm(&x, &y);
 	}
-
-	struct Statistics
-	{
-		
-		BayesianMultivariateRegression StatePrediction;
-		std::vector<Vector> state;	        ///< States
-		std::vector<int> action;			///< Actions
-		std::vector<Vector> nextstate;		///< Next states
-		std::vector<real> reward;			///< Received rewards
-		std::vector<bool> absorb;			///< Absorb criterion
-		
-		Statistics(int m_ = 1, int d_ = 1, Matrix S0_ = Matrix::Unity(1,1), real N0_ = 1.0, real a_ = 1.0) { 
-			StatePrediction = BayesianMultivariateRegression(m_,d_,S0_,N0_,a_);
-		}
-		
-		const int Size() const
-		{
-			return nextstate.size();
-		}
-		
-		void Insert(const Vector& s, const Vector& ns, const int& a, const real& r, const bool& ab)
-		{
-			StatePrediction.AddElement(s,ns);
-			state.push_back(s);
-			action.push_back(a);
-			nextstate.push_back(ns);
-			reward.push_back(r);
-			absorb.push_back(ab);
-		}
-		
-		void Show() const
-		{
-			for(int i = 0; i<Size(); ++i){
-				printf("Next State: "); nextstate[i].printf(stdout); 
-				printf("Action: :%d Reward: %f Absorb: %s\n", action[i],reward[i],(absorb[i])?"true":"false");
-			}
-		}
-	};
-	
+	/// This simply keeps node's statistics
+//	struct Statistics
+//	{
+//		const CoverTree& tree;
+//		
+//		///Bayesian Multivariate Model Prediction.
+//		real weight;	///< backoff weight
+//		real weight_s;	///< sampling weigth
+//		real posterior; ///< posterior probability
+//		BayesianMultivariateRegression* StatePrediction;
+//		BayesianMultivariateRegression* RewardPrediction;
+//		
+//		Statistics(const CoverTree& tree_, const real& w, int i_dim = 1, int o_dim = 1, real N0 = 1.0, real a = 1.0, Matrix S0 = Matrix::Unity(1,1));
+//		/// Destructor
+//        ~Statistics();
+//		
+//		void Insert(const Vector& state, const Vector& next_state, const real& reward, const bool& absorb = false)
+//		{
+//			StatePrediction->AddElement(state,next_state);
+//			if(tree.RewardPred) {
+//				Vector r(reward);
+//				RewardPrediction->AddElement(state, r);
+//			}
+//		}
+//		const Vector GenerateS(const Vector& state) {
+//			return StatePrediction->generate(state);
+//		}
+//		const real GenerateR(const Vector& state) {
+//			Vector r = RewardPrediction->generate(state);
+//			return r[0];
+//		}
+//		real Update(const Vector& state, const Vector& next_state, real total_probability) {
+//			real p						= StatePrediction->Posterior(state, next_state);
+//			real temp					= weight*p;
+//			real new_total_probability	= temp + (1-weight)*total_probability;
+//			weight						= temp / new_total_probability;
+//			return new_total_probability;
+//		}
+//		const real GetWeight() const {
+//			return weight;
+//		}
+//	};
+//	
     /// This simply is a node
     struct Node
     {
         const CoverTree& tree;
-        Vector point;					///< The location of the point.
-		Statistics stats;				///< Pointer to the statistics
+		        
+		Vector point;					///< The location of the point.
+//		Statistics* stats;				///< Pointer to the statistics
         std::vector<Node*> children;	///< Pointer to children
         int level;						///< Level in the tree
+		int index;						///< Node index
+		int depth;						///< Depth in the tree
 		int descendants;				///< Number of descendants
+		int samples;					///< Number of total samples
 		int children_level;				///< Level of children
+		Node* child;					///< Pointer to child in the path (helps as to go down in the tree).
 		Node* father;					///< Pointer to the father
 		void* object;					///< the object stored
-
+		bool descendant_flag;			///< A new descendant has arrived in the family
+		bool active_flag;				///< Indicates if the particular node is active or not (sampling procedure)
+		int active_index;				///< Indicates the index on the active nodes set.
+		bool basis_flag;				///< Indicates if the particular node is an active basis or not
+		int basis_index;
+		
+		///Bayesian Multivariate Model Prediction.
+		real weight;	///< backoff weight
+		real weight_s;	///< sampling weigth
+		real posterior; ///< posterior probability
+		BayesianMultivariateRegression* StatePrediction;
+		BayesianMultivariateRegression* RewardPrediction;
+		
 		/// Constructor needs a point and a level
-		Node (const CoverTree& tree_, const Vector& point_, const int level_, CoverTree::Node* const father_, void* object_);
+		Node(const CoverTree& tree_,const Vector& point_, const int level_, CoverTree::Node* const father_, void* object_);
 
 		/// Destructor
         ~Node();
@@ -114,9 +137,54 @@ public:
 			return tree.metric(x, point);
 		}
 
+		void UpdateStatistics(const Vector& state, const Vector& next_state, const real& reward, const bool& absorb, CoverTree::Node* const child_) {
+			Insert(state, next_state, reward, absorb);
+			child = child_;
+			samples++;
+		}
+		void Insert(const Vector& state, const Vector& next_state, const real& reward, const bool& absorb = false)
+		{
+			StatePrediction->AddElement(next_state, state);
+			if(tree.RewardPred) {
+				Vector r(reward);
+				RewardPrediction->AddElement(r, state);
+			}
+		}
+		real Update(const Vector& state, const Vector& next_state, real total_probability) {
+			real p;
+//			if(samples > 10)
+				p = StatePrediction->Posterior(state, next_state);
+//			else 
+//				p = 0.0;
+//			printf("Probability = %f\n",p);
+//			printf("Old weight = %f ",weight);
+			real temp = weight*p;
+//			printf("Total Probability = %f ",total_probability);
+			real new_total_probability	= temp + (1-weight)*total_probability;
+//			printf("New total Probability = %f ",new_total_probability);
+//			if( p != 0.0 && new_total_probability != 0.0) {
+//			if(new_total_probability <= 0.0 && weight < 1) {
+//				weight = 0.0;
+//			}else if(new_total_probability <= 0.0 && weight == 1){
+//				weight = weight;
+//			}else {
+				
+//			if(samples > 1) {
+				real thres = 1.0 - 1e-6;
+				real weight_new = temp / new_total_probability;		
+				if(weight_new > 1e-6)
+					weight = weight_new;
+				if(weight_new > thres && father!=NULL)
+					weight = thres; 
+//			}
+//			}
+//			printf("New weight = %f\n",weight);
+			return new_total_probability;
+		}
+		
 		/// Insert a new point at the given level, as a child of this node
         void Insert(const Vector& new_point, const int level, void* obj = NULL);
-		void Insert(const Vector& new_point, const int& action, const Vector& next_state, const real& reward, const bool& absorb, const int level, void* obj = NULL);
+		void Insert(const Vector& new_point, const Vector& phi, const Vector& next_state, const real& reward, const bool& absorb, const int level, void* obj = NULL);
 
         /// Find nearest neighbour of the node
         std::pair<const CoverTree::Node*, real> NearestNeighbour(const Vector& query, const real distance) const;
@@ -133,17 +201,61 @@ public:
 			return children_level;
 		}
 		
-		//Find the number of descendants
+		///Find the number of descendants
 		const int Descendants() const
 		{
 			return descendants;
 		}
-
+		
+		/// Returns the nodes' depth in the tree
+		const int Depth() const
+		{
+			return depth;
+		}
+		/// Returns the number of observed points
+		const int NumObs() const
+		{
+			return samples;
+		}
 		/// Display the tree in textual format
-		void Show() const;
-
+		void Show() const;	
+		/// Displaye the sampling tree in textual format
+		void ShowSampling() const;
+		void ShowBasis() const;
+		/// Predict the next state given previous state.
+		const Vector GenerateS(const Vector& state) const {
+			return StatePrediction->generate(state);
+		}
+		/// Predict the next reward given previous state.
+		const real GenerateR(const Vector& state) const {
+			Vector r = RewardPrediction->generate(state);
+			return r[0];
+		}
+		/// Returns the nodes weight
+		const real GetWeight() const {
+			return weight;
+		}
+		/// Returns the node's index
+		const int GetIndex() const {
+			return index;
+		}
+		const int GetSamplingIndex() const {
+			return active_index;
+		}
+		const int GetBasisIndex() const {
+			return basis_index;
+		}
+		const bool GetActive() const {
+			return active_flag;
+		}
+		const bool GetActiveBasis() const { 
+			return basis_flag;
+		}
 		/// Display the tree in .dot format
 		void Show(FILE* fout) const;
+		/// Displaye the sampling tree in .dot format
+		void ShowSampling(FILE* fout) const;
+		void ShowBasis(FILE* fout) const;
     };
 
     /** Cover set.
@@ -182,24 +294,61 @@ public:
 				nodes[i]->Show();
 			}
 		}
-    };
+	};
 	
-	const real metric(const CoverSet& Q, const Vector& p) const;
-	Node* Insert(const Vector& new_point, const CoverSet& Q_i, const int level, void* obj);
-	Node* Insert(const Vector& new_point, const int& action, const Vector& next_state, const real& reward, const bool& absorb, const CoverSet& Q_i, const int level, void* obj);
-	Node* Insert(const Vector& new_point, void* obj = NULL);
-	Node* Insert(const Vector& new_point, const int& action, const Vector& next_state, const real& reward, const bool& absorb, void* obj = NULL);
+	const real	metric(const CoverSet& Q, const Vector& p) const;
+	void		UpdateStatistics(const Vector& input, const Vector& output);
 	
-	const Node* NearestNeighbour(const Vector& query_point) const;
+	const void	SamplingNode(Node* n);
+	const void	SamplingNode(Node* n, const Vector& R);
+	const void	SamplingTree();
+	const void	SamplingTree(const Vector& R);
+	
+	Vector		BasisCreation(const Vector& state) const;
+	const std::vector< std::pair<int,real> > ExternalBasisCreation(const Vector& state) const;
+	
+	Node*		Insert(const Vector& new_point, const CoverSet& Q_i, const int level, void* obj);
+	Node*		Insert(const Vector& new_point, const Vector& phi, const Vector& next_state, const real& reward, const bool& absorb, const CoverSet& Q_i, const int level, void* obj);
+	Node*		Insert(const Vector& new_point, void* obj = NULL);
+	Node*		Insert(const Vector& new_point, const Vector& next_state, const real& reward, const bool& absorb = false, void* obj = NULL);
+	
+	const Node*		NearestNeighbour(const Vector& query_point) const;
+	const Node*		SelectedNearestNeighbour(const Vector& query_point) const;
+	const Vector	GenerateState(const Vector& query_point) const;
+	const real		GenerateReward(const Vector& query_point) const;
+	const int		GetNumNodes() const;
+	const void		SetNumNodes(int num);
+	const int		GetNumSamplingNodes() const;
+	const void		SetNumSamplingNodes(int num);
+	const int		GetNumBasisNodes() const;
+	const void		SetNumBasisNodes(int num); 
+	const void		Reset();
+	const real		GetEntranceThreshold(int depth) const;
+	const real		GetBasisThreshold() const;
 	bool Check() const;
 	void Show() const;
-    CoverTree(real c);
+	void ShowSampling() const;
+	void ShowBasis() const;
+    CoverTree(real c, real a_ = 0.1, real N0_ = 0.1, RBFBasisSet* RBFs_ = NULL, bool f = false);
     ~CoverTree();
 protected:
-	bool Check(const CoverSet& parents, const int level) const;
-	real Separation(const CoverSet& Q) const;
-	int tree_level;
-    real log_c;
+	bool	Check(const CoverSet& parents, const int level) const;
+	real	Separation(const CoverSet& Q) const;
+	int		tree_level;
+	int		num_nodes;
+    real	log_c;
+	int		thres;
+	int		num_sampling_nodes;
+	int		num_basis_nodes;
+	int		total_samples;			//Total number of 
+	/////////////////////////
+	///Regression parameters.
+	real	a;
+	real	N0;
+	std::vector<Node*> Basis;  
+	////////////////////////
+	RBFBasisSet* RBFs;
+	bool RewardPred;		//Reward prediction
     Node* root;
 };
 

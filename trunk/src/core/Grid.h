@@ -43,6 +43,7 @@ struct EvenGrid
     int n_intervals;
     int K; ///< Number of subdivisions per dimension.
     EvenGrid(const Vector& lower_bound_, const Vector& upper_bound_, int K_);
+	EvenGrid(const Vector& lower_bound_, const Vector& upper_bound_, const Vector& delta_, int K_);
     int getInterval(const Vector& x) const;
     int getNIntervals() const;
     Vector getCenter(int interval) const;
