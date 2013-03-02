@@ -21,7 +21,8 @@
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
-#include <gsl/gsl_cblas.h>
+#include <gsl/gsl_blas.h>
+//#include <gsl/gsl_cblas.h>
 
 Matrix Matrix::Unity(int rows, int columns, enum BoundsCheckingStatus check)
 {
@@ -342,11 +343,26 @@ Matrix Matrix::operator* (const Matrix& rhs)
         throw std::domain_error("Matrix multiplication error\n");
     }
     int M = Rows();
-    int K = Columns();
     int N = rhs.Columns();
     
-    Matrix lhs(M, N);
-    
+    Matrix C(M, N);
+	
+	CBLAS_TRANSPOSE Trans_A = transposed ? CblasTrans : CblasNoTrans;
+	CBLAS_TRANSPOSE Trans_B = rhs.transposed ? CblasTrans : CblasNoTrans;
+
+	gsl_matrix_const_view A_view
+		= gsl_matrix_const_view_array(x, rows, columns);
+	gsl_matrix_const_view B_view
+		= gsl_matrix_const_view_array(rhs.x, rhs.rows, rhs.columns);
+	gsl_matrix_view C_view = gsl_matrix_view_array(C.x, M, N);
+
+	gsl_blas_dgemm(Trans_A, Trans_B,
+				   1.0, &A_view.matrix, &B_view.matrix,
+				   0.0, &C_view.matrix);
+	return C;
+
+#if 0    
+    //int K = Columns();
     for (int m=0; m<M; ++m) {
         for (int n=0; n<N; ++n) {
             real sum = 0.0;
@@ -357,6 +373,7 @@ Matrix Matrix::operator* (const Matrix& rhs)
         }
     }
     return lhs;
+#endif
 }
 
 /// Multiply a matrix with a scalar

@@ -299,7 +299,7 @@ int main()
 void SpeedTest()
 {
     {
-        int N = 768;
+        int N = 8;
         
         Matrix A = Matrix::Unity(N, N);
         for (int i=0; i<N; ++i) {
@@ -309,7 +309,7 @@ void SpeedTest()
         }
         
         A = Transpose(A) * A;
-
+#if 0
         {
             int s;
             gsl_matrix * M = gsl_matrix_alloc (N, N);
@@ -364,7 +364,7 @@ void SpeedTest()
                    end_time - mid_time,
                    end_time - start_time);
         }
-
+#endif
         {
             double start_time = GetCPU();
             Matrix C = A.Inverse();
@@ -375,36 +375,21 @@ void SpeedTest()
 
 
     }
-    for (int iter=0; iter<1; iter++) {
-
-        int K = ceil(urandom() * 100);
-        int M = ceil(urandom() * 100);
-        int N = ceil(urandom() * 100);
+	{
+        int N = 768;
         
-        Matrix A(K, M);
-        for (int i=0; i<K; ++i) {
-            for (int j=0; j<M; ++j) {
+        Matrix A(N, N);
+        for (int i=0; i<N; ++i) {
+            for (int j=0; j<N; ++j) {
                 A(i,j) = urandom();
             }
         }
-        Matrix B(M, N);
-        for (int i=0; i<M; ++i) {
-            for (int j=0; j<N; ++j) {
-                B(i,j) = urandom();
-            }
-        }
-        Matrix D(K, N);
-        for (int i=0; i<K; ++i) {
-            for (int j=0; j<N; ++j) {
-                D(i,j) = urandom();
-            }
-        }
-
-        for (int k=0; k<10; ++k) {
-            D += A*B;
-        }
         
-    }
+		
+		for (int i=0; i<2; ++i) {
+			A -= 0.5 * A * A;
+		}
+	}
 }
 
 
@@ -413,18 +398,17 @@ void SpeedTest()
 #endif
 
 /*
-          AMD 64 3200 | Intel Atom N270
-REFERENCE 9.5 (10.5)  | 55 (56)
-MULTIPLIC 7.5 (8.3)   | 62 (62)
+Performance on i7
 
-Multiplication
---------------
-Cholesky: 1.760000 6.190000 7.950000
-LU: 1.610000 8.520000 10.130000
-Total time: 28.140000
+------- Iversion ----------
+GSL: 0.112007 0.280018 0.392025
+Cholesky: 1.228077 3.640227 4.868304
+LU: 0.896056 4.656291 5.552347
+Default: 0.396025 (C++ GSL wrapper)
 
-Cholesky: 1.760000 6.240000 8.000000
-LU: 1.330000 8.830000 10.160000
-Total time: 25.840000
+------ Multiplication ----------
+2 iter, 768x768
+Handcrafted: 8.836552
+GSL: 0.152009
 
 */
