@@ -18,7 +18,10 @@
 #include <exception>
 #include <stdexcept>
 #include <cstring>
-//#include <lapackpp/laslv.h>
+
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_cblas.h>
 
 Matrix Matrix::Unity(int rows, int columns, enum BoundsCheckingStatus check)
 {
@@ -860,6 +863,23 @@ void Matrix::Cholesky(Matrix& chol, real epsilon) const
     }
 }
 
+/** Invert matrix using GSL LU Decomp */
+Matrix Matrix::GSL_Inverse() const
+{
+	int N = Rows();
+	assert(N==Columns());
+	Matrix A(*this);
+	Matrix R(N, N);
+	R.transposed = transposed;
+	gsl_matrix_view M_view = gsl_matrix_view_array(A.x, N, N);
+	gsl_matrix_view R_view = gsl_matrix_view_array(R.x, N, N);
+	gsl_permutation * perm = gsl_permutation_alloc (N);
+	int s;
+	gsl_linalg_LU_decomp (&M_view.matrix, perm, &s);
+	gsl_linalg_LU_invert (&M_view.matrix, perm, &R_view.matrix);
+	gsl_permutation_free(perm);
+	return R;
+}
 /** Matrix inversion using a factorised matrix A = LU.
     
     Here L is lower triangluar and U is an upper triangular matrix.

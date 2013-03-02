@@ -18,6 +18,12 @@
 #include <stdexcept>
 #include <iostream>
 #include <vector>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_cblas.h>
+//#include <atlas/cblas.h>
+
+
 
 #undef REFERENCE_ACCESS
 
@@ -63,12 +69,14 @@ public:
     Matrix operator+ (const real& rhs);
     Matrix operator- (const real& rhs);
     Matrix operator/ (const real& rhs);
-    /// Matrix inversion (defaults to Cholesky)
+    /// Matrix inversion (defaults to GSL with LU)
     Matrix Inverse(real epsilon = ACCURACY_LIMIT) const
     {
-		return Inverse_Cholesky(epsilon);
-        //return Inverse_LU(epsilon);
-    }
+		return GSL_Inverse();
+		//return Inverse_LU();
+	}
+	Matrix GSL_Inverse() const;
+
     /** Matrix inversion using the Cholesky decomposition.
         
         First call Cholesky with accuracy epsilon to obtain $\fL,
