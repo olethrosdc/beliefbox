@@ -2,7 +2,11 @@
 ---------------
 
 The project's main aim is to support a Bayesian framework for
-reinforcement learning.
+reinforcement learning. For this reason, most of the documentation
+is generated via Doxygen. 
+
+1.1. File organisation
+----------------------
 
 Directories:
 
@@ -12,8 +16,8 @@ dat/r1e7.bin         - random bits, useful for consistent PSR runs
 src/                 - source code
 
 src/algorithms/      - algorithms for reinforcement learning
-src/core/            - miscellaneous routines used elsewhere
-src/environments/    - test benches
+src/core/            - miscellaneous routines used everywhere else
+src/environments/    - test benches for algorithms
 src/geometry/        - anything pertaining to geometry goes here
 src/models/          - models of processes, used by algorithms
 src/statistics/      - RNGs, distributions, used by models or algorithms
@@ -23,14 +27,14 @@ An algorithm in algorithms/ may use classes from the models/
 directory.  Models may use statistics or algorithms for
 implementation.
 
-Environments should have the ability to create a full MDP or POMDP model
+Environments can have the ability to create an analytical MDP or POMDP model
 (if not, an approximate one could be built via simulation perhaps).
 
 Currently, statistical models of MDPs are included in src/models/ rather
 than in src/statistics/, although the remains of an earlier effort are
 there.
 
-A few useful RL algorithms are arleady implemented in src/algorithms/
+Algorithms for reinforcement learning are arleady implemented in src/algorithms/
 
 Most of the top-level src/ directories also have a subdirectory called
 tests/ which is used for three purposes:
@@ -41,6 +45,15 @@ tests/ which is used for three purposes:
 
 2. Compilation
 --------------
+
+2.1. Requirements
+-----------------
+
+GSL (GNU Scientific Library), including development packages.
+Optionally, ATLAS, including development packages.
+
+2.2. Compiling the library
+--------------------------
 
 In the top directory do:
 
@@ -56,7 +69,7 @@ cp src/Make-clang.mk src/Make-default.mk
 
 (c) make
 
-2.1. Compiling test programs
+2.3. Compiling test programs
 ----------------------------
 
 Tests and example programs are available all directories named:
@@ -72,8 +85,8 @@ make online_algorithms
 ./bin/online_algorithms
 
 
-3. Generating documentation
----------------------------
+3. Generating API documentation
+-------------------------------
 
 At the top level directory, type:
 
@@ -84,7 +97,9 @@ doxygen
 -------
 
 4.1. implement rl-glue backend
-4.2. improve documentation
-4.3. remove marginally useful code
+4.2. improve documentation (ongoing)
+4.3. remove marginally useful code (ongoing)
+4.4. replace all matrix / vector routines with GSL/BLAS (in progress)
+
 
 
