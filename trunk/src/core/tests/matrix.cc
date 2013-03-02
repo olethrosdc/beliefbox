@@ -202,7 +202,7 @@ int main()
 
     printf("Q = W, W = 2W\n");
     Matrix Q = W;
-    W = W*2;
+    W += W;
     //W.print(stdout);
 
     printf ("# 2W - Q\n");
