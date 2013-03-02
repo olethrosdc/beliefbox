@@ -50,8 +50,7 @@ LIBS_DIR = $(SMPL_DIR)/$(LIB_DIR_NAME)
 OBJS_DIR = $(SMPL_DIR)/$(OBJ_DIR_NAME)
 LIBSMPL = $(LIBS_DIR)/libsmpl.a
 LIBSMPLXX = $(LIBS_DIR)/libsmpl++.a
-LIBS = -L$(LIBS_DIR) $(MYLIBS)
-## -lgslcblas -lgsl 
+LIBS = -L$(LIBS_DIR) $(MYLIBS) -latlas -lcblas -lgsl # #-lblas(* best) -lgslcblas -lgsl 
 EXPORTED_LIBS = -lranlib
 MAIN_LIB = -lsmpl
 INCS := -I$(SMPL_DIR)/core $(MYINCS)

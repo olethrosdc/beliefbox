@@ -241,30 +241,45 @@ int main()
 	printf("\n");
 	W.print(stdout);
     
-    printf("Testing inverse:\n");
+    printf("Testing inverse.\n");
+	printf("W\n");
     W.print(stdout);
-    printf("Inverse of W:\n");
+    printf("LU Inverse of W:\n");
+    Matrix inv_LU = W.Inverse_LU();
+    Matrix inv_Ch = W.Inverse_Cholesky();
+	inv_LU.print(stdout);
+    printf("Default Inverse of W:\n");
     Matrix invW = W.Inverse();
     invW.print(stdout);
     
-    printf("Inverse of Inverse of W:\n");
-    Matrix reinvW = invW.Inverse();
-    Matrix inv_LU = W.Inverse_LU();
-    Matrix inv_Ch = W.Inverse_Cholesky();
+
     
-    real inv_delta = FrobeniusNorm(inv_LU - inv_Ch);
+    real inv_delta = FrobeniusNorm(inv_LU - invW);
     if (inv_delta > 1e-6) {
-        fprintf (stderr, "LU differs from Cholesky inverse by %f over F-Norm of LU inverse\n",
+        fprintf (stderr, "LU differs from GSL inverse by %f over F-Norm of LU inverse\n",
                  inv_delta);
-        (inv_LU - inv_Ch).print(stderr);
-        fprintf(stderr, "---------\n");
+		fprintf(stderr, "------- ERROR BEGIN -------\n");
+		fprintf(stderr, "LU Inverse:\n");
+        (inv_LU - invW).print(stderr);
+		fprintf(stderr, "Default inverse:\n");
+		invW.print(stderr);
+		fprintf(stderr, "Difference:\n");
+        (inv_LU - invW).print(stderr);
+		fprintf(stderr, "-------- ERROR END --------\n");
         n_errors++;
     }
 
+    printf("Inverse of Inverse of W:\n");
+    Matrix reinvW = invW.Inverse();
     reinvW.print(stdout);
     Matrix ShouldBeUnity = W * invW;
-    printf("Should be Unity:\n");
-    ShouldBeUnity.print(stdout);
+	real inv_unity = FrobeniusNorm(ShouldBeUnity - Matrix::Unity(N, N));
+	if (inv_unity > 1e-6) {
+		fprintf(stderr, "------- ERROR BEGIN -------\n");
+		fprintf(stderr, "W W^{-1} \\neq 1\n");
+		ShouldBeUnity.print(stderr);
+		fprintf(stderr, "-------- ERROR END --------\n");
+	}
 
     if (n_errors) {
         printf ("# %d ERRORS found\n", n_errors);
@@ -349,6 +364,15 @@ void SpeedTest()
                    end_time - mid_time,
                    end_time - start_time);
         }
+
+        {
+            double start_time = GetCPU();
+            Matrix C = A.Inverse();
+            double end_time = GetCPU();
+            printf("Default: %f\n",
+                   end_time - start_time);
+        }
+
 
     }
     for (int iter=0; iter<1; iter++) {
