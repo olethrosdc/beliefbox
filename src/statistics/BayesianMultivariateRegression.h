@@ -42,8 +42,12 @@ public:
 	BayesianMultivariateRegression(int m_ = 1, int d_ = 1, Matrix S0_ = Matrix::Unity(1,1), real N0_ = 1.0, real a_ = 1.0);
 	void AddElement(const Vector& y, const Vector& x);
     Matrix generate();
+	Vector generate(const Vector& x);
 	void generate(Matrix& Mean, Matrix& Covariance);
+	Matrix getSxx() { return Sxx; }
+	real Posterior(const Vector& x, const Vector& y);
 	real PredictiveDistribution(const Vector& x, const Vector& y);
+	real LogPredictiveDistribution(const Vector& x, const Vector& y);
 	void Reset();
 };
 

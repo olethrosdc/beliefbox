@@ -18,8 +18,8 @@ MultivariateNormal::MultivariateNormal(const int n_dim_)
       mean(n_dim),
       accuracy(n_dim, n_dim)
 {
-    mean.Clear();
-    accuracy.Clear();
+    mean.Clear();  
+	accuracy.Clear();
     for (int i=0; i<n_dim; ++i) {
         accuracy(i,i) = 1;
     }
