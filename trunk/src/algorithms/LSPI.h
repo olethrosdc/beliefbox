@@ -45,9 +45,11 @@ public:
 	
 	Vector BasisFunction(const Vector& state, int action);
 	void LSTDQ();
+	void LSTDQ(const Vector& state, const int& action, const real& reward, const Vector& state_, const int& action_, const bool& endsim, const bool& update = true);
 	void LSTDQ_OPT();
 	void PolicyIteration();
 	void Reset();
+	void Update();
 	real getValue(const Vector& state, int action);
 	FixedContinuousPolicy& ReturnPolicy()
 	{

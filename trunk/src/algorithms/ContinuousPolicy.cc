@@ -22,7 +22,8 @@ FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension, int n_actions_, RB
       epsilon_greedy(false),
       epsilon(0.0)
 {
-    weights.Resize(n_actions*(bfs_->size() + 1));
+	Vector w(n_actions*(bfs_->size() + 1));
+	weights = w;
 	p.Resize(n_actions);
 }
 

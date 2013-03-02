@@ -95,11 +95,11 @@ public:
 	
 	void Act(const A& a, real discount_factor)
 	{
-		running = environment->Act(a);
+		running		= environment->Act(a);
 		real reward = environment->getReward();
 		S previous_state = end_state;
 		//printf("A: %d, r: %f\n", a, reward);
-		end_state = environment->getState();
+		end_state	= environment->getState();
 		bool endsim = environment->getEndsim();
 
 		if(sampling)
@@ -125,7 +125,7 @@ public:
 		int t = 0;
 		//logmsg("Period, %d, start state: ", period); start_state.print(stdout);
 		while (t < period || period < 0) {
-            policy->setState(environment->getState());
+//            policy->setState(environment->getState());
 			if (!running) {
 //				printf("Period = %d , T = %d\n",period,t);
 //				logmsg("Episode ended\n");
@@ -163,7 +163,7 @@ public:
 	{
 		for(int i = 0; i<episodes; ++i)
 		{
-			Sample(period, true);
+			Sample(period, false);
 		}
 	}
 

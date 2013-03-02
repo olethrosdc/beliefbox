@@ -11,19 +11,25 @@
 
 #ifdef MAKE_MAIN
 #include "LSPI.h"
+#include "MersenneTwister.h"
 #include "Grid.h"
 #include "BasisSet.h"
 #include "Rollout.h"
 #include "Pendulum.h"
 #include "PuddleWorld.h"
 #include "Pendulum.h"
+#include "MountainCar.h"
+#include "Bike.h"
+#include "MersenneTwister.h"
 #include "RandomPolicy.h"
 #include "Random.h"
-#include "MersenneTwister.h"
 #include "ContinuousPolicy.h"
 #include "Vector.h"
 #include <getopt.h>
 #include <cstring>
+
+// -- Randomness -- //
+#include "RandomNumberFile.h"
 
 struct PerformanceStatistics
 {
@@ -71,13 +77,14 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
 
 static const char* const help_text = "Usage: rsapi [options]\n\
 \nOptions:\n\
---environment: {PuddleWorld, Pendulum}\n\
+--environment: {PuddleWorld, Pendulum, Mountain}\n\
 --gamma:       reward discounting in [0,1]\n\
---max_iteration:      maximum number of policy iterations\n\
+--max_iteration:      maximum number of policy iterations (lspi)\n\
 --horizon:     rollout horizon\n\
 --delta:       stopping threshold\n\
 --grids:       RBF factor\n\
 --n_rollouts:  number of rollouts\n\
+--runs:		   number of runs\n\
 --eval_iter:   number of evaluations\n\
 --algorithm: {1:LSTDQ, 2:LSTD1_OPT}\n\
 \n";
@@ -87,18 +94,19 @@ int main(int argc, char* argv[])
 	//Create a new environment.
 	Environment<Vector,int>* environment;
 	
-	MersenneTwisterRNG rng;
 	int seed = time(NULL);
 
-	int max_iteration = 100;
-	real gamma = 0.999;
-	int n_rollouts = 100;
-	int horizon = 50;
-	int grids = 10;
-	int algorithm = 1;
-	real delta = 0.01;
+	int max_iteration	= 20;
+	real gamma			= 0.999;
+	int n_rollouts		= 50;
+	int horizon			= 40;
+	int grids			= 2;
+	int algorithm		= 1;
+	real delta			= 0.0001;
 	char* environment_name = NULL;
-    int eval_iter = 100;
+    int eval_iter		= 1000;
+	int runs			= 100;
+	real scale			= 1; 
 	
 	{
 		//options
@@ -115,9 +123,11 @@ int main(int argc, char* argv[])
 				{"environment", required_argument, 0, 0}, //4
 				{"delta", required_argument, 0, 0}, //5
 				{"grids", required_argument, 0, 0}, //6
-				{"eval_iter", required_argument, 0, 0}, //7
-				{"algorithm", required_argument, 0, 0}, //8
-				{"seed", required_argument, 0, 0}, //9
+				{"runs",required_argument, 0, 0}, //7
+				{"eval_iter", required_argument, 0, 0}, //8
+				{"algorithm", required_argument, 0, 0}, //9
+				{"scale", required_argument, 0, 0}, //10
+				{"seed", required_argument, 0, 0}, //11
 				{0, 0, 0, 0}
 			};
 			c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -140,9 +150,11 @@ int main(int argc, char* argv[])
 						case 4: environment_name = optarg; break;
 						case 5: delta = atof(optarg); break;
 						case 6: grids = atoi(optarg); break;
-						case 7: eval_iter = atoi(optarg); break;
-					    case 8: algorithm = atoi(optarg); break;
-					    case 9: seed = atoi(optarg); break;
+						case 7: runs = atoi(optarg); break;
+						case 8: eval_iter = atoi(optarg); break;
+					    case 9: algorithm = atoi(optarg); break;
+						case 10: scale = atof(optarg); break;
+					    case 11: seed = atoi(optarg); break;
 						default:
 							fprintf (stderr, "Invalid options\n");
 							exit(0);
@@ -172,82 +184,106 @@ int main(int argc, char* argv[])
         }		
 	}
 
-    srand(seed);
-    srand48(seed);
-    rng.manualSeed(seed);
-	setRandomSeed(seed);
-
+	RandomNumberGenerator* rng;
+	RandomNumberGenerator* environment_rng;
+	
+	MersenneTwisterRNG mersenne_twister_env;
+    environment_rng = (RandomNumberGenerator*) &mersenne_twister_env;
+	
+    MersenneTwisterRNG mersenne_twister;
+    rng = (RandomNumberGenerator*) &mersenne_twister;
+	
+	
 	if (!environment_name) {
         fprintf(stderr, "Must specify environment\n");
         exit(-1);
     }
-    if (!strcmp(environment_name, "PuddleWorld")) {
+	if (!strcmp(environment_name, "Bike")) {
+		environment = new Bike();
+	} else if (!strcmp(environment_name, "PuddleWorld")) {
         environment = new PuddleWorld();
     } else if (!strcmp(environment_name, "Pendulum")) {
         environment = new Pendulum(); //2.0, 8.0, 0.5, 9.8, 0.0);    
-    } else {
+    } else if (!strcmp(environment_name, "Mountain")) {
+		environment = new MountainCar();
+	} else {
         fprintf(stderr, "Invalid environment name %s\n", environment_name);
         exit(-1);
     }
 
     AveragePerformanceStatistics statistics;
-	for (int i=0; i<eval_iter; ++i) {
-		
+	Matrix Stats(runs, eval_iter);
+	
+	int state_dimension = environment->getNStates();
+	int n_actions = environment->getNActions();
+	Vector S_L = environment->StateLowerBound();
+	Vector S_U = environment->StateUpperBound();
+	
+	printf("# State dimension: %d\n", state_dimension);
+	printf("# S_L: "); S_L.print(stdout);
+	printf("# S_U: "); S_U.print(stdout);
+	S_U[0] = (3.0*M_PI)/4.0; //4;
+    S_U[1] = 1.5;//10;
+    S_L[0] = (-3.0*M_PI)/4.0;//-4;
+    S_L[1] = -1.5;//10;
+	Vector D = Vector::Unity(2);
+	for (int n_rollouts=10; n_rollouts<=90; n_rollouts = n_rollouts + 10) {
+		srand48(34987235);
+		srand(34987235);
+		setRandomSeed(34987235);
+		environment_rng->manualSeed(228240153);
+		rng->manualSeed(1361690241);
+	for (int i=0; i<runs; ++i) {
         // Place holder for the policy
         AbstractPolicy<Vector, int>* policy;
-        
+
         // Start with a random policy!
-        policy = new RandomPolicy(environment->getNActions(), &rng);
-        
-        int state_dimension = environment->getNStates();
-        int n_actions = environment->getNActions();
-        Vector S_L = environment->StateLowerBound();
-        Vector S_U = environment->StateUpperBound();
-        
-        printf("# State dimension: %d\n", state_dimension);
-        printf("# S_L: "); S_L.print(stdout);
-        printf("# S_U: "); S_U.print(stdout);
-	 
+        policy = new RandomPolicy(environment->getNActions(), rng);
+
+		environment->Reset();
+		Vector state_init = environment->getState();
         Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout
-            = new Rollout<Vector, int, AbstractPolicy<Vector, int> >(urandom(S_L,S_U), policy, environment, gamma, true);
-        
-        rollout->Sampling(n_rollouts, horizon);
-        
-        printf("Total number of collected samples -> %d\n",rollout->getNSamples());
-        EvenGrid Discretisation(S_L, S_U, grids);
+            = new Rollout<Vector, int, AbstractPolicy<Vector, int> >(state_init, policy, environment, gamma, true);
+
+//		rollout->UniformSampling(n_rollouts, horizon);
+//        rollout->StartingDistributionSampling(n_rollouts, horizon);
+		rollout->Sampling(n_rollouts, horizon);
+      
+		printf("Total number of collected samples -> %d\n",rollout->getNSamples());
+        EvenGrid Discretisation(S_L, S_U, D, grids);
+//		EvenGrid Discretisation(S_L, S_U, grids);
         
       //  for(int i = 0; i < rollout->getNRollouts(); ++i)
 //		{
 //			printf("Total number of collected samples -> %d\n",rollout->getNSamples(i));
 //		}
 //        
-        RBFBasisSet* RBFs = new RBFBasisSet(Discretisation);
-        LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs,rollout);
+        RBFBasisSet* RBFs = new RBFBasisSet(Discretisation,scale);
+//		RBFBasisSet* RBFs = NULL;
+        LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs, rollout);
         lspi->PolicyIteration();
         //lspi->LSTDQ(0.1);
-        real V = 0;
-        int n_eval = 10000;
-        for (int i=0; i<n_eval; ++i) {
-            environment->Reset();
-            Vector state = environment->getState();
-            real Vi = lspi->getValue(state, rand()%n_actions);
-            //printf ("%f ", Vi);
-            V += Vi;
-         
-        }
-        //printf("# V samples\n");
-        printf("%f # V\n", V / (real) n_eval);
-        fflush(stdout);
-        fflush(stderr);
-        for (int i=0; i<1000; ++i) {
-            PerformanceStatistics run_statistics = Evaluate(environment,
-                                                            lspi->ReturnPolicy(),
-                                                            gamma,
-                                                            1000);
-            statistics.Observe(run_statistics);
+      //  real V = 0;
+//        int n_eval = 10000;
+//        for (int i=0; i<n_eval; ++i) {
+//            environment->Reset();
+//            Vector state = environment->getState();
+//            real Vi = lspi->getValue(state, rand()%n_actions);
+//            //printf ("%f ", Vi);
+//            V += Vi;
+//         
+//        }
+//        //printf("# V samples\n");
+//        printf("%f # V\n", V / (real) n_eval);
+//        fflush(stdout);
+//        fflush(stderr);
+        for (int j=0; j<eval_iter; ++j) {
+			PerformanceStatistics run_statistics = Evaluate(environment, lspi->ReturnPolicy(), gamma, 3000);
+			Stats(i,j) = run_statistics.run_time;
+			//statistics.Observe(run_statistics);
         }
 	
-        statistics.Show();
+//        statistics.Show();
         delete policy;
         
         delete lspi;
@@ -255,7 +291,16 @@ int main(int argc, char* argv[])
         
         delete RBFs;
 	}
-
+		char buffer[100];
+		sprintf (buffer, "LSPI_RESULTS->(Rollouts = %d)",n_rollouts);
+		FILE *output	= fopen(buffer,"w");
+		if(output!=NULL) { 
+			Stats.print(output);
+		}
+		fclose(output);
+	}
+	
+	
 	delete environment;
 
 }
@@ -272,10 +317,12 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
 	real discount = 1;
 	environment->Reset();
     policy.Reset();
+//	printf("New episode\n");
     for (t=0; t < T; ++t, ++statistics.run_time) {
 		Vector state = environment->getState();
+//		state.print(stdout);
 		real reward = environment->getReward();
-        //printf("%d %f # r_t\n", t, reward);
+//        printf("%d %f # r_t\n", t, reward);
         if (t > 0) {
             statistics.total_reward += reward;
             statistics.discounted_reward += reward*discount;
@@ -284,14 +331,15 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
 		policy.setState(state);
 		int action = policy.SelectAction();
 		bool action_ok = environment->Act(action);
+		
 		if(!action_ok) {
             real reward = environment->getReward();
-            //printf("%d %f # r_T\n", t, reward);
-            statistics.total_reward += reward;
+			statistics.total_reward += reward;
             statistics.discounted_reward += reward*discount;
 			break;
 		}
 	}
+//	printf("Run time = %f\n",statistics.run_time);
 	return statistics;
 }
 

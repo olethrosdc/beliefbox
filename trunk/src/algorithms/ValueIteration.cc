@@ -93,7 +93,7 @@ void ValueIteration::ComputeStateValuesStandard(real threshold, int max_iter)
         }
         n_iter++;
     } while(Delta >= threshold && max_iter != 0);
-    //printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
+    printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
 /** Compute state values using value iteration with action elimination.
