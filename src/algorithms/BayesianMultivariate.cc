@@ -25,6 +25,9 @@ BayesianMultivariate::BayesianMultivariate(int n_actions_,
 										   std::vector<BayesianMultivariateRegression*> regression_r_,
 										   LinearModel<Vector,int>* lm_,
 										   RepresentativeStateModel<LinearModel<Vector, int>, Vector, int>* RSM_,
+										   FittedValueIteration<Vector,int>* FVI_,
+										   FittedLSTD<Vector,int>* FLSTD_,
+										   FittedQValueIteration<Vector,int>* FQVI_,
 										   real baseline_)
 					: n_actions(n_actions_),
 					  n_input_dim(n_input_dim_),
@@ -36,15 +39,13 @@ BayesianMultivariate::BayesianMultivariate(int n_actions_,
 					  regression_r(regression_r_),
 					  lm(lm_),
 					  RSM(RSM_),
+					  FVI(FVI_),
+					  FLSTD(FLSTD_),
+					  FQVI(FQVI_),
 					  baseline(baseline_),
 					  use_geometric_schedule(false)
 {
-	//assert(n_grids > 0);
 	assert( gamma >= 0.0 && gamma <= 1.0);
-//  RepresentativeStateModel<LinearModel<Vector, int>, Vector, int> RR(gamma, *lm, n_states, n_actions);
-//	real (RepresentativeStateModel<LinearModel<Vector, int>, Vector, int>::* getValue_)(const Vector&, const int&) = &RepresentativeStateModel<LinearModel<Vector, int>, Vector, int>::getValue; 
-//	ContinuousStateEpsilonGreedy r(RR.getValue_, n_states, n_actions, epsilon);
-//	Reset();
 }
 
 BayesianMultivariate::~BayesianMultivariate()
@@ -56,8 +57,19 @@ void BayesianMultivariate::Reset()
 		regression_t[i]->Reset();
 		regression_r[i]->Reset();
 	}
-	lm->Reset();
-	RSM->Reset();
+	if(lm!=NULL) {
+		lm->Reset();
+		RSM->Reset();
+	}
+	else if( FVI!=NULL) {
+		FVI->Reset();
+	}
+	else if(FLSTD != NULL) {
+		return FLSTD->Reset();
+	}
+	else if(FQVI != NULL) {
+		return FQVI->Reset();
+	}
 }
 void BayesianMultivariate::Observe(Vector state, int action, real reward, Vector next_state)
 {	
@@ -66,41 +78,16 @@ void BayesianMultivariate::Observe(Vector state, int action, real reward, Vector
 	if(rbf != NULL) {
 		rbf->Evaluate(state);
 		phi = rbf->F();
-//		phi.Resize(rbf->size() + 1);
-//		phi[rbf->size()] = 1.0;
-//		phi.print(stdout);
 	}
 	else {
 		phi = state;
 	}
 	phi.Resize(n_input_dim);
 	phi[n_input_dim - 1] = 1.0;
-	
-//	printf("Next State\n");
-//	next_state.print(stdout);
-//	printf("Prediction\n");
-//	Vector out = regression_t[action]->generate()*phi;
-//	out.print(stdout);
-//	printf("Reward = %f\n",reward);
-//	Vector a = regression_r[action]->generate()*phi;
-//	printf("Predicted reward = %f\n",a[0]);
-//	
+
 	regression_t[action]->AddElement(next_state, phi);
 	regression_r[action]->AddElement(r,phi);
-	
-//	printf("Next State\n");
-//	next_state.print(stdout);
-//	printf("Prediction\n");
-//	Vector out = regression_t[action]->generate()*phi;
-//	out.print(stdout);
-//	printf("Reward = %f\n",reward);
-//	Vector a = regression_r[action]->generate()*phi;
-//	printf("Predicted reward = %f\n",a[0]);
-	///////////
-	//if (urandom() < (1 - gamma)) {
-//		RSM->AddState(next_state);
-//	}
-	////////////
+
 }
 int BayesianMultivariate::Act(Vector state)
 {
@@ -115,21 +102,88 @@ int BayesianMultivariate::Act(Vector state)
 		int action =  (int) floor(urandom(0.0, (real) Q.Size()));
 		return action;
 	}
-	
-	for (int i=0; i<Q.Size(); ++i) {
-		Q(i) = RSM->getValue(state, i);
+	real max = 0.0;
+	if(RSM != NULL) {
+		max = RSM->getValue(state,0);
 	}
-	std::vector<int> max_elem = ArgMaxs(Q);
-	return max_elem[urandom(0,max_elem.size())];	
+	else if(FVI != NULL) {
+		max = FVI->getValue(state,0);
+	}
+	else if(FLSTD != NULL) {
+		max = FLSTD->getValue(state,0);
+	}
+	else if(FQVI != NULL) {
+		max = FQVI->getValue(state,0);
+	}
+	Q(0) = max;
+	int select = 0;
+	for(int i=1; i<Q.Size(); ++i) {
+		if(RSM != NULL) {
+			Q(i) = RSM->getValue(state,i);
+		}
+		else if(FVI != NULL) {
+			Q(i) = FVI->getValue(state,i);
+		}
+		else if(FLSTD != NULL) {
+			Q(i) = FLSTD->getValue(state,i);
+		}
+		else if(FQVI != NULL) {
+			Q(i) = FQVI->getValue(state,i);
+		}
+		if(Q(i) > max) {
+			max = Q(i);
+			select = i;
+		}
+	}
+//	Q.print(stdout);
+//	for (int i=0; i<Q.Size(); ++i) {
+//		Q(i) = RSM->getValue(state, i);
+//	}
+	
+	//	std::vector<int> max_elem = ArgMaxs(Q);
+	return select; //max_elem[urandom(0,max_elem.size()-1)];	
 }
+
 real BayesianMultivariate::getValue(Vector state, int action)
 {
-	return RSM->getValue(state,action);
+	if(RSM != NULL) {
+		return RSM->getValue(state,action);
+	}
+	else if(FVI != NULL) {
+		return FVI->getValue(state,action);
+	}
+	else if(FLSTD != NULL) {
+		return FLSTD->getValue(state, action);
+	}
+	else if(FQVI != NULL) {
+		return FQVI->getValue(state, action);
+	}
+	else {
+		printf("Error\n");
+		return -1;
+	}
 }
+
 real BayesianMultivariate::getValue(Vector state)
 {
-	return RSM->getValue(state);
+	if(RSM != NULL) {
+		return RSM->getValue(state);
+	}
+	else if(FVI != NULL) {
+		return FVI->getValue(state);
+	}
+	else if(FLSTD != NULL) {
+		return FLSTD->getValue(state);
+	}
+	else if(FQVI != NULL) {
+		return FQVI->getValue(state);
+	}
+	else {
+		printf("Error\n");
+		return -1;
+	}
 }
+
 void BayesianMultivariate::Update()
 {
     Matrix MeanR(1,n_input_dim);
@@ -137,17 +191,140 @@ void BayesianMultivariate::Update()
 	Matrix CovarianceR(n_input_dim, n_input_dim);
 	Matrix CovarianceT(n_input_dim, n_input_dim);
 	
-	for( int i=0; i<n_actions; ++i) {
-		regression_t[i]->generate(MeanT, CovarianceT);
-		lm->SetStatePredictionMean(MeanT,i);
-		lm->SetStatePredictionVar(CovarianceT,i);
-		
-		regression_r[i]->generate(MeanR, CovarianceR);
-		lm->SetRewardPredictionMean(MeanR.getRow(0),i);
-		lm->SetRewardPredictionVar(CovarianceR,i);
+	if(lm != NULL) {
+		for( int i=0; i<n_actions; ++i) {
+			regression_t[i]->generate(MeanT, CovarianceT);
+			lm->SetStatePredictionMean(MeanT,i);
+			lm->SetStatePredictionVar(CovarianceT,i);
+			lm->GetStatePredictionVar(i).print(stdout);
+			lm->SetStatePredictionS(regression_t[i]->getSxx(),i);
+
+//			regression_r[i]->generate(MeanR, CovarianceR);
+//			lm->SetRewardPredictionMean(MeanR.getRow(0),i);
+//			lm->SetRewardPredictionVar(CovarianceR,i);
+//			lm->SetRewardPredictionS(regression_r[i]->getSxx(),i);
+		}
+		RSM->Update(*lm);
 	}
-	RSM->Update(*lm);
+	else if(FVI != NULL) {
+		FVI->Update(0.0001, 100);
+	}
+	else if(FLSTD != NULL) {
+		FLSTD->Update(0.0001, 100);
+	}
+	else if(FQVI != NULL) {
+		FQVI->Update(0.0001, 100);
+	}
 }
+void BayesianMultivariate::Predict()
+{
+	int n;
+	Vector r;
+	Vector phi;
+	Vector next_state;
+	Vector state;
+	char buffer[100];
+	
+	for( int i=0; i<n_actions; ++i) {
+		Matrix mean_s = regression_t[i]->generate();
+		Matrix mean_r = regression_r[i]->generate();
+		n = sprintf(buffer, "Predicted_Output_samples_action_%d", i);
+		FILE *output  = fopen(buffer,"w");
+		n = sprintf(buffer, "Predicted_Reward_samples_action_%d", i);
+		FILE *rew = fopen(buffer,"w");
+		if(output!=NULL && rew !=NULL) {
+			for( int s=0; s< RSM->getNSamples(); ++s) {
+				state = RSM->getSample(s);
+				if(rbf != NULL) {
+					rbf->Evaluate(state);
+					phi = rbf->F();
+				}
+				else {
+					phi = state;
+				}
+				phi.Resize(n_input_dim);
+				phi[n_input_dim - 1] = 1.0;
+				next_state = mean_s*phi;
+				next_state.print(output);
+				r = mean_r*phi;
+				r.print(rew);
+			}
+		}
+		fclose(output);
+		fclose(rew);
+	}
+}
+
+void BayesianMultivariate::Predict(std::vector<Vector> samples)
+{
+	int n;
+	Vector r;
+	Vector phi;
+	Vector next_state;
+	Vector state;
+	char buffer[100];
+	for( int i=0; i<n_actions; ++i) {
+		Matrix mean_s = regression_t[i]->generate();
+		Matrix mean_r = regression_r[i]->generate();
+		n = sprintf(buffer, "Predicted_Output_samples_action_%d", i);
+		FILE *output  = fopen(buffer,"w");
+		n = sprintf(buffer, "Predicted_Reward_samples_action_%d", i);
+		FILE *rew = fopen(buffer,"w");
+		if(output!=NULL && rew !=NULL) {
+			for( uint s=0; s< samples.size(); ++s) {
+				state = samples[s];
+				if(rbf != NULL) {
+					rbf->Evaluate(state);
+					phi = rbf->F();
+				}
+				else {
+					phi = state;
+				}
+				phi.Resize(n_input_dim);
+				phi[n_input_dim - 1] = 1.0;
+				next_state = mean_s*phi;
+				next_state.print(output);
+				r = mean_r*phi;
+				r.print(rew);
+			}
+		}
+		fclose(output);
+		fclose(rew);
+	}
+	
+	n = sprintf(buffer, "Predicted value function");
+	FILE *value = fopen(buffer, "w");
+	if(FVI != NULL) {
+		if(value!=NULL) {
+			Vector V((int)samples.size());
+			for(uint s = 0; s < samples.size(); ++s) {
+				V[s] = FVI->getValue(samples[s]);
+			}
+			V.print(value);
+		}
+	}
+	else if(FLSTD != NULL) {
+		if(value!=NULL) {
+			Vector V((int)samples.size());
+			for(uint s = 0; s < samples.size(); ++s) {
+				V[s] = FLSTD->getValue(samples[s]);
+			}
+			V.print(value);
+		}
+	}
+	else if(FQVI != NULL) {
+		if(value!=NULL) {
+			Vector V((int)samples.size());
+			for(uint s = 0; s < samples.size(); ++s) {
+				V[s] = FQVI->getValue(samples[s]);
+			}
+			V.print(value);
+		}
+	}
+	fclose(value);
+	
+}
+
 void BayesianMultivariate::setGeometricSchedule(real alpha_, real beta_)
 {
 	alpha = alpha_;

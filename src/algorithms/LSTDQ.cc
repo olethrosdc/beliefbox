@@ -79,7 +79,7 @@ void LSTDQ::Calculate()
 	
     for(uint i=0; i<Samples.size(); ++i) {
 		//logmsg ("Trajectory %d\n", i);
-        for(int t=0; t<(int) Samples.length(i) - 1; ++t) {
+        for(uint t=0; t<(int) Samples.length(i) - 1; ++t) {
             Vector s_t = Samples.state(i,t); 
             int a_t = Samples.action(i,t);
             Phi_ = BasisFunction(s_t, a_t);

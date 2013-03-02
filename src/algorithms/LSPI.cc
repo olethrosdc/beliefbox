@@ -17,13 +17,15 @@ LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_i
   n_dimension(n_dimension_), 
   n_actions(n_actions_), 
   max_iteration(max_iteration_),
-  bfs(bfs_), Samples(Samples_), 
+  bfs(bfs_), 
+  Samples(Samples_), 
   policy(n_dimension, n_actions, bfs)
 {
 	assert(gamma>=0 && gamma <=1);
 	n_basis = n_actions*(bfs->size() + 1);
 	algorithm = 1;
 	A.Resize(n_basis, n_basis);
+	A = Matrix::Unity(n_basis,n_basis) * 1e-6;
 	b.Resize(n_basis);
 	w.Resize(n_basis);
 }
@@ -35,13 +37,16 @@ LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_i
      n_actions(n_actions_), 
      max_iteration(max_iteration_),
      algorithm(algorithm_),
-     bfs(bfs_), Samples(Samples_), 
+     bfs(bfs_), 
+	 Samples(Samples_), 
      policy(n_dimension, n_actions, bfs)
 {
 	assert(gamma>=0 && gamma <=1);
 	assert(algorithm>=1 && algorithm<=2);
 	n_basis = n_actions*(bfs->size() + 1);
+//	n_basis = n_actions*20;
 	A.Resize(n_basis, n_basis);
+	A = Matrix::Unity(n_basis,n_basis) * 1e-6;
 	b.Resize(n_basis);
 	w.Resize(n_basis);
 }
@@ -58,11 +63,39 @@ Vector LSPI::BasisFunction(const Vector& state, int action)
 	Phi[(bfs->size() + 1)*action] = 1.0;
 	
 	for(int i = 0; i<bfs->size(); ++i)
-        {
+	{
             Phi[(bfs->size() + 1)*action + i + 1] = Phi_state[i];
-        }
+	}
 	return Phi;
 }
+
+//Vector LSPI::BasisFunction(const Vector& state, int action)
+//{
+//	Vector phi(n_basis);
+//	int n = 20;
+//	phi[(n + 1)*action +0] = 1.0;
+//	phi[(n + 1)*action +1] = state[2];
+//	phi[(n + 1)*action +2] = state[3];
+//	phi[(n + 1)*action +3] = state[2] * state[2];
+//	phi[(n + 1)*action +4] = state[3] * state[3];
+//	phi[(n + 1)*action +5] = state[2] * state[3];
+//	phi[(n + 1)*action +6] = state[0];
+//	phi[(n + 1)*action +7] = state[1];
+//	phi[(n + 1)*action +8] = state[0] * state[0];
+//	phi[(n + 1)*action +9] = state[1] * state[1];
+//	phi[(n + 1)*action +10] = state[0] * state[1];
+//	phi[(n + 1)*action +11] = state[2] * state[0];
+//	phi[(n + 1)*action +12] = state[2] * state[0] * state[0];
+//	phi[(n + 1)*action +13] = state[2] * state[2] * state[0];
+//	phi[(n + 1)*action +14] = state[4];
+//	phi[(n + 1)*action +15] = state[4] * state[4];
+//	phi[(n + 1)*action +16] = state[4] * state[0];
+//	phi[(n + 1)*action +17] = psi_hat;
+//	phi[(n + 1)*action +18] = psi_hat * psi_hat;
+//	phi[(n + 1)*action +19] = psi_hat * state[0];
+//	
+//	return phi;
+//}
 
 void LSPI::LSTDQ()
 {
@@ -89,7 +122,34 @@ void LSPI::LSTDQ()
     const Matrix w_ = A.Inverse_LU();
     w = w_*b;
 }
+void LSPI::LSTDQ(const Vector& state, const int& action, const real& reward, const Vector& state_, const int& action_, const bool& endsim, const bool& update) 
+{
+	Vector Phi_;
+	Vector Phi;
+	Matrix res;
+	
+	Phi_ = BasisFunction(state, action);
+	if(endsim) {
+		res = OuterProduct(Phi_, Phi_);
+	}
+	else {
+		Phi = BasisFunction(state_,action_);
+		res = OuterProduct(Phi_,(Phi_ - (Phi*gamma)));
+	}
+	
+	A += res;
+	b += Phi_*reward;
 
+	
+	const Matrix w_ = A.Inverse_LU();
+	w = w_*b;
+	policy.Update(w);
+	
+}
+void LSPI::Update()
+{
+	policy.Update(w);
+}
 void LSPI::LSTDQ_OPT()
 {
 	Vector Phi_;
@@ -142,7 +202,7 @@ void LSPI::PolicyIteration()
             old_w = policy.getWeights();
             policy.Update(w);
             iteration++;
-		
+			
             //Stop criterion
             distance = (old_w - w).L2Norm();
             //		logmsg("LSPI iteration %d, d: %f\n", iteration, distance); fflush(stdout);
@@ -158,6 +218,12 @@ void LSPI::PolicyIteration()
         }
 }
 
+void LSPI::Reset()
+{
+	A = Matrix::Unity(n_basis,n_basis) * 1e-6;
+	b = Vector::Null(n_basis);
+	w = Vector::Null(n_basis);	
+}
 real LSPI::getValue(const Vector& state, int action)
 {
 	return Product(BasisFunction(state,action),w);

@@ -15,14 +15,17 @@
 
 #include "DiscretePolicy.h"
 #include "BasisSet.h"
+#include "RepresentativeStateModel.h"
 #include "BayesianMultivariateRegression.h"
 #include "Matrix.h"
 #include "real.h"
 #include "OnlineAlgorithm.h"
 #include "ExplorationPolicy.h"
 #include <vector>
-#include "RepresentativeStateModel.h"
 #include "LinearModel.h"
+#include "FittedValueIteration.h"
+#include "FittedQValueIteration.h"
+#include "FittedLSTD.h"
 
 class BayesianMultivariate 
 {
@@ -38,6 +41,9 @@ protected:
 	std::vector<BayesianMultivariateRegression*> regression_r;
 	LinearModel<Vector, int>* lm;
 	RepresentativeStateModel<LinearModel<Vector, int>, Vector, int>* RSM;
+	FittedValueIteration<Vector,int>* FVI;
+	FittedLSTD<Vector,int>* FLSTD;
+	FittedQValueIteration<Vector, int>* FQVI;
 	real baseline;
 	real beta;
 	real alpha;
@@ -53,6 +59,9 @@ public:
 						 std::vector<BayesianMultivariateRegression*> regression_r_,
 						 LinearModel<Vector,int>* lm_ = NULL,
 						 RepresentativeStateModel<LinearModel<Vector, int>, Vector, int>* RSM_ = NULL,
+						 FittedValueIteration<Vector, int>* FVI_ = NULL,
+						 FittedLSTD<Vector,int>* FLSTD_ = NULL,
+						 FittedQValueIteration<Vector, int>* FQVI_ = NULL,
 						 real baseline_ = 0.0);
 	virtual ~BayesianMultivariate();
 	virtual void Reset();
@@ -66,6 +75,10 @@ public:
 	real getValue(Vector state);
 	///
 	virtual void Update();
+	///
+	void Predict();
+	///
+	void Predict(std::vector<Vector> samples);
 	///
 	void setGeometricSchedule(real alpha_, real beta_);
     ///
