@@ -71,6 +71,25 @@ EvenGrid::EvenGrid(const Vector& lower_bound_, const Vector& upper_bound_, int K
 
 }
 
+/** Construct a new grid.
+ 
+ Construct a new grid, subdividing each dimension in K parts.
+ */
+EvenGrid::EvenGrid(const Vector& lower_bound_, const Vector& upper_bound_, const Vector& delta_, int K_)
+:
+lower_bound(lower_bound_),
+upper_bound(upper_bound_),
+delta(delta_),
+K(K_)
+{
+    assert(lower_bound.Size() == upper_bound.Size());
+    assert(K >= 1);
+	
+	delta.print(stdout);
+    n_dimensions = lower_bound.Size();
+    n_intervals = (int) floor(pow(K, n_dimensions));	
+}
+
 /** Get the index of the interval containing x.
     
     For any \f$l, u \in R^n\f$ and \f$k \in \{1, 2, \ldots \}\f$, we define the function \f$f(\cdot | k, l, u) : R^n \to \{0, \ldots, k^{n} -1\}\f$:

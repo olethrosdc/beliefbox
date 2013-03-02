@@ -51,7 +51,7 @@ public:
 
     Matrix (int rows = 1, int columns = 1,  enum BoundsCheckingStatus check = CHECK_BOUNDS);
     Matrix (int rows, int columns, real* y, enum BoundsCheckingStatus check = CHECK_BOUNDS);
-    Matrix (const Vector& v, enum BoundsCheckingStatus check_ = CHECK_BOUNDS);
+    explicit Matrix (const Vector& v, enum BoundsCheckingStatus check_ = CHECK_BOUNDS);
 #endif
     Matrix (const Matrix& rhs, bool clone = true);
     ~Matrix();

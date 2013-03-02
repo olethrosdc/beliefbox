@@ -1134,7 +1134,7 @@ Vector Matrix::getRow(int r) const
 
 void Matrix::setColumn(int c, const Vector& x)
 {
-    assert(columns == x.Size());
+    assert(rows == x.Size());
     for (int i=0; i<rows; i++) {
         (*this)(i,c) = x[i];
     }
