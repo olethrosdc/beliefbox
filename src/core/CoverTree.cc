@@ -54,8 +54,8 @@ CoverTree::Node::Node (const CoverTree& tree_,
 	weight = 1;
 	depth  = 1;
 	if(father!=NULL) {
-		weight	= father->GetWeight() / 2.0;
 		depth	= father->Depth() + 1;
+		weight	= pow(2.0, -(real)depth);
 	}
 	
 	int i_dim;
