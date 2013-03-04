@@ -299,7 +299,7 @@ int main()
 void SpeedTest()
 {
     {
-        int N = 8;
+        int N = 768;
         
         Matrix A = Matrix::Unity(N, N);
         for (int i=0; i<N; ++i) {
@@ -309,7 +309,7 @@ void SpeedTest()
         }
         
         A = Transpose(A) * A;
-#if 0
+#if 1
         {
             int s;
             gsl_matrix * M = gsl_matrix_alloc (N, N);
@@ -385,10 +385,15 @@ void SpeedTest()
             }
         }
         
-		
+        double start_time = GetCPU();
+
 		for (int i=0; i<2; ++i) {
 			A -= 0.5 * A * A;
 		}
+        double end_time = GetCPU();
+        printf("Multiplication time: %f\n",
+               end_time - start_time);
+
 	}
 }
 
