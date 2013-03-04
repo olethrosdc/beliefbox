@@ -120,7 +120,7 @@ public:
         mdp(NULL)
     {
         assert(n_actions > 0);
-		Vector stats(3,1);
+		Vector stats(3);
 		init_samples = n_states;
         for (uint i=0; i<n_states; ++i) {
 			v.push_back(stats);
