@@ -22,6 +22,7 @@
 #include "RandomPolicy.h"
 #include "ContinuousPolicy.h"
 #include "TilingSet.h"
+#include <cstring>
 
 ///*Fitted Value Iteration Algorithm*/
 template <class S, class A>

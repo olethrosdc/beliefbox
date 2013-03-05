@@ -552,7 +552,7 @@ Statistics EvaluateAlgorithm (Demonstrations<int, int>& demonstrations,
         sprb.MonteCarloSampler(demonstrations, sampler.n_chain_samples);
     } 
     printf("%f # T_SPRB\n", GetCPU() - start_time);
-    DiscretePolicy* sprb_policy = sprb.getPolicy();
+    FixedDiscretePolicy* sprb_policy = sprb.getPolicy();
     
     // -------- imitator -------- //
     logmsg("Training IMIT\n"); fflush(stdout);
