@@ -46,6 +46,8 @@ public:
 		ComputeStateValuesStandard(threshold, max_iter);
     }
     void ComputeStateValuesStandard(real threshold, int max_iter=-1);
+    void PartialUpdate(real stepsize);
+    void PartialUpdateOnPolicy(real stepsize);
     void ComputeStateValuesAsynchronous(real threshold, int max_iter=-1);
     void ComputeStateValuesElimination(real threshold, int max_iter=-1);
     void ComputeStateActionValues(real threshold, int max_iter=-1);
@@ -53,6 +55,10 @@ public:
     inline void setMDP(const DiscreteMDP* mdp_)
     {
         mdp = mdp_;
+    }
+    inline void setDiscount(real gamma_) {
+        assert(gamma >= 0.0 && gamma <= 1.0);
+        gamma = gamma_;
     }
     inline real getValue (int state, int action)
     {
