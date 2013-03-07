@@ -96,6 +96,56 @@ void ValueIteration::ComputeStateValuesStandard(real threshold, int max_iter)
     //printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
+
+/** Compute values only partially.
+*/
+void ValueIteration::PartialUpdate(real step_size)
+{
+    pV = V;
+    for (int s=0; s<n_states; s++) {
+        for (int a=0; a<n_actions; a++) {
+            real Q_sa = 0.0;
+            const DiscreteStateSet& next = mdp->getNextStates(s, a);
+            for (DiscreteStateSet::iterator i=next.begin();
+                 i!=next.end();
+                 ++i) {
+                int s2 = *i;
+                real P = mdp->getTransitionProbability(s, a, s2);
+                real R = mdp->getExpectedReward(s, a) - baseline;
+                Q_sa += P * (R + gamma * pV(s2));
+            }
+            Q(s, a) = (1.0 - step_size) * Q(s,a) + step_size * Q_sa;
+        }
+        V(s) = Max(Q.getRow(s));
+    }
+}
+
+/** Compute values only partially.
+*/
+void ValueIteration::PartialUpdateOnPolicy(real step_size)
+{
+    pV = V;
+    for (int s=0; s<n_states; s++) {
+        int a_policy = ArgMax(Q.getRow(s));
+        for (int a=0; a<n_actions; a++) {
+            real Q_sa = 0.0;
+            const DiscreteStateSet& next = mdp->getNextStates(s, a);
+            for (DiscreteStateSet::iterator i=next.begin();
+                 i!=next.end();
+                 ++i) {
+                int s2 = *i;
+                real P = mdp->getTransitionProbability(s, a, s2);
+                real R = mdp->getExpectedReward(s, a) - baseline;
+                Q_sa += P * (R + gamma * pV(s2));
+            }
+            Q(s, a) = (1.0 - step_size) * Q(s,a) + step_size * Q_sa;
+        }
+        V(s) = Q(s, a_policy);
+    }
+}
+
+
+
 /** Compute state values using value iteration with action elimination.
 
 	The process ends either when the error is below the given threshold,
