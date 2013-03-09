@@ -50,7 +50,8 @@ tests/ which is used for three purposes:
 -----------------
 
 GSL (GNU Scientific Library), including development packages.
-Optionally, ATLAS, including development packages.
+LAPACK, including development packages.
+ATLAS, including development packages.
 
 You can do that via the line:
 
