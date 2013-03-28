@@ -24,6 +24,10 @@ CartPole::Parameters CartPole::default_parameters =
 0.0
 };
 
+const real CartPole::FOURTHIRDS = 4.0 / 3.0;
+
+
+
 CartPole::CartPole(bool random_parameters)
 : Environment<Vector, int>(4, 3),
 parameters(default_parameters)

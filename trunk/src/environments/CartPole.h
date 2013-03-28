@@ -32,7 +32,7 @@ protected:
     };
     static Parameters default_parameters;
     Parameters parameters;
-    static const real FOURTHIRDS		= 4.0/3.0;
+    static const real FOURTHIRDS;//		= 4.0/3.0;
     Vector state_action_upper_bound;
     Vector state_action_lower_bound;
     Vector action_upper_bound;
