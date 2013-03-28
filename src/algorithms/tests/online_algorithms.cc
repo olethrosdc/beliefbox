@@ -25,6 +25,7 @@
 #include "QLearningDirichlet.h"
 #include "ModelBasedRL.h"
 #include "SampleBasedRL.h"
+#include "GradientBRL.h"
 #include "UCRL2.h"
 #include "ModelCollectionRL.h"
 #include "ContextBanditGaussian.h"
@@ -47,7 +48,7 @@
 #include "Bike.h"
 #include "Acrobot.h"
 
-//#include "Blackjack.h"
+#include "Blackjack.h"
 
 
 // -- Continuous environments -- //
@@ -373,8 +374,8 @@ int main (int argc, char** argv)
                                                   max_items,
                                                   demand,
                                                   margin);
-			//} else if (!strcmp(environment_name, "Blackjack")) { 
-            //environment = new Blackjack ();
+        } else if (!strcmp(environment_name, "Blackjack")) { 
+            environment = new Blackjack ();
         } else if (!strcmp(environment_name, "MountainCar")) { 
             environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car, grid_size);
         } else if (!strcmp(environment_name, "Bicycle")) { 
@@ -474,6 +475,34 @@ int main (int argc, char** argv)
                                   discrete_mdp,
                                   rng, 
 								  epsilon);
+        } else if (!strcmp(algorithm_name, "LGBRL")) {
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
+                                                  dirichlet_mass,
+                                                  reward_prior);
+            model= (MDPModel*) discrete_mdp;
+            GradientBRL* gbrl = new GradientBRL(n_states,
+                                                n_actions,
+                                                gamma,
+                                                epsilon,
+                                                alpha,
+                                                model,
+                                                rng,
+                                                false);
+            algorithm = gbrl;
+        } else if (!strcmp(algorithm_name, "UGBRL")) {
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
+                                                  dirichlet_mass,
+                                                  reward_prior);
+            model= (MDPModel*) discrete_mdp;
+            GradientBRL* gbrl = new GradientBRL(n_states,
+                                                n_actions,
+                                                gamma,
+                                                epsilon,
+                                                alpha,
+                                                model,
+                                                rng,
+                                                true);
+            algorithm = gbrl;
         } else if (!strcmp(algorithm_name, "LSampling")) {
             discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
                                                   dirichlet_mass,
