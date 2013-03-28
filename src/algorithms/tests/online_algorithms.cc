@@ -921,7 +921,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
 
     }
     printf(" %f %f # RUN_REWARD\n", total_reward, discounted_reward);
-	  
+	fflush(stdout);
     if ((int) statistics.ep_stats.size() != n_episodes) {
         statistics.ep_stats.resize(statistics.ep_stats.size() - 1);
     }

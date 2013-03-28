@@ -35,7 +35,7 @@ class Blackjack : public Environment<int,int>
 
             DiscreteMDP* mdp;
 
-            
+
             Blackjack(real win_value_=1.0, real draw_value_=0.0, real loss_value_=-1.0);
 
             virtual DiscreteMDP* getMDP() const;
@@ -43,11 +43,17 @@ class Blackjack : public Environment<int,int>
             virtual void Reset();
             virtual bool Act(const int& action);
             //void Show();
+            
+            int getState1() const
+            {
+            		return state;
+            }
+            
 
             /**
             * Computing the reward of the player given
             * the state triplet and the value of isNatural
-            * -1 for a loss, 1 for a win, 0 for a draw
+            * -1 for a loss, 1 for a win, 0.0 for a draw
             *
             */
             real calculReward() const;
@@ -75,13 +81,14 @@ class Blackjack : public Environment<int,int>
             }
             virtual ~Blackjack();
       protected:
-      real win_value;
-      real draw_value;
-      real loss_value;
-      int terminal_state;
-      int pc,dc,isUsable,second_value;
-      bool isNatural;
-      RandomNumberGenerator *rng;
+            real win_value;
+            real draw_value;
+            real loss_value;
+            int terminal_state;
+            int pc,dc,isUsable,second_value,first_value;
+            /// True is the first two cards of the player is a Face and an Ace
+            bool isNatural;
+            RandomNumberGenerator *rng;
 
       private:
 };

@@ -74,7 +74,9 @@ void CoverBayesianMultivariate::Reset()
 }
 void CoverBayesianMultivariate::Observe(Vector state, int action, real reward, Vector next_state)
 {	
-	CoverTree::Node* node = cover[action]->Insert(state, next_state, reward, false);
+	//CoverTree::Node* node = 
+	cover[action]->Insert(state, next_state, reward, false);
+
 //	CoverTree::Node* node = cover[action]->Insert(state);
 }
 int CoverBayesianMultivariate::Act(Vector state)
