@@ -119,6 +119,8 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --reward_prior: {Beta, Fixed, *Normal}\n\
     --max_samples:  maximum number of samples (*1) for Sampling\n\
     --initial_reward: [0]\n\
+    --seed:                  seed all the RNGs with this\n\
+    --seed_file:             select a binary file to choose seeds from (use in conjunction with --seed to select the n-th seed in the file)\n\
     \n\
     * denotes default parameter\n\
 \n";
@@ -126,6 +128,9 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
 
 int main (int argc, char** argv)
 {
+    ulong seed = time(NULL);
+    char* seed_filename = 0;
+
     int n_actions = 2;
     int n_states = 5;
     real gamma = 0.99;
@@ -185,6 +190,8 @@ int main (int argc, char** argv)
                 {"step_value", required_argument, 0, 0}, //20
                 {"pit_value", required_argument, 0, 0}, //21
                 {"sampling_threshold", required_argument, 0, 0}, //22
+				{"seed", required_argument, 0, 0}, //23
+				{"seed_file", required_argument, 0, 0}, //24
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -239,7 +246,10 @@ int main (int argc, char** argv)
                     assert(sampling_threshold>=0.0 && sampling_threshold<=1.0);
                     use_sampling_threshold = true;
                     break;
+				case 23: seed = atoi(optarg); break;
+                case 24: seed_filename = optarg; break;
                 default:
+					fprintf (stderr, "Unknown option\n");
                     fprintf (stderr, "%s", help_text);
                     exit(0);
                     break;
@@ -294,12 +304,19 @@ int main (int argc, char** argv)
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
 
+    if (seed_filename) {
+        RandomNumberFile rnf(seed_filename);
+        rnf.manualSeed(seed);
+        seed = rnf.random();
+    }
+    
+    logmsg("seed: %ld\n", seed);
 
-    srand48(34987235);
-    srand(34987235);
-    setRandomSeed(34987235);
-    environment_rng->manualSeed(228240153);
-    rng->manualSeed(1361690241);
+    srand48(seed);
+    srand(seed);
+    setRandomSeed(seed);
+    environment_rng->manualSeed(seed);
+    rng->manualSeed(seed);
 
     std::cout << "Starting test program" << std::endl;
     
@@ -375,7 +392,7 @@ int main (int argc, char** argv)
                                                   demand,
                                                   margin);
         } else if (!strcmp(environment_name, "Blackjack")) { 
-            environment = new Blackjack ();
+            environment = new Blackjack (rng);
         } else if (!strcmp(environment_name, "MountainCar")) { 
             environment = new DiscretisedEnvironment<MountainCar> (continuous_mountain_car, grid_size);
         } else if (!strcmp(environment_name, "Bicycle")) { 
