@@ -23,7 +23,7 @@
 #include "DiscreteMDP.h"
 //#include "MDP.h"
 #include "Environment.h"
-#include "MersenneTwister.h"
+#include "RandomNumberGenerator.h"
 #include <string>
 #include <vector>
 
@@ -36,7 +36,7 @@ class Blackjack : public Environment<int,int>
             DiscreteMDP* mdp;
 
 
-            Blackjack(real win_value_=1.0, real draw_value_=0.0, real loss_value_=-1.0);
+            Blackjack(RandomNumberGenerator* rng_, real win_value_=1.0, real draw_value_=0.0, real loss_value_=-1.0);
 
             virtual DiscreteMDP* getMDP() const;
 

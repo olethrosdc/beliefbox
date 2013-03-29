@@ -12,9 +12,11 @@
 #include "SingularDistribution.h"
 #include "NormalDistribution.h"
 #include <time.h>
-Blackjack::Blackjack(real win_value_, real draw_value_, real loss_value_):
-                                    win_value(win_value_),draw_value(draw_value_),
-                                    loss_value(loss_value_)
+Blackjack::Blackjack(RandomNumberGenerator* rng_, real win_value_, real draw_value_, real loss_value_):
+	win_value(win_value_),
+	draw_value(draw_value_),
+	loss_value(loss_value_),
+	rng(rng_)
 {
       //ctor
 
@@ -22,18 +24,8 @@ Blackjack::Blackjack(real win_value_, real draw_value_, real loss_value_):
       n_actions=2;
       n_states=(21-12+1)*(10-1+1)*2+1;
       terminal_state=n_states-1;
-
       mdp=getMDP();
-      srand48( time(NULL) );
-      srand ( time(NULL) );
-
-      setRandomSeed( time(NULL) );
-
-      MersenneTwisterRNG *mersenne_twister=new MersenneTwisterRNG();
-      rng = (RandomNumberGenerator*) mersenne_twister;
-      rng->manualSeed(time(NULL));
       Reset();
-
 }
 
 
