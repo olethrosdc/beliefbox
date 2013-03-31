@@ -44,6 +44,7 @@ public:
 
     virtual bool Act(const int& action) {
         bool flag = environment.Act(action);
+	endsim = environment.getEndsim();
         state = grid.getInterval(environment.getState());
         reward = environment.getReward();
         //printf("# s: %d, a: %d, r:%f\n", state, action, reward);
