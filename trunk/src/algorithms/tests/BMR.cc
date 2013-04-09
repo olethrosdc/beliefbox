@@ -93,7 +93,8 @@ Statistics EvaluateAlgorithm(int episode_steps,
 							 ContinuousStateEnvironment* environment,
 							 real gamma);
 
-static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
+static const char* const help_text = "BMR - Linear Bayesian reinforcement learning using Bayesian Multivariate Regression\n\
+Usage: BMR [options] algorithm environment\n\
 \nOptions:\n\
 --environment:		{PuddleWorld, MountainCar, Pendulum, Linear}\n\
 --n_states:			number of states (usually there is no need to specify it)\n\
