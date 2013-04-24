@@ -377,12 +377,14 @@ void RunTest(Options& options)
     logmsg("Running estimation policy with %d simulated trajectories\n", estimation_options.n_training);
     for (int i=0; i<V_LSPI.Size(); ++i) {
         logmsg("Estimating policy from simulation\n");
+		double abc_start = GetCPU();
         AbstractPolicy<Vector, int>* lspi_policy
             =  getLSPIPolicy(&samples[i],
                              policy,
                              &training_rollouts,
                              RBFs,
                              estimation_options);
+		abc_time += GetCPU() - abc_start;
         logmsg("Evaluating sampled policy\n");
 
         V_LSPI(i) = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *lspi_policy, options.gamma, options.n_testing);
