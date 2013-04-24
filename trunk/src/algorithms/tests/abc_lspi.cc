@@ -381,7 +381,7 @@ void RunTest(Options& options)
         AbstractPolicy<Vector, int>* lspi_policy
             =  getLSPIPolicy(&samples[i],
                              policy,
-                             &training_rollouts,
+                             NULL,
                              RBFs,
                              estimation_options);
 		abc_time += GetCPU() - abc_start;
