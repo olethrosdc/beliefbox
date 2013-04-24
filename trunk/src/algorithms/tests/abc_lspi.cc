@@ -314,25 +314,21 @@ template <class G, class M>
 void RunTest(Options& options)
 {
 
+    /// Initialise the generator and generate a FIXED environment
     G generator;
     M environment = generator.Generate(false);
-
-
 
     int state_dimension = environment.getNStates();
     //int n_actions = environment.getNActions();
     Vector S_L = environment.StateLowerBound();
     Vector S_U = environment.StateUpperBound();
 
-    printf("# State dimension: %d\n", state_dimension);
-    printf("# S_L: "); S_L.print(stdout);
-    printf("# S_U: "); S_U.print(stdout);
+    logmsg("State dimension: %d\n", state_dimension);
+    logmsg("S_L: "); S_L.print(stdout);
+    logmsg("S_U: "); S_U.print(stdout);
 	 
     EvenGrid Discretisation(S_L, S_U, options.grid);
     RBFBasisSet RBFs(Discretisation, options.scale);
-
-
-
 
     // Start with a random policy!
     RandomPolicy random_policy(environment.getNActions(), &options.rng);
@@ -340,22 +336,25 @@ void RunTest(Options& options)
     // Placeholder for the policy
     AbstractPolicy<Vector, int>& policy = random_policy;
 
-    //template <class G, class F, class M, class P, typename X, typename A>
+    // generate demonstrations
     Demonstrations<Vector, int> training_data;
     logmsg("Training\n"); environment.Show();
     for (int i=0; i<options.n_training; ++i) {
         training_data.Simulate(environment, policy, options.gamma, -1);
     }
     
+    // generate training rollouts 
     Rollout<Vector, int, AbstractPolicy<Vector, int> > training_rollouts(urandom(S_L, S_U), &policy, &environment, options.gamma, true);
     training_rollouts.StartingDistributionSampling(options.n_training, -1);
 
-
+    // start ABC-RL
     ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
     
 
     std::vector<M> samples;
     std::vector<real> values;
+    double abc_time = 0;
+    double abc_start = GetCPU();
     abcrl.GetSample(training_data,
                     policy,
                     options.gamma,
@@ -366,10 +365,12 @@ void RunTest(Options& options)
                     options.n_samples,
                     samples,
                     values);
+    abc_time += GetCPU() - abc_start;
+
     logmsg("Evaluating initial policy on %d samples\n", (int) samples.size());
-
-
     real V_initial = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
+    
+    logmsg("V_LSPI");
     Vector V_LSPI((uint) samples.size());
     Options estimation_options = options;
     estimation_options.n_training = 100;
@@ -389,18 +390,25 @@ void RunTest(Options& options)
         fflush(stdout);
     }
 	
+    double lspi_time = 0;
+    double lspi_start = GetCPU();
     AbstractPolicy<Vector, int>* oracle_lspi_policy
         =  getLSPIPolicy(NULL,
                          policy,
                          &training_rollouts,
                          RBFs,
                          options);
+    lspi_time += GetCPU() - lspi_start;
     logmsg("Evaluating LSPI policy\n");
+
     real V_lspi_oracle = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *oracle_lspi_policy, options.gamma, options.n_testing);
-    printf ("%f %f %f # V V_LSPI V_LSPI_oracle\n",
+    
+    printf ("%f %f %f %f %f # V V_ABC_LSPI V_LSPI T_ABC T_LSPI\n",
             V_initial,
             V_LSPI.Sum() / (real) V_LSPI.Size(),
-            V_lspi_oracle);
+            V_lspi_oracle,
+            abc_time,
+            lspi_time);
 }
 
 /** Run an online test
@@ -456,6 +464,8 @@ void RunOnlineTest(Options& options)
                    training_data.total_rewards.back(),
                    training_data.discounted_rewards.back(),
                    training_data.steps.back());
+
+
             ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
             std::vector<M> samples;
             std::vector<real> values;
