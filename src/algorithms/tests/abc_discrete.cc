@@ -373,7 +373,7 @@ void RunTest(Options& options)
     logmsg("V_LSPI\n");
     Vector V_LSPI((uint) samples.size());
     Options estimation_options = options;
-    estimation_options.n_training = 2000;
+    estimation_options.n_training = 1000;
     logmsg("Running estimation policy with %d simulated trajectories\n", estimation_options.n_training);
     for (int i=0; i<V_LSPI.Size(); ++i) {
         logmsg("Estimating policy from simulation\n");

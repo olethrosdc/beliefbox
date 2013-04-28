@@ -69,4 +69,15 @@ public:
 
 };
 
+class InventoryManagementGenerator
+{
+public:
+    InventoryManagement Generate(bool random=true)
+    {
+      return InventoryManagement(random);
+    }
+};
+
+
+
 #endif
