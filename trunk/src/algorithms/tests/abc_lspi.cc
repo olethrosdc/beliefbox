@@ -370,10 +370,10 @@ void RunTest(Options& options)
     logmsg("Evaluating initial policy on %d samples\n", (int) samples.size());
     real V_initial = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
     
-    logmsg("V_LSPI");
+    logmsg("V_LSPI\n");
     Vector V_LSPI((uint) samples.size());
     Options estimation_options = options;
-    estimation_options.n_training = 100;
+    estimation_options.n_training = 10000;
     logmsg("Running estimation policy with %d simulated trajectories\n", estimation_options.n_training);
     for (int i=0; i<V_LSPI.Size(); ++i) {
         logmsg("Estimating policy from simulation\n");
