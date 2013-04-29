@@ -62,7 +62,7 @@ public:
     }
 
 
-    virtual const char* Name()
+    virtual const char* Name() const
     {
         return "Inventory management";
     }
@@ -74,7 +74,11 @@ class InventoryManagementGenerator
 public:
     InventoryManagement Generate(bool random=true)
     {
-      return InventoryManagement(random);
+		int max_stock = 32;
+		int period = 20;
+		real demand = urandom();
+		real margin = 1 + urandom();
+		return InventoryManagement(period, max_stock, demand, margin);
     }
 };
 
