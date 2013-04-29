@@ -52,6 +52,7 @@ struct Options
     int n_samples; ///< number of sampled environments
     int n_training; ///< number of training trajectories
     int n_testing; ///< number of testing trajectories
+    int n_model_rollouts; ///< number of rollouts to take from the model
     int grid; ///< grid size for features
     real scale; ///< scale of RBF basis
     real accuracy; ///< value/policy iteration accuracy
@@ -70,6 +71,7 @@ struct Options
         n_samples(128),
         n_training(10),
         n_testing(1000),
+        n_model_rollouts(2000),
         grid(5),
         scale(0.5),
         accuracy(1e-6),
@@ -80,6 +82,31 @@ struct Options
         delta(0.5),
 		R_max(1.0)
     {
+    }
+     
+    void ShowOptions()
+    {
+        logmsg("------------------------\n");
+        logmsg("Options\n");
+        logmsg("=======\n");
+        logmsg("Gamma: %f\n", gamma);
+        logmsg("Epsilon: %f\n", epsilon);
+        logmsg("Trajectories: %d\n", n_trajectories);
+        logmsg("n_samples: %d\n", n_samples);
+        logmsg("n_training: %d\n",  n_training); 
+        logmsg("n_testing: %d\n", n_testing);
+        logmsg("n_model_rollouts: %d\n", n_model_rollouts);
+        logmsg("grid %d\n", grid);
+        logmsg("scale %f\n", scale);
+        logmsg("accuracy %f\n", accuracy);
+        logmsg("lspi iterations %d\n", lspi_iterations);
+        logmsg("n_evaluations %d\n", n_evaluations);
+        logmsg("reuse_training_data %d\n", reuse_training_data);
+        logmsg("n_episodes %d\n", n_episodes);
+        logmsg("sampling %d\n", sampling);
+        logmsg("deta %f\n", delta);
+        logmsg("R_max %f\n", R_max);
+        logmsg("------------------------\n");
     }
 };
 
@@ -123,7 +150,7 @@ public:
         real bound = sqrt(C * (1.0 / (real) data.size()
                                + 1.0 / (real) sample.size()));
         real distance = fabs(r_d - r_s) - bound;
-        //printf ("%f %f (r) %f => %f \n", r_d, r_s, bound, distance);
+        logmsg ("statistic: %f %f (r) %f => %f \n", r_d, r_s, bound, distance);
         
         return distance; 
     }
@@ -223,13 +250,13 @@ public:
                 n_models++;
                 samples.push_back(model);
                 values.push_back(statistic.getAverageTotalReward(sample));
-                printf ("# %d (e) %f %f\n", n_models, error, epsilon); 
+                logmsg ("models: %d (e) %f %f\n", n_models, error, epsilon); 
                 model.Show();
             }
             if(iter > n_samples) {
                 iter = 0;
                 epsilon *= 2.0;
-                printf("# e -> %f\n", epsilon);
+                logmsg("# increasing epsilon -> %f\n", epsilon);
                 fflush(stdout);
             }
         }
@@ -265,16 +292,17 @@ public:
                 error += statistic.distance(data_list[k], sample);
             }
             error /= (real) list_size;
-
+            printf("%f \n", error);
             if (error <= epsilon) {
                 n_models++;
                 samples.push_back(model);
                 model.Show();
+                logmsg ("models: %d (e) %f %f\n", n_models, error, epsilon); 
             }
             if(iter > n_samples) {
                 iter = 0;
                 epsilon *= 2.0;
-                printf("# e -> %f\n", epsilon);
+                logmsg("epsilon increased -> %f\n", epsilon);
                 fflush(stdout);
             }
         }
@@ -293,7 +321,7 @@ real EvaluatePolicy(M& environment, P& policy, real gamma, int n_testing)
     real discounted_reward = 0;
     real average_steps = 0;
     int horizon =  (int) ceil(10.0/(1.0 - gamma));
-    printf("Evaluating policy with horizon %d\n", horizon);
+    logmsg("Evaluating policy with horizon %d\n", horizon);
     Demonstrations<Vector, int> data;
     for (int i=0; i<n_testing; ++i) {
         data.Simulate(environment, policy, gamma, horizon);
@@ -373,7 +401,7 @@ void RunTest(Options& options)
     logmsg("V_LSPI\n");
     Vector V_LSPI((uint) samples.size());
     Options estimation_options = options;
-    estimation_options.n_training = 2000;
+    estimation_options.n_training = options.n_model_rollouts;
     logmsg("Running estimation policy with %d simulated trajectories\n", estimation_options.n_training);
     for (int i=0; i<V_LSPI.Size(); ++i) {
         logmsg("Estimating policy from simulation\n");
@@ -432,6 +460,7 @@ void RunOnlineTest(Options& options)
     Vector S_L = environment.StateLowerBound();
     Vector S_U = environment.StateUpperBound();
 
+    logmsg("Running online test\n");
     logmsg("State dimension: %d\n", state_dimension);
     logmsg("S_L: "); S_L.print(stdout);
     logmsg("S_U: "); S_U.print(stdout);
@@ -482,7 +511,7 @@ void RunOnlineTest(Options& options)
                             samples,
                             values);
             Options estimation_options = options;
-            estimation_options.n_training = 100;
+            estimation_options.n_training = options.n_model_rollouts;
             AbstractPolicy<Vector, int>* sampled_policy
                 =  getLSPIPolicy(&samples[0],
                                  *policy_list[0],
@@ -723,6 +752,8 @@ int main(int argc, char* argv[])
     }
 
     logmsg("Starting environment %s\n", options.environment_name);
+
+    options.ShowOptions();
 
     if (online_test) {
         for (int i=0; i<options.n_evaluations; ++i) {
