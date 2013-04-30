@@ -147,11 +147,17 @@ public:
     {
         real r_d = getAverageTotalReward(data);
         real r_s = getAverageTotalReward(sample);
-        real bound = sqrt(C * (1.0 / (real) data.size()
-                               + 1.0 / (real) sample.size()));
+        real n_d = (real) data.size();
+        real n_s = (real) sample.size();
+#if 1
+        real bound = sqrt(C * (1.0 / n_d + 1.0 / n_s));
         real distance = fabs(r_d - r_s) - bound;
-        logmsg ("statistic: %f %f (r) %f => %f \n", r_d, r_s, bound, distance);
-        
+        //logmsg ("statistic: %f %f (r) %f | %f => %f \n", r_d, r_s, bound, fabs(r_d - r_s), distance);
+#else
+        real gap = r_d - r_s;
+        real distance = fabs(gap); //+ exp( - gap*gap / (1.0/n_d + 1.0/n_s));
+        //logmsg ("statistic: %f %f \n", gap, distance);
+#endif
         return distance; 
     }
 };
@@ -292,7 +298,7 @@ public:
                 error += statistic.distance(data_list[k], sample);
             }
             error /= (real) list_size;
-            printf("%f \n", error);
+            //logmsg("total error: %f \n", error);
             if (error <= epsilon) {
                 n_models++;
                 samples.push_back(model);
