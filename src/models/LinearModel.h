@@ -103,6 +103,9 @@ public:
 		RBFs = NULL;
 		//*TODO*/
 	}
+    virtual ~LinearModel()
+    {
+    }
 	void Reset()
 	{
 		int n_actions = environment->getNActions();
