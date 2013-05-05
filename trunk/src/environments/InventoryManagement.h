@@ -69,16 +69,17 @@ public:
 
 };
 
-class InventoryManagementGenerator
+class InventoryManagementGenerator : public EnvironmentGenerator<int, int>
 {
 public:
-    InventoryManagement Generate(bool random=true)
+    InventoryManagement* Generate(bool random=true)
     {
 		int max_stock = 32;
 		int period = 20;
 		real demand = urandom();
 		real margin = 1 + urandom();
-		return InventoryManagement(period, max_stock, demand, margin);
+		InventoryManagement* inventory_management = new InventoryManagement(period, max_stock, demand, margin);
+		return inventory_management;
     }
 };
 
