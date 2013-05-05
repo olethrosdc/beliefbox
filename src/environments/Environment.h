@@ -143,7 +143,6 @@ public:
       exit(-1);
       return 0.0;
     }
-
 };
 
 /// Default type for discrete environments
@@ -154,6 +153,18 @@ typedef Environment<Vector, int> ContinuousStateEnvironment;
 
 /// Default type for continuous environments
 typedef Environment<Vector, Vector> ContinuousEnvironment;
+
+/// Template for environment generators
+template <typename S, typename A>
+class EnvironmentGenerator
+{
+public:
+  virtual Environment<S, A>* Generate(bool random = true) = 0;
+  virtual ~EnvironmentGenerator()
+  {
+  }
+};
+
 
 /*@}*/
 

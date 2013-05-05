@@ -218,7 +218,7 @@ void BayesianMultivariate::Update()
 }
 void BayesianMultivariate::Predict()
 {
-	int n;
+  int n;
 	Vector r;
 	Vector phi;
 	Vector next_state;

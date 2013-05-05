@@ -108,6 +108,8 @@ real SampleBasedRL::Observe (int state, int action, real reward, int next_state,
     if (state>=0) {
         model->AddTransition(state, action, reward, next_state);
     }
+    current_state = next_state;
+    current_action = next_action;
     return 0.0;
 }
 /// Partial observation 

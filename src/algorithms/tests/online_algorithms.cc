@@ -24,6 +24,7 @@
 #include "QLearning.h"
 #include "QLearningDirichlet.h"
 #include "ModelBasedRL.h"
+#include "DiscreteABCRL.h"
 #include "SampleBasedRL.h"
 #include "GradientBRL.h"
 #include "UCRL2.h"
@@ -99,7 +100,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
                               real gamma);
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma}\n\
+    --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma, ABC}\n\
     --environment:  {Acrobot, Puddle, CartPole, Pendulum, MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory, DoubleLoop}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
@@ -359,6 +360,8 @@ int main (int argc, char** argv)
         continuous_puddle_world.Reset();
 
         DiscreteEnvironment* environment = NULL;
+        EnvironmentGenerator<int, int>* environment_generator
+          = NULL;
         if (!strcmp(environment_name, "RandomMDP")) { 
             environment = new RandomMDP (n_actions,
                                          n_states,
@@ -391,6 +394,7 @@ int main (int argc, char** argv)
                                                   max_items,
                                                   demand,
                                                   margin);
+            environment_generator = new InventoryManagementGenerator;
         } else if (!strcmp(environment_name, "Blackjack")) { 
             environment = new Blackjack (rng);
         } else if (!strcmp(environment_name, "MountainCar")) { 
@@ -555,6 +559,16 @@ int main (int argc, char** argv)
                 sampling->setSamplingThreshold(sampling_threshold);
             }
             algorithm = sampling;
+        } else if (!strcmp(algorithm_name, "ABC")) {
+          DiscreteABCRL* abc = new DiscreteABCRL(n_states,
+                  n_actions,
+                  gamma,
+                  epsilon,
+                  environment_generator,
+                  rng,
+                  max_samples,
+                  true);
+          algorithm = abc;
 #if 0
         } else if (!strcmp(algorithm_name, "BMCSampling")) {
             MDPModelClassPriors* mcp_mdp = new MDPModelClassPriors(n_states,
@@ -778,6 +792,7 @@ int main (int argc, char** argv)
             delete model;
         }
         delete environment;
+        delete environment_generator;
         delete exploration_policy;
     }
     
