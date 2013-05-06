@@ -28,11 +28,13 @@ public:
   std::vector<real> total_rewards;
   std::vector<real> discounted_rewards;
   std::vector<int> steps;
-  Demonstrations() 
+  Demonstrations(bool new_episode = true) 
     : current_trajectory(NULL)
   {
     //fprintf(stderr, "Creating Demonstrators\n");
-    NewEpisode();
+    if (new_episode) {
+      NewEpisode();
+    }
   }
   void Observe(S s, A a)
   {
@@ -103,20 +105,25 @@ public:
       }
       ++t;
     } while (running);
-    //logmsg("Terminating after %d steps\n", t);
+    logmsg("Terminating after %d steps\n", t);
     total_rewards.push_back(total_reward);
     discounted_rewards.push_back(discounted_reward);
     steps.push_back(t);
   }
 
+  /// total number of trajectories
   uint size() const
   {
+    if (trajectories.size() == 0) {
+      return 0;
+    }
     if (trajectories[trajectories.size() - 1].size() > 0) {
       return trajectories.size();
     }
     return trajectories.size()  - 1;
   }
 
+  /// state of the i-th trajectory at time t
   S state(uint i, uint t) const
   {
     assert (i < size());
@@ -125,6 +132,7 @@ public:
     return trajectories[i].state(t);
   }
 
+  /// action of the i-th trajectory at time t
   A action(uint i, uint t) const
   {
     assert (i < size());
@@ -133,25 +141,26 @@ public:
     return trajectories[i].action(t);
   }
 
+  /// reward of the i-th trajectory at time t
   real reward(uint i, uint t) const
   {	
     assert (i < size());
     assert (t < trajectories[i].rewards.size());
     return trajectories[i].reward(t);
   }
-
+  /// total reward of the i-th trajectory
   real total_reward(uint i) const
   {	
     assert (i < size());
     return total_rewards[i];
   }
-
+  /// discounted reward of the i-th trajectory
   real discounted_reward(uint i) const
   {	
     assert (i < size());
     return discounted_rewards[i];
   }
-
+  /// Length of the i-th trajectory
   uint length(uint i) const
   {
     return trajectories[i].size();

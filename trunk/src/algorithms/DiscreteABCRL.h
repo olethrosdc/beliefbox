@@ -32,12 +32,11 @@
     This class maintains a set of (discrete) MDPs.
     It selects actions based on a set of _sampled_ MDPs.
     
-    The sampling is performed using ABC, described in
-    "ABC Reinforcement Learning"
-    Christos Dimitrakakis and Nikolaos Tziortziotis
-    ICML 2013.
+    The sampling is performed using ABC, using a variant of the
+    algorithm described in "ABC Reinforcement Learning" Christos
+    Dimitrakakis and Nikolaos Tziortziotis ICML 2013.
 
-    The algorithm is described in the paper:
+    The lower bound algorithm is described in the paper:
     "Robust Bayesian Reinforcement Learning through Tight Lower Bounds",
     Christos Dimitrakakis
     EWRL 2011.

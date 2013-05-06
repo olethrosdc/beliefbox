@@ -71,16 +71,24 @@ public:
 
 class InventoryManagementGenerator : public EnvironmentGenerator<int, int>
 {
+protected:
+  int max_stock;
+  int period;
 public:
-    InventoryManagement* Generate(bool random=true)
-    {
-		int max_stock = 32;
-		int period = 20;
+  InventoryManagementGenerator(int max_stock_, int period_) : max_stock(max_stock_),
+                                                              period(period_)
+  {
+  }
+  InventoryManagement* Generate(bool random=true)
+  {
 		real demand = urandom();
 		real margin = 1 + urandom();
 		InventoryManagement* inventory_management = new InventoryManagement(period, max_stock, demand, margin);
 		return inventory_management;
     }
+  virtual ~InventoryManagementGenerator()
+  {
+  }
 };
 
 

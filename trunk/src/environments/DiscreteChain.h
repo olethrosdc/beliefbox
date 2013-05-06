@@ -73,4 +73,32 @@ public:
 
 };
 
+class DiscreteChainGenerator : public EnvironmentGenerator<int, int>
+{
+protected:
+  int n;
+public:
+  DiscreteChainGenerator(int n_)
+  : n(n_)
+  {
+    assert(n > 0);
+  }
+  virtual DiscreteChain* Generate(bool random = true)
+  {
+    DiscreteChain* chain = NULL;
+    if (random) {
+      real slip = urandom();
+      real start = 0.2;//urandom();
+      
+      chain = new DiscreteChain(n, slip, start);
+    } else {
+      chain = new DiscreteChain(n);
+    }
+    return chain;
+  }
+  virtual ~DiscreteChainGenerator()
+  {
+  }
+};
+
 #endif
