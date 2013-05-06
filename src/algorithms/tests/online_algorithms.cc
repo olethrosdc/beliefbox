@@ -379,6 +379,7 @@ int main (int argc, char** argv)
             environment = new OneDMaze(n_states, rng);
         } else if (!strcmp(environment_name, "Chain")) { 
             environment = new DiscreteChain (n_states);
+            environment_generator = new DiscreteChainGenerator (n_states);
         } else if (!strcmp(environment_name, "Optimistic")) { 
             environment = new OptimisticTask (0.1, 0.1);
         } else if (!strcmp(environment_name, "RiverSwim")) { 
@@ -391,10 +392,10 @@ int main (int argc, char** argv)
             real demand = randomness;
             real margin = 1.1;
             environment = new InventoryManagement(period,
-                                                  max_items,
-                                                  demand,
-                                                  margin);
-            environment_generator = new InventoryManagementGenerator;
+                    max_items,
+                    demand,
+                    margin);
+            environment_generator = new InventoryManagementGenerator(period, max_items);
         } else if (!strcmp(environment_name, "Blackjack")) { 
             environment = new Blackjack (rng);
         } else if (!strcmp(environment_name, "MountainCar")) { 

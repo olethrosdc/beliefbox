@@ -24,6 +24,7 @@ DiscreteABCRL::DiscreteABCRL(int n_states_,
     gamma(gamma_),
     epsilon(epsilon_),
     generator(generator_),
+    demonstrations(false),
     tmpQ(n_actions),
     VU(n_states),
     VL(n_states),
@@ -108,12 +109,15 @@ real DiscreteABCRL::Observe (real reward, int next_state, int next_action)
 
 DiscreteMDP* DiscreteABCRL::GenerateMDP() const
 {
-  bool flag  = true;
-  while (flag) {
+  int iter = 0;
+  real min_error = INF;
+  DiscreteMDP* mdp = NULL;
+  while (iter < 2) {
     DiscreteEnvironment* environment = generator->Generate();
-    Demonstrations<int, int> test_demos;
-    DiscreteMDP* mdp = NULL;
-
+    Demonstrations<int, int> test_demos(false);
+    if (!mdp) {
+      mdp = environment->getMDP();
+    }
     for (uint i=0; i<policies.size(); ++i) {
       test_demos.Simulate(*environment, *policies[i], gamma, -1);
     }
@@ -127,13 +131,18 @@ DiscreteMDP* DiscreteABCRL::GenerateMDP() const
       test_mean += test_demos.discounted_reward(i);
     }
     test_mean /= (real) test_demos.size();
-    if (fabs(mean - test_mean) < 1.0) {
+    ++iter;
+    real error = fabs(mean - test_mean);
+    if (error < min_error) {
+      min_error = error;
+      delete mdp;
       mdp = environment->getMDP();
-      delete environment;
-      return mdp;
     }
     delete environment;
   }
+
+  return mdp;
+
 }
 
 void DiscreteABCRL::Resample()
