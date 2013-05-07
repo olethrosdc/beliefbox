@@ -18,6 +18,7 @@ DiscreteABCRL::DiscreteABCRL(int n_states_,
                              EnvironmentGenerator<int, int>* generator_,
                              RandomNumberGenerator* rng_,
                              int max_samples_,
+                             int n_iterations_,
                              bool use_upper_bound_)
   : n_states(n_states_),
     n_actions(n_actions_),
@@ -38,6 +39,7 @@ DiscreteABCRL::DiscreteABCRL(int n_states_,
     use_upper_bound(use_upper_bound_),
     use_sampling_threshold(false),
     sampling_threshold(0.1),
+    n_iterations(n_iterations_),
     weights(max_samples)
 {
   printf("# Starting Discrete-ABC-RL with %d samples, update interval %d\n",
@@ -85,7 +87,6 @@ real DiscreteABCRL::Observe (int state, int action, real reward, int next_state,
   if (state >= 0) {
     demonstrations.Observe(state, action, reward);
   } else {
-    demonstrations.Terminate();
     demonstrations.NewEpisode();
   }
   current_state = next_state;
@@ -97,7 +98,6 @@ real DiscreteABCRL::Observe (int state, int action, real reward, int next_state,
 real DiscreteABCRL::Observe (real reward, int next_state, int next_action)
 {
   if (current_state < 0) {
-    demonstrations.Terminate();
     demonstrations.NewEpisode();
   } else {
     demonstrations.Observe(current_state, current_action, reward);
@@ -108,31 +108,34 @@ real DiscreteABCRL::Observe (real reward, int next_state, int next_action)
 }
 
 DiscreteMDP* DiscreteABCRL::GenerateMDP() const
-{
+ {
   int iter = 0;
   real min_error = INF;
   DiscreteMDP* mdp = NULL;
-  while (iter < 2) {
+  while (iter < n_iterations) {
     DiscreteEnvironment* environment = generator->Generate();
     Demonstrations<int, int> test_demos(false);
     if (!mdp) {
       mdp = environment->getMDP();
     }
     for (uint i=0; i<policies.size(); ++i) {
-      test_demos.Simulate(*environment, *policies[i], gamma, -1);
+      test_demos.Simulate(*environment, *policies[i], gamma, demonstrations.length(i));
     }
     real mean = 0;
-    for (uint i=0; i<demonstrations.size(); ++i)  {
+    for (uint i=0; i<policies.size(); ++i)  {
+      printf("D %f\n", demonstrations.discounted_reward(i));
       mean += demonstrations.discounted_reward(i);
     }
     mean /= (real) demonstrations.size();
     real test_mean = 0;
     for (uint i=0; i<test_demos.size(); ++i)  {
+      printf("T %f\n", test_demos.discounted_reward(i));
       test_mean += test_demos.discounted_reward(i);
     }
     test_mean /= (real) test_demos.size();
     ++iter;
     real error = fabs(mean - test_mean);
+    logmsg("err: %f (%f %f)\n", error, mean, test_mean);
     if (error < min_error) {
       min_error = error;
       delete mdp;
@@ -140,7 +143,8 @@ DiscreteMDP* DiscreteABCRL::GenerateMDP() const
     }
     delete environment;
   }
-
+  
+  logmsg("utility error: %f\n", min_error);
   return mdp;
 
 }
@@ -208,6 +212,8 @@ int DiscreteABCRL::Act(real reward, int next_state)
   // update the model
   if (current_state >= 0) {
     demonstrations.Observe(current_state, current_action, reward);
+  } else {
+    demonstrations.NewEpisode();
   }
   current_state = next_state;
 

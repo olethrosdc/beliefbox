@@ -39,24 +39,31 @@ public:
   void Observe(S s, A a)
   {
     //fprintf(stderr, "Size of trajectories: %d\n", trajectories.size())
+    if (!current_trajectory) NewEpisode();
     current_trajectory->Observe(s, a);
   }
   void Observe(S s, A a, real r)
   {
     //fprintf(stderr, "Size of trajectories: %d\n", trajectories.size())
+    if (!current_trajectory) NewEpisode();
     current_trajectory->Observe(s, a, r);
   }
   void Terminate()
   {
     //fprintf(stderr, "Size of trajectories: %d\n", trajectories.size())
-    current_trajectory->Terminate();
+    if (current_trajectory)
+        current_trajectory->Terminate();
   }
 
+  /// Start a new episode
   void NewEpisode()
   {
-    //fprintf(stderr, "Adding Episode in Trajectories\n");
+    // fprintf(stderr, "Adding Episode in Trajectories\n");
     trajectories.push_back(Trajectory<S, A>());
     current_trajectory = &trajectories[trajectories.size() - 1];
+    total_rewards.push_back(0.0);
+    discounted_rewards.push_back(0.0);
+    steps.push_back(0);
   }
   /// Use a negative horizon to use a geometric stopping distribution
   void Simulate(Environment<S, A>& environment, AbstractPolicy<S, A>& policy, real gamma, int horizon)
@@ -106,9 +113,10 @@ public:
       ++t;
     } while (running);
     logmsg("Terminating after %d steps\n", t);
-    total_rewards.push_back(total_reward);
-    discounted_rewards.push_back(discounted_reward);
-    steps.push_back(t);
+    int index = trajectories.size() - 1;
+    total_rewards[index] = total_reward;
+    discounted_rewards[index] = discounted_reward;
+    steps[index] = t;
   }
 
   /// total number of trajectories
