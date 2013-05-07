@@ -68,7 +68,7 @@ protected:
   bool use_upper_bound; ///< use upper bounds to take actions if true
   bool use_sampling_threshold; ///< use a threshold for resampling
   real sampling_threshold; ///< value of the threshold
-
+  int n_iterations; ///< number of iterations for the ABC sampler
 public:
   std::vector<const DiscreteMDP*> mdp_list; ///< list of sampled models
   Vector weights; ///< probability vector of MDPs
@@ -79,6 +79,7 @@ public:
                 EnvironmentGenerator<int, int>* generator_,
                 RandomNumberGenerator* rng_,
                 int max_samples_ = 1,
+                int n_iterations_ = 25,
                 bool use_upper_bound_ = false);
   virtual ~DiscreteABCRL();
   virtual void Reset();

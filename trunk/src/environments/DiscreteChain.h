@@ -51,7 +51,7 @@ public:
     virtual void Reset();
     virtual bool Act(const int& action);
 
-    virtual const char* Name()
+    virtual const char* Name() const
     {
         return "Discrete Chain";
     }

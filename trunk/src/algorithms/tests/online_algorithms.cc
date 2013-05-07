@@ -1,6 +1,6 @@
 /* -*- Mode: C++; -*- */
 /* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
-// copyright (c) 2006-2011 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2006-2013 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -117,6 +117,7 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --goal_value:   value of reaching a goal (* 1)\n\
     --step_value:   value at each time step (* 0)\n\
     --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0.01)\n\
+    --n_iterations: maximum number of iterations (*25) for ABC\n\
     --reward_prior: {Beta, Fixed, *Normal}\n\
     --max_samples:  maximum number of samples (*1) for Sampling\n\
     --initial_reward: [0]\n\
@@ -134,6 +135,7 @@ int main (int argc, char** argv)
 
     int n_actions = 2;
     int n_states = 5;
+    int n_iterations = 25;
     real gamma = 0.99;
     real lambda = 0.9;
     real alpha = 0.1;
@@ -191,8 +193,9 @@ int main (int argc, char** argv)
                 {"step_value", required_argument, 0, 0}, //20
                 {"pit_value", required_argument, 0, 0}, //21
                 {"sampling_threshold", required_argument, 0, 0}, //22
-				{"seed", required_argument, 0, 0}, //23
-				{"seed_file", required_argument, 0, 0}, //24
+                {"seed", required_argument, 0, 0}, //23
+                {"seed_file", required_argument, 0, 0}, //24
+                {"n_iterations", required_argument, 0, 0}, //25
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -247,13 +250,14 @@ int main (int argc, char** argv)
                     assert(sampling_threshold>=0.0 && sampling_threshold<=1.0);
                     use_sampling_threshold = true;
                     break;
-				case 23: seed = atoi(optarg); break;
+                case 23: seed = atoi(optarg); break;
                 case 24: seed_filename = optarg; break;
+                case 25: n_iterations = atoi(optarg); break;
                 default:
-					fprintf (stderr, "Unknown option\n");
-                    fprintf (stderr, "%s", help_text);
-                    exit(0);
-                    break;
+                  fprintf (stderr, "Unknown option\n");
+                  fprintf (stderr, "%s", help_text);
+                  exit(0);
+                  break;
                 }
                 break;
             case '0':
@@ -568,6 +572,7 @@ int main (int argc, char** argv)
                   environment_generator,
                   rng,
                   max_samples,
+                  n_iterations,
                   true);
           algorithm = abc;
 #if 0
