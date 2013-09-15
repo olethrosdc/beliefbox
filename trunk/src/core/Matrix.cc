@@ -347,7 +347,6 @@ Matrix Matrix::operator- (const Matrix& rhs)
     return lhs;
 }
 
-
 /// Subtract another matrix from this
 Matrix& Matrix::operator-= (const Matrix& rhs)
 {
@@ -365,8 +364,6 @@ Matrix& Matrix::operator-= (const Matrix& rhs)
     }
     return *this;
 }
-
-
 
 /// Create a matrix through the multiplication of two other matrices.
 Matrix Matrix::operator* (const Matrix& rhs)
@@ -573,6 +570,25 @@ real Matrix::tr() const
 		trace += (*this)(i,i);
 	}
 	return trace;
+}
+
+/// Calculate the element-by-element product of two arrays.
+Matrix Matrix::Multiple(const Matrix& rhs) const
+{
+	if (Columns() != rhs.Columns() || Rows() != rhs.Rows()) {
+        throw std::domain_error("Matrix element-by-element product\n");
+    }
+	int M = Rows();
+    int N = Columns();
+    
+    Matrix lhs(M, N);
+    
+    for (int m=0; m<M; ++m) {
+        for (int n=0; n<N; ++n) {
+            lhs(m, n) = (*this)(m,n) * rhs(m,n);
+        }
+    }
+	return lhs;
 }
 
 /// Kronecker product.
