@@ -25,21 +25,44 @@
 class GaussianProcess
 {
 protected:
+	Matrix X; ///< Samples
+	Vector Y; ///< Output
+	int N;  ///< Total number of samples
+	Vector alpha; 
     Matrix Sigma_p;
     Matrix Accuracy;
     Matrix A;
-    real noise_variance;
-    Matrix X2; ///< observation co-variance.
+	Matrix L;  ///< Cholesky Decomposition (L is an upper tringular matrix).
+	Matrix inv_L;
+	Matrix K;  ///< Kernel(Covariance) Matrix.
+	/// Kernel hyperparameters.
+    real noise_variance;	///< noise variance
+	real scale_length;		///< lenght scale
+	real sig_var;		    ///< signal variance 
+    Matrix X2; ///< observation co-variance
     Vector mean;
     Matrix covariance;
 public:
     GaussianProcess(Matrix& Sigma_p_,
                     real noise_variance_);
+	GaussianProcess(Matrix& X_, 
+					Vector& Y_,
+					real noise_variance_,
+					real scale_length_,
+					real hyp_u_);
     virtual ~GaussianProcess();
     virtual Vector generate();
     virtual real pdf(Vector& x, real y);
     virtual void Observe(Vector& x, real y);
     virtual void Observe(Matrix& x, Vector& y);
+	virtual void UpdateGaussianProcess();
+	virtual void Prediction(Vector& x, real& mean, real& var);
+	virtual real PredictiveMean(Vector& x);
+	virtual real PredictiveVariance(Vector& x);
+	virtual void Covariance();
+	virtual Matrix CovarianceDerivatives(int p);
+	virtual Vector Kernel(Vector& x);
+	virtual real LogLikelihood();
 };
 
 #endif

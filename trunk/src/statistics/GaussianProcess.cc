@@ -21,6 +21,21 @@ GaussianProcess::GaussianProcess(Matrix& Sigma_p_,
     Accuracy = Sigma_p.Inverse();
     A = Accuracy;
 }
+
+GaussianProcess::GaussianProcess(Matrix& X_, 
+								 Vector& Y_,
+								 real noise_variance_,
+								 real scale_length_,
+								 real sig_var_)
+	: X(X_),
+	  Y(Y_),
+	  noise_variance(noise_variance_),
+	  scale_length(scale_length_),
+	  sig_var(sig_var_)
+{
+	N = X.Rows();
+	UpdateGaussianProcess();
+}
          
 GaussianProcess::~GaussianProcess()
 {
@@ -69,8 +84,107 @@ void GaussianProcess::Observe(Matrix& X, Vector& y)
             }
         }
     }
-    
+	
     Matrix L = K.Cholesky();
-    
+}
 
+void GaussianProcess::UpdateGaussianProcess()
+{
+	Covariance();
+	L = K.Cholesky();
+	inv_L = L.Inverse();
+	alpha = inv_L*(Transpose(inv_L)*Y); 
+}
+
+void GaussianProcess::Prediction(Vector& x, real& mean, real& var)
+{
+	Vector k = Kernel(x);
+	mean     = PredictiveMean(k);
+	var	     = PredictiveVariance(k);
+}
+
+real GaussianProcess::PredictiveMean(Vector& k)
+{
+	real mean = Product(k, alpha); ///(mean = k'*alpha) 
+	return mean;
+}
+
+real GaussianProcess::PredictiveVariance(Vector& k)
+{
+	Vector v = inv_L*k;
+	real var = sig_var*sig_var - v.SquareNorm();
+	return var;
+}
+
+/// Covariance function estimation
+void GaussianProcess::Covariance()
+{
+	/// The covariance matrix is symmetric
+	K = Matrix::Matrix(N,N);
+	for(int i=0; i<N; ++i) { 
+		Vector S = X.getRow(i);
+		for(int j = i; j < N; ++j) {
+			real delta = (S - X.getRow(j)).SquareNorm();
+			delta = sig_var*sig_var*exp(-0.5*delta/(scale_length*scale_length));
+			if(i == j) {
+				K(i,j) = delta + noise_variance;
+			}else {
+				K(i,j) = delta;
+				K(j,i) = delta;
+			}
+		}
+	}
+}
+
+/// The following function calculates the partial derivatives of the Covariance function w.r.t hyperparameters
+/// If input argument equal to 1, the derivative of the scale_lenght 'hyperparameter' is calculated.
+/// Otherwise, the derivative of the signal variance 'hyperparameter' is calculated.
+Matrix GaussianProcess::CovarianceDerivatives(int p)
+{
+	Matrix KK(N,N);
+	Matrix KE(N,N); 
+	for(int i=0; i<N; ++i) { 
+		Vector S = X.getRow(i);
+		for(int j = i; j < N; ++j) {
+			real delta = (S - X.getRow(j)).SquareNorm();
+			KK(i,j) = delta/(scale_length*scale_length);
+			KK(j,i) = KK(i,j);
+			KE(i,j) = exp(-0.5*delta);
+			KE(j,i) = KE(i,j);
+		}
+	}
+	
+	Matrix DK(N,N);
+	if(p == 1)  
+	{
+		DK = (sig_var*sig_var)*KE.Multiple(KK);
+	}
+	else if(p == 2) {
+		DK = 2*sig_var*KE;
+	}
+	return DK;
+}
+
+/// Covariance funtion de
+Vector GaussianProcess::Kernel(Vector& x)
+{
+	//int N = X.Rows();
+	Vector k(N);
+	for(int i=0; i<N; ++i) { 
+		real delta = (x - X.getRow(i)).SquareNorm();
+		delta = sig_var*sig_var*exp(-0.5*delta/(scale_length*scale_length));
+		k(i) = delta; 
+	}
+	return k;
+}
+
+/// Log marginal likelihood computation
+real GaussianProcess::LogLikelihood()
+{
+	real slogL = 0.0;
+	for(int i=0; i<N; ++i) {
+		slogL += log(L(i,i));
+	}
+	real LogLik = -0.5*Product(Y, alpha) - slogL - (0.2*N)*log(2*M_PI);
+	return LogLik;
 }
