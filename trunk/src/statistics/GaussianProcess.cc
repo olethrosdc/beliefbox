@@ -22,6 +22,15 @@ GaussianProcess::GaussianProcess(Matrix& Sigma_p_,
     A = Accuracy;
 }
 
+GaussianProcess::GaussianProcess(real noise_variance_,
+								 Vector scale_length_,
+								 real sig_var_)
+	: noise_variance(noise_variance_),
+	  scale_length(scale_length_),
+	  sig_var(sig_var_)
+{
+}
+
 GaussianProcess::GaussianProcess(Matrix& X_, 
 								 Vector& Y_,
 								 real noise_variance_,
@@ -70,22 +79,29 @@ void GaussianProcess::Observe(Vector& x, real y)
 /// This implements functon space view of a GP
 ///
 /// X has a number of columns equal to the amount of data.
-void GaussianProcess::Observe(Matrix& X, Vector& y)
+//void GaussianProcess::Observe(Matrix& X, Vector& y)
+//{
+//    int N = X.Columns();
+//    Matrix K(N, N);
+//    for (int i=0; i<N; ++i) {
+//        Vector S = K.getColumn(i);
+//        for (int j=0; j<N; ++j) {
+//            real delta = (S - K.getColumn(j)).SquareNorm();
+//            K(i,j) = exp(-0.5 * delta);
+//            if (i==j) {
+//                K(i,j) += noise_variance;
+//            }
+//        }
+//    }
+//	
+//    Matrix L = K.Cholesky();
+//}
+void GaussianProcess::Observe(Matrix& X_, Vector& Y_)
 {
-    int N = X.Columns();
-    Matrix K(N, N);
-    for (int i=0; i<N; ++i) {
-        Vector S = K.getColumn(i);
-        for (int j=0; j<N; ++j) {
-            real delta = (S - K.getColumn(j)).SquareNorm();
-            K(i,j) = exp(-0.5 * delta);
-            if (i==j) {
-                K(i,j) += noise_variance;
-            }
-        }
-    }
-	
-    Matrix L = K.Cholesky();
+	X = X_;
+	Y = Y_;
+    N = X.Rows();
+	UpdateGaussianProcess();
 }
 
 void GaussianProcess::UpdateGaussianProcess()
@@ -96,6 +112,16 @@ void GaussianProcess::UpdateGaussianProcess()
 	alpha = inv_L*(Transpose(inv_L)*Y); 
 }
 
+real GaussianProcess::GeneratePrediction(const Vector& x)
+{
+	Vector k  = Kernel(x);
+	real mean = PredictiveMean(k);
+	real var  = PredictiveVariance(k);
+	return mean;
+	//NormalDistribution N(mean, sqrt(var));
+//	return N.generate();
+}
+
 void GaussianProcess::Prediction(Vector& x, real& mean, real& var)
 {
 	Vector k = Kernel(x);
@@ -103,16 +129,16 @@ void GaussianProcess::Prediction(Vector& x, real& mean, real& var)
 	var	     = PredictiveVariance(k);
 }
 
-real GaussianProcess::PredictiveMean(Vector& k)
+real GaussianProcess::PredictiveMean(const Vector& k)
 {
 	real mean = Product(k, alpha); ///(mean = k'*alpha) 
 	return mean;
 }
 
-real GaussianProcess::PredictiveVariance(Vector& k)
+real GaussianProcess::PredictiveVariance(const Vector& k)
 {
-	Vector v = inv_L*k;
-	real var = sig_var*sig_var - v.SquareNorm();
+	Vector v = Transpose(inv_L)*k;
+	real var = sig_var*sig_var - Product(v,v);
 	return var;
 }
 
@@ -124,16 +150,17 @@ void GaussianProcess::Covariance()
 	for(int i=0; i<N; ++i) { 
 		Vector S = X.getRow(i);
 		for(int j = i; j < N; ++j) {
-			real delta = (S - X.getRow(j)).SquareNorm();
-			delta = sig_var*sig_var*exp(-0.5*delta/(scale_length*scale_length));
+			real delta = ((S - X.getRow(j))/scale_length).SquareNorm();
+			delta = sig_var*sig_var*exp(-0.5*delta);
 			if(i == j) {
-				K(i,j) = delta + noise_variance;
+				K(i,j) = delta + noise_variance*noise_variance;
 			}else {
 				K(i,j) = delta;
 				K(j,i) = delta;
 			}
 		}
 	}
+//	K.print(stdout);
 }
 
 /// The following function calculates the partial derivatives of the Covariance function w.r.t hyperparameters
@@ -142,12 +169,12 @@ void GaussianProcess::Covariance()
 Matrix GaussianProcess::CovarianceDerivatives(int p)
 {
 	Matrix KK(N,N);
-	Matrix KE(N,N); 
+	Matrix KE(N,N);
 	for(int i=0; i<N; ++i) { 
 		Vector S = X.getRow(i);
 		for(int j = i; j < N; ++j) {
-			real delta = (S - X.getRow(j)).SquareNorm();
-			KK(i,j) = delta/(scale_length*scale_length);
+			real delta = ((S - X.getRow(j))/scale_length).SquareNorm();
+			KK(i,j) = delta;
 			KK(j,i) = KK(i,j);
 			KE(i,j) = exp(-0.5*delta);
 			KE(j,i) = KE(i,j);
@@ -166,13 +193,13 @@ Matrix GaussianProcess::CovarianceDerivatives(int p)
 }
 
 /// Covariance funtion de
-Vector GaussianProcess::Kernel(Vector& x)
+Vector GaussianProcess::Kernel(const Vector& x)
 {
 	//int N = X.Rows();
 	Vector k(N);
 	for(int i=0; i<N; ++i) { 
-		real delta = (x - X.getRow(i)).SquareNorm();
-		delta = sig_var*sig_var*exp(-0.5*delta/(scale_length*scale_length));
+		real delta = ((x - X.getRow(i))/scale_length).SquareNorm();
+		delta = sig_var*sig_var*exp(-0.5*delta);
 		k(i) = delta; 
 	}
 	return k;
@@ -185,6 +212,7 @@ real GaussianProcess::LogLikelihood()
 	for(int i=0; i<N; ++i) {
 		slogL += log(L(i,i));
 	}
-	real LogLik = -0.5*Product(Y, alpha) - slogL - (0.2*N)*log(2*M_PI);
+	real LogLik = -0.5*Product(Y, alpha) - slogL - (0.5*N)*log(2*M_PI);
 	return LogLik;
 }
+

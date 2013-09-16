@@ -16,6 +16,8 @@
 #include "Vector.h"
 #include "Matrix.h"
 #include "Distribution.h"
+#include "NormalDistribution.h"
+
 #include <vector>
 
 /** Gaussian process. 
@@ -37,7 +39,7 @@ protected:
 	Matrix K;  ///< Kernel(Covariance) Matrix.
 	/// Kernel hyperparameters.
     real noise_variance;	///< noise variance
-	real scale_length;		///< lenght scale
+	Vector scale_length;	///< lenght scale
 	real sig_var;		    ///< signal variance 
     Matrix X2; ///< observation co-variance
     Vector mean;
@@ -45,6 +47,9 @@ protected:
 public:
     GaussianProcess(Matrix& Sigma_p_,
                     real noise_variance_);
+	GaussianProcess(real noise_variance_,
+					Vector scale_length_,
+					real hyp_u_);
 	GaussianProcess(Matrix& X_, 
 					Vector& Y_,
 					real noise_variance_,
@@ -56,12 +61,13 @@ public:
     virtual void Observe(Vector& x, real y);
     virtual void Observe(Matrix& x, Vector& y);
 	virtual void UpdateGaussianProcess();
+	virtual real GeneratePrediction(const Vector& x);
 	virtual void Prediction(Vector& x, real& mean, real& var);
-	virtual real PredictiveMean(Vector& x);
-	virtual real PredictiveVariance(Vector& x);
+	virtual real PredictiveMean(const Vector& x);
+	virtual real PredictiveVariance(const Vector& x);
 	virtual void Covariance();
 	virtual Matrix CovarianceDerivatives(int p);
-	virtual Vector Kernel(Vector& x);
+	virtual Vector Kernel(const Vector& x);
 	virtual real LogLikelihood();
 };
 
