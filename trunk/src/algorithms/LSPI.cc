@@ -143,8 +143,6 @@ void LSPI::LSTDQ(const Vector& state, const int& action, const real& reward, con
 	
 	const Matrix w_ = A.Inverse_LU();
 	w = w_*b;
-	policy.Update(w);
-	
 }
 void LSPI::Update()
 {
