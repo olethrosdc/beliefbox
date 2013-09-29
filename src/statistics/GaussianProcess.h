@@ -34,9 +34,10 @@ protected:
     Matrix Sigma_p;
     Matrix Accuracy;
     Matrix A;
-	Matrix L;  ///< Cholesky Decomposition (L is an upper tringular matrix).
+	Matrix L;  ///< Cholesky Decomposition (L is an upper tringular matrix)
 	Matrix inv_L;
-	Matrix K;  ///< Kernel(Covariance) Matrix.
+	Matrix K;  ///< Kernel(Covariance) Matrix
+	Matrix inv_K; ///< Inverse Covariance Matrix (Precision)
 	/// Kernel hyperparameters.
     real noise_variance;	///< noise variance
 	Vector scale_length;	///< lenght scale
@@ -56,12 +57,16 @@ public:
 					real scale_length_,
 					real hyp_u_);
     virtual ~GaussianProcess();
+	virtual int getNSamples() { return N; }
     virtual Vector generate();
     virtual real pdf(Vector& x, real y);
     virtual void Observe(Vector& x, real y);
     virtual void Observe(Matrix& x, Vector& y);
+	virtual void Observe(std::vector<Vector>& x, std::vector<real>& y);
+	virtual void AddObservation(const Vector& x, const real& y);
 	virtual void UpdateGaussianProcess();
 	virtual real GeneratePrediction(const Vector& x);
+	virtual real GeneratePredictionKernel(const Vector& k);
 	virtual void Prediction(Vector& x, real& mean, real& var);
 	virtual real PredictiveMean(const Vector& x);
 	virtual real PredictiveVariance(const Vector& x);

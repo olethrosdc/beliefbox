@@ -52,6 +52,7 @@ public:
     Vector& operator= (const Vector& rhs);
     void Clear();
     void Resize(int N_);
+	void AddElement(const real& rhs);
     void CheckBounds(enum BoundsCheckingStatus check = CHECK_BOUNDS)
     {
         checking_bounds = check;

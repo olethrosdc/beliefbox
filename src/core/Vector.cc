@@ -550,6 +550,18 @@ void Vector::Resize(int N_)
         maxN = n;
     }
 }
+
+void Vector::AddElement(const real& rhs)
+{
+	n = n + 1;
+	if (maxN == 0) {
+		x = (real*) malloc (sizeof(real)*(n));
+	} else {
+		x = (real*) realloc(x, sizeof(real)*(n));
+	}
+	maxN = n;
+	x[n-1] = rhs;
+}
 #endif
 
 /// \brief Add vector lhs to rhs, save result to res.

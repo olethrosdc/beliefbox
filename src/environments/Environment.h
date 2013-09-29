@@ -107,6 +107,11 @@ public:
 	{
 		return endsim;
 	}
+	
+	void setEndsim(const bool& esim_)
+	{
+		endsim = esim_;
+	}
     /// returns the number of state dimensions
     uint getNStates() const
     {

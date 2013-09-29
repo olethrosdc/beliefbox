@@ -67,7 +67,7 @@ Matrix iWishart::generate() const
 	}
 	QR = B.QRDecomposition();
 
-	Matrix X = Transpose(T)*QR[1].Inverse_LU();
+	Matrix X = Transpose(T)*QR[1].Inverse();
 	return X*Transpose(X);
 }
 

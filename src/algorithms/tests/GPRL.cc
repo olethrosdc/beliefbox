@@ -50,6 +50,8 @@
 #include "RepresentativeStateModel.h"
 #include "BayesianMultivariate.h"
 #include "GaussianProcess.h"
+#include "SparseGaussianProcess.h"
+//#include "SparseGreedyGaussianProcess.h"
 #include "GP_FittedLSTD.h"
 
 
@@ -57,6 +59,53 @@
 // -- Usual includes -- //
 #include <cstring>
 #include <getopt.h>
+/** Options */
+struct Options
+{
+    real gamma;						///< discount factor
+    const char* environment_name;	///< environment name
+    RandomNumberGenerator& rng;		///< random number generator
+    int n_samples;					///< number of sampled pairs for LSTD training
+	int n_training_e_steps;			///< Max length of training trajectories
+    int n_training_episodes;		///< number of training trajectories
+	int n_testing_e_steps;			///< Max length of testing trajectories.
+    int n_testing_episodes;			///< number of testing trajectories
+    int grid;						///< grid size for features
+    real scale;						///< scale of RBF basis
+	real randomness;				///< environment randomness
+    Options(RandomNumberGenerator& rng_) :
+	gamma(0.999),
+	environment_name("MountainCar"),
+	rng(rng_), 
+	n_samples(3000),
+	n_training_e_steps(40),
+	n_training_episodes(1000),
+	n_testing_e_steps(1000),
+	n_testing_episodes(1000),
+	grid(4),
+	scale(1.0),
+	randomness(0.0)
+    {
+    }
+	
+    void ShowOptions()
+    {
+        logmsg("---------------------------\n");
+		logmsg("===========================\n");
+        logmsg("Options\n");
+        logmsg("===========================\n");
+        logmsg("Discount: %f\n", gamma);
+		logmsg("Environment: %s\n", environment_name);
+        logmsg("n_samples: %d\n", n_samples);
+        logmsg("n_training_e_steps: %d\n",  n_training_e_steps);
+		logmsg("n_training_episodes: %d\n", n_training_episodes);
+		logmsg("n_testing_e_steps: %d\n", n_testing_e_steps);
+		logmsg("n_testing_episodes: %d\n", n_testing_episodes);
+        logmsg("grid %d\n", grid);
+        logmsg("scale %f\n", scale);
+        logmsg("---------------------------\n");
+    }
+};
 
 struct EpisodeStatistics
 {
@@ -80,37 +129,45 @@ struct Statistics
 	std::vector<int> n_runs;
 };
 
-void EnvironmentPrediction(int N,
-						   std::vector<Vector> Samples,
-						   int action,
-						   int dim,
-						   GaussianProcess* algorithm,
-						   ContinuousStateEnvironment* environment);
+void OfflineGPRL(real gamma,
+				 int n_steps, 
+				 int n_episodes,
+				 GP_FittedLSTD<Vector,int>* algorithm,
+				 std::vector<std::vector<SparseGaussianProcess*> > EnvPrediction,
+				 ContinuousStateEnvironment* environment);
 
-Statistics EvaluateAlgorithm (int episode_steps,
+Statistics OnlineGPRL(real gamma,
+					  int n_steps, 
+					  int n_episodes,
+					  GP_FittedLSTD<Vector,int>* algorithm,
+					  std::vector<std::vector<SparseGaussianProcess*> > EnvPrediction,
+					  ContinuousStateEnvironment* environment);
+
+void EvaluatePrediction(int N,
+						std::vector<std::vector<SparseGaussianProcess*> > algorithm,
+						ContinuousStateEnvironment* environment);
+
+Statistics EvaluateAlgorithm (real gamma,
+							  int episode_steps,
                               int n_episodes,
                               GP_FittedLSTD<Vector,int>* algorithm,
-                              ContinuousStateEnvironment* environment,
-                              real gamma);
+                              ContinuousStateEnvironment* environment);
 
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
---environment:		{PuddleWorld, MountainCar, Pendulum, Linear}\n\
---n_states:			number of states (usually there is no need to specify it)\n\
---n_actions:		number of actions (usually there is no need to specify it)\n\
---gamma:			reward discounting in [0,1] (* 0.99)\n\
---randomness:		environment randomness (* 0.0)\n\
---n_runs:			maximum number of runs (* 1)\n\
---n_train_episodes:	maximum number of train episodes (ignored if < 0)\n\
---n_test_episodes:  maximum number of test episodes (ignored if < 0)\n\
---episode_steps:    maximum number of steps in each episode (ignored if <0)\n\
---n_steps:			maximum number of total steps\n\
---rbf:				use of basis functions or not (* 0 or 1)\n\
---grids:			number of grid intervals for discretised environments (*3)\n\
---epsilon:			use epsilon-greedy with randomness in [0,1] (* 0.01)\n\
---a:				first linear model parameter (*0.1) \n\
---N0:				second linear model parameter (*0.1) \n\
---n_samples:		number of collected samples (* 1000) \n\
+	--environment:			{MountainCar, Pendulum, Puddle, Bicycle, CartPole, Acrobot}\n\
+	--discount:				reward discounting in [0,1]\n\
+	--n_samples:			number of selected (uniformly random) samples that used in the policy optimization scheme (LSTD)\n\
+	--n_training_e_steps:	maximum horizon of training rollouts (episodes)\n\
+	--n_training_episodes:  number of training episodes\n\
+	--n_testing_e_steps:	maximum horizon of testing episodes\n\
+	--n_testing_episodes:	number of testing episodes\n\
+	--grid:                 number of grid intervals for LSTD\n\
+	--scale:                RBF scale for LSTD\n\
+	--online:               do the online test\n\
+	--seed:                 seed all the RNGs with this\n\
+	--seed_file:            select a binary file to choose seeds from (use in conjunction with --seed to select the n-th seed in the file)\n\
+	--randomness:			environment randomness (* 0.0)\n\
 \n\
 * denotes default parameter\n\
 \n";
@@ -118,23 +175,14 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
 
 int main(int argc, char* argv[])
 {
-	int n_actions			= 2;
-	int n_states			= 2;
-	real gamma				= 0.999;
-	real randomness			= 0.0;
-	real epsilon			= 0;
-	uint n_runs				= 1;
-    uint grids				= 4;
-	uint n_test_steps       = 1000;
-	uint n_test_episodes    = 1000;
-	int n_samples			= 100;
-	int sampling			= 1;
-	real rbf_scale			= 1.0;
-	//Value iteration threshold
-	real threshold			= 0.001;
+	ulong seed = time(NULL);
+	char* seed_filename = 0;
+	const char* test_mode = "offline";
 	
-	
-	const char * environment_name = "Pendulum";
+	bool online_test = false;
+		
+	MersenneTwisterRNG rng;
+	Options options(rng);
 	{
 		//options
 		int c;
@@ -143,20 +191,19 @@ int main(int argc, char* argv[])
 			int this_option_optind = optind ? optind : 1;
 			int option_index = 0;
 			static struct option long_options[] = {
-				{"n_states", required_argument, 0, 0},			//0
-				{"n_actions", required_argument, 0, 0},			//1
-				{"gamma", required_argument, 0, 0},				//2
-				{"n_runs", required_argument, 0, 0},			//3
-				{"n_test_steps", required_argument, 0, 0},		//4
-				{"n_test_episodes", required_argument, 0, 0},   //5
-				{"n_samples", required_argument, 0, 0},			//6
-                {"epsilon", required_argument, 0, 0},			//7
-                {"environment_name", required_argument, 0, 0},	//8
-                {"grids", required_argument, 0, 0},				//9
-                {"randomness", required_argument, 0, 0},		//10
-				{"sampling", required_argument, 0, 0},			//11
-				{"rbf_scale", required_argument, 0, 0},			//12
-				{"threshold",required_argument, 0, 0},			//13
+				{"discount", required_argument, 0, 0},				//0
+				{"environment", required_argument, 0, 0},			//1
+				{"n_samples", required_argument, 0, 0},				//2
+				{"n_training_e_steps", required_argument, 0, 0},	//3
+				{"n_training_episodes", required_argument, 0, 0},	//4
+				{"n_testing_e_steps", required_argument, 0, 0},		//5
+				{"n_testing_episodes", required_argument, 0, 0},	//6
+				{"grid", required_argument, 0, 0},					//7
+				{"scale", required_argument, 0, 0},					//8
+				{"online", no_argument, 0, 0},						//9
+				{"seed", required_argument, 0, 0},					//10
+				{"seed_file", required_argument, 0, 0},				//11
+				{"randomness", required_argument, 0, 0},			//12
 				{0, 0, 0, 0}
 			};
 			c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -172,20 +219,19 @@ int main(int argc, char* argv[])
 					printf ("\n");
 #endif
 					switch (option_index) {
-						case 0: n_states = atoi(optarg); break;
-						case 1: n_actions = atoi(optarg); break;
-						case 2: gamma = atof(optarg); break;
-						case 3: n_runs = atoi(optarg); break;
-						case 4: n_test_steps = atoi(optarg); break;
-						case 5: n_test_episodes = atoi(optarg); break;
-						case 6: n_samples = atoi(optarg); break;
-						case 7: epsilon = atof(optarg); break; 
-						case 8: environment_name = optarg; break;
-						case 9: grids = atoi(optarg); break;
-						case 10: randomness = atof(optarg); break;
-						case 11: sampling = atoi(optarg); break;
-						case 12: rbf_scale = atoi(optarg); break;
-						case 13: threshold = atof(optarg); break;
+						case 0: options.gamma = atof(optarg); break;
+						case 1: options.environment_name = optarg; break;
+						case 2: options.n_samples = atoi(optarg); break;
+						case 3: options.n_training_e_steps = atoi(optarg); break;
+						case 4: options.n_training_episodes = atoi(optarg); break;
+						case 5: options.n_testing_e_steps = atoi(optarg); break;
+						case 6: options.n_testing_episodes = atoi(optarg); break;
+						case 7: options.grid = atoi(optarg); break;
+						case 8: options.scale = atof(optarg); break;
+						case 9: online_test = true; break;
+						case 10: seed = atoi(optarg); break;
+						case 11: seed_filename = optarg; break;
+						case 12: options.randomness = atof(optarg); break;
 						default:
 							fprintf (stderr, "%s", help_text);
 							exit(0);
@@ -214,83 +260,108 @@ int main(int argc, char* argv[])
             printf ("\n");
         }		
 	}
-	assert(n_states > 0);
-    assert(n_actions > 0);
-    assert(gamma >= 0 && gamma <= 1);
-    assert(randomness >= 0 && randomness <= 1);
-    assert(n_runs > 0);
-	assert(n_test_steps > 0);
-	assert(n_test_episodes > 0);
-    assert(n_samples > 0);
-	assert(rbf_scale > 0);
-    assert(grids > 0);
+	
+	if (options.gamma < 0 || options.gamma > 1) {
+        Serror("Discount factor gamma must be in [0,1]\n");
+        exit(-1);
+    }
+	
+	if (!options.environment_name) {
+        Serror("Must specify environment\n");
+        exit(-1);
+    }
+	
+    if (options.n_samples < 1) {
+        Serror("n_samples must be >= 1\n");
+        exit(-1);
+    }
+	
+	if (options.n_training_e_steps < 1) {
+        Serror("n_training_e_steps must be >= 1\n");
+        exit(-1);
+    } 
+	
+    if (options.n_training_episodes < 1) {
+        Serror("n_training_episodes must be >= 1\n");
+        exit(-1);
+    }
+	
+	if (options.n_testing_e_steps < 1) {
+        Serror("n_training_e_steps must be >= 1\n");
+        exit(-1);
+    } 
+    
+	if (options.n_testing_episodes < 0) {
+        Serror("n_testing_episodes must be >= 1\n");
+        exit(-1);
+    }
 		
-    RandomNumberGenerator* rng;
-	RandomNumberGenerator* environment_rng;
+	if(options.scale < 0) {
+		Serror("scale must be > 0\n");
+		exit(-1);
+	}	
+
+   	if(seed_filename) {
+		RandomNumberFile rnf(seed_filename);
+		rnf.manualSeed(seed);
+		seed = rnf.random();
+	}
 	
-	MersenneTwisterRNG mersenne_twister_env;
-    environment_rng = (RandomNumberGenerator*) &mersenne_twister_env;
-	
-    MersenneTwisterRNG mersenne_twister;
-    rng = (RandomNumberGenerator*) &mersenne_twister;
-	
-    srand48(34987235);
-    srand(34987235);
-    setRandomSeed(34987235);
-    environment_rng->manualSeed(228240153);
-    rng->manualSeed(1361690241);
+	logmsg("seed: %ld\n", seed);
+	srand(seed);
+	srand48(seed);
+	rng.manualSeed(seed);
+	setRandomSeed(seed);
 	
     std::cout << "Starting GPRL" << std::endl;
-    
    	
+	options.ShowOptions();
+
 	std::cout << " - Creating environment.." << std::endl;
 	
 	ContinuousStateEnvironment* environment = NULL;
 	
-	if (!strcmp(environment_name, "MountainCar")) {
+	if (!strcmp(options.environment_name, "MountainCar")) {
 		environment = new MountainCar();
-		environment->setRandomness(randomness);
 	}
-	else if (!strcmp(environment_name, "Pendulum")) {
+	else if (!strcmp(options.environment_name, "Pendulum")) {
 		environment = new Pendulum();
-		environment->setRandomness(randomness);
 	}
-	else if (!strcmp(environment_name, "PuddleWorld")) {
+	else if (!strcmp(options.environment_name, "PuddleWorld")) {
 		environment = new PuddleWorld();
 	}
-	else if (!strcmp(environment_name, "Acrobot")) {
+	else if (!strcmp(options.environment_name, "Acrobot")) {
 		environment = new Acrobot();
 	}
-	else if (!strcmp(environment_name, "CartPole")) {
+	else if (!strcmp(options.environment_name, "CartPole")) {
 		environment = new CartPole();
 	}
-	else if (!strcmp(environment_name, "Bike")) {
+	else if (!strcmp(options.environment_name, "Bike")) {
 		environment = new Bike();
 	}
-	else if(!strcmp(environment_name,"Linear")) {
+	else if(!strcmp(options.environment_name,"Linear")) {
 		environment = new LinearDynamicQuadratic();
 	}
 	else {
-		fprintf(stderr, "Unknown environment %s \n", environment_name);
+		fprintf(stderr, "Unknown environment %s \n", options.environment_name);
 	}
+	environment->setRandomness(options.randomness);
+
+	int n_states	= environment->getNStates();      /// Environment dimensions
+	int n_actions	= environment->getNActions();     /// Number of environment's actions
+	Vector S_L		= environment->StateLowerBound(); /// Environment lower bounds
+	Vector S_U		= environment->StateUpperBound(); /// Environment upper bounds
 	
-	std::cout << environment_name << " environment creation completed" << std::endl;
-	// making sure the number of states & actions is correct
-	n_states	= environment->getNStates();
-	n_actions	= environment->getNActions();
-	Vector S_L	= environment->StateLowerBound();
-	Vector S_U	= environment->StateUpperBound();
-	
-	std::cout <<  "Creating environment: " << environment_name
+	std::cout <<  "Creating environment: " << options.environment_name
 	<< " with " << n_states << " states and , "
 	<< n_actions << " actions.\n";
 	
 	std::cout << "Basis functions creation" <<std::endl;
 	RBFBasisSet* RBFs = NULL;
 	std::cout << "Creating Radial basis functions..." << std::endl;
-	EvenGrid Discretisation(S_L, S_U, grids);
+	EvenGrid Discretisation(S_L, S_U, options.grid);
 	
-	RBFs = new RBFBasisSet(Discretisation,rbf_scale);
+	RBFs = new RBFBasisSet(Discretisation, options.scale);
 		
 	int m = RBFs->size() + 1; // redefinition of the input dimensions (size of the created basis functions plus a dummy state)
 	std::cout << "# Number of basis functions: " << m << std::endl;
@@ -298,84 +369,69 @@ int main(int argc, char* argv[])
 	
 	std::cout << "# Creating " << n_actions*n_states << " Gaussian Prediction environement models..." << std::endl;
 	
-	//bayesian multivariate regression model for the system transition model
-	//one for each action
-	std::vector<std::vector<GaussianProcess*> > GaussianPrediction(n_actions, std::vector<GaussianProcess*>(n_states));
-//	GaussianPrediction.resize(n_actions);
+	//bayesian multivariate regression model for the system transition model (one for each action & dimension)
+	std::vector<std::vector<SparseGaussianProcess*> > GaussianPrediction(n_actions, std::vector<SparseGaussianProcess*>(n_states));
 	
 	///Hyperparameters.
-	real noise_variance = 0.1;
-	Vector scale_length = abs(S_L - S_U)/20;
+	real noise_variance = 1e-10;
+	Vector scale_length = abs(S_L - S_U) / 10;
+	Vector scale_length_dic = abs(S_L - S_U) / 20;
 	real sig_val = 1.0;
 	for ( int i = 0; i < n_actions; ++i) {
 		for( int j = 0; j < n_states; ++j) {
-			GaussianPrediction[i][j] = new GaussianProcess(noise_variance, scale_length, sig_val);
+			GaussianPrediction[i][j] = new SparseGaussianProcess( noise_variance, scale_length, sig_val, 0.1, scale_length_dic);
 		}
 	}
 	std::cout << "Creation of the Gaussian Prediction environement models completed..." << std::endl;
 	
 	std::cout << "Fitted LSTD Initialization..." << std::endl;
-	GP_FittedLSTD<Vector,int> *algorithm = new GP_FittedLSTD<Vector,int>(gamma, 5000, environment, GaussianPrediction, RBFs);
+	GP_FittedLSTD<Vector,int> *algorithm = new GP_FittedLSTD<Vector,int>(options.gamma, options.n_samples, environment, GaussianPrediction, RBFs);
 
-	Matrix Stats(n_runs, n_test_episodes);
-	Matrix Statr(n_runs, n_test_episodes);
-	
-	for ( uint run = 0; run < n_runs; ++run) {
-		std::cout << "# Run: " << run << std::endl;
+	int episodes;
+	Statistics run_statistics;
+	if(online_test) {	
+		test_mode ="online";
+		episodes = options.n_training_episodes;
+		run_statistics = OnlineGPRL(options.gamma,
+									options.n_testing_e_steps, 
+									options.n_testing_episodes,
+									algorithm,
+									GaussianPrediction,
+									environment);
+	} else {
+		episodes = options.n_testing_episodes;
+		OfflineGPRL(options.gamma,
+					options.n_training_e_steps,
+					options.n_training_episodes,
+					algorithm,
+					GaussianPrediction,
+					environment);
 		
-		std::cout << "#Collecting " << n_samples << " uniformly random samples for system dynamics identification" << std::endl;
-		std::vector<Vector> Samples;
-		for(int i=0; i<n_samples; ++i) {
-			Vector state = urandom(S_L, S_U);
-			Samples.push_back(state);
-		}
-		
-		for(int i = 0; i < n_actions; ++i) {
-			for(int j = 0; j < n_states; ++j) {
-				EnvironmentPrediction(n_samples, Samples, i, j, GaussianPrediction[i][j], environment);
-			}
-		}
-		
-		algorithm->Update();
-
-		epsilon = 0.0;
-		Statistics run_statistics = EvaluateAlgorithm(n_test_steps, 
-													  n_test_episodes,
-													  algorithm, 
-													  environment,
-													  gamma);
-		real train_steps = 0.0;
-		for( uint i = 0; i < run_statistics.ep_stats.size(); ++i) {
-			Stats(run,i) = run_statistics.ep_stats[i].steps;
-			Statr(run,i) = run_statistics.ep_stats[i].total_reward;
-			train_steps += run_statistics.ep_stats[i].steps;
-		}
-		printf("Mean number of steps = %f\n", train_steps / n_test_episodes);
-		//for (uint i=0; i<run_statistics.ep_stats.size(); ++i) {
-		//		
-		//			statistics.ep_stats[i].total_reward += run_statistics.ep_stats[i].total_reward;
-		//			statistics.ep_stats[i].discounted_reward += run_statistics.ep_stats[i].discounted_reward;
-		//			statistics.ep_stats[i].steps += run_statistics.ep_stats[i].steps;
-		//			statistics.ep_stats[i].mse += run_statistics.ep_stats[i].mse;
-		//			statistics.ep_stats[i].n_runs++;
-		//		}
-		//
-		//		for (uint i=0; i<run_statistics.reward.size(); ++i) {
-		//			statistics.reward[i] += run_statistics.reward[i];
-		//			statistics.n_runs[i]++;
-		//		}
-		
-		algorithm->Reset();
+		run_statistics = EvaluateAlgorithm(options.gamma,
+										   options.n_testing_e_steps,
+										   options.n_testing_episodes,
+										   algorithm, 
+										   environment);
 	}
 	
+	Vector Stats(episodes);
+	Vector Statr(episodes);
+	real train_steps = 0.0;
+	for( uint i = 0; i < run_statistics.ep_stats.size(); ++i) {
+		Stats(i) = run_statistics.ep_stats[i].steps;
+		Statr(i) = run_statistics.ep_stats[i].total_reward;
+		train_steps += run_statistics.ep_stats[i].steps;
+	}
+	printf("Mean number of steps = %f\n", train_steps / episodes);
+			
 	char buffer[100];
-	sprintf (buffer, "GPRL_RESULTS_STEPS_%s->(#Samples = %d)",environment_name,n_samples);
+	sprintf (buffer, "%s_GPRL_RESULTS_STEPS_%s",test_mode, options.environment_name);
 	FILE *output	= fopen(buffer,"w");
 	if(output!=NULL) { 
 		Stats.print(output);
 	}
 	fclose(output);
-	sprintf (buffer, "GPRL_RESULTS_REWARDS_%s->(#Samples = %d)",environment_name,n_samples);
+	sprintf (buffer, "%s_GPRL_RESULTS_REWARDS_%s",test_mode, options.environment_name);
 	output	= fopen(buffer,"w");
 	if(output!=NULL) { 
 		Statr.print(output);
@@ -395,34 +451,147 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-void EnvironmentPrediction(int N,
-						   std::vector<Vector> Samples, 
-						   int action,
-						   int dim,
-						   GaussianProcess* algorithm,
+void OfflineGPRL(real gamma,
+				 int n_steps, 
+				 int n_episodes,
+				 GP_FittedLSTD<Vector,int>* algorithm,
+				 std::vector<std::vector<SparseGaussianProcess*> > EnvPrediction,
+				 ContinuousStateEnvironment* environment)
+{
+	std::cout << "#Offline training ..." << environment->Name() << std::endl;
+
+	Vector state, next_state;
+	int action;
+	real reward;
+	int n_actions = environment->getNActions();
+	int n_states  = environment->getNStates();
+	std::vector< std::vector<Vector> > Input(n_actions);
+	std::vector< std::vector<real> > Output(n_actions*n_states);
+
+	for(int episode = 0; episode < n_episodes; ++episode) {
+		environment->Reset();
+		state = environment->getState();
+
+		action = (int) floor(urandom(0.0, (real) environment->getNActions()));
+		int step		= 0;
+		bool action_ok	= true;
+		
+		while(action_ok && step < n_steps) {
+			action_ok	= environment->Act(action);
+			
+			reward		= environment->getReward();
+			next_state	= environment->getState();
+			
+			Input[action].push_back(state);
+			for(int dim = 0; dim<n_states; ++dim) {
+				Output[(action*n_states + dim)].push_back(next_state(dim));
+			}
+			action = (int)floor(urandom(0.0, (real) environment->getNActions()));
+			state = next_state;
+			step++;
+		}
+	}
+	/// In this point we update the gaussian processes
+	for(int a = 0; a<n_actions; ++a) {
+		for(int dim = 0; dim<n_states; ++dim) {
+			EnvPrediction[a][dim]->Observe(Input[a], Output[a*n_states + dim]);
+		}
+	}
+	algorithm->Update();
+//	EvaluatePrediction(5000,
+//						  EnvPrediction,
+//						  environment);
+	printf("The offline training is completed\n");
+}
+
+Statistics OnlineGPRL(real gamma, 
+					  int n_steps, 
+					  int n_episodes,
+					  GP_FittedLSTD<Vector,int>* algorithm,
+					  std::vector<std::vector<SparseGaussianProcess*> > EnvPrediction,
+					  ContinuousStateEnvironment* environment)
+{
+	std::cout << "#Online training ..." << environment->Name() << std::endl;
+	Vector state, next_state;
+	int action;
+	real reward;
+	int n_actions = environment->getNActions();
+	int n_states  = environment->getNStates();
+	std::vector< std::vector<Vector> > Input(n_actions);
+	std::vector< std::vector<real> > Output(n_actions*n_states);
+	
+	///Statistics.
+    Statistics statistics;
+	statistics.ep_stats.reserve(n_episodes); 
+	statistics.reward.reserve(n_steps*n_episodes);
+	
+	statistics.ep_stats.resize(1);
+	statistics.ep_stats[0].total_reward = 0.0;
+	statistics.ep_stats[0].discounted_reward = 0.0;
+	statistics.ep_stats[0].steps = 0;
+	
+	for(int episode = 0; episode <n_episodes; ++episode) {
+		environment->Reset();
+		state	= environment->getState();
+		action	= algorithm->Act(state);
+		
+		real discount	= 1;
+		int step		= 0;
+		bool action_ok	= true;
+		
+		while(action_ok && step < n_steps) {
+			step++;
+			action_ok	= environment->Act(action);
+			reward		= environment->getReward();
+			
+			next_state  = environment->getState();
+			
+			Input[action].push_back(state);
+			for(int dim = 0; dim<n_states; ++dim) {
+				Output[(action*n_states + dim)].push_back(next_state(dim));
+			}
+			action = algorithm->Act(next_state);
+			state = next_state;
+
+			statistics.ep_stats[episode].steps++;
+			statistics.ep_stats[episode].total_reward += reward;
+			statistics.ep_stats[episode].discounted_reward += discount * reward;
+			discount *= gamma;
+		}
+		///Statistics Initializastion
+		if((episode+2) < n_episodes+1) {
+			statistics.ep_stats.resize(episode+2);
+			statistics.ep_stats[episode+1].total_reward = 0.0;
+			statistics.ep_stats[episode+1].discounted_reward = 0.0;
+			statistics.ep_stats[episode+1].steps = 0;
+		}
+		printf ("# episode %d complete -> Steps = %d\n", episode, step);
+		/// In this point we update the gaussian processes
+		for(int a = 0; a<n_actions; ++a) {
+			if(Input[a].size() > 0) {
+				for(int dim = 0; dim<n_states; ++dim) {
+					EnvPrediction[a][dim]->AddObservation(Input[a], Output[a*n_states + dim]);
+					Output[a*n_states + dim].clear();
+				}
+				Input[a].clear();
+			}
+		}
+		algorithm->Update();
+	}
+	printf("The online training is completed\n");
+
+	return statistics;
+}
+
+void EvaluatePrediction(int N,
+						   std::vector<std::vector<SparseGaussianProcess*> > algorithm,
 						   ContinuousStateEnvironment* environment)
 {
-	std::cout << "#Environment System dynamics identification for Action => " << action << " and Dimension => " << dim << std::endl;
-	Vector state;
-	Vector next_state;
 	Vector S_L	= environment->StateLowerBound();
 	Vector S_U	= environment->StateUpperBound();
+	int n_actions	= environment->getNActions();
+	int n_states	= environment->getNStates();
 	
-	Matrix X(N, environment->getNStates()); 
-	Vector Y(N); 
-	for(int i=0; i<N; ++i) {
-		X.setRow(i, Samples[i]);
-		environment->Reset();
-		environment->setState(Samples[i]);
-		// We follow the action
-		environment->Act(action);
-
-		next_state	= environment->getState();
-		Y(i) = next_state(dim);
-	}
-	algorithm->Observe(X,Y);
-	
-	///Prediction model testing.
 	std::vector<Vector> states;
 	for(int i=0; i < N; ++i) {
 		states.push_back(urandom(S_L, S_U));
@@ -437,38 +606,38 @@ void EnvironmentPrediction(int N,
 	char buffer[100];
 	char bufferp[100];
 	int n, np;
-
-	n = sprintf (buffer, "Output_samples_action_%d_Dimension_%d", action,dim);
-	np = sprintf(bufferp, "Predicted_Output_Action_%d_Dimension_%d",action,dim);
-	FILE *output	= fopen(buffer,"w");
-	FILE *outputp   = fopen(bufferp,"w");
-	if(output!=NULL) {
-		for( uint i = 0; i < states.size(); ++i) {
-			environment->Reset();
-			environment->setState(states[i]);
-			environment->Act(action);
-			environment->getState().print(output);
-			fprintf(outputp,"%f \n", algorithm->GeneratePrediction(states[i]));
+	
+	for(int a=0; a<n_actions; ++a) {
+		for(int dim=0; dim<n_states; ++dim) {
+			n = sprintf (buffer, "Output_samples_action_%d_Dimension_%d", a,dim);
+			np = sprintf(bufferp, "Predicted_Output_Action_%d_Dimension_%d",a,dim);
+			FILE *output	= fopen(buffer,"w");
+			FILE *outputp   = fopen(bufferp,"w");
+			if(output!=NULL) {
+				for( uint i = 0; i < states.size(); ++i) {
+					environment->Reset();
+					environment->setState(states[i]);
+					environment->Act(a);
+					environment->getState().print(output);
+					fprintf(outputp,"%f \n", algorithm[a][dim]->GeneratePrediction(states[i]));
+				}
+			}
+			fclose(output);
+			fclose(outputp);
 		}
 	}
-	fclose(output);
-	fclose(outputp);
-
-	printf("Model training end\n");
 }
 
 /*** Evaluate an algorithm
-
 episode_steps: maximum number of steps per episode. If negative, then ignore
 n_steps: maximun number of total steps. If negative, then ignore.
 n_episodes: maximum number of episodes. Cannot be negative.
 */
-
-Statistics EvaluateAlgorithm (int episode_steps,
+Statistics EvaluateAlgorithm (real gamma,
+							  int episode_steps,
                               int n_episodes,
                               GP_FittedLSTD<Vector,int>* algorithm,
-                              ContinuousStateEnvironment* environment,
-                              real gamma)
+                              ContinuousStateEnvironment* environment)
 {
     std:: cout << "# evaluating... " << environment->Name() << std::endl;
     
