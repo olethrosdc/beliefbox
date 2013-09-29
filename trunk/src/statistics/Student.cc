@@ -33,7 +33,7 @@ Student::Student(const int dimension)
 Student::Student(const int degrees, const Vector& location, const Matrix& precision)
     : sampler(new MultivariateNormal(location.Size())),
       n(degrees),
-      k(mu.Size()),
+      k(location.Size()),
       mu(location),
       T(precision)
 {
@@ -78,17 +78,18 @@ void Student::setPrecision(const Matrix& precision)
  */
 real Student::log_pdf(const Vector& x) const
 {
-  Vector delta = x - mu;
+	Vector delta = x - mu;
     real degree = (real) n;
     real g = 1.0 + Mahalanobis2(delta, T, delta) / degree;
-    real l1 = logGamma(0.5 * (degree + (real) k));
+//	printf("degree = %f k = %f  r = %f\n",degree, (real)(k), 0.5*(degree + k));
+    real l1 = logGamma(0.5 * ( degree + (real) k));
 	real l2 = - logGamma(0.5 * degree);
 	real l3 = + 0.5 * log(det);
 	real l4 = - (0.5 * (real) k)*log(degree * M_PI); 
 	real l5 =  - 0.5 * (degree + k) * log(g);
     real log_p = l1 + l2 + l3 + l4 + l5;
 	//	printf ("g: %f l1: %f l2: %f l3: %f l4: %f l5: %f log_p: %f\n", 
-	//			g, l1, l2, l3, l4, l5, log_p);
+//				g, l1, l2, l3, l4, l5, log_p);
     return log_p;
 }
 

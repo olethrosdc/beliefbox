@@ -233,6 +233,43 @@ void Matrix::Resize (int rows_, int columns_)
 
 }
 
+Matrix Matrix::AddRow(const Vector& rhs)
+{
+	int M = Rows() + 1;
+	int N = Columns();
+	
+	Matrix lhs(M, N);
+	
+	for (int m=0; m<M; ++m) {
+        for (int n=0; n<N; ++n) {
+			if(m == M-1) {
+				lhs(m,n) = rhs(n);
+			} else {
+				lhs(m,n) = (*this)(m,n);
+			}
+        }
+    }
+	return lhs;
+}
+
+Matrix Matrix::AddColumn(const Vector& rhs)
+{
+	int M = Rows();
+    int N = Columns() + 1;
+	
+	Matrix lhs(M, N);
+
+	for (int m=0; m<M; ++m) {
+        for (int n=0; n<N; ++n) {
+			if(n == N-1) {
+				lhs(m,n) = rhs(m);
+			} else {
+				lhs(m,n) = (*this)(m,n);
+			}
+        }
+    }
+	return lhs;
+}
 
 /// Boolean equality operator
 bool Matrix::operator== (const Matrix& rhs) const

@@ -21,7 +21,7 @@ CartPole::Parameters CartPole::default_parameters =
 0.5, 
 10.0,
 0.02,
-0.0
+0.001
 };
 
 const real CartPole::FOURTHIRDS = 4.0 / 3.0;
@@ -84,13 +84,13 @@ void CartPole::Reset()
     reward = 1.0;
 #if 1
     /// Cart position
-    state[0] = 0.0; // urandom(-0.01, 0.01);
+    state[0] =  urandom(-0.5, 0.5);
 	/// Cart velocity
     state[1] = 0.0;
 	// Theta
-    state[2] = 0.0;
+    state[2] = urandom(-0.01, 0.01);
 	// dTheta/dt
-    state[3] = urandom(-0.001, 0.001);
+    state[3] = 0; //urandom(-0.001, 0.001);
 #else
 	for (int i=0; i<4; ++i) {
 		state[i] = urandom(state_lower_bound[i], state_upper_bound[i]);
@@ -133,7 +133,7 @@ void CartPole::Simulate(const int action)
 	
 	//Noise of 1.0 means possibly full opposite action
 	real thisNoise=2.0*parameters.noise*parameters.FORCE_MAG*(urandom()-0.5);
-	
+//	real thisNoise = 0.0;
 	force+=thisNoise;
 	
 	costheta = cos(state[2]);

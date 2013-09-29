@@ -105,6 +105,7 @@ int CoverBayesianMultivariate::Act(Vector state)
 	}
 	
 	Q(0) = max;
+	
 	int select = 0;
 	for(int i=1; i<Q.Size(); ++i) {
 		if(FVI != NULL) {

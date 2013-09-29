@@ -13,6 +13,8 @@
 #define GP_FITTED_LSTD_VALUE_ITERATION_H
 
 #include "GaussianProcess.h"
+#include "SparseGaussianProcess.h"
+#include "SparseGreedyGaussianProcess.h"
 #include "BasisSet.h"
 #include "Environment.h"
 #include "Matrix.h"
@@ -37,12 +39,13 @@ protected:
 	Matrix pseudo_inv;
     std::vector<Vector> states;	///< set of representative states
 	Environment<S, A>* environment;
-	std::vector<std::vector<GaussianProcess*> > regression_t;
+	std::vector<std::vector<SparseGaussianProcess*> > regression_t;
+	std::vector<Matrix> Kernel;
 	RBFBasisSet* RBFs;		
 	bool update_samples;		///< Take new random training samples 
 	Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout;
 public:
-	GP_FittedLSTD(const real& gamma_, const int& N_,  Environment<S,A>* environment_, std::vector<std::vector<GaussianProcess*> > regression_t_, RBFBasisSet* RBFs_, bool update_samples_ = false)
+	GP_FittedLSTD(const real& gamma_, const int& N_,  Environment<S,A>* environment_, std::vector<std::vector<SparseGaussianProcess*> > regression_t_, RBFBasisSet* RBFs_, bool update_samples_ = false)
 		:gamma(gamma_),
 		N(N_),
 		environment(environment_),
@@ -58,12 +61,14 @@ public:
 		n_actions = environment->getNActions();
 		n_states  = environment->getNStates();
 		
+		Kernel = std::vector<Matrix>(n_actions);
+			
 		dim	= RBFs->size() + 1;	
 		
 		weights = Vector(dim);
 		sampleSelection();
 	}
-	const void Update(real threshold = 0.00001, int max_iter = -1) {
+	const void Update(real threshold = 0.00001, int max_iter = 20) {
 		
 		int a;
 	    Matrix AA;
@@ -75,13 +80,17 @@ public:
 		real distance;
 		Vector T(N);
 		Vector pW(dim);
-		weights = Vector::Unity(dim);
+		weights = Vector::Null(dim);
 		Vector V(n_actions);
 		int n_iter = 0;
-		std::cout << "######### Fitted LSTD #########" << std::endl;
+//		std::cout << "######### Fitted LSTD #########" << std::endl;
+//		std::cout << "####### Iteration = " << n_iter <<  "#######" << std::endl;
+
+//		updateKernels();
+		
 		do {
-			std::cout << "### Iteration = " << n_iter << std::endl;
-			AA = Matrix::Null(dim,dim);
+//			std::cout << "### Iteration = " << n_iter << std::endl;
+			AA = Matrix::Unity(dim,dim)*0;
 			b.Clear();
 			
 			distance = 0.1;
@@ -92,7 +101,7 @@ public:
 				for(a = 0; a < n_actions; a++) {
 					environment->Reset();
 					environment->setState(states[i]);
-					
+
 					final = environment->Act(a);
 					r = environment->getReward();
 					Vector next_state(n_states);
@@ -106,7 +115,7 @@ public:
 				
 				environment->Reset();
 				environment->setState(states[i]);
-				
+
 				RBFs->Evaluate(states[i]);
 				phi = RBFs->F();
 				phi.Resize(dim);
@@ -135,7 +144,6 @@ public:
 				b  += phi*r;
 			}	
 			weights = ((1.0/steps)*AA + (lambda*steps)*Matrix::Unity(dim,dim)).Inverse()*(b*(1/steps));
-			
 			distance = (pW - weights).L2Norm();
 			pW = weights;
 			if(max_iter>0) 
@@ -145,9 +153,9 @@ public:
 			if(update_samples==true) {
 				sampleSelection();
 			}
-			std::cout << "### Error (L2 norm) => " << distance << std::endl;
+//			printf("#ValueIteration (Threshold = %f) :: ComputeStateValues Exiting at d:%f, n:%d\n", threshold, distance, n_iter);
 		}while(distance > threshold && max_iter != 0);
-		printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", distance, n_iter);
+//		printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", distance, n_iter);
 	}
 	
 	real getValue(const S& state) 
@@ -162,12 +170,16 @@ public:
 	
 	real getValue(const S& state, const A& action) 
 	{
+		bool endsim = environment->getEndsim();
+		Vector true_state = environment->getState();
 		environment->Reset();
 		environment->setState(state);
 		environment->Act(action);
 		real r = environment->getReward();
 		
-		environment->setState(state);
+		environment->Reset();
+		environment->setEndsim(endsim);
+		environment->setState(true_state);
 		
 		real temp_v = 0.0;
 		
@@ -202,9 +214,20 @@ public:
 		Vector S_L	= environment->StateLowerBound();
 		Vector S_U	= environment->StateUpperBound();
 		states.clear();
-		PHI = Matrix(dim,N);
 		for(int i=0; i<N; ++i) {
 			states.push_back(urandom(S_L, S_U));
+		}
+	}
+	
+	void updateKernels() {
+		for(int a = 0; a<n_actions; ++a) {
+			Kernel[a] = Matrix::Null(N, regression_t[a][0]->getNSamples());
+		}
+		for(int i=0; i<N; ++i) {
+			for(int a = 0; a<n_actions; ++a) {
+				Vector k = regression_t[a][0]->Kernel(states[i]);
+				Kernel[a].setRow(i, k);
+			}
 		}
 	}
 	

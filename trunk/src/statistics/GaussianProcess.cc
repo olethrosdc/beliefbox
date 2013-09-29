@@ -29,6 +29,7 @@ GaussianProcess::GaussianProcess(real noise_variance_,
 	  scale_length(scale_length_),
 	  sig_var(sig_var_)
 {
+	N = 0;
 }
 
 GaussianProcess::GaussianProcess(Matrix& X_, 
@@ -96,12 +97,26 @@ void GaussianProcess::Observe(Vector& x, real y)
 //	
 //    Matrix L = K.Cholesky();
 //}
-void GaussianProcess::Observe(Matrix& X_, Vector& Y_)
+void GaussianProcess::Observe(Matrix& x, Vector& y)
 {
-	X = X_;
-	Y = Y_;
+	X = x;
+	Y = y;
     N = X.Rows();
 	UpdateGaussianProcess();
+}
+
+void GaussianProcess::Observe(std::vector<Vector>& x, std::vector<real>& y)
+{
+	int S = x.size();
+	if(S > 0) {
+		Matrix X_new(S, x[0].Size());
+		Vector Y_new(S);
+		for(int i = 0; i<S; ++i) {
+			X_new.setRow(i, x[i]);
+			Y_new(i) = y[i];
+		}
+		Observe(X_new, Y_new);
+	}
 }
 
 void GaussianProcess::UpdateGaussianProcess()
@@ -109,17 +124,37 @@ void GaussianProcess::UpdateGaussianProcess()
 	Covariance();
 	L = K.Cholesky();
 	inv_L = L.Inverse();
-	alpha = inv_L*(Transpose(inv_L)*Y); 
+	inv_K = inv_L*Transpose(inv_L);
+	alpha = inv_K*Y; 
 }
 
 real GaussianProcess::GeneratePrediction(const Vector& x)
 {
-	Vector k  = Kernel(x);
-	real mean = PredictiveMean(k);
-	real var  = PredictiveVariance(k);
-	return mean;
-	//NormalDistribution N(mean, sqrt(var));
-//	return N.generate();
+	if(N > 0) {
+		Vector k  = Kernel(x);
+		real mean = PredictiveMean(k);
+		real var  = PredictiveVariance(k);
+
+		NormalDistribution N(mean, sqrt(var));
+		return N.generate();
+	}else {
+		NormalDistribution N(0, 1);
+		return N.generate();
+	}
+}
+
+real GaussianProcess::GeneratePredictionKernel(const Vector& k)
+{
+	if(N > 0) {
+		real mean = PredictiveMean(k);
+		real var  = PredictiveVariance(k);
+		
+		NormalDistribution N(mean, sqrt(var));
+		return N.generate();
+	}else {
+		NormalDistribution N(0, 1);
+		return N.generate();
+	}
 }
 
 void GaussianProcess::Prediction(Vector& x, real& mean, real& var)
@@ -160,7 +195,6 @@ void GaussianProcess::Covariance()
 			}
 		}
 	}
-//	K.print(stdout);
 }
 
 /// The following function calculates the partial derivatives of the Covariance function w.r.t hyperparameters
@@ -192,18 +226,20 @@ Matrix GaussianProcess::CovarianceDerivatives(int p)
 	return DK;
 }
 
-/// Covariance funtion de
+/// Kernel function
 Vector GaussianProcess::Kernel(const Vector& x)
 {
-	//int N = X.Rows();
 	Vector k(N);
+	real sig_noise = sig_var*sig_var;
 	for(int i=0; i<N; ++i) { 
 		real delta = ((x - X.getRow(i))/scale_length).SquareNorm();
-		delta = sig_var*sig_var*exp(-0.5*delta);
+		delta = sig_noise*exp(-0.5*delta);
 		k(i) = delta; 
 	}
 	return k;
 }
+												   
+
 
 /// Log marginal likelihood computation
 real GaussianProcess::LogLikelihood()

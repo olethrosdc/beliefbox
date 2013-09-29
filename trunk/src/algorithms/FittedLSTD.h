@@ -181,6 +181,7 @@ public:
 		environment->setState(state);
 		environment->Act(action);
 		real r		= environment->getReward();
+//		environment->Reset();
 
 		environment->setState(state);
 		

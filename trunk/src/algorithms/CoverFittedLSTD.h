@@ -22,6 +22,7 @@
 #include "RandomPolicy.h"
 #include "ContinuousPolicy.h"
 #include "TilingSet.h"
+#include "vector.h"
 #include <cstring>
 
 ///*Fitted Value Iteration Algorithm*/
@@ -90,7 +91,7 @@ public:
 		sampleSelection();
 		weights = Vector(dim);
 	}
-	const void Update(real threshold = 0.0001, int max_iter = -1) {
+	const void Update(real threshold = 0.00001, int max_iter = -1) {
 		
 //		Reset();
 		
@@ -106,13 +107,12 @@ public:
 		real distance;
 		Vector T(N);
 		Vector pW(dim);
-		weights = Vector::Unity(dim);
+		weights = Vector::Vector(dim); // + 10;
 		Vector V(n_actions);
 		int n_iter = 0;
 		do {
 			AA = Matrix::Null(dim,dim);
 			b.Clear();
-			
 			distance = 0.1;
 			real steps = 0.0;
 			for(int i=0; i<N; ++i)
@@ -129,7 +129,14 @@ public:
 					V[a] = getValue(next_state) + r;
 //					printf("V[%d] => %f and reward = %f\n",a, V[a], r);
 				}
-				
+		//		std::vector<int> v;
+//				for(int aa = 0; aa < n_actions; aa++) {
+//					if(V[aa] == Max(V)) {
+//						v.push_back(aa);
+//					}
+//				}
+//				int ss = urandom(0, (int)(v.size()));
+//				a = v[ss];
 				a = ArgMax(V);
 				
 				environment->Reset();
@@ -196,7 +203,6 @@ public:
 //			}
 //			AA.print(stdout);
 			weights = ((1.0/steps)*AA + (lambda*steps)*Matrix::Unity(dim,dim)).Inverse_LU()*(b*(1/steps));
-			printf("adsfafdsafsdadsfafsdasdf\n");
 			weights.print(stdout);
 			distance = (pW - weights).L2Norm();
 			pW = weights;
@@ -207,26 +213,32 @@ public:
 			if(update_samples==true) {
 				sampleSelection();
 			}
+			printf("#ValueIteration (Threshold = %f) :: ComputeStateValues Exiting at d:%f, n:%d\n", threshold, distance, n_iter);
 		}while(distance > threshold && max_iter != 0);
-//		printf("#ValueIteration::    ComputeStateValues Exiting at d:%f, n:%d\n", distance, n_iter);
+		printf("#ValueIteration::    ComputeStateValues Exiting at d:%f, n:%d\n", distance, n_iter);
 	}
 	
 	real getValue(const S& state) 
 	{
-		Vector phi = BasisConstruction(state);
+		Vector phi = BasisConstruction(state);	
+
 		return Product(weights,phi);
 	}
 	
 	real getValue(const S& state, const A& action) 
 	{
+		bool endsim = environment->getEndsim();
+		Vector true_state = environment->getState();
 		environment->Reset();
 		environment->setState(state);
 		environment->Act(action);
-		real r		= environment->getReward();
-		environment->setState(state);
+		real r = environment->getReward();
+		
+		environment->Reset();
+		environment->setEndsim(endsim);
+		environment->setState(true_state);
 		
 		real temp_v = 0.0;
-		
 		Vector next_state = cover[action]->GenerateState(state);
 		temp_v = getValue(next_state);
 		

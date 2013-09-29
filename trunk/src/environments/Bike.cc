@@ -87,14 +87,14 @@ Bike::Bike(bool random_parameters)
 	state_lower_bound[2] = -parameters.pi/15.0;
 	state_lower_bound[3] = -2.0*parameters.pi;
 	state_lower_bound[4] = -parameters.pi;
-	state_lower_bound[5] = -2.0;// -parameters.pi;
+	state_lower_bound[5] = -parameters.pi;
 
 	state_upper_bound[0] = (80.0/180.0)*parameters.pi;
 	state_upper_bound[1] = 2.0*parameters.pi;
 	state_upper_bound[2] = parameters.pi/15.0;
 	state_upper_bound[3] = 2.0*parameters.pi;
 	state_upper_bound[4] = parameters.pi;
-	state_upper_bound[5] = 2.0; // parameters.pi;
+	state_upper_bound[5] = parameters.pi;
 	state_upper_bound.print(stdout);
 	state_lower_bound.print(stdout);
 	action_upper_bound.Resize(n_actions);
@@ -122,7 +122,7 @@ void Bike::Reset()
 	xb = 0.0; yb = parameters.l;
 	xf = 0.0; yf = 0.0; // parameters.l;
 	psi =  atan((xb-xf)/(yf-yb));
-	psi_goal = calc_angle_to_goal(xf, xb, yf, yb);
+	psi_goal = calc_angle_to_goal_1(xf, xb, yf, yb);
 //	psi_goal = parameters.pi / 2.0;
 	state[0] = theta;
 	state[1] = theta_dot;
@@ -249,12 +249,14 @@ void Bike::Simulate(const int action)
 		else reward = (0.95 - sqr(state[5])) * parameters.R_FACTOR; 
 		endsim = false;
 	}
+	state[5] = acos(calc_angle_to_goal_1(xf, xb, yf, yb));
+
 //	printf("reward = %f\n",reward);
 }
 
-float Bike::calc_dist_to_goal(float xf, float xb, float yf, float yb)
+real Bike::calc_dist_to_goal(real xf, real xb, real yf, real yb)
 {
-	float temp;
+	real temp;
 	
 	temp = sqrt(std::max(0.0, (parameters.x_goal-xf)*(parameters.x_goal-xf) + (parameters.y_goal-yf)*(parameters.y_goal-yf) 
 					- parameters.radius_goal*parameters.radius_goal)); 
@@ -262,7 +264,7 @@ float Bike::calc_dist_to_goal(float xf, float xb, float yf, float yb)
 }
 
 
-float Bike::calc_angle_to_goal(float xf, float xb, float yf, float yb)
+real Bike::calc_angle_to_goal(real xf, real xb, real yf, real yb)
 {
 	real temp, scalar, tvaer;
 	
@@ -286,6 +288,14 @@ float Bike::calc_angle_to_goal(float xf, float xb, float yf, float yb)
 	
 	return(temp);
 }
+
+real Bike::calc_angle_to_goal_1(real xf, real xb, real yf, real yb)
+{
+	real temp	= (xf - xb)*(parameters.x_goal - xf) + (yf-yb)*(parameters.y_goal - yf);
+	real scalar = temp / (parameters.l * sqrt(sqr(parameters.x_goal-xf)+sqr(parameters.y_goal-yf)));
+	return(scalar);
+}
+
 
 real Bike::sign(const real& num) {
 	if(num == 0) {

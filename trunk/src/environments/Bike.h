@@ -57,8 +57,8 @@ protected:
 	real theta, theta_dot, theta_d_dot;
 	real psi, psi_goal;
 	real xf, yf, xb, yb;	///Tyre position
-    static const int n_states = 6;     // state dimensions
-    static const int n_actions = 5;     // action dimensions
+//    static const int n_states = 6;     // state dimensions
+//    static const int n_actions = 5;     // action dimensions
     Vector state_action_upper_bound;
     Vector state_action_lower_bound;
     Vector action_upper_bound;
@@ -122,9 +122,9 @@ public:
 			   parameters.N0_STATES2,
 			   parameters.dt);
 	}
-	float calc_dist_to_goal(float xf, float xb, float yf, float yb);
-	float calc_angle_to_goal(float xf, float xb, float yf, float yb);
-	
+	real calc_dist_to_goal(real xf, real xb, real yf, real yb);
+	real calc_angle_to_goal(real xf, real xb, real yf, real yb);
+	real calc_angle_to_goal_1(real xf, real xb, real yf, real yb);
 };
 
 class BikeGenerator

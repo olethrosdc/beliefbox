@@ -56,6 +56,8 @@ public:
     Matrix (const Matrix& rhs, bool clone = true);
     ~Matrix();
     void Resize(int rows_, int columns_);
+	Matrix AddRow(const Vector& rhs);
+	Matrix AddColumn(const Vector& rhs);
     Matrix& operator= (const Matrix& rhs);
     bool operator== (const Matrix& rhs) const;
     bool operator!= (const Matrix& rhs) const;
