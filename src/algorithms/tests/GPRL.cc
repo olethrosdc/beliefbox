@@ -77,7 +77,7 @@ struct Options
 	gamma(0.999),
 	environment_name("MountainCar"),
 	rng(rng_), 
-	n_samples(3000),
+	n_samples(5000),
 	n_training_e_steps(40),
 	n_training_episodes(1000),
 	n_testing_e_steps(1000),
