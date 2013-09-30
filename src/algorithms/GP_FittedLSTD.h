@@ -14,7 +14,7 @@
 
 #include "GaussianProcess.h"
 #include "SparseGaussianProcess.h"
-#include "SparseGreedyGaussianProcess.h"
+//#include "SparseGreedyGaussianProcess.h"
 #include "BasisSet.h"
 #include "Environment.h"
 #include "Matrix.h"
