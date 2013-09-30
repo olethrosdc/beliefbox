@@ -181,7 +181,7 @@ real GaussianProcess::PredictiveVariance(const Vector& k)
 void GaussianProcess::Covariance()
 {
 	/// The covariance matrix is symmetric
-	K = Matrix::Matrix(N,N);
+	K = Matrix(N,N);
 	for(int i=0; i<N; ++i) { 
 		Vector S = X.getRow(i);
 		for(int j = i; j < N; ++j) {

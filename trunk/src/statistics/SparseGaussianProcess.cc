@@ -89,8 +89,8 @@ void SparseGaussianProcess::AddObservation(const Vector& x, const real& y)
 		inv_K = Matrix::Unity(1,1);
 		inv_K(0,0) = 1.0/(sig_var*sig_var);
 		N = 1;
-		X = Matrix::Matrix(1,x.Size());
-		Y = Vector::Vector(1);
+		X = Matrix(1,x.Size());
+		Y = Vector(1);
 		X.setRow(0,x);
 		Y(0) = y;
 	} else {
@@ -185,7 +185,7 @@ real SparseGaussianProcess::PredictiveVariance(const Vector& k)
 void SparseGaussianProcess::Covariance()
 {
 	/// The covariance matrix is symmetric
-	K = Matrix::Matrix(N,N);
+	K = Matrix(N,N);
 	for(int i=0; i<N; ++i) { 
 		Vector S = X.getRow(i);
 		for(int j = i; j < N; ++j) {

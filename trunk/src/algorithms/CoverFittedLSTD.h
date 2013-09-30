@@ -22,7 +22,7 @@
 #include "RandomPolicy.h"
 #include "ContinuousPolicy.h"
 #include "TilingSet.h"
-#include "vector.h"
+#include <vector>
 #include <cstring>
 
 ///*Fitted Value Iteration Algorithm*/
