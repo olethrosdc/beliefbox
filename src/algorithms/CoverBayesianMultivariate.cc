@@ -58,27 +58,13 @@ void CoverBayesianMultivariate::Reset()
 	else {
 		printf("You haven't declare the FittedValueIteration algorithm\n");
 	}
-	//if(lm!=NULL) {
-//		lm->Reset();
-//		RSM->Reset();
-//	}
-//	else if( FVI!=NULL) {
-//		FVI->Reset();
-//	}
-//	else if(FLSTD != NULL) {
-//		return FLSTD->Reset();
-//	}
-//	else if(FQVI != NULL) {
-//		return FQVI->Reset();
-//	}
 }
+
 void CoverBayesianMultivariate::Observe(Vector state, int action, real reward, Vector next_state)
 {	
-	//CoverTree::Node* node = 
 	cover[action]->Insert(state, next_state, reward, false);
-
-//	CoverTree::Node* node = cover[action]->Insert(state);
 }
+
 int CoverBayesianMultivariate::Act(Vector state)
 {
 	Vector Q(n_actions);
@@ -122,13 +108,7 @@ int CoverBayesianMultivariate::Act(Vector state)
 			select = i;
 		}
 	}
-//	Q.print(stdout);
-//	for (int i=0; i<Q.Size(); ++i) {
-//		Q(i) = RSM->getValue(state, i);
-//	}
-//	std::vector<int> max_elem = ArgMaxs(Q);
-	
-	return select; //max_elem[urandom(0,max_elem.size()-1)];	
+	return select;
 }
 real CoverBayesianMultivariate::getValue(Vector state, int action)
 {
@@ -168,56 +148,18 @@ void CoverBayesianMultivariate::Update()
 		cover[i]->SamplingTree();
 	} 
 	if(FVI != NULL) {
-		FVI->Update(0.0001, 10);
+		FVI->Update(0.000001, 100);
 	}
 	else if(FLSTD != NULL) {
-		FLSTD->Update(0.0001, 20);
+		FLSTD->Update(0.000001, 100);
 	}
 	else if(FLSTDQ != NULL) {
-		FLSTDQ->Update(0.0001, 10);
+		FLSTDQ->Update(0.000001, 100);
 	}
 	else {
 		printf("Problem on CoverBayesianMultivariate\n");
 	}
 }
-//void CoverBayesianMultivariate::Predict()
-//{
-//	int n;
-//	Vector r;
-//	Vector phi;
-//	Vector next_state;
-//	Vector state;
-//	char buffer[100];
-//	
-//	for( int i=0; i<n_actions; ++i) {
-//		Matrix mean_s = regression_t[i]->generate();
-//		Matrix mean_r = regression_r[i]->generate();
-//		n = sprintf(buffer, "Predicted_Output_samples_action_%d", i);
-//		FILE *output  = fopen(buffer,"w");
-//		n = sprintf(buffer, "Predicted_Reward_samples_action_%d", i);
-//		FILE *rew = fopen(buffer,"w");
-//		if(output!=NULL && rew !=NULL) {
-//			for( int s=0; s< RSM->getNSamples(); ++s) {
-//				state = RSM->getSample(s);
-//				if(rbf != NULL) {
-//					rbf->Evaluate(state);
-//					phi = rbf->F();
-//				}
-//				else {
-//					phi = state;
-//				}
-//				phi.Resize(n_input_dim);
-//				phi[n_input_dim - 1] = 1.0;
-//				next_state = mean_s*phi;
-//				next_state.print(output);
-//				r = mean_r*phi;
-//				r.print(rew);
-//			}
-//		}
-//		fclose(output);
-//		fclose(rew);
-//	}
-//}
 
 void CoverBayesianMultivariate::Predict(std::vector<Vector> samples)
 {

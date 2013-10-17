@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 	real epsilon			= 0;
 	real N0					= 0.001;
 	real a					= 0.001;
-	uint n_runs				= 1;
+	uint n_runs				= 100;
     int n_train_episodes	= 1000;
 	int n_test_episodes		= 1000;
 	uint episode_steps		= 1000;
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
 	real threshold			= 0.001;
 
 
-	const char * environment_name = "Pendulum";
+	const char * environment_name = "MountainCar";
 	{
 		//options
 		int c;
@@ -350,7 +350,7 @@ int main(int argc, char* argv[])
 	LinearModel<Vector,int>* lm = NULL;
 	
 	std::cout << "Fitted value iteration initialization..." << std::endl;
-	FittedValueIteration<Vector,int> *FVI = new FittedValueIteration<Vector,int>(gamma, 4000, 1, grids, environment, regression_t, RBFs);
+	FittedValueIteration<Vector,int> *FVI = new FittedValueIteration<Vector,int>(gamma, 3000, 1, grids, environment, regression_t, RBFs);
 	
 	std::cout << "Representative model creation..." << std::endl;
 //	RepresentativeStateModel<LinearModel<Vector,int>, Vector, int> *RSM = new RepresentativeStateModel<LinearModel<Vector,int>,Vector,int>(gamma, threshold, *lm, n_samples, n_actions,FVI);
@@ -381,7 +381,7 @@ int main(int argc, char* argv[])
 //		TrainingAlgorithm1(gamma, n_train_episodes, algorithm, environment, RSM);
 		
 		TrainingAlgorithm2(gamma, n_samples, n_train_episodes, algorithm, environment);
-
+		
 		epsilon = 0.0;
 		Statistics run_statistics = EvaluateAlgorithm(episode_steps, 
 													  n_test_episodes,
@@ -674,8 +674,12 @@ void TrainingAlgorithm2(real gamma,
 		fclose(rew);
 	}
 	printf("Model training end\n");
-	algorithm->Update();
+//	for(int i = 0; i<n_actions; ++i) {
+//		regression_t[i]->Select();
+//	}
 	algorithm->Predict(states);
+	algorithm->Update();
+//	algorithm->Update();
 }
 
 /*** Evaluate an algorithm

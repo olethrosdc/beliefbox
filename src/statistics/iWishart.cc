@@ -56,7 +56,7 @@ Matrix iWishart::generate() const
 	Matrix B(k,k);
 	
 	for(int i = 0; i < k; ++i){
-	    real r = (real)genchi((real)(n - i));
+		real r = (real)genchi((real)(n - i));
 		B(i,i) = sqrt(r);
 	}
 	
@@ -67,7 +67,7 @@ Matrix iWishart::generate() const
 	}
 	QR = B.QRDecomposition();
 
-	Matrix X = Transpose(T)*QR[1].Inverse();
+	Matrix X = Transpose(T)*QR[1].Inverse_LU();
 	return X*Transpose(X);
 }
 

@@ -68,7 +68,7 @@ public:
 		weights = Vector(dim);
 		sampleSelection();
 	}
-	const void Update(real threshold = 0.00001, int max_iter = 20) {
+	const void Update(real threshold = 0.000001, int max_iter = 20) {
 		
 		int a;
 	    Matrix AA;

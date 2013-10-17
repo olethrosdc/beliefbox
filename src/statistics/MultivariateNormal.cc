@@ -39,7 +39,6 @@ void MultivariateNormal::generate(Vector& x) const
 }
 
 /** Multivariate Gaussian generation.
-
     Uses the Cholesky decomposition.
  */
 Vector MultivariateNormal::generate() const
@@ -47,15 +46,15 @@ Vector MultivariateNormal::generate() const
     Matrix Sigma = accuracy;
     Sigma = Sigma.Inverse();
     Matrix A = Sigma.Cholesky();
-    Vector v(n_dim);
     NormalDistribution normal;
+	Vector v(n_dim);
     for (int i=0; i<n_dim; ++i) {
         v(i) = normal.generate();
     }
-    const Matrix& Ar = A;
-    return mean + Ar * v;
-}
 
+    const Matrix Ar = Transpose(A);
+    return mean + Ar*v;
+}
 
 /** Multivariate Gaussian density.
 
@@ -69,7 +68,7 @@ real MultivariateNormal::log_pdf(const Vector& x) const
 	assert (x.Size()==mean.Size());
 	real n = (real) x.Size();
     Vector diff = x - mean;
-	real d = Mahalanobis2(diff, accuracy, diff);
+	real d = Mahalanobis2(diff, accuracy.Inverse(), diff);
     assert(d >= 0);
 	real log_pdf = 0.5 * (log(determinant) - d - n * log(2*M_PI));
     return log_pdf;

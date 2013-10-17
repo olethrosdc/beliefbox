@@ -8,160 +8,138 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+// The specific class is based on the Thomas P. Minka paper "Bayesian Linear
+// Regression", Technical Report, February 20, 2001.
 
 #include "BayesianMultivariateRegression.h"
 #include "SpecialFunctions.h"
 #include "Student.h"
+#include "gsl/gsl_sf_psi.h"
 
-BayesianMultivariateRegression::BayesianMultivariateRegression(int m_, int d_, Matrix S0_, real N0_, real a_)
-	:m(m_), d(d_), S0(S0_), N0(N0_), a(a_)
+BayesianMultivariateRegression::BayesianMultivariateRegression(int m_, int d_, Matrix S0_, real N0_, real a_, bool ThompsonSampling_)
+:m(m_), d(d_), S0(S0_), N0(N0_), a(a_), ThompsonSampling(ThompsonSampling_)
 {
-	N = 0;
+	N = 0.0;
 	M = Matrix::Null(d,m);
 	A = M;
 	V = Matrix::Unity(d,d);
 	K = Matrix::Unity(m,m)*a;
 	Sxx = K;
-	inv_Sxx = Sxx.Inverse();
-	Syx = M*K;
-	Syy = Syx * Transpose(M);
-	Sy_x = Syy - (Syx*inv_Sxx)*Transpose(Syx);
+	Syx = M*K;	
+	Syy = Syx * Transpose(M);	
 }
 
 void BayesianMultivariateRegression::AddElement(const Vector& y, const Vector& x)
 {
 	assert(y.Size() == d);
 	assert(x.Size() == m);
-	
-	N++;
-	
-	Sxx = Sxx + OuterProduct(x,x);
-	inv_Sxx = Sxx.Inverse();
-	Syx = Syx + OuterProduct(y,x);
-	Syy = Syy + OuterProduct(y,y);
-	K = Sxx;
-	M = Syx*inv_Sxx;
-	Sy_x = Syy - M*Transpose(Syx);
+	N = N + 1.0;
+	Sxx = Sxx + OuterProduct(x,x); // Sxx = X*X'
+	Syx = Syx + OuterProduct(y,x); // Syx = Y*X' (Eq. 21)
+	Syy = Syy + OuterProduct(y,y); // Syy = Y*Y' (Eq. 22)
+	inv_Sxx = Sxx.Inverse_LU();  
+	M = Syx*inv_Sxx;	
+	Sy_x = Syy - M*Transpose(Syx); //Sy|x = Syy - Syx*Sxx^{-1}*Syx'	(Eq. 23)
 }
 
 /// Generate response matrix
 Matrix BayesianMultivariateRegression::generate()
 {
-	iWishart iwishart(N + N0, Sy_x + S0, true);
-	V = iwishart.generate();
-	MultivariateNormal multivariate_normal(M.Vec(), Kron(V.Inverse(),K));
-	Vector mean = multivariate_normal.generate();
-
-	A.Vec(mean);
-
-	return A;
+	Matrix S = A;
+	if(N > 0) {
+		iWishart iwishart(N + N0, Sy_x + S0, true); // Eq. 51
+		V = iwishart.generate();
+		MultivariateNormal multivariate_normal(M.Vec(), Kron(inv_Sxx,V).Inverse_LU()); // Eq. 10
+		Vector mean = multivariate_normal.generate();
+		S.Vec(mean);
+	}	
+//	printf("sampled\n");
+//	S.print(stdout);
+//	printf("real\n");
+//	M.print(stdout);
+	return S;
 }
 
 Vector BayesianMultivariateRegression::generate(const Vector& x)
 {	
-	Matrix mean = generate();
-
-	return mean*x;
+	return A*x;
 }
 
 void BayesianMultivariateRegression::generate(Matrix& MM, Matrix& VV)
 {
-	iWishart iwishart(N + N0, Sy_x + S0, true);
+	iWishart iwishart(N + N0, Sy_x + S0, true); // Eq. 51
 	VV = iwishart.generate();
-
-	MultivariateNormal multivariate_normal(M.Vec(), Kron(VV.Inverse(),K));
-
+	
+	MultivariateNormal multivariate_normal(M.Vec(), Kron(inv_Sxx,VV).Inverse_LU()); // Eq. 10
+	
 	Vector mean = multivariate_normal.generate();
 	MM.Vec(mean);
 }
 
 real BayesianMultivariateRegression::Posterior(const Vector& x, const Vector& y)
 {
-	iWishart iwishart(N + N0, Sy_x + S0, true);
-	Matrix VV = iwishart.generate();
-	Matrix MM = Matrix::Null(d,m);
+	Vector xx = (inv_Sxx*x);
+	real c = 1.0 + Product(x,xx);
+	V = ((Sy_x + S0)*c);
+	Vector mean = M*x;
+	Student st((N + N0 + 1.0), mean, V.Inverse());
 	
-	MultivariateNormal multivariate_normal(M.Vec(), Kron(VV.Inverse(),K));
-	Vector mean = multivariate_normal.generate();
-	MM.Vec(mean);
-	
-	MultivariateNormal m_normal((MM*x),VV.Inverse());
-
-	return m_normal.pdf(y);
-	//real result = LogPredictiveDistribution(x,y);
-//	printf("Log Prediction = %f and Prediction = %f\n",result,exp(result));
-//	return exp(result);
+	return st.pdf(y);
 }
 
-real BayesianMultivariateRegression::PredictiveDistribution(const Vector& x, const Vector& y)
+void BayesianMultivariateRegression::HyperOptimize()
 {
-	assert(x.Size() == m);
-	real n = (N + N0 + 1.0) / 2.0;
-
-    const Matrix mean = M;
-	const Vector residual = y - mean*x;
-
-	Matrix xxx = OuterProduct(x,x);
-	const Matrix inv_Sxx_new = (Sxx + xxx).Inverse();
-	const Vector xSxx = inv_Sxx_new*x;
-	real c = Product(x,xSxx);
-	c = 1.0 - c;
-
-	Matrix r1 = Sy_x.Inverse();
-	r1 = r1*c;
-	Vector r2 = r1*residual;
-	real r3 = Product(residual, r2);
-	real r4 = (Sy_x * (M_PI / c)).det();
-//	real r5 = Gamma(n);
-	
-//	return (Gamma(n) / Gamma(n - d/2.0)) * (pow(r4,-0.5))*pow((r3+ 1.0) , -n);
-	return (pow(r4,-0.5))*pow((r3+ 1.0) , -n);	
+	real psi1, psi2, psi3;
+	real thres = 1e-7;
+	Matrix Sh = M*Transpose(Syx);
+	Matrix Sxxh = Sxx - K;
+	Matrix VM;
+	int count = 0;
+	a = 0.01;
+	N0 = 0.01;
+	real a_old = a;
+	real N0_old = N0;
+	bool flag = true;
+//	printf("Optimization starts\n");
+	while(flag == true) {
+		count++;
+		K = Matrix::Unity(m,m)*a;
+		Sxx = Sxxh + K;
+		M = Syx*Sxx.Inverse();
+		Matrix Sh = M*Transpose(Syx);
+		Sy_x = Syy - Sh;
+		VM = (Sy_x + N0*Matrix::Unity(d,d)) / (N + N0);		
+		Matrix sss = VM.Inverse()*(Sh);
+		a = (m*d) / (sss.tr() - m*d);
+		psi3 = 0;
+		for(int i = 1; i<=d; ++i) {
+			psi1 = gsl_sf_psi((real)(0.5*(N + N0 + 1.0 - (real)i)));
+			psi2 = gsl_sf_psi((real)(0.5*(N0 + 1.0 - (real)i)));
+			psi3 = psi3 + (psi1 - psi2);
+		}
+		N0 = (real)(N0* ( psi3 / (log( ((Sy_x / N0) + Matrix::Unity(d,d)).det()) + (VM.Inverse()).tr() -d)));
+		if((abs(a - a_old)) < thres && (abs(N0 - N0_old) < thres)) {
+			flag = false;
+		}
+		a_old	= a;
+		N0_old	= N0;
+		printf("a = %f, N0 =%f\n",a , N0);
+	}
+	K = Matrix::Unity(m,m)*a;
+	Sxx = Sxxh + K;
+	inv_Sxx = Sxx.Inverse();
+	M = Syx*Sxx.Inverse();
+	Sh = M*Transpose(Syx);
+	Sy_x = Syy - Sh;	
+//	printf("a = %f, N0 =%f, N = %f\n",a , N0, N);
 }
-
-real BayesianMultivariateRegression::LogPredictiveDistribution(const Vector& x, const Vector& y) {
-	//Degree 
-	real degrees = (real)(N + N0 + 1);
-	//Mean
-	Vector mu = M*x;
-	printf("Output\n");
-	y.print(stdout);
-	printf("Mean\n");
-	mu.print(stdout);
-	//Precision 
-	Matrix t = Sxx + OuterProduct(x,x);
-	t = t.Inverse_LU();
-	Vector Temp = t * x;	
-	real c	= Product(x,Temp);
-	c		= 1.0 - c;
-	
-//	c =1.0;
-	printf("Precision\n");
-	Matrix precision1 = (Sy_x + S0).Inverse();
-	precision1.print(stdout);
-//	printf("C = %f\n",c);
-	Matrix precision = (Sy_x + S0).Inverse() * (c);
-	Matrix variance  = ((Sy_x + S0)*((1.0/c)));
-	
-	printf("Precision\n");
-	precision.print(stdout);
-	printf("Degree => %f\n",degrees);
-//	Student s(degrees, mu, precision);
-//	return s.pdf(y);
-	
-	Vector delta = y - mu;
-	real g = 1 + Mahalanobis2(delta, precision, delta)/degrees;
-//	real g = 1 + Mahalanobis2(delta, precision, delta);
-
-	real d = (real)y.Size();
-	
-	real log_c =  logGamma(0.5 *(degrees + d) )
-				- 0.5 * log(variance.det())
-				- logGamma(0.5 * degrees)
-				- (0.5 * d) * log(degrees*M_PI);
-	real log_p = log_c - (0.5*degrees)*log(g);
-	//real log_c = logGamma(0.5 * degrees) - 0.5 * log(variance.det()) - logGamma(0.5* degrees - 0.5*d);
-//	real log_p = log_c - (0.5*degrees)*g;
-	return log_p;
+void BayesianMultivariateRegression::Select()
+{
+	if(ThompsonSampling) {
+		A = generate();
+	} else {
+		A = M;
+	}
 }
 
 void BayesianMultivariateRegression::Reset()
@@ -172,8 +150,6 @@ void BayesianMultivariateRegression::Reset()
 	V = Matrix::Unity(d,d);
 	K = Matrix::Unity(m,m)*a;
 	Sxx = K;
-	inv_Sxx = Sxx.Inverse();
-	Syx = M*K;
-	Syy = Syx * Transpose(M);
-	Sy_x = Syy - (Syx*inv_Sxx)*Transpose(Syx);
+	Syx = M*K;	
+	Syy = Syx * Transpose(M);	
 }

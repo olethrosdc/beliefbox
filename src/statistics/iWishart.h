@@ -38,11 +38,11 @@ public:
 	void setCovariance(const Matrix& V)
     {
         Covariance = V;
-        Precision = V.Inverse();
+        Precision = V.Inverse_LU();
     }
     void setPrecision(const Matrix& V)
     {
-        Covariance = V.Inverse();
+        Covariance = V.Inverse_LU();
         Precision = V;
     }
     void Show()
