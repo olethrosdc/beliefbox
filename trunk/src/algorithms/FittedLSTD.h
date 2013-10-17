@@ -34,17 +34,14 @@ protected:
 	int dim_model;				///< Dimension of the model basis functions
 	int n_actions;				///< Number of actions (Note: what to do for continuous?)
 	Vector weights;				///< Model parameters
-	Matrix PHI;
 	real lambda;				///< Regularization factor
-	Matrix pseudo_inv;
     std::vector<Vector> states;	///< set of representative states
 	Environment<S, A>* environment;
 	std::vector<BayesianMultivariateRegression*> regression_t;
 	RBFBasisSet* RBFs_model;	///< The Radial basis functions that used in the model.
 	RBFBasisSet* RBFs;		
-	real scale; ///< scale parameter
+	real scale;					///< scale parameter
 	bool update_samples;		///< Take new random training samples 
-	Rollout<Vector, int, AbstractPolicy<Vector, int> >* rollout;
 public:
 	FittedLSTD(const real& gamma_, const int& N_, const int& M_, const int& grids_, Environment<S,A>* environment_, std::vector<BayesianMultivariateRegression*> regression_t_, RBFBasisSet* RBFs_, real scale_ = 1.0, bool update_samples_ = false):
 	gamma(gamma_),
@@ -57,15 +54,18 @@ public:
 	scale(scale_),
 	update_samples(update_samples_)
 	{
+		///Upper and Lower environment's bounds.
 		Vector S_L	= environment->StateLowerBound();
 		Vector S_U	= environment->StateUpperBound();
 		
-		lambda = 0.01;
+		lambda = 0.01; ///Regularize parameter.
+		///Basis function construction for the API model
 		EvenGrid Discretisation(S_L,S_U,grids);
 		RBFs = new RBFBasisSet(Discretisation,scale); 
+		dim	= RBFs->size() + 1;	
+
 		n_actions = environment->getNActions();
 		
-		dim	= pow(grids,environment->getNStates()) + 1;	
 		if(RBFs_model!=NULL) {
 			dim_model = RBFs_model->size() + 1;
 		}
@@ -82,34 +82,23 @@ public:
 	    Matrix AA;
 		Vector b(dim);
 		Vector dif;
-		Vector phi_model;
-		Vector phi;
+		Vector state, next_state;
+		Vector phi_model, phi, phi_;
 		real r;
+		real distance = 0.1;
 		bool final;
-		real distance;
-		Vector T(N);
-		Vector pW(dim);
-		weights = Vector::Unity(dim);
+		Vector pW(dim); //previous weigths
+		weights = Vector::Null(dim); 
 		Vector V(n_actions);
 		int n_iter = 0;
 		do {
 			AA = Matrix::Null(dim,dim);
 			b.Clear();
 
-			distance = 0.1;
-			real steps = 0.0;
 			for(int i=0; i<N; ++i)
 			{	
-				Vector phi_model;
-				if(RBFs_model != NULL) {
-					RBFs_model->Evaluate(states[i]);
-					phi_model = RBFs_model->F();
-				}
-				else {
-					phi_model = states[i];
-				}
-				phi_model.Resize(dim_model);
-				phi_model[dim_model-1] = 1.0;
+				phi_model = BasisModelCreation(states[i]);
+				
 				//Find best action - policy.
 				for(a = 0; a < n_actions; a++) {
 					environment->Reset();
@@ -117,7 +106,8 @@ public:
 					
 					final = environment->Act(a);
 					r = environment->getReward();
-					Vector next_state = regression_t[a]->generate(phi_model);
+					///We find the next state according to the learned environment model
+					next_state = regression_t[a]->generate(phi_model);
 					V[a] = getValue(next_state) + r;
 				}
 				
@@ -125,39 +115,34 @@ public:
 				
 				environment->Reset();
 				environment->setState(states[i]);
-								
-				RBFs->Evaluate(states[i]);
-				phi = RBFs->F();
-				phi.Resize(dim);
-				phi[dim-1] = 1.0; 
+				///In this point we calculate the basis function for the collected state i				
+				phi = BasisAPICreation(states[i]);
 				
 				final = environment->Act(a);
 				r = environment->getReward();
-				
+				///Least Square Temporal Difference Update
 				if(final) {
-					Vector next_state = regression_t[a]->generate(phi_model);
-					RBFs->Evaluate(next_state);
-					Vector phi_ = RBFs->F();
-					phi_.Resize(dim);
-					phi_[dim-1] = 1.0;
+					///We find the next state according to the learned environment model
+					next_state = regression_t[a]->generate(phi_model);
+					///In this point we calculate the basis function for the next state			
+					phi_ = BasisAPICreation(next_state);
 					dif = phi - (phi_*gamma);
 				}
 				else {
 					dif = phi;
 				}	
-				steps++;
 				Matrix res = OuterProduct(phi,dif);
 				AA += res;					
 				b  += phi*r;
 			}	
-			weights = ((1.0/steps)*AA + (lambda*steps)*Matrix::Unity(dim,dim)).Inverse_LU()*(b*(1/steps));
+			weights = ((1.0/N)*AA + (lambda*N)*Matrix::Unity(dim,dim)).Inverse()*(b*(1.0/N));
 			
 			distance = (pW - weights).L2Norm();
 			pW = weights;
-			if(max_iter>0) 
-				max_iter--;
+		
+			max_iter--;
 			n_iter++;
-			
+			/// If "true" we collect new samples on each iteration
 			if(update_samples==true) {
 				sampleSelection();
 			}
@@ -167,63 +152,62 @@ public:
 	
 	real getValue(const S& state) 
 	{
-		RBFs->Evaluate(state);
-		Vector phi = RBFs->F();
-		phi.Resize(dim);
-		phi[dim-1] = 1.0;
-		
+		Vector phi = BasisAPICreation(state);
 		return Product(weights,phi);
 	}
 	
 	real getValue(const S& state, const A& action) 
 	{
+		bool endsim = environment->getEndsim();
+		Vector true_state = environment->getState();
 		environment->Reset();
 		environment->setState(state);
 		environment->Act(action);
 		real r		= environment->getReward();
-//		environment->Reset();
-
-		environment->setState(state);
+		
+		environment->Reset();
+		environment->setEndsim(endsim);
+		environment->setState(true_state);
 		
 		real temp_v = 0.0;
 		
-		Vector phi;
-		if(RBFs_model != NULL) {
-			RBFs_model->Evaluate(state);
-			phi = RBFs_model->F();
-		}
-		else {
-			phi = state;
-		}
-		phi.Resize(dim_model);
-		phi[dim_model-1] = 1.0;
+		Vector phi = BasisModelCreation(state);
 		Vector next_state = regression_t[action]->generate(phi);
 		temp_v = getValue(next_state);
 	
 		return (r + gamma*temp_v);
 	}
-	
+	///SampleSelection collects a number of samples, uniformly random
 	void sampleSelection() {
-		
 		Vector S_L	= environment->StateLowerBound();
 		Vector S_U	= environment->StateUpperBound();
 		states.clear();
-		PHI = Matrix(dim,N);
 		for(int i=0; i<N; ++i) {
 			Vector state = urandom(S_L, S_U);
 			states.push_back(state);
 		}
 	}
-	
-	//	void sampleSelection() {
-	//		MersenneTwisterRNG mersenne_twister;
-	//		RandomNumberGenerator* rng = (RandomNumberGenerator*) &mersenne_twister;
-	//		rng->manualSeed(323456789);
-	//		AbstractPolicy<Vector, int>* policy = new RandomPolicy(environment->getNActions(), rng);
-	//		rollout = new Rollout<Vector, int, AbstractPolicy<Vector, int> >(environment->getState(), policy, environment, gamma, true);
-	//		rollout->UniformSampling(3000, 1);
-	////		rollout->Sampling(100, 400);
-	//	}
+	// BasisModelCreation returns the basis function for state s that used for the Model prediction algorithm
+	Vector BasisModelCreation(const Vector& s) {
+		Vector phi;
+		if(RBFs_model != NULL) {
+			RBFs_model->Evaluate(s);
+			phi = RBFs_model->F();
+		} else {
+			phi = s;
+		}
+		phi.Resize(dim_model);
+		phi[dim_model-1] = 1.0;
+		return phi;
+	}
+	// BasisAPICreation returns the basis function for state s that used for the API algorithm
+	Vector BasisAPICreation(const Vector& s) {
+		RBFs->Evaluate(s);
+		Vector phi = RBFs->F();
+		phi.Resize(dim);
+		phi[dim-1] = 1.0;
+		return phi;
+	}
 	
 	void Reset() {
 		sampleSelection();

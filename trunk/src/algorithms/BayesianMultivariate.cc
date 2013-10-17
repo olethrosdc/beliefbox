@@ -102,6 +102,7 @@ int BayesianMultivariate::Act(Vector state)
 		int action =  (int) floor(urandom(0.0, (real) Q.Size()));
 		return action;
 	}
+	
 	real max = 0.0;
 	if(RSM != NULL) {
 		max = RSM->getValue(state,0);
@@ -117,7 +118,7 @@ int BayesianMultivariate::Act(Vector state)
 	}
 	Q(0) = max;
 	int select = 0;
-	for(int i=1; i<Q.Size(); ++i) {
+	for(int i=1; i<n_actions; ++i) {
 		if(RSM != NULL) {
 			Q(i) = RSM->getValue(state,i);
 		}
@@ -135,13 +136,8 @@ int BayesianMultivariate::Act(Vector state)
 			select = i;
 		}
 	}
-//	Q.print(stdout);
-//	for (int i=0; i<Q.Size(); ++i) {
-//		Q(i) = RSM->getValue(state, i);
-//	}
-	
-	//	std::vector<int> max_elem = ArgMaxs(Q);
-	return select; //max_elem[urandom(0,max_elem.size()-1)];	
+
+	return select;
 }
 
 real BayesianMultivariate::getValue(Vector state, int action)
@@ -190,7 +186,11 @@ void BayesianMultivariate::Update()
 	Matrix MeanT(n_output_dim, n_input_dim);
 	Matrix CovarianceR(n_input_dim, n_input_dim);
 	Matrix CovarianceT(n_input_dim, n_input_dim);
-	
+
+	for(int a = 0; a<n_actions; ++a) {
+		regression_t[a]->Select();
+//		regression_r[a]->Select();
+	}
 	if(lm != NULL) {
 		for( int i=0; i<n_actions; ++i) {
 			regression_t[i]->generate(MeanT, CovarianceT);
@@ -198,22 +198,17 @@ void BayesianMultivariate::Update()
 			lm->SetStatePredictionVar(CovarianceT,i);
 			lm->GetStatePredictionVar(i).print(stdout);
 			lm->SetStatePredictionS(regression_t[i]->getSxx(),i);
-
-//			regression_r[i]->generate(MeanR, CovarianceR);
-//			lm->SetRewardPredictionMean(MeanR.getRow(0),i);
-//			lm->SetRewardPredictionVar(CovarianceR,i);
-//			lm->SetRewardPredictionS(regression_r[i]->getSxx(),i);
 		}
 		RSM->Update(*lm);
 	}
 	else if(FVI != NULL) {
-		FVI->Update(0.0001, 100);
+		FVI->Update(0.000001, 100);
 	}
 	else if(FLSTD != NULL) {
-		FLSTD->Update(0.0001, 100);
+		FLSTD->Update(0.000001, 100);
 	}
 	else if(FQVI != NULL) {
-		FQVI->Update(0.0001, 100);
+		FQVI->Update(0.000001, 100);
 	}
 }
 void BayesianMultivariate::Predict()

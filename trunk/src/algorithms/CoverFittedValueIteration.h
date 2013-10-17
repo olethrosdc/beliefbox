@@ -55,7 +55,7 @@ public:
 
 	}
 	const void Update(real threshold = 0.001, int max_iter = -1) {
-//		sampleSelection();
+		sampleSelection();
 		Reset();
 		Vector V(n_actions);
 		real distance;
