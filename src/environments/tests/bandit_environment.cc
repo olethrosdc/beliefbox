@@ -5,7 +5,8 @@
 #include <cstdio>
 #include <cassert>
 #include <string>
-
+#include <vector>
+#include <random>
 
 // env_ function prototypes types 
 #include <rlglue/Environment_common.h>	  
