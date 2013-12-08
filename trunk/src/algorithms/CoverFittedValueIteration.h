@@ -55,7 +55,7 @@ public:
 		Vector S_L	= environment->StateLowerBound();
 		Vector S_U	= environment->StateUpperBound();
 		
-		lambda = 0.0; ///Regularize parameter.
+		lambda = 0.01; ///Regularize parameter.
 		///Basis function construction for the API model
 		EvenGrid Discretisation(S_L,S_U,grids);
 		RBFs = new RBFBasisSet(Discretisation,scale); 
