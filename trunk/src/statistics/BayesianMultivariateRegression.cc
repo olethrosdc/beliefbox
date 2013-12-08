@@ -49,20 +49,18 @@ Matrix BayesianMultivariateRegression::generate()
 	if(N > 0) {
 		iWishart iwishart(N + N0, Sy_x + S0, true); // Eq. 51
 		V = iwishart.generate();
-		MultivariateNormal multivariate_normal(M.Vec(), Kron(inv_Sxx,V).Inverse_LU()); // Eq. 10
+		MultivariateNormal multivariate_normal(M.Vec(), Kron(Sxx, V.Inverse())); // Eq. 10
 		Vector mean = multivariate_normal.generate();
 		S.Vec(mean);
 	}	
-//	printf("sampled\n");
-//	S.print(stdout);
-//	printf("real\n");
-//	M.print(stdout);
+
 	return S;
 }
 
 Vector BayesianMultivariateRegression::generate(const Vector& x)
 {	
-	return A*x;
+	Vector new_state = A*x;
+	return new_state;
 }
 
 void BayesianMultivariateRegression::generate(Matrix& MM, Matrix& VV)
@@ -82,57 +80,11 @@ real BayesianMultivariateRegression::Posterior(const Vector& x, const Vector& y)
 	real c = 1.0 + Product(x,xx);
 	V = ((Sy_x + S0)*c);
 	Vector mean = M*x;
-	Student st((N + N0 + 1.0), mean, V.Inverse());
+	Student st((N + N0 + 1.0), mean, V.Inverse_LU());
 	
 	return st.pdf(y);
 }
 
-void BayesianMultivariateRegression::HyperOptimize()
-{
-	real psi1, psi2, psi3;
-	real thres = 1e-7;
-	Matrix Sh = M*Transpose(Syx);
-	Matrix Sxxh = Sxx - K;
-	Matrix VM;
-	int count = 0;
-	a = 0.01;
-	N0 = 0.01;
-	real a_old = a;
-	real N0_old = N0;
-	bool flag = true;
-//	printf("Optimization starts\n");
-	while(flag == true) {
-		count++;
-		K = Matrix::Unity(m,m)*a;
-		Sxx = Sxxh + K;
-		M = Syx*Sxx.Inverse();
-		Matrix Sh = M*Transpose(Syx);
-		Sy_x = Syy - Sh;
-		VM = (Sy_x + N0*Matrix::Unity(d,d)) / (N + N0);		
-		Matrix sss = VM.Inverse()*(Sh);
-		a = (m*d) / (sss.tr() - m*d);
-		psi3 = 0;
-		for(int i = 1; i<=d; ++i) {
-			psi1 = gsl_sf_psi((real)(0.5*(N + N0 + 1.0 - (real)i)));
-			psi2 = gsl_sf_psi((real)(0.5*(N0 + 1.0 - (real)i)));
-			psi3 = psi3 + (psi1 - psi2);
-		}
-		N0 = (real)(N0* ( psi3 / (log( ((Sy_x / N0) + Matrix::Unity(d,d)).det()) + (VM.Inverse()).tr() -d)));
-		if((abs(a - a_old)) < thres && (abs(N0 - N0_old) < thres)) {
-			flag = false;
-		}
-		a_old	= a;
-		N0_old	= N0;
-		printf("a = %f, N0 =%f\n",a , N0);
-	}
-	K = Matrix::Unity(m,m)*a;
-	Sxx = Sxxh + K;
-	inv_Sxx = Sxx.Inverse();
-	M = Syx*Sxx.Inverse();
-	Sh = M*Transpose(Syx);
-	Sy_x = Syy - Sh;	
-//	printf("a = %f, N0 =%f, N = %f\n",a , N0, N);
-}
 void BayesianMultivariateRegression::Select()
 {
 	if(ThompsonSampling) {

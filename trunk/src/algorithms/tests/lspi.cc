@@ -98,9 +98,9 @@ int main(int argc, char* argv[])
 
 	int max_iteration	= 20;
 	real gamma			= 0.999;
-	int n_rollouts		= 50;
+	int n_rollouts		= 10;
 	int horizon			= 40;
-	int grids			= 2;
+	int grids			= 4;
 	int algorithm		= 1;
 	real delta			= 0.0001;
 	char* environment_name = NULL;
@@ -222,17 +222,17 @@ int main(int argc, char* argv[])
 	printf("# State dimension: %d\n", state_dimension);
 	printf("# S_L: "); S_L.print(stdout);
 	printf("# S_U: "); S_U.print(stdout);
-	S_U[0] = (3.0*M_PI)/4.0; //4;
-    S_U[1] = 1.5;//10;
-    S_L[0] = (-3.0*M_PI)/4.0;//-4;
-    S_L[1] = -1.5;//10;
-	Vector D = Vector::Unity(2);
-	for (int n_rollouts=10; n_rollouts<=90; n_rollouts = n_rollouts + 10) {
-		srand48(34987235);
-		srand(34987235);
-		setRandomSeed(34987235);
-		environment_rng->manualSeed(228240153);
-		rng->manualSeed(1361690241);
+//	S_U[0] = (3.0*M_PI)/4.0; //4;
+//    S_U[1] = 1.5;//10;
+//    S_L[0] = (-3.0*M_PI)/4.0;//-4;
+//    S_L[1] = -1.5;//10;
+//	Vector D = Vector::Unity(2);
+	for (int n_rollouts=10; n_rollouts<=45; n_rollouts = n_rollouts + 5) {
+	srand48(34987235);
+	srand(34987235);
+	setRandomSeed(34987235);
+	environment_rng->manualSeed(228240153);
+	rng->manualSeed(1361690241);
 	for (int i=0; i<runs; ++i) {
         // Place holder for the policy
         AbstractPolicy<Vector, int>* policy;
@@ -250,8 +250,8 @@ int main(int argc, char* argv[])
 		rollout->Sampling(n_rollouts, horizon);
       
 		printf("Total number of collected samples -> %d\n",rollout->getNSamples());
-        EvenGrid Discretisation(S_L, S_U, D, grids);
-//		EvenGrid Discretisation(S_L, S_U, grids);
+//        EvenGrid Discretisation(S_L, S_U, D, grids);
+		EvenGrid Discretisation(S_L, S_U, grids);
         
       //  for(int i = 0; i < rollout->getNRollouts(); ++i)
 //		{
@@ -262,6 +262,7 @@ int main(int argc, char* argv[])
 //		RBFBasisSet* RBFs = NULL;
         LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs, rollout);
         lspi->PolicyIteration();
+
         //lspi->LSTDQ(0.1);
       //  real V = 0;
 //        int n_eval = 10000;
@@ -278,7 +279,7 @@ int main(int argc, char* argv[])
 //        fflush(stdout);
 //        fflush(stderr);
         for (int j=0; j<eval_iter; ++j) {
-			PerformanceStatistics run_statistics = Evaluate(environment, lspi->ReturnPolicy(), gamma, 3000);
+			PerformanceStatistics run_statistics = Evaluate(environment, lspi->ReturnPolicy(), gamma, 1000);
 			Stats(i,j) = run_statistics.run_time;
 			//statistics.Observe(run_statistics);
         }
@@ -339,7 +340,7 @@ PerformanceStatistics Evaluate(Environment<Vector, int>* environment,
 			break;
 		}
 	}
-//	printf("Run time = %f\n",statistics.run_time);
+	printf("Run time = %f\n",statistics.run_time);
 	return statistics;
 }
 

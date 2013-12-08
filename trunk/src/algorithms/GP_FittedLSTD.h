@@ -68,7 +68,7 @@ public:
 		weights = Vector(dim);
 		sampleSelection();
 	}
-	const void Update(real threshold = 0.000001, int max_iter = 20) {
+	const void Update(real threshold = 0.000001, int max_iter = 10) {
 		
 		int a;
 	    Matrix AA;
@@ -108,9 +108,14 @@ public:
 					for(int d = 0; d<n_states; ++d) {
 						next_state(d) = regression_t[a][d]->GeneratePrediction(states[i]);
 					}
-					V[a] = getValue(next_state) + r;
+//					V[a] = getValue(next_state) + r;
+					if(final) {
+						next_state = environment->getState();
+						V[a] = gamma*getValue(next_state) + r;
+					} else {
+						V[a] = r;
+					}
 				}
-				
 				a = ArgMax(V);
 				
 				environment->Reset();
@@ -153,7 +158,7 @@ public:
 			if(update_samples==true) {
 				sampleSelection();
 			}
-//			printf("#ValueIteration (Threshold = %f) :: ComputeStateValues Exiting at d:%f, n:%d\n", threshold, distance, n_iter);
+			printf("#ValueIteration (Threshold = %f) :: ComputeStateValues Exiting at d:%f, n:%d\n", threshold, distance, n_iter);
 		}while(distance > threshold && max_iter != 0);
 //		printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", distance, n_iter);
 	}
@@ -174,7 +179,7 @@ public:
 		Vector true_state = environment->getState();
 		environment->Reset();
 		environment->setState(state);
-		environment->Act(action);
+		bool final = environment->Act(action);
 		real r = environment->getReward();
 		
 		environment->Reset();
@@ -187,7 +192,8 @@ public:
 		for(int d = 0; d<n_states; ++d) {
 			next_state(d) = regression_t[action][d]->GeneratePrediction(state);
 		}
-		temp_v = getValue(next_state);
+		if(final)
+			temp_v = getValue(next_state);
 		
 		return (r + gamma*temp_v);
 	}

@@ -84,7 +84,7 @@ void CartPole::Reset()
     reward = 1.0;
 #if 1
     /// Cart position
-    state[0] =  urandom(-0.5, 0.5);
+    state[0] =  urandom(-0.1, 0.1);
 	/// Cart velocity
     state[1] = 0.0;
 	// Theta

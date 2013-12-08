@@ -58,7 +58,7 @@ public:
 		Vector S_L	= environment->StateLowerBound();
 		Vector S_U	= environment->StateUpperBound();
 		
-		lambda = 0.01; ///Regularize parameter.
+		lambda = 0.0001; ///Regularize parameter.
 		///Basis function construction for the API model
 		EvenGrid Discretisation(S_L,S_U,grids);
 		RBFs = new RBFBasisSet(Discretisation,scale); 
@@ -88,11 +88,11 @@ public:
 		real distance = 0.1;
 		bool final;
 		Vector pW(dim); //previous weigths
-		weights = Vector::Null(dim); 
+		weights = Vector::Null(dim);
 		Vector V(n_actions);
 		int n_iter = 0;
 		do {
-			AA = Matrix::Null(dim,dim);
+			AA = Matrix::Unity(dim,dim)*0.0;
 			b.Clear();
 
 			for(int i=0; i<N; ++i)
@@ -107,8 +107,12 @@ public:
 					final = environment->Act(a);
 					r = environment->getReward();
 					///We find the next state according to the learned environment model
-					next_state = regression_t[a]->generate(phi_model);
-					V[a] = getValue(next_state) + r;
+					if(final) {
+						next_state = environment->getState();
+						V[a] = getValue(next_state) + r;
+					} else {
+						V[a] = r;
+					}
 				}
 				
 				a = ArgMax(V);
@@ -132,10 +136,11 @@ public:
 					dif = phi;
 				}	
 				Matrix res = OuterProduct(phi,dif);
-				AA += res;					
-				b  += phi*r;
+				AA = AA + res;					
+				b = b + phi*r;
 			}	
-			weights = ((1.0/N)*AA + (lambda*N)*Matrix::Unity(dim,dim)).Inverse()*(b*(1.0/N));
+			
+			weights = ((1.0/N)*AA + (lambda)*Matrix::Unity(dim,dim)).Inverse()*(b*(1.0/N));
 			
 			distance = (pW - weights).L2Norm();
 			pW = weights;
@@ -162,19 +167,19 @@ public:
 		Vector true_state = environment->getState();
 		environment->Reset();
 		environment->setState(state);
-		environment->Act(action);
+		bool final = environment->Act(action);
 		real r		= environment->getReward();
-		
+
 		environment->Reset();
 		environment->setEndsim(endsim);
 		environment->setState(true_state);
 		
 		real temp_v = 0.0;
-		
-		Vector phi = BasisModelCreation(state);
-		Vector next_state = regression_t[action]->generate(phi);
-		temp_v = getValue(next_state);
-	
+		if(final) {
+			Vector phi = BasisModelCreation(state);
+			Vector next_state = regression_t[action]->generate(phi);
+			temp_v = getValue(next_state);
+		}
 		return (r + gamma*temp_v);
 	}
 	///SampleSelection collects a number of samples, uniformly random

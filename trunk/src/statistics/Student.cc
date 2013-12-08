@@ -88,8 +88,8 @@ real Student::log_pdf(const Vector& x) const
 	real l4 = - (0.5 * (real) k)*log(degree * M_PI); 
 	real l5 =  - 0.5 * (degree + k) * log(g);
     real log_p = l1 + l2 + l3 + l4 + l5;
-//		printf ("g: %f l1: %f l2: %f l3: %f l4: %f l5: %f log_p: %f\n", 
-//				g, l1, l2, l3, l4, l5, log_p);
+//	printf ("g: %f l1: %f l2: %f l3: %f l4: %f l5: %f log_p: %f\n", 
+//		g, l1, l2, l3, l4, l5, log_p);
     return log_p;
 }
 

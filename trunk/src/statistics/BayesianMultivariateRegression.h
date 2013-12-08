@@ -46,7 +46,7 @@ class BayesianMultivariateRegression
 		void generate(Matrix& Mean, Matrix& Covariance);
 		Matrix getSxx() { return Sxx; }
 		real Posterior(const Vector& x, const Vector& y);
-		void HyperOptimize();
+		void Sampling(const bool ThompsonSampling_) { ThompsonSampling = ThompsonSampling_;}
 		void Select();
 		void Reset();
 	};

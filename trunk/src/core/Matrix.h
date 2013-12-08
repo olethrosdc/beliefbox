@@ -77,6 +77,8 @@ public:
 		return GSL_Inverse();
 		//return Inverse_LU();
 	}
+	Vector SVD_Solve(const Vector& b) const;
+
 	Matrix GSL_Inverse() const;
 
     /** Matrix inversion using the Cholesky decomposition.
