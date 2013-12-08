@@ -50,7 +50,7 @@ class CoverTree
 		/// The raw metric used between points.
 		static const real metric(const Vector& x, const Vector& y)
 		{
-			return L1Norm(&x, &y);
+			return L1Norm(x, y);
 		}
 		/// This simply is a node
 		struct Node
@@ -123,22 +123,28 @@ class CoverTree
 //					children[i]->point.printf(stdout);printf(" Samples %d",children[i]->samples);
 //					printf("\n");
 //				}
-				real temp = weight*p;
-				new_total_probability = temp + (1-weight)*total_probability;
+					real temp = weight*p;
+					new_total_probability = temp + (1-weight)*total_probability;
 
-//				real thres = 1.0 - 1e-9;
-				real weight_new = temp / new_total_probability;
-//					printf("probability = %f Samples = %d, weight = %f, level = %d, depth = %d\n",p,samples,weight_new,level,depth);
-//
-//				if(weight_new < 1e-6) {
-//					weight_new = 1e-6;
-//				}
-//				if(weight_new > thres && father!=NULL) 
-//					weight = thres;
-//				else {
-//					weight = weight_new;
-//				}
+//					real thres = 1.0 - 1e-6;
+					real weight_new = temp / new_total_probability;
+////
+//					if(weight_new < 1e-6) {
+//						weight_new = 1e-6;
+//					}
+//					if(weight_new > thres && father!=NULL) 
+//						weight = thres;
+//					else {
+//						weight = weight_new;
+//					}
 					weight = weight_new;
+	//				if(father == NULL)
+//						weight = 1;
+//					else 
+//						weight = weight_new;
+					
+//					printf("probability = %f Samples = %d, weight = %f, level = %d, depth = %d\n",p,samples,weight,level,depth);
+
 				}
 				return new_total_probability;
 			}
@@ -176,6 +182,8 @@ class CoverTree
 			{
 				return samples;
 			}
+			/// Change the sampling approach of node's model
+			void SamplingModel(bool Thompson);
 			/// Display the tree in textual format
 			void Show() const;	
 			/// Displaye the sampling tree in textual format
@@ -292,6 +300,7 @@ class CoverTree
 		const real   	GetEntranceThreshold(int depth) const;
 		const real   	GetBasisThreshold() const;
 		bool Check() const;
+		void SamplingModel(bool Thompson);
 		void Show() const;
 		void ShowSampling() const;
 		void ShowBasis() const;

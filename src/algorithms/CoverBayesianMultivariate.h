@@ -65,7 +65,7 @@ class CoverBayesianMultivariate
 		///
 		void Predict();
 		///
-		void Predict(std::vector<Vector> samples);
+		void Predict(std::vector<Vector> samples, bool LinearTest = false);
 		///
 		void setGeometricSchedule(real alpha_, real beta_);
 		///

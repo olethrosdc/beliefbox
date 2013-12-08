@@ -51,6 +51,7 @@ public:
 	cover(cover_),
 	grids(grids_),
 	scale(scale_),
+
 	tilings(tilings_),
 	update_samples(update_samples_)
 	{
@@ -83,24 +84,22 @@ public:
 		sampleSelection();
 	}
 	const void Update(real threshold = 0.00001, int max_iter = -1) {
-		
-		Reset();
-		
+				
 		int a;
 	    Matrix AA;
 		Vector b(dim);
 		Vector dif, phi_, phi;
-		
+		Vector next_state;
 		real r;
 		bool final;
 		real distance = 0.1;
 		Vector T(N);
 		Vector pW(dim);
-//		weights = Vector::Null(dim); 
+		weights = Vector::Null(dim); 
 		Vector V(n_actions);
 		int n_iter = 0;
 		do {
-			AA = Matrix::Null(dim,dim);
+			AA = Matrix::Unity(dim,dim)*0;
 			b.Clear();
 			real steps = 0.0;
 			for(int i=0; i<N; ++i)
@@ -112,8 +111,12 @@ public:
 					
 					final = environment->Act(a);
 					r = environment->getReward();
-					Vector next_state = cover[a]->GenerateState(states[i]);
-					V[a] = getValue(next_state) + r;
+					if(final) {
+						next_state = environment->getState();
+						V[a] = gamma*getValue(next_state) + r;
+					} else {
+						V[a] = r;
+					}
 				}
 				a = ArgMax(V);
 				
@@ -125,7 +128,7 @@ public:
 				r		= environment->getReward(); //Received Reward
 				
 				if(final) {
-					Vector next_state = cover[a]->GenerateState(states[i]);
+					next_state = cover[a]->GenerateState(states[i]);
 					phi_ = BasisConstruction(next_state);
 					dif = phi - (phi_*gamma);
 				}
@@ -134,11 +137,15 @@ public:
 				}	
 				steps++;
 				Matrix res = OuterProduct(phi,dif);
-				AA += res;					
-				b  += phi*r;
+				AA = AA + res;					
+				b = b + phi*r;
 			}
-			weights = ((1.0/N)*AA + (lambda*N)*Matrix::Unity(dim,dim)).Inverse_LU()*(b*(1.0/N));
+			AA = ((1.0/N)*AA + (lambda*N)*Matrix::Unity(dim,dim));
+			b = (b*(1.0/N));
+//			weights = ((1.0/N)*AA + (lambda)*Matrix::Unity(dim,dim)).Inverse_LU()*(b*(1.0/N));
+			weights = AA.SVD_Solve(b);
 			distance = (pW - weights).L2Norm();
+//			weights.print(stdout);
 			pW = weights;
 			max_iter--;
 			n_iter++;
@@ -162,7 +169,7 @@ public:
 		Vector true_state = environment->getState();
 		environment->Reset();
 		environment->setState(state);
-		environment->Act(action);
+		bool final = environment->Act(action);
 		real r = environment->getReward();
 		
 		environment->Reset();
@@ -170,8 +177,10 @@ public:
 		environment->setState(true_state);
 		
 		real temp_v = 0.0;
-		Vector next_state = cover[action]->GenerateState(state);
-		temp_v = getValue(next_state);
+		if(final) {
+			Vector next_state = cover[action]->GenerateState(state);
+			temp_v = getValue(next_state);
+		}
 		
 		return (r + gamma*temp_v);
 	}

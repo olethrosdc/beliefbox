@@ -68,7 +68,6 @@ void CoverBayesianMultivariate::Observe(Vector state, int action, real reward, V
 int CoverBayesianMultivariate::Act(Vector state)
 {
 	Vector Q(n_actions);
-	
 	real threshold = epsilon;
 	if(use_geometric_schedule) {
 		threshold = epsilon / (1 + sqrt(beta));
@@ -151,7 +150,7 @@ void CoverBayesianMultivariate::Update()
 		FVI->Update(0.000001, 100);
 	}
 	else if(FLSTD != NULL) {
-		FLSTD->Update(0.000001, 100);
+		FLSTD->Update(0.000001, 20);
 	}
 	else if(FLSTDQ != NULL) {
 		FLSTDQ->Update(0.000001, 100);
@@ -161,39 +160,63 @@ void CoverBayesianMultivariate::Update()
 	}
 }
 
-void CoverBayesianMultivariate::Predict(std::vector<Vector> samples)
+void CoverBayesianMultivariate::Predict(std::vector<Vector> samples, bool LinearTest)
 {
-	int n;
 	Vector phi;
 	Vector next_state;
 	Vector state;
 	char buffer[100];
-	
-	for( int i=0; i<n_actions; ++i) {
-		n = sprintf(buffer, "Predicted_Output_samples_action_%d", i);
-		cover[i]->SamplingTree();
-		FILE *output  = fopen(buffer,"w");
-		if(output!=NULL) {
-			for( uint s=0; s< samples.size(); ++s) {
-				next_state = cover[i]->GenerateState(samples[s]);
-				next_state.print(output);
+	if(LinearTest) {
+		int num_of_thompson_samples = 2;
+		for( int i=0; i<n_actions; ++i) {
+			for( int k=0; k<(num_of_thompson_samples+1); ++k) {
+				int i = 0;
+				if(k == 0) {	
+					cover[i]->SamplingModel(false);
+					sprintf(buffer, "Predicted_Output_Marginal_Sampling");
+				} else {
+					cover[i]->SamplingModel(true);
+					sprintf(buffer, "Predicted_Output_Thompson_Sampling_%d", k);
+				}
+
+				cover[i]->SamplingTree();
+				FILE *output  = fopen(buffer,"w");
+				if(output!=NULL) {
+					for( uint s=0; s< samples.size(); ++s) {
+						next_state = cover[i]->GenerateState(samples[s]);
+						next_state.print(output);
+					}
+				}
+				fclose(output);
 			}
 		}
-		fclose(output);
-	}
-	
-	n = sprintf(buffer, "Predicted value function");
-	FILE *value = fopen(buffer, "w");
-	if(FLSTD != NULL) {
-		if(value!=NULL) {
-			Vector V((int)samples.size());
-			for(uint s = 0; s < samples.size(); ++s) {
-				V[s] = FLSTD->getValue(samples[s]);
+	} else {
+		for( int i=0; i<n_actions; ++i) {
+			sprintf(buffer, "Predicted_Output_samples_action_%d", i);
+			cover[i]->SamplingTree();
+			FILE *output  = fopen(buffer,"w");
+			if(output!=NULL) {
+				for( uint s=0; s< samples.size(); ++s) {
+					next_state = cover[i]->GenerateState(samples[s]);
+					next_state.print(output);
+				}
 			}
-			V.print(value);
+			fclose(output);
 		}
 	}
-	fclose(value);
+	
+//	sprintf(buffer, "Predicted value function");
+//	FILE *value = fopen(buffer, "w");
+//	if(FLSTD != NULL) {
+//		if(value!=NULL) {
+//			Vector V((int)samples.size());
+//			for(uint s = 0; s < samples.size(); ++s) {
+//				V[s] = FLSTD->getValue(samples[s]);
+//			}
+//			V.print(value);
+//		}
+//	}
+//	fclose(value);
 	
 }
 

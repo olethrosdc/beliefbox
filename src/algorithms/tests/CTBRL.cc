@@ -36,6 +36,7 @@
 #include "PuddleWorld.h"
 #include "LinearDynamicQuadratic.h"
 #include "DiscretisedEnvironment.h"
+#include "SinModel.h"
 
 // -- Randomness -- //
 #include "RandomNumberFile.h"
@@ -59,7 +60,7 @@
 struct Options
 {
     real gamma;						///< discount factor
-    const char* environment_name;	///< environment name
+	const char* environment_name;	///< environment name
 	const char* method;				///< Method API
 	const char* sampling;			///< Sampling Approach (Marginal, Thompson)
 	real tree_c;					///< Tree threshold
@@ -84,7 +85,7 @@ struct Options
 	sampling("Thompson"),
 	tree_c(1.1),
 	a_model(0.000001),
-	N0_model(0.00001),
+	N0_model(0.000001),
 	rng(rng_), 
 	n_samples(5000),
 	n_training_e_steps(40),
@@ -368,7 +369,7 @@ int main(int argc, char* argv[])
 		rnf.manualSeed(seed);
 		seed = rnf.random();
 	} else {
-		seed = 34987235;
+//		seed = 34987235;
 	}
 	
 	logmsg("seed: %ld\n", seed);
@@ -377,7 +378,17 @@ int main(int argc, char* argv[])
 	rng.manualSeed(seed);
 	setRandomSeed(seed);
 	
-    std::cout << "Starting GPRL" << std::endl;
+	RandomNumberGenerator* environment_rng;
+	MersenneTwisterRNG mersenne_twister_env;
+    environment_rng = (RandomNumberGenerator*) &mersenne_twister_env;
+//	
+//	srand48(34987235);
+//    srand(34987235);
+//    setRandomSeed(34987235);
+//    environment_rng->manualSeed(228240153);
+//    rng.manualSeed(1361690241);
+	
+    std::cout << "Starting CTBRL" << std::endl;
    	
 	options.ShowOptions();
 	
@@ -406,6 +417,9 @@ int main(int argc, char* argv[])
 	else if(!strcmp(options.environment_name,"Linear")) {
 		environment = new LinearDynamicQuadratic();
 	}
+	else if(!strcmp(options.environment_name,"SinModel")) {
+		environment = new SinModel();
+	}
 	else {
 		fprintf(stderr, "Unknown environment %s \n", options.environment_name);
 	}
@@ -417,7 +431,7 @@ int main(int argc, char* argv[])
 	Vector S_U		= environment->StateUpperBound(); /// Environment upper bounds
 	
 	std::cout <<  "Creating environment: " << options.environment_name
-	<< " with " << n_states << " states and , "
+	<< " with " << n_states << " states and "
 	<< n_actions << " actions.\n";
 	
 	RBFBasisSet* RBFs = NULL;
@@ -455,7 +469,7 @@ int main(int argc, char* argv[])
 	
 	if (!strcmp(options.method, "FVI")) {
 		std::cout << "Fitted Value Iteration (FVI) Initialization" << std::endl;
-		FVI = new CoverFittedValueIteration<Vector,int>(options.gamma, options.n_samples, 1, environment, cover);
+		FVI = new CoverFittedValueIteration<Vector,int>(options.gamma, options.n_samples, 1, options.grid, environment, cover,RBFs, options.scale);
 	}
 	else if(!strcmp(options.method,"LSTD")) {
 		std::cout << "Least Square Temporal Difference (LSTD) Initialization" << std::endl;
@@ -475,7 +489,7 @@ int main(int argc, char* argv[])
 																		 FLSTDQ);
 	
 	Statistics run_statistics;
-	Matrix Stats(options.n_runs,options.n_testing_e_steps);
+	Matrix Stats(options.n_runs,options.n_testing_episodes);
 	Matrix Statr(options.n_runs,options.n_testing_episodes);
 	for(int n = 0; n<options.n_runs; ++n) {
 		int episodes;
@@ -494,12 +508,12 @@ int main(int argc, char* argv[])
 						 options.n_training_episodes,
 						 algorithm,
 						 environment);
-		
-			run_statistics = EvaluateAlgorithm(options.gamma,
-											   options.n_testing_e_steps,
-											   options.n_testing_episodes,
-											   algorithm, 
-											   environment);
+
+//			run_statistics = EvaluateAlgorithm(options.gamma,
+//											   options.n_testing_e_steps,
+//											   options.n_testing_episodes,
+//											   algorithm, 
+//											   environment);
 		}
 	
 	
@@ -548,39 +562,43 @@ void OfflineCTBRL(real gamma,
 				 ContinuousStateEnvironment* environment)
 {
 	std::cout << "#Offline Training ...." << environment->Name() << std::endl;
+	int n_actions = environment->getNActions(); //Possible actions.
 	Vector state;	
 	Vector next_state;
 	real reward;	
 	bool action_ok;
 	int current_time, action;
+	int total_steps = 0;
 	for( int episode = 0; episode < n_episodes; ++episode)	{
 		environment->Reset();
 		state = environment->getState();
-		action = (int) floor(urandom(0.0, (real) environment->getNActions()));
+		Vector S_L	= environment->StateLowerBound();
+		Vector S_U	= environment->StateUpperBound();
+		state = urandom(S_L, S_U);
+		environment->setState(state);
+		action = (int) floor(urandom(0.0, (real) n_actions));
 		
 		current_time = 0;
-		action_ok = true;
 		
-		while(action_ok && current_time < n_steps) {
+		do {
+			current_time++;
 			action_ok	= environment->Act(action);
-			
 			reward		= environment->getReward();
 			next_state	= environment->getState();
-			
 			algorithm->Observe(state, action, reward, next_state);
 			
 			state = next_state;
 			
-			action  = (int)floor(urandom(0.0, (real) environment->getNActions()));
-			current_time++;
-		}
+			action  = (int)floor(urandom(0.0, (real) n_actions));
+			total_steps++;
+		} while(action_ok && current_time < n_steps);
 	}
-	std::vector<Vector> states;
-
-//	EvaluatePrediction(5000, algorithm, environment);
-	algorithm->Update();
+	if(!strcmp(environment->Name(),"SinModel"))
+		EvaluatePrediction(20000, algorithm, environment);
+	else
+		algorithm->Update();
 	
-	printf("The offline LBRL training was completed\n");
+	printf("The offline CTBRL training was completed\n");
 }
 
 Statistics OnlineCTBRL(real gamma,
@@ -608,11 +626,14 @@ Statistics OnlineCTBRL(real gamma,
 	statistics.ep_stats[0].total_reward = 0.0;
 	statistics.ep_stats[0].discounted_reward = 0.0;
 	statistics.ep_stats[0].steps = 0;
-
+	int thres = 30;
+	int total_steps = 0;
+	bool update_flag = false;
+	
 	for(int episode = 0; episode <n_episodes; ++episode) {
 		environment->Reset();
 		state	= environment->getState();
-		if(episode<4) {
+		if(!update_flag) {
 			action = (int) floor(urandom(0.0, (real) n_actions));  //Randomly selected action
 		}
 		else {
@@ -624,6 +645,7 @@ Statistics OnlineCTBRL(real gamma,
 		
 		while(action_ok && step < n_steps) {
 			step++;
+			total_steps++;
 			action_ok	= environment->Act(action);
 			reward		= environment->getReward();
 			
@@ -631,7 +653,7 @@ Statistics OnlineCTBRL(real gamma,
 
 			algorithm->Observe(state, action, reward, next_state);
 
-			if(episode<4) {
+			if(!update_flag) {
 				action = (int) floor(urandom(0.0, (real) n_actions));  //Randomly selected action
 			}
 			else {
@@ -652,9 +674,13 @@ Statistics OnlineCTBRL(real gamma,
 			statistics.ep_stats[episode+1].steps = 0;
 		}
 		printf ("# episode %d complete -> Steps = %d\n", episode, step);
-		algorithm->Update();
+		if(total_steps > thres)
+			update_flag = true;
+		if(update_flag) {
+			algorithm->Update();
+		}
 	}
-	printf("The offline LBRL training was completed\n");
+	printf("The online CTBRL training was completed\n");
 	
 	return statistics;
 }
@@ -687,12 +713,10 @@ void EvaluatePrediction(int N,
 		if(output!=NULL) {
 			for( uint i = 0; i < states.size(); ++i) {
 				environment->Reset();
-				//				state		= states[i];
 				environment->setState(states[i]);
 				environment->Act(a);
 				real reward	= environment->getReward();
 				Vector r(reward);
-				//				r.print(rew);
 				Vector next_state	= environment->getState();
 				next_state.print(output);
 			}
@@ -700,7 +724,10 @@ void EvaluatePrediction(int N,
 		fclose(output);
 		fclose(rew);
 	}
-	algorithm->Predict(states);
+	if(!strcmp(environment->Name(),"SinModel")) 
+		algorithm->Predict(states,true);
+	else
+		algorithm->Predict(states);
 }
 
 /*** Evaluate an algorithm
@@ -721,7 +748,7 @@ Statistics EvaluateAlgorithm(real gamma,
     statistics.ep_stats.reserve(n_episodes); 
     statistics.reward.reserve(n_steps);
 	uint step = 0;
-	
+	Vector previous_state;
     real discount = gamma;
     int current_time = 0;
     environment->Reset();
@@ -731,7 +758,7 @@ Statistics EvaluateAlgorithm(real gamma,
     bool action_ok = false;
     real total_reward = 0.0;
     real discounted_reward = 0.0;
-    
+
 	while(1) {
 		step++;
         if (episode_steps > 0 && current_time >= episode_steps) {
@@ -739,9 +766,7 @@ Statistics EvaluateAlgorithm(real gamma,
             environment->Reset();
         }
         if (!action_ok) {
-            Vector state	= environment->getState();
-            real reward		= environment->getReward();
-			
+			real reward		= environment->getReward();
             statistics.reward.resize(step + 1);
             statistics.reward[step] = reward;
 			
@@ -757,9 +782,12 @@ Statistics EvaluateAlgorithm(real gamma,
             statistics.ep_stats[episode].steps = 0;
             discount = 1.0;
 			printf ("# episode %d complete Step = %d\n", episode,current_time);
-			
+//			if(current_time == 1000) {
+//				printf ("# episode %d complete Step = %d\n", episode,current_time);
+//				previous_state.print(stdout);
+//			}
             environment->Reset();
-			
+			previous_state	= environment->getState();
             action_ok = true;
 			current_time = 0;
             if (n_episodes >= 0 && episode >= n_episodes) {
@@ -769,7 +797,6 @@ Statistics EvaluateAlgorithm(real gamma,
             step++;
         }
         Vector state = environment->getState();
-		
 		int action = algorithm->Act(state);		
 
         real reward = environment->getReward();
@@ -783,7 +810,7 @@ Statistics EvaluateAlgorithm(real gamma,
         discounted_reward += discount * reward;
 		
         discount *= gamma;
-		
+
         action_ok = environment->Act(action);
         current_time++;
 		

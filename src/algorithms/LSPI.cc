@@ -61,7 +61,6 @@ Vector LSPI::BasisFunction(const Vector& state, int action)
 	Vector Phi_state = bfs->F();
 	Vector Phi(n_basis);
 	Phi[(bfs->size() + 1)*action] = 1.0;
-	
 	for(int i = 0; i<bfs->size(); ++i)
 	{
             Phi[(bfs->size() + 1)*action + i + 1] = Phi_state[i];

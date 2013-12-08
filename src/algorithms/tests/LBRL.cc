@@ -590,7 +590,7 @@ void OfflineLBRL(real gamma,
 	}
 	std::vector<Vector> states;
 
-	EvaluatePrediction(5000, algorithm, environment);
+//	EvaluatePrediction(5000, algorithm, environment);
 	
 	algorithm->Update();
 	
@@ -719,7 +719,7 @@ Statistics EvaluateAlgorithm(real gamma,
                               ContinuousStateEnvironment* environment)
 {
     std:: cout << "# evaluating... " << environment->Name() << std::endl;
-    
+    Vector previous_state(2);
 	int n_steps = episode_steps*n_episodes;
     Statistics statistics;
     statistics.ep_stats.reserve(n_episodes); 
@@ -761,10 +761,15 @@ Statistics EvaluateAlgorithm(real gamma,
             statistics.ep_stats[episode].discounted_reward = 0.0;
             statistics.ep_stats[episode].steps = 0;
             discount = 1.0;
-			printf ("# episode %d complete Step = %d\n", episode,current_time);
-			
+			if(current_time == 1000) {
+				printf ("# episode %d complete Step = %d\n", episode,current_time);
+				previous_state.print(stdout);
+			}
             environment->Reset();
-			
+		//	previous_state(0) = -0.66;
+//			previous_state(1) = 0.000643;
+//			previous_state = environment->getState();
+//			environment->setState(previous_state);
             action_ok = true;
 			current_time = 0;
             if (n_episodes >= 0 && episode >= n_episodes) {
@@ -774,9 +779,7 @@ Statistics EvaluateAlgorithm(real gamma,
             step++;
         }
         Vector state = environment->getState();
-
 		int action = algorithm->Act(state);		
-
         real reward = environment->getReward();
         
 		statistics.reward.resize(step + 1);

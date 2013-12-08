@@ -28,31 +28,40 @@ protected:
 	int dim;					///< Dimension of the basis functions
 	int n_actions;				///< Number of actions (Note: what to do for continuous?)
 	Vector weights;				///< Model parameters
+	real lambda;				///< Regularization factor
 	Matrix PHI;
 	Matrix pseudo_inv;
     std::vector<Vector> states;	///< set of representative states
 	Environment<S, A>* environment;
 	std::vector<CoverTree*> cover;
+	RBFBasisSet* RBFs_model;	///< The Radial basis functions that used in the model.
+	RBFBasisSet* RBFs;
+	real scale;
 	bool update_samples;		///< Take new random training samples 
 public:
-	CoverFittedValueIteration(const real& gamma_, const int& N_, const int& M_, Environment<S,A>* environment_, std::vector<CoverTree*> cover_, bool update_samples_ = false):
+	CoverFittedValueIteration(const real& gamma_, const int& N_, const int& M_, const int& grids_, Environment<S,A>* environment_, std::vector<CoverTree*> cover_, RBFBasisSet* RBFs_, real scale_ = 1.0, bool update_samples_ = false):
 	gamma(gamma_),
 	N(N_),
 	M(M_),
+	grids(grids_),
 	environment(environment_),
 	cover(cover_),
+	RBFs_model(RBFs_),
+	scale(scale_),
 	update_samples(update_samples_)
 	{		
 		n_actions = environment->getNActions();
-		printf("adfaf\n");
-		dim = 0;
-		for( int i=0; i<n_actions; ++i) {
-			dim += cover[i]->GetNumSamplingNodes();
-		}
+		///Upper and Lower environment's bounds.
+		Vector S_L	= environment->StateLowerBound();
+		Vector S_U	= environment->StateUpperBound();
+		
+		lambda = 0.0; ///Regularize parameter.
+		///Basis function construction for the API model
+		EvenGrid Discretisation(S_L,S_U,grids);
+		RBFs = new RBFBasisSet(Discretisation,scale); 
+		dim	= RBFs->size() + 1;	
+		
 		weights = Vector(dim);
-		printf("adfaf dimension = %d\n",dim);
-		printf("YEAH\n");
-
 	}
 	const void Update(real threshold = 0.001, int max_iter = -1) {
 		sampleSelection();
@@ -64,7 +73,6 @@ public:
 		weights = pW;
 		
 		int n_iter = 0;
-		
 		do {
 			distance = 0.1;
 			
@@ -92,16 +100,7 @@ public:
 				}
 				T[i] = Max(V);
 			}
-			printf("output\n");
-			T.print(stdout);
-			Vector v_old = Transpose(PHI)*weights;
 			weights = pseudo_inv*T;
-			printf("weights\n");
-			weights.print(stdout);
-			printf("PREDICTION\n");
-			Vector VV = Transpose(PHI)*weights;
-			VV.print(stdout);
-			printf("error = %f\n",(abs(T-VV)).Sum());
 			distance = (pW - weights).L2Norm();
 			if(max_iter>0) 
 				max_iter--;
@@ -139,9 +138,7 @@ public:
 		}
 		return (r + gamma*temp_v);
 	}
-	void sampleSelection() {
-		real lambda = 0.01; //regularization factor
-		
+	void sampleSelection() {		
 		Vector S_L	= environment->StateLowerBound();
 		Vector S_U	= environment->StateUpperBound();
 		states.clear();
@@ -149,40 +146,20 @@ public:
 		for(int i=0; i<N; ++i) {
 			Vector state = urandom(S_L, S_U);
 			states.push_back(state);
-			Vector phi = BasisConstruction(state);			
+			Vector phi = BasisConstruction(state);		
 			PHI.setColumn(i,phi);
 		}
 		pseudo_inv = (PHI*Transpose(PHI) + lambda*Matrix::Unity(dim,dim)).Inverse()*PHI;
 	}
-	/// Basis function construction based on the cover trees.
-	Vector BasisConstruction(const S& state)
-	{
-		Vector phi(dim);
-//		printf("Dimensionnnnnn = %d\n",(int)dim);
-		int dim_current = 0;
-		for(int i = 0; i<n_actions; ++i) {
-//			printf("Action = %d\n",i);
-//			const CoverTree::Node* node = cover[i]->SelectedNearestNeighbour(state);
-//			int index = dim_current + (node->GetIndex() - 1);
-//			phi(index) = 1.0;
-			std::vector< std::pair<int, real> > path = cover[i]->ExternalBasisCreation(state);
-			for(uint j = 0; j < path.size(); ++j) {
-//				printf("Index = %d and weight = %f\n",path[j].first,path[j].second);
-				int index = dim_current + (path[j].first - 1);
-				phi(index) = path[j].second;
-			}
-			dim_current += cover[i]->GetNumSamplingNodes();
-		}
+		// BasisAPICreation returns the basis function for state s that used for the API algorithm
+	Vector BasisConstruction(const S& state) {
+		RBFs->Evaluate(state);
+		Vector phi = RBFs->F();
+		phi.Resize(dim);
+		phi[dim-1] = 1.0;
 		return phi;
 	}
-	
 	void Reset() {
-		dim = 0;
-		for( int i=0; i<n_actions; ++i) {
-//			printf("Dimensions = %d\n",(int)cover[i]->GetNumSamplingNodes());
-			dim += cover[i]->GetNumSamplingNodes();
-		} 
-//		printf("Dimensions = %d\n",dim);
 		sampleSelection();
 		weights = Vector(dim);
 	}

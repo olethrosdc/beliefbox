@@ -964,7 +964,28 @@ void Matrix::Cholesky(Matrix& chol, real epsilon) const
         }
     }
 }
-
+Vector Matrix::SVD_Solve(const Vector& b) const 
+{
+	int N = Rows();
+	int M = Columns();
+	assert(N == M);
+	Matrix A(*this);
+	gsl_vector* work;
+	work = gsl_vector_alloc(N);
+	gsl_matrix* U;
+	gsl_vector* S = gsl_vector_alloc(M);
+	gsl_matrix* V = gsl_matrix_alloc(M, M);
+	gsl_matrix_view A_view = gsl_matrix_view_array(A.x, N, M);
+	gsl_vector_view b_view = gsl_vector_view_array(b.x, M);
+	
+	gsl_linalg_SV_decomp(&A_view.matrix, V, S, work);
+	U = &A_view.matrix;
+	
+	Vector output(N);
+	gsl_vector_view output_view = gsl_vector_view_array(output.x, N);
+	gsl_linalg_SV_solve (U, V, S, &b_view.vector, &output_view.vector);
+	return output;
+}
 /** Invert matrix using GSL LU Decomp */
 Matrix Matrix::GSL_Inverse() const
 {

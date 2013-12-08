@@ -136,7 +136,6 @@ int BayesianMultivariate::Act(Vector state)
 			select = i;
 		}
 	}
-
 	return select;
 }
 

@@ -98,7 +98,6 @@ void SparseGaussianProcess::AddObservation(const Vector& x, const real& y)
 		iKk = inv_K*k;
 		real rr =  Product(iKk, k);
 		mu = (1.0 - rr);
-//		printf("mU = %f\n",mu);
 		if(mu > v) {
 			inv_K = (mu*inv_K) + OuterProduct(iKk,iKk);
 			iKk = iKk*(-1.0);
