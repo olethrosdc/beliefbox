@@ -55,7 +55,7 @@ ATLAS, including development packages.
 
 You can do that via the line:
 
-sudo apt-get install libgsl0-dev libgsl0ldbl libatlas3gf-base libatlas-dev libatlas-base-dev libblas-dev libbatlas3gf liblapack-dev liblapack3gf
+sudo apt-get install libgsl0-dev libgsl0ldbl libatlas3gf-base libatlas-dev libatlas-base-dev libblas-dev libatlas3gf liblapack-dev liblapack3gf
 
 
 2.2. Compiling the library
