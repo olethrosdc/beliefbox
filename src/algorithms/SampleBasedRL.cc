@@ -40,8 +40,7 @@ SampleBasedRL::SampleBasedRL(int n_states_,
       sampling_threshold(0.1),
       weights(max_samples)
 {
-    printf("# Starting Sample-Based-RL with %d samples, update interval %d\n",
-           max_samples, update_interval);
+    printf("# Starting Sample-Based-RL with %d states, %d actions, %d samples, update interval %d\n", n_states, n_actions, max_samples, update_interval);
 
     current_state = -1;
 

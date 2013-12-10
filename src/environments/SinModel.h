@@ -15,83 +15,85 @@
 #include "Environment.h"
 #include "Vector.h"
 #include "real.h"
+#include "NormalDistribution.h"
 
-/** The mountain car environment.
+/** Just produce a next from a sin + normal distribution
  */
 class SinModel : public Environment<Vector, int>
 {
 protected:
-    struct Parameters {
-        real U_POS;         ///< Upper bound on position
-        real L_POS;         ///< Lower bound on position
-		real MCNOISE;       ///< input noise        
-    };
-    static Parameters default_parameters;
-    Parameters parameters;
-    Vector state_action_upper_bound;
-    Vector state_action_lower_bound;
-    Vector action_upper_bound;
-    Vector action_lower_bound;
-    void Simulate();
+  struct Parameters {
+    real U_POS;         ///< Upper bound on position
+    real L_POS;         ///< Lower bound on position
+    real MCNOISE;       ///< input noise        
+  };
+  static Parameters default_parameters;
+  Parameters parameters;
+  Vector state_action_upper_bound;
+  Vector state_action_lower_bound;
+  Vector action_upper_bound;
+  Vector action_lower_bound;
+  void Simulate();
+  NormalDistribution noise;
 public:
-    SinModel(bool random_parameters = false);
-    virtual ~SinModel();
-    virtual void Reset();
-    virtual bool Act(const int& action);
-    virtual void Simulate(const int action);
+  SinModel(bool random_parameters = false);
+  virtual ~SinModel();
+  virtual void Reset();
+  virtual bool Act(const int& action);
+  virtual void Simulate(const int action);
 	
-    const Vector& StateActionUpperBound() const
-    {
-        return state_action_upper_bound;
-    }
-    const Vector& StateActionLowerBound() const
-    {
-        return state_action_lower_bound;
-    }
-    const Vector& ActionUpperBound() const
-    {
-        return action_upper_bound;
-    }
-    const Vector& ActionLowerBound() const
-    {
-        return action_lower_bound;
-    }
+  const Vector& StateActionUpperBound() const
+  {
+    return state_action_upper_bound;
+  }
+  const Vector& StateActionLowerBound() const
+  {
+    return state_action_lower_bound;
+  }
+  const Vector& ActionUpperBound() const
+  {
+    return action_upper_bound;
+  }
+  const Vector& ActionLowerBound() const
+  {
+    return action_lower_bound;
+  }
 	
-    virtual void setRandomness(real randomness)
-    {
-        parameters.MCNOISE = randomness;
-    }
+  virtual void setRandomness(real randomness)
+  {
+    parameters.MCNOISE = randomness;
+  }
 	
-	virtual const char* Name() const
-    {
-        return "SinModel";
-    }
+  virtual const char* Name() const
+  {
+    return "SinModel";
+  }
 	
-	void Show()
-	{
-		printf("%f %f # params (SinModel)\n",
-			   parameters.U_POS,
-			   parameters.L_POS);
-	}
-    virtual real getTransitionProbability(const Vector& state, const int& action, const Vector& next_state) const
-    {
-        return 1.0;
-    }
+  void Show()
+  {
+    printf("%f %f # params (SinModel)\n",
+	   parameters.U_POS,
+	   parameters.L_POS);
+  }
+  virtual real getTransitionProbability(const Vector& state, const int& action, const Vector& next_state) const
+  {
+    return 1.0;
+  }
 	
-    virtual real getExpectedReward(const Vector& state, const int& action) const
-    {
-        return 0.0;
-    }
+  virtual real getExpectedReward(const Vector& state, const int& action) const
+  {
+    return 0.0;
+  }
 };
 
 class SinModelGenerator
-	{
-	public:
-		SinModel Generate(bool random=true)
-		{
-			return SinModel(random);
-		}
-	};
+{
+public:
+  SinModel Generate(bool random=true)
+  {
+    return SinModel(random);
+  }
+};
 
 
 
