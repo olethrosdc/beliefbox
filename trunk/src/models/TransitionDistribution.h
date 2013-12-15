@@ -13,6 +13,8 @@
 #ifndef TRANSITION_DISTRIBUTION_H
 #define TRANSITION_DISTRIBUTION_H
 
+#include "DiscreteStateSet.h"
+
 template <typename StateType, typename ActionType>
 class TransitionDistribution
 {
@@ -22,4 +24,28 @@ class TransitionDistribution
     virtual real pdf(StateType state, ActionType action, StateType next_state) = 0;
 };
 
+#if 0
+class TransitionDistribution<int, int>
+{
+public:
+  int n_states;
+  int n_actions;
+  real epsilon;
+  DiscreteStateSet states;
+  TransitionDistribution(int n_states_, int n_actions_, real epsilon_)
+    : n_states(n_states_),
+      n_actions(n_actions_),
+      epsilon(epsilon)
+  {
+  }
+  virtual ~TransitionDistribution() {}
+  virtual StateType generate(int state, int action) 
+  {
+  }
+  virtual real pdf(int state, int action, int next_state)
+  {
+    DiscreteStateSetRef
+  }
+};
+#endif
 #endif

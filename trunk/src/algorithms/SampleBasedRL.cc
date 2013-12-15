@@ -225,7 +225,7 @@ int SampleBasedRL::Act(real reward, int next_state)
         }
     }
     if (do_update) {    
-        //printf("# update: %d\n", T);
+      printf("# update: %d\n", T);
         //model->ShowModel();
         update_interval += 1;//(int) (ceil)(1.01*(double) T);
         next_update = T + update_interval;
@@ -262,7 +262,7 @@ int SampleBasedRL::Act(real reward, int next_state)
         next_action = ArgMax(tmpQ);
     }
     current_action = next_action;
-    //printf("%f %d #epsilon\n", epsilon_t, action);
+    //printf("%f %d %d %d #epsilon\n", epsilon_t, next_action, T, next_update);
     
     return current_action;
 }
