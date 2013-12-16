@@ -25,6 +25,7 @@ class TransitionDistribution
 };
 
 #if 0
+template<>
 class TransitionDistribution<int, int>
 {
 public:
@@ -39,7 +40,7 @@ public:
   {
   }
   virtual ~TransitionDistribution() {}
-  virtual StateType generate(int state, int action) 
+  virtual int generate(int state, int action) 
   {
   }
   virtual real pdf(int state, int action, int next_state)
