@@ -20,11 +20,10 @@
 #include "Distribution.h"
 #include "RewardDistribution.h"
 #include "Matrix.h"
+#include "DiscreteStateSet.h"
 #include <vector>
 #include <set>
 
-typedef std::set<int> DiscreteStateSet;
-typedef std::set<int>& DiscreteStateSetRef;
 
 
 

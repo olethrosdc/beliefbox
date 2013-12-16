@@ -19,6 +19,7 @@
     of outcomes. It is a straightforward extension of the Dirichlet
     distribution.
 
+	This particular version of the process assumes that all values will eventually be seen.
  */
 class DirichletFiniteOutcomes : public DirichletDistribution
 {
