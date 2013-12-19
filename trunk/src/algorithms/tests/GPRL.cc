@@ -32,6 +32,7 @@
 
 // -- Continuous environments -- //
 #include "MountainCar.h"
+#include "SinModel.h"
 #include "Pendulum.h"
 #include "PuddleWorld.h"
 #include "LinearDynamicQuadratic.h"
@@ -342,6 +343,9 @@ int main(int argc, char* argv[])
 	else if(!strcmp(options.environment_name,"Linear")) {
 		environment = new LinearDynamicQuadratic();
 	}
+	else if(!strcmp(options.environment_name,"SinModel")) {
+		environment = new SinModel();
+	}
 	else {
 		fprintf(stderr, "Unknown environment %s \n", options.environment_name);
 	}
@@ -373,13 +377,14 @@ int main(int argc, char* argv[])
 	std::vector<std::vector<SparseGaussianProcess*> > GaussianPrediction(n_actions, std::vector<SparseGaussianProcess*>(n_states));
 	
 	///Hyperparameters.
-	real noise_variance = 1e-10;
+	real noise_variance = 1e-9;
 	Vector scale_length = abs(S_L - S_U) / 10;
 	Vector scale_length_dic = abs(S_L - S_U) / 20;
 	real sig_val = 1.0;
+	real threshold = 1e-1;
 	for ( int i = 0; i < n_actions; ++i) {
 		for( int j = 0; j < n_states; ++j) {
-			GaussianPrediction[i][j] = new SparseGaussianProcess( noise_variance, scale_length, sig_val, 0.1, scale_length_dic);
+			GaussianPrediction[i][j] = new SparseGaussianProcess( noise_variance, scale_length, sig_val, threshold, scale_length_dic);
 		}
 	}
 	std::cout << "Creation of the Gaussian Prediction environement models completed..." << std::endl;
@@ -497,6 +502,13 @@ void OfflineGPRL(real gamma,
 			EnvPrediction[a][dim]->Observe(Input[a], Output[a*n_states + dim]);
 		}
 	}
+
+	if(!strcmp(environment->Name(),"SinModel")) {
+		EvaluatePrediction(1000, EnvPrediction, environment);
+	} else {
+		algorithm->Update();
+	}
+
 	algorithm->Update();
 //	EvaluatePrediction(5000,
 //						  EnvPrediction,
@@ -686,7 +698,7 @@ Statistics EvaluateAlgorithm (real gamma,
             statistics.ep_stats[episode].discounted_reward = 0.0;
             statistics.ep_stats[episode].steps = 0;
             discount = 1.0;
-			printf ("# episode %d complete Step = %d\n", episode,current_time);
+			//printf ("# episode %d complete Step = %d\n", episode,current_time);
 			
             environment->Reset();
 			environment->getState(); //.print(stdout);

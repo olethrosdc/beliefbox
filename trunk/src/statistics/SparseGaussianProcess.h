@@ -1,5 +1,4 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
 // copyright (c) 2013 by Nikolaos Tziortziotis <ntziorzi@gmail.com>
 /***************************************************************************
  *                                                                         *
