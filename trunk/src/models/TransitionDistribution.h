@@ -37,7 +37,31 @@ struct Transition
 	{}
 };
 
+typedef Transition<int, int> DiscreteTransition;
 
+class DiscreteTransitionCompare
+{
+public:
+	bool operator() (const DiscreteTransition& left,
+					 const DiscreteTransition& right) const
+	{
+		if (left.state > right.state) {
+			return true;
+		} else 	if (left.state < right.state) {
+			return false;
+		}
+		if (left.action > right.action) {
+			return true;
+		} else if (left.action < right.action) {
+			return false;
+		}
+		if (left.next_state > right.next_state) {
+			return true;
+		} 
+		return false;
+	}
+};
+ 
  
 /** Discrete transition distribution.
 
@@ -50,7 +74,8 @@ class TransitionDistribution<int, int>
 public:
 	int n_states; ///< the maximum number of state
 	int n_actions; ///< the maximum number of actions
-	std::map<Transition<int, int>, real> P;
+	/// The implementation of the discrete transition distribution
+	std::map<DiscreteTransition, real, DiscreteTransitionCompare> P; 
 	TransitionDistribution(int n_states_, int n_actions_)
 		: n_states(n_states_),
 		  n_actions(n_actions_)
@@ -66,4 +91,5 @@ public:
 
 };
 
+typedef TransitionDistribution<int, int> DiscreteTransitionDistribution;
 #endif

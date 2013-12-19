@@ -12,21 +12,21 @@
 #include "TransitionDistribution.h"
 #include "Random.h"
 
-void TransitionDistribution<int, int>::SetTransition(int state,
+void DiscreteTransitionDistribution::SetTransition(int state,
 													int action,
 													int next_state,
 													real probability)
 {	
 	assert(probability >= 0 && probability <= 1);
-	P[Transition<int, int>(state, action, next_state)] = probability;
+	P[DiscreteTransition(state, action, next_state)] = probability;
 }
 
-int TransitionDistribution<int, int>::generate(int state, int action)
+int DiscreteTransitionDistribution::generate(int state, int action)
 {
 	real X = urandom();
 	real sum = 0.0;
 	for (int i=0; i<n_states; ++i) {
-		real pribability = P[Transition<int, int>(state, action, i)];
+		real probability = P[DiscreteTransition(state, action, i)];
 		sum += probability;
 		if (X <= sum) {
 			return i;
@@ -36,8 +36,8 @@ int TransitionDistribution<int, int>::generate(int state, int action)
 	return urandom(0, n_states);
 }
 
-real TransitionDistribution<int, int>::pdf(int state, int action, int next_state)
+real DiscreteTransitionDistribution::pdf(int state, int action, int next_state)
 {
-	return P[Transition<int, int>(state, action, next_state)];
+	return P[DiscreteTransition(state, action, next_state)];
 }
 
