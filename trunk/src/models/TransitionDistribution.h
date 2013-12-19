@@ -1,6 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2007 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-// $Id: MDP.h,v 1.3 2006/11/06 23:42:32 olethros Exp cdimitrakakis $
+// copyright (c) 2007-2013 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,40 +12,58 @@
 #ifndef TRANSITION_DISTRIBUTION_H
 #define TRANSITION_DISTRIBUTION_H
 
-#include "DiscreteStateSet.h"
+#include "real.h"
+#include <map>
 
 template <typename StateType, typename ActionType>
 class TransitionDistribution
 {
- public:
+public:
     virtual ~TransitionDistribution() {}
     virtual StateType generate(StateType state, ActionType action) = 0;
     virtual real pdf(StateType state, ActionType action, StateType next_state) = 0;
 };
 
-#if 0
+template <typename StateType, typename ActionType>
+struct Transition
+{
+	StateType state;
+	ActionType action;
+	StateType next_state;
+	Transition(StateType s, 
+			   ActionType a,
+			   StateType s2)
+		: state(s), action(a), next_state(s2)
+	{}
+};
+
+
+ 
+/** Discrete transition distribution.
+
+	In this model, there is no remaining probability mass. So, the probability of going to any particular state is zero.
+	
+ */
 template<>
 class TransitionDistribution<int, int>
 {
 public:
-  int n_states;
-  int n_actions;
-  real epsilon;
-  DiscreteStateSet states;
-  TransitionDistribution(int n_states_, int n_actions_, real epsilon_)
-    : n_states(n_states_),
-      n_actions(n_actions_),
-      epsilon(epsilon)
-  {
-  }
-  virtual ~TransitionDistribution() {}
-  virtual int generate(int state, int action) 
-  {
-  }
-  virtual real pdf(int state, int action, int next_state)
-  {
-    DiscreteStateSetRef
-  }
+	int n_states; ///< the maximum number of state
+	int n_actions; ///< the maximum number of actions
+	std::map<Transition<int, int>, real> P;
+	TransitionDistribution(int n_states_, int n_actions_)
+		: n_states(n_states_),
+		  n_actions(n_actions_)
+	{
+	}
+	virtual ~TransitionDistribution() {}
+	/// Set a state transition
+	virtual void SetTransition(int state, int action, int next_state, real probability);
+	/// Generate a next state
+	virtual int generate(int state, int action);
+	/// Get the probability of the next state
+	virtual real pdf(int state, int action, int next_state);
+
 };
-#endif
+
 #endif

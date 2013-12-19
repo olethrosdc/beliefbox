@@ -1,3 +1,4 @@
+// -*- Mode: c++  -*-
 #ifndef DISCRETE_STATE_SET_H
 #define DISCRETE_STATE_SET_H
 

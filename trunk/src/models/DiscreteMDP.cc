@@ -41,7 +41,7 @@ DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
         for (int s=0; s<n_states; s++) {
             for (int a=0; a<n_actions; a++, i++) {
                 for (int j=0; j<n_states; j++) {
-						P(i,j) = 0.0;
+					P(i,j) = 0.0;
                 }
             }
         }
@@ -139,7 +139,7 @@ DiscreteMDP::~MDP()
 /** From Putterman, 8.5.4.
  
     The gain value function is now proportional to tau.
- */
+*/
 void DiscreteMDP::AperiodicityTransform(real tau)
 {
     //DISABLED_ASSERT(tau > 0 && tau < 1)(tau);
