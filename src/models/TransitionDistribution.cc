@@ -18,15 +18,37 @@ void DiscreteTransitionDistribution::SetTransition(int state,
 													real probability)
 {	
 	assert(probability >= 0 && probability <= 1);
-	P[DiscreteTransition(state, action, next_state)] = probability;
+	DiscreteTransition transition = DiscreteTransition(state, action, next_state);
+	if (probability > 0) {
+		P[transition] = probability;
+		DiscreteStateAction SA(state, action);
+		DiscreteStateSet states = next_states.find(SA)->second;
+		
+	} else {
+		DiscreteStateAction SA(state, action);
+
+	}
 }
 
-int DiscreteTransitionDistribution::generate(int state, int action)
+real DiscreteTransitionDistribution::GetTransition(int state,
+												   int action,
+												   int next_state) const
+{	
+	DiscreteTransition transition(state, action, next_state);
+	auto got = P.find(transition);
+	if (got == P.end() ){
+		return 0.0;
+	} else {
+		return got->second;
+	}
+}
+
+int DiscreteTransitionDistribution::generate(int state, int action) const
 {
 	real X = urandom();
 	real sum = 0.0;
 	for (int i=0; i<n_states; ++i) {
-		real probability = P[DiscreteTransition(state, action, i)];
+		real probability = GetTransition(state, action, i);
 		sum += probability;
 		if (X <= sum) {
 			return i;
@@ -36,8 +58,8 @@ int DiscreteTransitionDistribution::generate(int state, int action)
 	return urandom(0, n_states);
 }
 
-real DiscreteTransitionDistribution::pdf(int state, int action, int next_state)
+real DiscreteTransitionDistribution::pdf(int state, int action, int next_state) const
 {
-	return P[DiscreteTransition(state, action, next_state)];
+	return GetTransition(state, action, next_state);
 }
 

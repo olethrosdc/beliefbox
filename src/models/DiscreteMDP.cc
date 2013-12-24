@@ -22,48 +22,16 @@
 DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
 	: n_states(n_states_),
       n_actions(n_actions_),
-      P(n_states*n_actions, n_states),
-      next_states(n_states * n_actions),
       N(n_states * n_actions),
-	  reward_distribution(n_states, n_actions)
+	  reward_distribution(n_states, n_actions),
+      transition_distribution(n_states, n_states)
 {   
-    next_states.resize(N);
-
+	if (initial_transitions) {
+		Serror("Not implemented\n");
+	}
     //real p = 1.0 / (real) n_states;
-    if (initial_transitions) {
-        for (int i=0; i<N; i++) {
-            for (int j=0; j<n_states; j++) {
-				P(i,j) = initial_transitions[i][j];
-            }
-        } 
-    } else {
-        int i=0;
-        for (int s=0; s<n_states; s++) {
-            for (int a=0; a<n_actions; a++, i++) {
-                for (int j=0; j<n_states; j++) {
-					P(i,j) = 0.0;
-                }
-            }
-        }
-    }
     reward = 0.0;
     state = 0;
-    
-#if 0    
-    ER.resize(N);
-    R.resize(N);
-    if (initial_rewards) {
-        for (int i=0; i<N; i++) {
-            R[i] = initial_rewards[i];
-            ER[i] = R[i]->getMean();
-        }
-    } else {
-        for (int i=0; i<N; i++) {
-            R[i] = NULL;
-            ER[i] = 0xBADFEED;
-        }
-    }
-#endif
 }
 
 /** Partially copies an MDP.
@@ -74,16 +42,11 @@ DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
 DiscreteMDP::MDP(const MDP<int,int>& mdp)
     : n_states(mdp.n_states),
       n_actions(mdp.n_actions),
-	  next_states(mdp.next_states),
-	  reward_distribution(n_states, n_actions)
+	  reward_distribution(n_states, n_actions),
+	  transition_distribution(mdp.transition_distribution)
 {
-    N = n_states * n_actions;
-
     reward = 0.0;
 	state = 0;
-    next_states.resize(N);
-	P = mdp.P;
-
 	reward_distribution = mdp.reward_distribution;
 }
 
@@ -92,9 +55,8 @@ DiscreteMDP::MDP (const std::vector<const MDP<int,int>*> &mdp_list,
                   const Vector& w)
     : n_states(mdp_list[0]->n_states),
       n_actions(mdp_list[0]->n_actions),
-      P(n_states * n_actions, n_states),
-      next_states(mdp_list[0]->next_states),
-      reward_distribution(n_states, n_actions)
+      reward_distribution(n_states, n_actions),
+	  transition_distribution(n_states, n_actions)
 {
     int n_mdps = mdp_list.size();
     for (int i=0; i<n_mdps; ++i) {
@@ -150,28 +112,29 @@ void DiscreteMDP::AperiodicityTransform(real tau)
 	}
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
-            int i = getID(s,a);
             for (int j=0; j<n_states; j++) {
                 real delta = 0;
                 if (j==s) {
                     delta = 1.0;
                 }
-                P(i,j) = (1-tau)*delta + tau*P(i,j);
+				real P = (1-tau)*delta + tau*transition_distribution.GetTransition(s,a,j);
+                transition_distribution.SetTransition(s,a,j,P);
+													  
             }
         }
     }
 }
+
 
 void DiscreteMDP::ShowModel() const
 {
 	real threshold = 10e-5;
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
-            int i = getID(s,a);
             std::cout << "(" << s << "," << a << ") -> ";
 			real sum = 0.0;
             for (int j=0; j<n_states; j++) {
-                real p = P(i,j);
+                real p = transition_distribution.GetTransition(s,a,j);
 				sum += p;
                 if (p>threshold) {
                     std::cout << j << " (" << p << ") ";
@@ -206,9 +169,9 @@ void DiscreteMDP::dotModel(FILE* fout) const
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             int colour_id = a % 7;
-            int i = getID(s,a);
+            //int i = getID(s,a);
             for (int j=0; j<n_states; j++) {
-                real p = P(i, j);
+                real p = transition_distribution.GetTransition(s,a,j);
                 if (p>0.000001) {
                     fprintf (fout,
                              "s%d -> s%d [label = \" p=%.2f, r=%.1f\", color=%s];\n",
@@ -229,13 +192,13 @@ real DiscreteMDP::generateReward (const int& s, const int& a) const
 
 int DiscreteMDP::generateState (const int& s, const int& a) const
 {
-    int ID = getID (s,a);
+    //int ID = getID (s,a);
     real sum = 0.0f;
     real X = urandom();
 
     int select = 0;
     for (int i=0; i<n_states; i++) {
-        sum += P(ID, i);
+        sum += transition_distribution.GetTransition(s, a, i);
         if (X<sum) {
             select = i;
             break;
