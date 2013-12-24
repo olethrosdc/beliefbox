@@ -19,6 +19,7 @@
 #include "MDP.h"
 #include "Distribution.h"
 #include "RewardDistribution.h"
+#include "TransitionDistribution.h"
 #include "Matrix.h"
 #include "DiscreteStateSet.h"
 #include <vector>
@@ -34,8 +35,6 @@ protected:
 	int state; ///< current state;
 	int n_states; ///< number of states (or dimensionality of state space)
 	int n_actions; ///< number of actions (or dimensionality of action space)
-	Matrix P; ///< transition distribution
-	std::vector<DiscreteStateSet> next_states; ///< next states
 	int N;
 	inline int getID (int s, int a) const
 	{
@@ -47,12 +46,17 @@ protected:
 	}
 
 public:
+	/// Reward distribution
 	DiscreteSpaceRewardDistribution reward_distribution;
-    
+	/// Transition distribution
+	DiscreteTransitionDistribution transition_distribution; 
+
+	/// Default constructor
 	MDP<int, int>(int n_states_, int n_actions_,
 				  real** initial_transitions = NULL);
-	//Distribution** initial_rewards = NULL);
+	/// Copy constructor
 	MDP<int,int> (const MDP<int,int>& mdp);
+	/// Mean MDP constructor
 	MDP<int,int> (const std::vector<const MDP<int,int>*> &mdp_list,
 				  const Vector& w);
 
@@ -99,10 +103,19 @@ public:
 		state = generateState(state, a);
 		return reward;
 	}
+	/// Simply show the model
 	virtual void ShowModel() const;
+
+	/// Output the model in a dot file for visualizaton
 	virtual void dotModel(FILE* fout) const;
+
+	/// Generate a reward from the model
 	real generateReward (const int& s, const int& a) const;
+
+	/// Generate a next state from the model
 	int generateState (const int& s, const int& a) const;
+
+	/// Get the reward probability 
 	virtual real getRewardProbability (const int& s, const int& a, real r) const
 	{
 		return reward_distribution.pdf(s, a, r);
@@ -110,9 +123,10 @@ public:
 
 	virtual real getTransitionProbability (const int& s, const int& a, const int& s2) const
 	{
-		int ID = getID (s, a);                
-		assert (s2>=0 && s2<n_states);
-		return P(ID, s2);
+		//int ID = getID (s, a);                
+		//assert (s2>=0 && s2<n_states);
+		//return P(ID, s2);
+		return transition_distribution.pdf(s, a, s2);
 	}
 	virtual real getExpectedReward (const int& s, const int& a) const
 	{
@@ -120,36 +134,19 @@ public:
 	}
 	virtual void setTransitionProbability(int s, int a, int s2, real p)
 	{
-		assert(s>=0 && s<n_states);
-		int ID = getID (s, a);
-		assert(s2>=0 && s2<n_states);
-		P(ID, s2) = p;
-		DiscreteStateSet& next = next_states[ID];
-		if (p==0) {
-			next.erase(s2);
-		} else {
-			next.insert(s2);
-		}
+		transition_distribution.SetTransition(s, a, s2, p);
 	}
 	virtual void setTransitionProbabilities(int s, int a, const Vector& p, real threshold = 0)
 	{
 		assert(s>=0 && s<n_states);
-		int ID = getID (s, a);
 		assert(p.Size() == n_states);
 		for (int s2=0; s2<n_states; ++s2) {
-			P(ID, s2) = p(s2);
-			DiscreteStateSet& next = next_states[ID];
-			if (p(s2)<=threshold) {
-				next.erase(s2);
-			} else {
-				next.insert(s2);
-			}
+			transition_distribution.SetTransition(s, a, s2, p(s2));
 		}
 	}
 	virtual const DiscreteStateSet& getNextStates(int s, int a) const
 	{
-		int ID = getID (s,a);
-		return next_states[ID];
+		return transition_distribution.getNextStates(s, a);
 	}
 
 	void AperiodicityTransform(real tau);

@@ -7,4 +7,5 @@
 typedef std::set<int> DiscreteStateSet;
 typedef std::set<int>& DiscreteStateSetRef;
 
+
 #endif
