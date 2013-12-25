@@ -14,6 +14,7 @@
 
 #include "TransitionDistribution.h"
 #include "Dirichlet.h"
+#include "DirichletFiniteOutcomes.h"
 
 /** Discrete transition distribution that is Dirichlet
 
@@ -30,6 +31,7 @@ public:
 	bool uniform_unknown; ///< whether to use a uniform distribution for unknown states
 	/// The set of Dirichlet distributions
 	std::unordered_map<DiscreteStateAction, DirichletDistribution> P;
+	//std::unordered_map<DiscreteStateAction, DirichletFiniteOutcomes> P;
 	DirichletTransitions(int n_states_, int n_actions_, real prior_mass_ = 1, bool uniform_unknown_ = true)
 		: n_states(n_states_),
 		  n_actions(n_actions_),
@@ -40,10 +42,8 @@ public:
 	virtual ~DirichletTransitions() {}
 
 	/// Set a state transition
-	virtual real Observe(int state, int action, int next_state)
-	{
-		return P[DiscreteStateAction(state, action)].Observe(next_state);
-	}
+	virtual real Observe(int state, int action, int next_state);
+
 	/// Generate a next state
 	virtual int marginal_generate(int state, int action) const;
 

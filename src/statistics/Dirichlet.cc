@@ -27,6 +27,9 @@ DirichletDistribution::DirichletDistribution(int n, real p)
 	: n_observations(0)
 {
     resize(n, p);
+	for (int i=0; i<n; ++i) {
+		alpha(i) = p;
+	}
 	alpha_sum = n * p;
 }
 

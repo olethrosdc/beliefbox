@@ -72,17 +72,17 @@ void ValueIteration::ComputeStateValuesStandard(real threshold, int max_iter)
         pV = V;
         for (int s=0; s<n_states; s++) {
             for (int a=0; a<n_actions; a++) {
-                real Q_sa = 0.0;
+                real V_next_sa = 0.0;
                 const DiscreteStateSet& next = mdp->getNextStates(s, a);
                 for (DiscreteStateSet::iterator i=next.begin();
                      i!=next.end();
                      ++i) {
                     int s2 = *i;
                     real P = mdp->getTransitionProbability(s, a, s2);
-                    real R = mdp->getExpectedReward(s, a) - baseline;
-                    Q_sa += P * (R + gamma * pV(s2));
+                    V_next_sa += P * pV(s2);
                 }
-                Q(s, a) = Q_sa;
+                Q(s, a) = mdp->getExpectedReward(s, a) - baseline 
+					+ gamma * V_next_sa;
             }
             V(s) = Max(Q.getRow(s));
             Delta += fabs(V(s) - pV(s));

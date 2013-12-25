@@ -117,12 +117,13 @@ public:
 	virtual int generate(int state, int action) const;
 	/// Get the probability of the next state
 	virtual real pdf(int state, int action, int next_state) const;
+	/// Return the set of next states.
+	/// In this case, if a state has not been visited before, then we assume that the next-state set is empty. This means that value iteration will stop upon reaching this state-action pair.
 	const DiscreteStateSet& getNextStates(int state, int action) const
 	{
 		DiscreteStateAction SA(state, action);
 		auto got = next_states.find(SA);
 		if (got == next_states.end() ){
-			Serror("No next states not allowed\n");
 			return empty_set;
 		} else {
 			return got->second;
