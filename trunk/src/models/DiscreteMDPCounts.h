@@ -24,8 +24,6 @@
 #include <unordered_map>
 
 /** This implementation of an MDP model is based on transition counts.
-	
-	
  */
 class DiscreteMDPCounts : public MDPModel
 {

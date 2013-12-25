@@ -100,7 +100,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
                               real gamma);
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma, ABC}\n\
+    --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma, LGBRL, UGBRL, ABC}\n\
     --environment:  {Acrobot, Puddle, CartPole, Pendulum, MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory, DoubleLoop}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\

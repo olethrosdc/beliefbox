@@ -12,10 +12,24 @@
 #include "DirichletTransitions.h"
 #include "Distribution.h"
 
+real DirichletTransitions::Observe(int state, int action, int next_state)
+{
+	DiscreteStateAction SA(state, action);
+	auto got = P.find(SA);
+	if (got == P.end()) {
+		// arrgh C++
+		return P.insert(std::make_pair(SA, DirichletDistribution(n_states, prior_mass))).first->second.Observe(next_state);
+	} else {
+		return got->second.Observe(next_state);
+	}
+}
+
+
 int DirichletTransitions::marginal_generate(int state, int action) const
 {
 	return DiscreteDistribution::generate(getMarginal(state, action));
 }
+
 
 /// Generate a multinomial distribution
 Vector DirichletTransitions::generate(int state, int action) const
@@ -31,8 +45,9 @@ Vector DirichletTransitions::generate(int state, int action) const
 		} else {
 			p(state) = 1;
 		}
+		return p;
 	} 
-	
+	return got->second.generate();
 }
 
 Vector DirichletTransitions::getMarginal(int state, int action) const
@@ -48,6 +63,7 @@ Vector DirichletTransitions::getMarginal(int state, int action) const
 		} else {
 			p(state) = 1;
 		}
+		return p;
 	} 
 	return got->second.getMarginal();
 }
@@ -65,6 +81,7 @@ Vector DirichletTransitions::getParameters(int state, int action) const
 		} else {
 			p(state) = prior_mass;
 		}
+		return p;
 	} 
 	return got->second.getParameters();
 }

@@ -5,7 +5,7 @@ DiscreteChain::DiscreteChain(int n, real slip_, real start_, real end_)
 	  start(start_),
 	  end(end_)
 {
-  //logmsg ("Discrete chain, slip: %f, r_s: %f, r_e: %f\n", slip, start, end);
+	//logmsg ("Discrete chain, slip: %f, r_s: %f, r_e: %f\n", slip, start, end);
     mdp = getMDP();
     Reset();
 
@@ -67,22 +67,18 @@ DiscreteMDP* DiscreteChain::getMDP() const
         if (s_n > n_states - 1) {
             s_n = n_states - 1;
         }
+
         // Action 0
-        if (s==0) {
-            mdp->setTransitionProbability(s, 0, 0, 1.0);
-        } else {
-            mdp->setTransitionProbability(s, 0, 0, 1.0 - slip);
-	    mdp->setTransitionProbability(s, 0, s_n, slip);
-        }
+		mdp->setTransitionProbability(s, 0, 0, 1.0 - slip);
+		mdp->setTransitionProbability(s, 0, s_n, slip);
 
 #if 1
         for (uint j=1; j<n_states;++j) {
-	  if (j != s_n && j != 0) {
+			if (j != s_n && j != 0) {
                 mdp->setTransitionProbability(s, 0, j, 0.0);
             }
         }
 #endif
-
         // Action 1
         mdp->setTransitionProbability(s, 1, s_n, 1 - slip);
         for (uint j=0; j<n_states;++j) {
