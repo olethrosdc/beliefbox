@@ -72,22 +72,11 @@ DiscreteMDP* DiscreteChain::getMDP() const
 		mdp->setTransitionProbability(s, 0, 0, 1.0 - slip);
 		mdp->setTransitionProbability(s, 0, s_n, slip);
 
-#if 1
-        for (uint j=1; j<n_states;++j) {
-			if (j != s_n && j != 0) {
-                mdp->setTransitionProbability(s, 0, j, 0.0);
-            }
-        }
-#endif
         // Action 1
         mdp->setTransitionProbability(s, 1, s_n, 1 - slip);
-        for (uint j=0; j<n_states;++j) {
-			if (j == 0) {
-                mdp->setTransitionProbability(s, 1, j, slip);
-			} else if (j != s_n) {
-                mdp->setTransitionProbability(s, 1, j, 0.0);
-            }
-        }
+		mdp->setTransitionProbability(s, 1, 0, slip);
+		
+		#if 0
         if (s < n_states - 1) {
             mdp->addFixedReward(s, 0, start * (1 - slip));
             mdp->addFixedReward(s, 1, start * slip);
@@ -95,6 +84,18 @@ DiscreteMDP* DiscreteChain::getMDP() const
             mdp->addFixedReward(s, 0, start * (1 - slip) + slip * end);
             mdp->addFixedReward(s, 1, end * (1 - slip) + slip * start);
         }
+		#else
+		if (s==0) {
+			mdp->addFixedReward(s, 0, start);
+			mdp->addFixedReward(s, 1, start);
+		} else if (s == n_states - 1) {
+			mdp->addFixedReward(s, 0, end);
+			mdp->addFixedReward(s, 1, end);
+		} else {
+			mdp->addFixedReward(s, 0, 0);
+			mdp->addFixedReward(s, 1, 0);
+		}
+		#endif
     }
     
     return mdp;
