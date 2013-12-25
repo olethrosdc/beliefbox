@@ -117,7 +117,7 @@ void DiscreteMDP::AperiodicityTransform(real tau)
                 if (j==s) {
                     delta = 1.0;
                 }
-				real P = (1-tau)*delta + tau*transition_distribution.GetTransition(s,a,j);
+				real P = (1-tau)*delta + tau*getTransitionProbability(s,a,j);
                 transition_distribution.SetTransition(s,a,j,P);
 													  
             }
@@ -134,7 +134,7 @@ void DiscreteMDP::ShowModel() const
             std::cout << "(" << s << "," << a << ") -> ";
 			real sum = 0.0;
             for (int j=0; j<n_states; j++) {
-                real p = transition_distribution.GetTransition(s,a,j);
+                real p = getTransitionProbability(s,a,j);
 				sum += p;
                 if (p>threshold) {
                     std::cout << j << " (" << p << ") ";
@@ -171,7 +171,7 @@ void DiscreteMDP::dotModel(FILE* fout) const
             int colour_id = a % 7;
             //int i = getID(s,a);
             for (int j=0; j<n_states; j++) {
-                real p = transition_distribution.GetTransition(s,a,j);
+                real p = getTransitionProbability(s,a,j);
                 if (p>0.000001) {
                     fprintf (fout,
                              "s%d -> s%d [label = \" p=%.2f, r=%.1f\", color=%s];\n",
@@ -198,7 +198,7 @@ int DiscreteMDP::generateState (const int& s, const int& a) const
 
     int select = 0;
     for (int i=0; i<n_states; i++) {
-        sum += transition_distribution.GetTransition(s, a, i);
+        sum += getTransitionProbability(s, a, i);
         if (X<sum) {
             select = i;
             break;

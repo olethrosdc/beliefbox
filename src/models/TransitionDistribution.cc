@@ -22,11 +22,17 @@ void DiscreteTransitionDistribution::SetTransition(int state,
 	if (probability > 0) {
 		P[transition] = probability;
 		DiscreteStateAction SA(state, action);
-		DiscreteStateSet states = next_states.find(SA)->second;
-		
+		next_states[SA].insert(next_state);
 	} else {
+		// erase transition
+		P.erase(transition);
+		// erase state from the set of next states
 		DiscreteStateAction SA(state, action);
-
+		auto got = next_states.find(SA);
+		if (got != next_states.end()) {
+			DiscreteStateSet states = got->second;
+			states.erase(next_state);
+		}
 	}
 }
 

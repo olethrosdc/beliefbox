@@ -16,6 +16,8 @@
 #include "DiscreteStateSet.h"
 #include "StateAction.h"
 #include "HashCombine.h"
+#include "debug.h"
+#include <cstdio>
 #include <map>
 #include <unordered_map>
 
@@ -75,8 +77,7 @@ namespace std
  
 /** Discrete transition distribution.
 
-	In this model, there is no remaining probability mass. So, the probability of going to any particular state is zero.
-	
+	In this model, we employ an unorder map of actual transitions, as well as a map of next states.
  */
 template<>
 class TransitionDistribution<int, int>
@@ -93,7 +94,18 @@ public:
 		  n_actions(n_actions_)
 	{
 	}
+	
 	virtual ~TransitionDistribution() {}
+
+	int GetNStates() const
+	{
+		return n_states;
+	}
+
+	int GetNActions() const
+	{
+		return n_actions;
+	}
 
 	/// Set a state transition
 	virtual void SetTransition(int state, int action, int next_state, real probability);
@@ -110,6 +122,7 @@ public:
 		DiscreteStateAction SA(state, action);
 		auto got = next_states.find(SA);
 		if (got == next_states.end() ){
+			Serror("No next states not allowed\n");
 			return empty_set;
 		} else {
 			return got->second;

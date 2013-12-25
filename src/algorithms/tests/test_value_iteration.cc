@@ -34,7 +34,7 @@ int main (void)
     real step = -0.1;
 	real margin = 1.1;
     MersenneTwisterRNG rng;
-    //InventoryManagement inventory_management (period, max_items, demand, margin);
+    InventoryManagement inventory_management (period, max_items, demand, margin);
     //const DiscreteMDP* mdp = inventory_management.getMDP();
 
     Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze9", random, pit, goal, step);
@@ -56,7 +56,7 @@ int main (void)
         double start_time = GetCPU();
         value_iteration.ComputeStateValuesStandard(0.00, 1000);
         double end_time = GetCPU();
-        printf("\nStandard: %f\n", end_time - start_time);
+        printf("\nStandard time: %f\n", end_time - start_time);
         FixedDiscretePolicy* policy = value_iteration.getPolicy();
         for (int s=0; s<n_states; ++s) {
             printf (" %d ", ArgMax(policy->getActionProbabilitiesPtr(s)));
@@ -73,7 +73,7 @@ int main (void)
         double start_time = GetCPU();
         value_iteration.ComputeStateValuesAsynchronous(0.00, 1000);
         double end_time = GetCPU();
-        printf("\nAsynchronous: %f\n", end_time - start_time);
+        printf("\nAsynchronous time: %f\n", end_time - start_time);
 
         FixedDiscretePolicy* policy = value_iteration.getPolicy();
         for (int s=0; s<n_states; ++s) {
@@ -91,7 +91,7 @@ int main (void)
         double start_time = GetCPU();
         value_iteration.ComputeStateValuesElimination(0.00, 1000);
         double end_time = GetCPU();
-        printf("\nElimination: %f\n", end_time - start_time);
+        printf("\nElimination time: %f\n", end_time - start_time);
 
         FixedDiscretePolicy* policy = value_iteration.getPolicy();
         for (int s=0; s<n_states; ++s) {

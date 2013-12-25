@@ -118,7 +118,7 @@ real ConditionalKDGaussianClassifier::Node::Observe(const Vector& x, const int y
     int second_most_observed_class = -1;
     real n_second_most_observed_class = 0;
     int number_of_observed_classes = 0;
-    Vector A=prior.GetParameters();
+    Vector A=prior.getParameters();
     for (int i=0; i<tree.n_classes; ++i) {
         if (A(i) > 1) {
             number_of_observed_classes++;
