@@ -16,6 +16,7 @@
 
 /// Create a placeholder Dirichlet
 DirichletDistribution::DirichletDistribution()
+	: n_observations(0)
 {
     n = 0;
     alpha_sum = 1.0;
@@ -23,12 +24,14 @@ DirichletDistribution::DirichletDistribution()
 
 /// Create a Dirichlet with uniform parameters
 DirichletDistribution::DirichletDistribution(int n, real p)
+	: n_observations(0)
 {
     resize(n, p);
+	alpha_sum = n * p;
 }
 
 /// Initialise parameters from a vector
-DirichletDistribution::DirichletDistribution(const Vector& x) : n(x.Size()), alpha(x)
+DirichletDistribution::DirichletDistribution(const Vector& x) : n(x.Size()), alpha(x), n_observations(0)
 {
     for (int i=0; i<n; ++i) {
         assert(alpha(i) >= 0);
@@ -118,12 +121,14 @@ real DirichletDistribution::log_pdf(const Vector& x) const
 /// Note that this is different from observing a sample from a Multinomial!
 void DirichletDistribution::update(Vector* x)
 {
-    
+	real tmp = 0;
     for (int i=0; i<n; ++i) {
         real xi = (*x)(i);
         alpha(i) += xi;
         alpha_sum += xi;
+		tmp += xi;
     }
+	n_observations += (int) tmp;
 }
 
 
@@ -135,11 +140,12 @@ real DirichletDistribution::Observe(int i)
     real p = alpha(i) / alpha_sum; //alpha.Sum();
     alpha(i) += 1.0;
     alpha_sum += 1.0;
+	n_observations++;
     return p;
 }
 
 /// Return the parameters
-Vector DirichletDistribution::GetParameters() const
+Vector DirichletDistribution::getParameters() const
 {
 	return alpha;
 }
@@ -159,5 +165,11 @@ Vector DirichletDistribution::getMarginal() const
     //printf ("sum: %f\n", p.Sum());
     assert(fabs(p.Sum()-1.0) < 0.0001);
 	return p;
+}
+
+/// Return the marginal probabilities
+real DirichletDistribution::marginal_pdf(int i) const
+{
+	return alpha(i) / alpha_sum;
 }
 

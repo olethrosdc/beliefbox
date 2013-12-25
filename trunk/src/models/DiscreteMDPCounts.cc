@@ -27,15 +27,14 @@
 DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count, RewardFamily reward_family_)
     : 
     MDPModel(n_states, n_actions),
+	transitions(n_states, n_actions, 0.5),
     mean_mdp(n_states, n_actions, NULL),
     reward_family(reward_family_)
 {
     printf("Creating DiscreteMDPCounts with %d states and %d actions\n",  n_states, n_actions);
     N = n_states * n_actions;
-    P.resize(N);
     ER.resize(N);
     for (int i=0; i<N; ++i) {
-        P[i].resize(n_states, init_transition_count);
         switch(reward_family) {
         case BETA:
             ER[i] = new BetaDistribution();
@@ -93,14 +92,14 @@ void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
 {
     int ID = getID (s, a);
     //printf ("(%d, %d) [%.2f] -> %d\n", s, a, r, s2);
-    P[ID].Observe(s2);
+    transitions.Observe(s, a, s2);
     ER[ID]->Observe(r);
 
-    Vector C =  P[ID].getMarginal();
     real expected_reward = getExpectedReward(s,a);
     mean_mdp.reward_distribution.setFixedReward(s, a, expected_reward);
     for (int s_next=0; s_next<n_states; s_next++) {
-        mean_mdp.setTransitionProbability(s, a, s_next, C[s_next]);
+		real p = transitions.marginal_pdf(s, a, s_next);
+        mean_mdp.setTransitionProbability(s, a, s_next, p);
     }
     
 }
@@ -119,40 +118,33 @@ real DiscreteMDPCounts::GenerateReward (int s, int a) const
 /// Generate a transition from the marginal distribution
 int DiscreteMDPCounts::GenerateTransition (int s, int a) const
 {
-    Vector p = P[getID (s,a)].getMarginal();
-    real d=urandom();
-    real sum = 0.0;
-    int n_outcomes = p.Size();
-    for (int i=0; i<n_outcomes; i++) {
-        sum += p[i];
-        if (d < sum) {
-            return i;
-        }
-    }
-    return rand()%n_outcomes;
+	return transitions.marginal_generate(s, a);
 }
 
+/// Get the specific transition probability
 real DiscreteMDPCounts::getTransitionProbability (int s, int a, int s2) const
 {
-    Vector p = P[getID (s,a)].getMarginal();
-    return p[s2];
+    return transitions.marginal_pdf(s, a, s2);
 }
 
+/// Get a vector of transition probabilities
 Vector DiscreteMDPCounts::getTransitionProbabilities (int s, int a) const
 {
-    return P[getID (s,a)].getMarginal();
+    return transitions.getMarginal(s, a);
 }
 
+/// get the expected reward
 real DiscreteMDPCounts::getExpectedReward (int s, int a) const
 {
     return ER[getID (s,a)]->getMean();
 }
 
+/// Reset at the end of an episode (not applicable)
 void DiscreteMDPCounts::Reset()
 {
 }
 
-
+/// Show the model.
 void DiscreteMDPCounts::ShowModel() const
 {
 	printf ("# mean model\n");
@@ -165,7 +157,7 @@ void DiscreteMDPCounts::ShowModel() const
                 std::cout << p << " ";
             }
             std::cout << " ["
-                      << P[getID(i,a)].GetParameters().Sum()
+                      << transitions.getParameters(i, a).Sum()
                       << "]\n";
         }
     }
@@ -186,7 +178,7 @@ DiscreteMDP* DiscreteMDPCounts::generate() const
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
             //Vector C =  P[getID (s,a)].getMarginal();
-            Vector C =  P[getID (s,a)].generate();
+            Vector C =  transitions.generate(s,a);
             real expected_reward = GenerateReward(s,a);
 #if 0
             if (expected_reward > 100) {
@@ -230,7 +222,7 @@ void DiscreteMDPCounts::CopyMeanMDP(DiscreteMDP* mdp) const
 
     for (int s=0; s<n_states; s++) {
         for (int a=0; a<n_actions; a++) {
-            Vector C =  P[getID (s,a)].getMarginal();
+            Vector C =  transitions.getMarginal(s, a);
             real expected_reward = getExpectedReward(s,a);
             mdp->reward_distribution.addFixedReward(s, a, expected_reward);
             for (int s2=0; s2<n_states; s2++) {

@@ -15,13 +15,13 @@
 #define DISCRETE_MDP_COUNTS
 
 #include "MDPModel.h"
-#include "Dirichlet.h"
-#include "DirichletFiniteOutcomes.h"
+#include "DirichletTransitions.h"
 #include "MeanEstimator.h"
 #include "NormalDistribution.h"
 #include "BetaDistribution.h"
 #include "real.h"
 #include <vector>
+#include <unordered_map>
 
 /** This implementation of an MDP model is based on transition counts.
 	
@@ -37,10 +37,11 @@ public:
         FIXED
     };
 protected:
-    std::vector<DirichletDistribution> P; ///< Vector of Dirichlet distributions on P
-    //std::vector<DirichletFiniteOutcomes> P; ///< Vector of Dirichlet distributions on P
-    std::vector<ConjugatePrior*> ER; ///< Vector of estimators on ER.
-    DiscreteMDP mean_mdp; ///< a model of the mean MDP
+	/// Dirichlet distribution for transitions
+    DirichletTransitions transitions; 
+	/// Vector of estimators on ER.
+    std::vector<ConjugatePrior*> ER; 
+    DiscreteMDP mean_mdp; ///< a model of the mean MDP 
     RewardFamily reward_family; ///< reward family to be used
     int N;
     int getID (int s, int a) const
@@ -60,6 +61,7 @@ public:
     virtual real getTransitionProbability (int s, int a, int s2) const;
     virtual Vector getTransitionProbabilities (int s, int a) const;
     virtual real getExpectedReward (int s, int a) const;
+
     virtual void Reset();
     virtual void ShowModel() const;
 
@@ -69,8 +71,7 @@ public:
     virtual void CopyMeanMDP(DiscreteMDP* mdp) const;
     int getNVisits(int s, int a) const
     {
-        int ID = getID(s, a);
-        return (int) ceil(P[ID].getMass());
+		return transitions.getCounts(s, a);
     }
     //void SetNextReward(int s, int a, real r);
 };
