@@ -862,7 +862,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
         oracle_policy = value_iteration.getPolicy();
         //oracle_policy = new FixedSoftmaxPolicy(value_iteration.Q, 1.0);
         for (int i=0; i<mdp->getNStates(); ++i) {
-        printf ("%f ", value_iteration.getValue(i));
+			printf ("%f (%d) ", value_iteration.getValue(i),
+					ArgMax(oracle_policy->getActionProbabilities(i)));
         }
         printf ("# V optimal\n");
         delete mdp;
