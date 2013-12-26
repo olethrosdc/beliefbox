@@ -40,6 +40,9 @@ SampleBasedRL::SampleBasedRL(int n_states_,
       sampling_threshold(0.1),
       weights(max_samples)
 {
+	if (gamma < 1.0 && update_interval > 1.0 / (1.0 - gamma)) {
+		update_interval = 1.0 / (1.0 - gamma);
+	}
     printf("# Starting Sample-Based-RL with %d states, %d actions, %d samples, update interval %d\n", n_states, n_actions, max_samples, update_interval);
 
     current_state = -1;

@@ -95,7 +95,7 @@ public:
 	{
 	}
 	
-	virtual ~TransitionDistribution() {}
+	virtual ~TransitionDistribution();
 
 	int GetNStates() const
 	{

@@ -180,14 +180,6 @@ DiscreteMDP* DiscreteMDPCounts::generate() const
             //Vector C =  P[getID (s,a)].getMarginal();
             Vector C =  transitions.generate(s,a);
             real expected_reward = GenerateReward(s,a);
-#if 0
-            if (expected_reward > 100) {
-                expected_reward = 100;
-            }
-            if (expected_reward <= -100) {
-                expected_reward = -100;
-            }
-#endif
             mdp->reward_distribution.addFixedReward(s, a, expected_reward);
             for (int s2=0; s2<n_states; s2++) {
                 if (C[s2]) {

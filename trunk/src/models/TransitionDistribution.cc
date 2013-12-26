@@ -12,6 +12,21 @@
 #include "TransitionDistribution.h"
 #include "Random.h"
 
+DiscreteTransitionDistribution::~TransitionDistribution()
+{
+	int n_pairs = 0;
+	for (int s=0; s<n_states; s++) {	
+		for (int a=0; a<n_actions; a++) {
+			DiscreteStateAction SA(s, a);
+			auto got = next_states.find(SA);
+			if (got != next_states.end()) {
+				n_pairs++;
+			}
+		}
+	}
+	printf("%d state-action pairs saved\n", n_pairs);
+}
+
 void DiscreteTransitionDistribution::SetTransition(int state,
 													int action,
 													int next_state,
