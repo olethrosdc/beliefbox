@@ -32,7 +32,7 @@ public:
 	/// The set of Dirichlet distributions
 	std::unordered_map<DiscreteStateAction, DirichletDistribution> P;
 	//std::unordered_map<DiscreteStateAction, DirichletFiniteOutcomes> P;
-	DirichletTransitions(int n_states_, int n_actions_, real prior_mass_ = 1, bool uniform_unknown_ = true)
+	DirichletTransitions(int n_states_, int n_actions_, real prior_mass_ = 1, bool uniform_unknown_ = false)
 		: n_states(n_states_),
 		  n_actions(n_actions_),
 		  prior_mass(prior_mass_),
