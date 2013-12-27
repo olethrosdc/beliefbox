@@ -24,7 +24,10 @@ DiscreteTransitionDistribution::~TransitionDistribution()
 			}
 		}
 	}
-	printf("%d state-action pairs saved\n", n_pairs);
+	//printf("%d transitions, %d state-actions, %d state-action pairs saved\n",
+	//	   P.size(),
+	//next_states.size(),
+	//n_pairs);
 }
 
 void DiscreteTransitionDistribution::SetTransition(int state,

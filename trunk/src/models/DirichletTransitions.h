@@ -31,17 +31,15 @@ public:
 	bool uniform_unknown; ///< whether to use a uniform distribution for unknown states
 	/// The set of Dirichlet distributions
 	std::unordered_map<DiscreteStateAction, DirichletDistribution> P;
-	//std::unordered_map<DiscreteStateAction, DirichletFiniteOutcomes> P;
-	DirichletTransitions(int n_states_, int n_actions_, real prior_mass_ = 1, bool uniform_unknown_ = false)
-		: n_states(n_states_),
-		  n_actions(n_actions_),
-		  prior_mass(prior_mass_),
-		  uniform_unknown(uniform_unknown_)
-	{
-	}
-	virtual ~DirichletTransitions() {}
 
-	/// Set a state transition
+	/// The standard constructor
+	DirichletTransitions(int n_states_, int n_actions_,
+						 real prior_mass_ = 1, bool uniform_unknown_ = false);
+
+	/// The destructor
+	virtual ~DirichletTransitions();
+
+	/// Observe a new state transition
 	virtual real Observe(int state, int action, int next_state);
 
 	/// Generate a next state
@@ -53,22 +51,14 @@ public:
 	/// Get the parameters over next states.
 	virtual Vector getParameters(int state, int action) const;
 
-	/// Generate a multinomial distribution
+	/// Generate a multinomial distribution parameter vector
 	virtual Vector generate(int state, int action) const;
+
 	/// Get the marginal probability of the next state
 	virtual real marginal_pdf(int state, int action, int next_state) const;
 
-	int getCounts(int state, int action) const
-	{
-		DiscreteStateAction SA(state, action);
-		auto got = P.find(SA);
-		if (got == P.end()) {
-			return 0;
-		} else {
-			return got->second.getCounts();
-		}
-	}
-
+	/// Get the number of visits to this state-action pair
+	int getCounts(int state, int action) const;
 };
 
 typedef TransitionDistribution<int, int> DiscreteTransitionDistribution;
