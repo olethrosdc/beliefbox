@@ -26,19 +26,21 @@ public:
 
 typedef StateAction<int, int> DiscreteStateAction;
 
+namespace std {
 template <>
-struct std::hash<DiscreteStateAction>
+struct hash<DiscreteStateAction>
 {
 	/// The hash is a shift-xor of two hashes
-	std::size_t operator() (const DiscreteStateAction& s) const
+	size_t operator() (const DiscreteStateAction& s) const
 	{
-		std::size_t seed = 0;
+		size_t seed = 0;
 		hash_combine(seed, std::hash<int>()(s.state));
 		hash_combine(seed, std::hash<int>()(s.action));
 		return seed;
 	}
 	
 };
+}
 
 
 

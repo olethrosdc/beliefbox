@@ -78,7 +78,7 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
         }
         n_iter++;
     } while((Delta >= threshold)  && max_iter != 0);
-    //printf ("Exiting at delta = %f, after %d iter\n", Delta, n_iter);
+    printf ("Exiting at delta = %f, after %d iter\n", Delta, n_iter);
 }
 
 /** Evaluate the policy using a discounted state occupancy matrix.
@@ -122,7 +122,7 @@ void PolicyEvaluation::RecomputeStateValuesFeatureExpectation()
 /// Get the value of a particular state-action pair
 real PolicyEvaluation::getValue (int state, int action) const
 {
-    real S = 0.0;
+    real V_next = 0.0;
     //for (int s2=0; s2<n_states; s2++) {
     DiscreteStateSet next = mdp->getNextStates(state, action);
     for (DiscreteStateSet::iterator i=next.begin();
@@ -130,10 +130,10 @@ real PolicyEvaluation::getValue (int state, int action) const
          ++i) {
         int s2 = *i;
         real P = mdp->getTransitionProbability(state, action, s2);
-        real R = mdp->getExpectedReward(state, action) + gamma*V[s2]  - baseline;
-        S += P*R;
+        V_next += P * V[s2];
     }
-    return S;
+	real V_s = mdp->getExpectedReward(state, action) + gamma*V_next - baseline;
+    return V_s;
 }
 
 

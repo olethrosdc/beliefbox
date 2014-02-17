@@ -36,15 +36,15 @@ int main (void)
     MersenneTwisterRNG rng;
     InventoryManagement inventory_management (period, max_items, demand, margin);
     //const DiscreteMDP* mdp = inventory_management.getMDP();
-
-    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze9", random, pit, goal, step);
-    const DiscreteMDP* mdp = grid_world.getMDP();
+	
+    //Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze9", random, pit, goal, step);
+    //const DiscreteMDP* mdp = grid_world.getMDP();
     
     //RandomMDP random_mdp(32, 32, 0.001, 0.1, 0, 1, &rng, false);
     //const DiscreteMDP* mdp = random_mdp.getMDP();
     
-    //DiscreteChain chain(5);
-    //const DiscreteMDP* mdp = chain.getMDP();
+    DiscreteChain chain(5);
+    const DiscreteMDP* mdp = chain.getMDP();
 
 
     
