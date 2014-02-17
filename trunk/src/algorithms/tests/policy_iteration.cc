@@ -26,7 +26,7 @@ int main (void)
 {
     int period = 30;
     int max_items = 10;
-    real gamma = 0.9;
+    real gamma = 0.95;
     real demand = 0.1;
     real random = 0.0;
     real pit = -100.0;
@@ -50,31 +50,48 @@ int main (void)
     int n_states = mdp->getNStates();
     int n_actions = mdp->getNActions();
     printf ("# states: %d, actions: %d\n", n_states, n_actions);
-    AveragePolicyEvaluation policy_evaluation(NULL, mdp);
-    PolicyIteration policy_iteration(&policy_evaluation, mdp, gamma);
+    AveragePolicyEvaluation average_policy_evaluation(NULL, mdp);
+    PolicyIteration policy_iteration(&average_policy_evaluation, mdp, gamma);
     ValueIteration value_iteration(mdp, gamma);
     //AverageValueIteration value_iteration(mdp);
 
     std::vector<real> Q(n_actions);
 
-    printf ("Policy iteration\n");
-    policy_iteration.ComputeStateValues(0.01, 1000);
+	real accuracy = 0;
+
+    printf ("Average Policy iteration\n");
+    policy_iteration.ComputeStateValues(accuracy, 1000);
     for (int s=0; s<mdp->getNStates(); s++) {
-        printf ("%1.f ", policy_iteration.getValue(s));
+        printf ("%.2f ", policy_iteration.getValue(s));
     }
     printf(", D = %.1f, b = %.1f\n",
               policy_iteration.Delta,
               policy_iteration.baseline);
 
     printf ("Value iteration\n");
-    value_iteration.ComputeStateActionValues(0.01, 100000);
+    //value_iteration.ComputeStateActionValues(accuracy, 1000);
+    value_iteration.ComputeStateValues(accuracy, 1000);
     for (int s=0; s<mdp->getNStates(); s++) {
-        printf ("%1.f ", value_iteration.getValue(s));
+        printf ("%.2f ", value_iteration.getValue(s));
     }
     printf(", D = %.1f, b = %.1f\n",
               value_iteration.Delta,
               value_iteration.baseline);
-
+	
+	printf("Policy Evaluation\n");
+	FixedDiscretePolicy* vi_policy = value_iteration.getPolicy();
+	PolicyEvaluation policy_evaluation (vi_policy, mdp, gamma);
+	policy_evaluation.ComputeStateValues(accuracy, 1000);
+	for (int s=0; s<mdp->getNStates(); s++) {
+		printf ("%.2f ", policy_evaluation.getValue(s));
+    }
+	printf("\n");
+	policy_evaluation.ComputeStateValuesFeatureExpectation(accuracy, 1000);
+	for (int s=0; s<mdp->getNStates(); s++) {
+		printf ("%.2f ", policy_evaluation.getValue(s));
+    }
+	printf("\n");
+	
     //mdp->ShowModel();
    if (1) {
        FILE* f = fopen("test.dot", "w");
