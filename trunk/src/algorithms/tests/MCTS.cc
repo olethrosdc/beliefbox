@@ -100,15 +100,15 @@ logmsg("S_U: "); S_U.print(stdout);
 std::vector<EpisodeStatistics> statistics(options.n_episodes);
 
 for(int episode = 0; episode<options.n_episodes; ++episode) {
-printf("Episode = %d\n",episode);
+//printf("Episode = %d\n",episode);
 int step               = 0;
 real discounted_reward = 0;
 real total_reward      = 0;
-printf("Episode = %d\n",episode);
+//printf("Episode = %d\n",episode);
 environment->Reset();
     
 S state = environment->getState();
-state.print(stdout);
+//state.print(stdout);
 A action = mcts.SelectAction(state);
 do {
 running = environment->Act(action);
@@ -118,17 +118,19 @@ total_reward += reward;
 discounted_reward += options.gamma*reward;
 
 state = environment->getState();
-state.print(stdout);
+//state.print(stdout);
 action = mcts.SelectAction(state);
-printf("Action = %d \n",action);
+//printf("Action = %d \n",action);
 step++;
-printf("Step = %d\n",step);
+//printf("Step = %d\n",step);
 }while(running && step < options.horizon);
-printf("Steps = %d\n",step);
+printf("Episode = %d: Steps = %d, Total Reward = %f, Discounted Reward = %f\n",episode, step, total_reward, discounted_reward);
+
+//printf("Steps = %d\n",step);
 statistics[episode].total_reward = total_reward;
 statistics[episode].discounted_reward = discounted_reward;
 statistics[episode].steps = step;
-printf("Steps = %d\n",step);
+//printf("Steps = %d\n",step);
 }
 
 return statistics;
