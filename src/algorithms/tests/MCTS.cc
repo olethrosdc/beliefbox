@@ -34,6 +34,7 @@ char* environment_name; ///< environment name
 RandomNumberGenerator& rng; ///< random number generator
 int depth;  ///< Maximum tree depth
 int horizon; ///< Maximum horizon for the rollouts
+int grids; ///< Number of grids per state space dimension
 int n_episodes; ///< number of episodes
 int n_evaluations; ///< number of evaluations
 Options(RandomNumberGenerator& rng_) :
@@ -42,6 +43,7 @@ Options(RandomNumberGenerator& rng_) :
   rng(rng_),
   depth(1000),
   horizon(1000),
+    grids(100),
   n_episodes(1000),
   n_evaluations(10)
 {
@@ -54,7 +56,8 @@ logmsg("Options\n");
 logmsg("========================\n");
 logmsg("Gamma: %f\n", gamma);
 logmsg("Depth: %d\n", depth);
-logmsg("Horizon: %d\n", horizon);
+logmsg("Episode horizon: %d\n", horizon);
+logmsg("Grids: %d\n", grids);
 logmsg("n_episodes: %d\n", n_episodes);
 logmsg("n_evaluations: %d\n", n_evaluations);
 logmsg("------------------------\n");
@@ -79,7 +82,7 @@ std::vector<EpisodeStatistics> RunTest(ContinuousStateEnvironment* environment, 
 bool running;
 real reward;
 
-EvenGrid discretize(environment->StateLowerBound(),environment->StateUpperBound(),500);
+EvenGrid discretize(environment->StateLowerBound(),environment->StateUpperBound(),options.grids);
 
 // Start with a random policy!
 RandomPolicy random_policy(environment->getNActions(), &options.rng);
@@ -142,6 +145,7 @@ static const char* const help_text = "Usage: test [options]\n\
     --environment:           {MountainCar, Pendulum, Puddle, Bicycle, CartPole, Acrobot}\n\
     --discount:              reward discounting in [0,1]\n\
     --depth:                 maximum tree depth\n\
+--grids: number of grids per state space dimension\n\
     --horizon:               maximumn number of steps during rollout\n\
     --n_evaluations:         number of evaluations\n\
     --n_episodes:            number of episodes per evaluation\n\
@@ -168,9 +172,10 @@ static struct option long_options[] = {
 	{"environment", required_argument, 0, 0}, //1
 	{"depth", required_argument, 0, 0}, //2
 	{"horizon", required_argument, 0, 0}, //3
-	{"seed", required_argument, 0, 0}, //4
-	{"n_evaluations",required_argument, 0, 0}, //5
-	{"seed_file", required_argument, 0, 0}, //6
+    {"grids", required_argument, 0, 0}, //4
+	{"seed", required_argument, 0, 0}, //5
+	{"n_evaluations",required_argument, 0, 0}, //6
+	{"seed_file", required_argument, 0, 0}, //7
 	{0, 0, 0, 0}
 };
  c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -190,9 +195,10 @@ static struct option long_options[] = {
    case 1: options.environment_name = optarg; break;
    case 2: options.depth = atoi(optarg); break;
    case 3: options.horizon = atoi(optarg); break;
-   case 4: seed = atoi(optarg); break;
-   case 5: options.n_evaluations = atoi(optarg); break;
-   case 6: seed_filename = optarg; break;
+   case 4: options.grids = atoi(optarg); break;
+   case 5: seed = atoi(optarg); break;
+   case 6: options.n_evaluations = atoi(optarg); break;
+   case 7: seed_filename = optarg; break;
    default:
      fprintf (stderr, "Invalid options\n");
      exit(0);

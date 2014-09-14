@@ -147,6 +147,7 @@ static const char* const help_text = "Usage: test [options]\n\
     --discount:              reward discounting in [0,1]\n\
     --c_uct:                 UCT constant\n\
     --depth:                 maximum tree depth\n\
+--grids: number of grids per state space dimension\n\
     --horizon:               maximumn number of steps during rollout\n\
     --n_evaluations:         number of evaluations\n\
     --n_episodes:            number of episodes per evaluation\n\
