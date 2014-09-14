@@ -295,12 +295,12 @@ public:
     //  printf("New root\n");
     int sel_action = 0;
     double bestValue = root->children[0]->reward + gamma*root->children[0]->aveValue;
-    printf("Value action [%d] => %f, AveValue = %f \n",0,bestValue,root->children[0]->aveValue);
+    //printf("Value action [%d] => %f, AveValue = %f \n",0,bestValue,root->children[0]->aveValue);
     
     //Find the best among the available actions
     for(int action = 1; action < nActions; ++action) {
       double curValue = root->children[action]->reward + gamma*root->children[action]->aveValue;
-      printf("Value action [%d] => %f, AveValue = %f \n",action,curValue,root->children[action]->aveValue);
+     // printf("Value action [%d] => %f, AveValue = %f \n",action,curValue,root->children[action]->aveValue);
       if(curValue > bestValue) {
 	sel_action = action;
 	bestValue = curValue;

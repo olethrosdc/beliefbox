@@ -114,7 +114,7 @@ std::vector<EpisodeStatistics> RunTest(ContinuousStateEnvironment* environment, 
     environment->Reset();
     
     S state = environment->getState();
-    state.print(stdout);
+   // state.print(stdout);
     A action =  mcts.PlanPolicy(state);
     do {
       
@@ -125,12 +125,12 @@ std::vector<EpisodeStatistics> RunTest(ContinuousStateEnvironment* environment, 
       discounted_reward += options.gamma*reward;
 
       state = environment->getState();
-      state.print(stdout);
+      //state.print(stdout);
       action = mcts.PlanPolicy(state);
-      printf("Action = %d \n",action);
+      //printf("Action = %d \n",action);
       step++;
       //printf("Step = %d\n",step);
-    }while(running && step < 1000);
+    }while(running && step <  options.horizon);
     printf("Episode = %d: Steps = %d, Total Reward = %f, Discounted Reward = %f\n",episode, step, total_reward, discounted_reward);
     statistics[episode].total_reward = total_reward;
     statistics[episode].discounted_reward = discounted_reward;
