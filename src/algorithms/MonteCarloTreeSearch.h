@@ -25,6 +25,10 @@
 #include "Random.h"
 #include <limits>
 
+/** The original UCT Monte Carlo Tree Seach algorithm.
+   
+	
+ */
 template <class S, class A>
 class MonteCarloTreeSearch
 {
