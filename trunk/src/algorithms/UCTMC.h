@@ -33,6 +33,7 @@ private:
   RandomNumberGenerator* rng;    // Random Number generator.
   EvenGrid discretize;
   real learning_rate; // Learning rate.
+	real lambda; // mixing
   int nBins;  // Number of grids per state space dimension.
   int MaxDepth;                  // Maximum tree depth.
   int NRollouts; // Number of sampled rollouts.
@@ -40,13 +41,14 @@ private:
   Matrix Q;    // State-Actions values.
   Matrix C;    // Counters.
 public:
-  UCTMC(const real& gamma_, const real& c_uct_, ContinuousStateEnvironment* environment_, RandomNumberGenerator* rng_, const EvenGrid &discretize_, const real& learning_rate_, const int& MaxDepth_, const int& NRollouts_)
+	UCTMC(const real& gamma_, const real& c_uct_, ContinuousStateEnvironment* environment_, RandomNumberGenerator* rng_, const EvenGrid &discretize_, const real& learning_rate_, const real& lambda_, const int& MaxDepth_, const int& NRollouts_)
     : gamma(gamma_),
       c_uct(c_uct_),
       environment(environment_),
       rng(rng_),
       discretize(discretize_),
       learning_rate(learning_rate_),
+      lambda(lambda_),
       MaxDepth(MaxDepth_),
       NRollouts(NRollouts_)
   {
@@ -90,9 +92,11 @@ public:
     SampleReturn = reward + gamma*UCT_Search(nextState, depth + 1, !running);
     C(index, bestAction) += 1;
     Q(index, bestAction) += (SampleReturn - Q(index, bestAction))/ C(index, bestAction);
- // Q(index, bestAction) = (1-learning_rate)*Q(index, bestAction) + learning_rate*SampleReturn;
-
-    return SampleReturn;
+	// Note: it's best to use learning-rate when lambda < 1.
+	
+	//Q(index, bestAction) = (1-learning_rate)*Q(index, bestAction) + learning_rate*SampleReturn;
+	real LambdaReturn = lambda * SampleReturn + (1 - lambda) * Q(index, bestAction);
+    return LambdaReturn;
   };
   int PlanPolicy(const S& state) {
     int rollouts = 0;

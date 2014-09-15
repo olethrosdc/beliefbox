@@ -40,6 +40,7 @@ struct Options
   int n_episodes; ///< number of episodes
   int n_evaluations; ///< number of evaluations
   int n_rollouts; ///< number of rollouts
+	real lambda; ///< lambda mixing
   Options(RandomNumberGenerator& rng_) :
     gamma(0.999),
     c_uct(1000),
@@ -51,7 +52,8 @@ struct Options
     grids(50),
     n_episodes(1000),
     n_evaluations(1000),
-    n_rollouts(1000)
+    n_rollouts(1000),
+    lambda(1)
   {
   }
 
@@ -95,7 +97,7 @@ std::vector<EpisodeStatistics> RunTest(ContinuousStateEnvironment* environment, 
   EvenGrid discretize(environment->StateLowerBound(),environment->StateUpperBound(),options.grids);
     
  // UCTMCL<S,A> mcts(options.gamma, options.c_uct,  environment, &options.rng, discretize, options.learning_rate, options.depth, options.n_rollouts);
-  UCTMC<S,A> mcts(options.gamma, options.c_uct,  environment, &options.rng,     discretize, options.learning_rate, options.depth, options.n_rollouts);
+  UCTMC<S,A> mcts(options.gamma, options.c_uct,  environment, &options.rng,     discretize, options.learning_rate, options.lambda, options.depth, options.n_rollouts);
   int state_dimension = environment->getNStates();
   Vector S_L = environment->StateLowerBound();
   Vector S_U = environment->StateUpperBound();
@@ -154,7 +156,7 @@ static const char* const help_text = "Usage: test [options]\n\
     --n_rollouts:            number of rollouts at each time step\n\
     --seed:                  seed all the RNGs with this\n\
     --seed_file:             select a binary file to choose seeds from (use in conjunction with --seed to select the n-th seed in the file)\n\
-    --Rmax:                  maximum reward value\n\
+    --lambda:                lambda mixing [0,1]\n\
 \n";
 int main(int argc, char* argv[])
 {
@@ -183,6 +185,7 @@ int main(int argc, char* argv[])
 	{"n_rollouts", required_argument, 0, 0}, //9
 	{"seed_file", required_argument, 0, 0}, //10
 	{"n_episodes", required_argument, 0, 0}, //11
+	{"lambda", required_argument, 0, 0}, //12
 	{0, 0, 0, 0}
       };
       c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -210,6 +213,7 @@ int main(int argc, char* argv[])
 	case 9: options.n_rollouts = atoi(optarg); break;
 	case 10: seed_filename = optarg; break;
 	case 11: options.n_episodes = atoi(optarg); break;
+	case 12: options.lambda = atof(optarg); break;
 	default:
 	  fprintf (stderr, "Invalid options\n");
 	  exit(0);
