@@ -31,7 +31,6 @@ class MonteCarloTreeSearch
 private:
   real gamma;                    // Discount factor.
   ContinuousStateEnvironment* environment; // The environment model.
-  EvenGrid discretize;
   RandomNumberGenerator* rng;    // Random Number generator.
   AbstractPolicy<S, A>& policy;
   int MaxDepth;                  // Maximum tree depth.
@@ -102,13 +101,12 @@ public:
       if(cur->isTerminal() == true) {
       	RollingValue = cur->getReward();
       } else {
-	while(cur->getDepth()+1 < tree.MaxDepth && cur->isTerminal() == false) {
-	  // Expansion phase
+	// Expansion phase
+	//	while(cur->getDepth()+1 < tree.MaxDepth && cur->isTerminal() == false) {
 	  cur = cur->expand();
-	} 
+	  //} 
 	RollingValue = rollOut(cur->state);
       }
-      //      printf("RollingValue = %f\n",RollingValue);
 
       // Backpropagation phase
       while(cur != NULL) {
@@ -116,7 +114,6 @@ public:
 	RollingValue = cur->getReward() + tree.gamma*RollingValue;
 	cur = cur->father;
       }	
-      //  printf("Final \n");
     }
 
     //Tree expansion
@@ -149,16 +146,7 @@ public:
       S child_state   = tree.environment->getState();
       real reward     = tree.environment->getReward();
 
-
-      int index = tree.discretize.getInterval(child_state);
-      if(tree.levels[depth+1][index] != NULL) {
-      	children[action] = tree.levels[depth+1][index];
-      	children[action]->setFather(this);
-	children[action]->setState(child_state);
-      } else {
-	children[action] = new Node(depth + 1, child_state, reward, this, tree, !running); // The specific child is created
-	tree.levels[depth+1][index] = children[action];
-      }
+      children[action] = new Node(depth + 1, child_state, reward, this, tree, !running); // The specific child is created
 
       return children[action];
     }
@@ -167,15 +155,12 @@ public:
     Node* UCTsearch() {
       real bestValue = -1000000000000;
       Node* selected = NULL;
-      //printf("Parent\n");
       for(int i = 0; i < tree.nActions; ++i) {
 	real curValue = (children[i]->getReward() + tree.gamma*children[i]->aveValue) + 1000*sqrt((log(nVisits)) / (children[i]->nVisits)); //UCT Search
-	//	printf("Q value = %f\n",children[i]->getReward() + tree.gamma*children[i]->aveValue);
 	if(curValue > bestValue) {
 	  selected = children[i];
 	  bestValue = curValue;
 	}
-	selected->setFather(this);
       }
       return selected;
     }
@@ -257,50 +242,36 @@ public:
   };
 
   //Constructor
-  MonteCarloTreeSearch(const real& gamma_, ContinuousStateEnvironment* environment_, const EvenGrid &discretize_,  RandomNumberGenerator* rng_, AbstractPolicy<S, A>& policy_, const int& MaxDepth_ =  100, const int& NRollouts_ = 1000)
+  MonteCarloTreeSearch(const real& gamma_, ContinuousStateEnvironment* environment_, RandomNumberGenerator* rng_, AbstractPolicy<S, A>& policy_, const int& MaxDepth_ =  100, const int& NRollouts_ = 1000)
     :gamma(gamma_),
      environment(environment_),
-     discretize(discretize_),
      rng(rng_),
      policy(policy_),
      MaxDepth(MaxDepth_),
      NRollouts(NRollouts_)
   {
-    levels.resize(MaxDepth);
-    for(int i = 0; i<levels.size(); ++i) {
-      levels[i].resize(discretize.getNIntervals(),NULL);
-    }
-    nActions = environment->getNActions();
-    
+    nActions = environment->getNActions(); 
   };
 
   //Destructor
   ~MonteCarloTreeSearch(){
-    //levels.clear();
-    // delete root;
+    delete root;
   };
 
   int SelectAction(S state_) {
-    int index = discretize.getInterval(state_);
-    if(levels[0][index] != NULL) {
-      root = levels[0][index];
-      root->setState(state_);
-    } else {
-      root = new Node(0, state_, 0.0, NULL, *this);
-      levels[0][index] = root;
-    }
+ 
+    root = new Node(0, state_, 0.0, NULL, *this);
+  
     for(int i=0; i<NRollouts; ++i) {
       root->selectAction();
     }
-    //  printf("New root\n");
+
     int sel_action = 0;
     double bestValue = root->children[0]->reward + gamma*root->children[0]->aveValue;
-    //printf("Value action [%d] => %f, AveValue = %f \n",0,bestValue,root->children[0]->aveValue);
     
     //Find the best among the available actions
     for(int action = 1; action < nActions; ++action) {
       double curValue = root->children[action]->reward + gamma*root->children[action]->aveValue;
-     // printf("Value action [%d] => %f, AveValue = %f \n",action,curValue,root->children[action]->aveValue);
       if(curValue > bestValue) {
 	sel_action = action;
 	bestValue = curValue;
@@ -308,9 +279,9 @@ public:
     }
     environment->Reset();
     environment->setState(state_);
-    //   printf("Selected action = %d \n ",sel_action);
-    //delete root;
-    //levels.clear();
+
+    delete root;
+
     return sel_action;
   };
 protected:
