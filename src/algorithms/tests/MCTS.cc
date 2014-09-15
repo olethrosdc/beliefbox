@@ -57,7 +57,7 @@ logmsg("========================\n");
 logmsg("Gamma: %f\n", gamma);
 logmsg("Depth: %d\n", depth);
 logmsg("Episode horizon: %d\n", horizon);
-logmsg("Grids: %d\n", grids);
+//logmsg("Grids: %d\n", grids);
 logmsg("n_episodes: %d\n", n_episodes);
 logmsg("n_evaluations: %d\n", n_evaluations);
 logmsg("------------------------\n");
@@ -82,7 +82,7 @@ std::vector<EpisodeStatistics> RunTest(ContinuousStateEnvironment* environment, 
 bool running;
 real reward;
 
-EvenGrid discretize(environment->StateLowerBound(),environment->StateUpperBound(),options.grids);
+//EvenGrid discretize(environment->StateLowerBound(),environment->StateUpperBound(),options.grids);
 
 // Start with a random policy!
 RandomPolicy random_policy(environment->getNActions(), &options.rng);
@@ -90,7 +90,7 @@ RandomPolicy random_policy(environment->getNActions(), &options.rng);
 // Placeholder for the policy
 AbstractPolicy<Vector, int>& policy = random_policy;
 
-MonteCarloTreeSearch<S,A> mcts(options.gamma, environment, discretize, &options.rng,policy, options.depth);
+MonteCarloTreeSearch<S,A> mcts(options.gamma, environment, &options.rng,policy, options.depth);
 int state_dimension = environment->getNStates();
 Vector S_L = environment->StateLowerBound();
 Vector S_U = environment->StateUpperBound();
