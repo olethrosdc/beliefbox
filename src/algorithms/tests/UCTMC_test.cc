@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
 	case 8: options.n_evaluations = atoi(optarg); break;
 	case 9: options.n_rollouts = atoi(optarg); break;
 	case 10: seed_filename = optarg; break;
-	case 11: n_episodes = atoi(optarg); break;
+	case 11: options.n_episodes = atoi(optarg); break;
 	default:
 	  fprintf (stderr, "Invalid options\n");
 	  exit(0);
