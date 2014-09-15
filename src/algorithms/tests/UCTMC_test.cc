@@ -182,6 +182,7 @@ int main(int argc, char* argv[])
 	{"n_evaluations",required_argument, 0, 0}, //8
 	{"n_rollouts", required_argument, 0, 0}, //9
 	{"seed_file", required_argument, 0, 0}, //10
+	{"n_episodes", required_argument, 0, 0}, //11
 	{0, 0, 0, 0}
       };
       c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -208,6 +209,7 @@ int main(int argc, char* argv[])
 	case 8: options.n_evaluations = atoi(optarg); break;
 	case 9: options.n_rollouts = atoi(optarg); break;
 	case 10: seed_filename = optarg; break;
+	case 11: n_episodes = atoi(optarg); break;
 	default:
 	  fprintf (stderr, "Invalid options\n");
 	  exit(0);
@@ -295,7 +297,7 @@ int main(int argc, char* argv[])
 
   for(int n_runs = 0; n_runs < options.n_evaluations; ++n_runs) { 
     std::vector<EpisodeStatistics> statistics = RunTest<Vector,int>(environment,options);
-    for(uint episodes = 0; episodes < options.n_episodes; episodes++) {
+    for(int episodes = 0; episodes < options.n_episodes; episodes++) {
       StatDR(n_runs, episodes) = statistics[episodes].discounted_reward;
       StatTR(n_runs, episodes) = statistics[episodes].total_reward;
       StatSt(n_runs, episodes) = statistics[episodes].steps;
