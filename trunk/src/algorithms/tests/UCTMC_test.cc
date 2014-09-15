@@ -143,7 +143,7 @@ std::vector<EpisodeStatistics> RunTest(ContinuousStateEnvironment* environment, 
 
 static const char* const help_text = "Usage: test [options]\n\
 \nOptions:\n\
-    --environment:           {MountainCar, Pendulum, Puddle, Bicycle, CartPole, Acrobot}\n\
+    --environment:           {MountainCar, Pendulum, PuddleWorld, Bike, CartPole, Acrobot}\n\
     --discount:              reward discounting in [0,1]\n\
     --c_uct:                 UCT constant\n\
     --depth:                 maximum tree depth\n\
