@@ -112,7 +112,7 @@ public:
       }
       ++t;
     } while (running);
-    logmsg("Terminating after %d steps\n", t);
+    //logmsg("Terminating after %d steps\n", t);
     int index = trajectories.size() - 1;
     total_rewards[index] = total_reward;
     discounted_rewards[index] = discounted_reward;
@@ -135,7 +135,7 @@ public:
   S state(uint i, uint t) const
   {
     assert (i < size());
-    assert (t < length(i));
+    assert (t < length(i)); 
     assert (t < trajectories[i].size());
     return trajectories[i].state(t);
   }
