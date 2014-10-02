@@ -74,7 +74,6 @@ struct Options
 	real lambda_uct; ///<  lambda mixing for uct
 	real stepsize_uct; ///< step size
 	int depth_uct; ///< maximum tree depth
-	int horizon_uct; ///< maximum horizon for the rollouts
 	int grid_utc; ///< grid utc
     Options(RandomNumberGenerator& rng_) :
         gamma(0.99),
@@ -93,7 +92,13 @@ struct Options
         reuse_training_data(false),
         sampling(false),
         delta(0.5),
-		R_max(1.0)
+		R_max(1.0),
+		c_uct(1000),
+		n_rollouts_uct(1000),
+		lambda_uct(1),
+		stepsize_uct(0.001),
+		depth_uct(1000),
+		grid_utc(50)
     {
     }
      
