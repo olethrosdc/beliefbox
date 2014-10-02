@@ -75,6 +75,7 @@ struct Options
 	real stepsize_uct; ///< step size
 	int depth_uct; ///< maximum tree depth
 	int horizon_uct; ///< maximum horizon for the rollouts
+	int grid_utc; ///< grid utc
     Options(RandomNumberGenerator& rng_) :
         gamma(0.99),
         epsilon(1.0),
@@ -243,15 +244,15 @@ public:
     ABCRL()
     {
     }
-    void GetSample(Demonstrations<X,A>& data,
-                   P& policy,
-                   real discounting,
-                   real epsilon,
-                   real delta,
-				   real R_max,
-                   int n_trajectories,
-                   int n_samples,
-                   std::vector<M>& samples,
+    void GetSample(Demonstrations<X,A>& data, ///< input data
+                   P& policy, ///< input policy
+                   real discounting, ///< discounting
+                   real epsilon, ///< acceptance margin
+                   real delta, ///< error probability
+				   real R_max, ///< reward bound
+                   int n_trajectories, ///< number of trajectories to draw
+                   int n_samples, ///< number of samples to generate
+                   std::vector<M>& samples, ///< model samples
                    std::vector<real>& values)
     {
         //real min_epsilon = INF;
@@ -376,8 +377,6 @@ void RunTest(Options& options)
     EvenGrid Discretisation(S_L, S_U, options.grid);
     RBFBasisSet RBFs(Discretisation, options.scale);
 
-	UCTMC<Vector, int> mcts(options.gamma, options.c_uct, &environment, &options.rng, Discretisation, options.stepsize_uct, options.lambda_uct, options.depth_uct, options.n_rollouts_uct);
-	  
     // Start with a random policy!
     RandomPolicy random_policy(environment.getNActions(), &options.rng);
 
@@ -399,6 +398,7 @@ void RunTest(Options& options)
     ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
     
 
+	logmsg("ABC Generating samples\n");
     std::vector<M> samples;
     std::vector<real> values;
     double abc_time = 0;
@@ -418,7 +418,6 @@ void RunTest(Options& options)
     logmsg("Evaluating initial policy on %d samples\n", (int) samples.size());
     real V_initial = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
     
-    logmsg("V_LSPI\n");
     Vector V_LSPI((uint) samples.size());
     Options estimation_options = options;
     estimation_options.n_training = options.n_model_rollouts;
@@ -439,6 +438,58 @@ void RunTest(Options& options)
         printf ("%f# sampled value\n", V_LSPI(i));
         fflush(stdout);
     }
+
+
+	logmsg("Evaluating UCTMC policy\n");
+	if (samples.size() > 0) {
+		bool running;
+		real reward;
+
+		ContinuousStateEnvironment* sampled_environment = &samples[0];
+
+		EvenGrid discretize(sampled_environment->StateLowerBound(),sampled_environment->StateUpperBound(),options.grid_utc);
+		
+		UCTMC<Vector, int> mcts(options.gamma, options.c_uct, sampled_environment, &options.rng, discretize, options.stepsize_uct, options.lambda_uct, options.depth_uct, options.n_rollouts_uct);
+		int state_dimension = sampled_environment->getNStates();
+		Vector S_L = sampled_environment->StateLowerBound();
+		Vector S_U = sampled_environment->StateUpperBound();
+		
+		logmsg("State dimension: %d\n", state_dimension);
+		logmsg("S_L: "); S_L.print(stdout);
+		logmsg("S_U: "); S_U.print(stdout);
+		
+		int horizon =  (int) ceil(10.0/(1.0 - options.gamma));
+
+		/// Run the UCT planner on the real thing
+		for(int episode = 0; episode<options.n_testing; ++episode) {
+			int step               = 0;
+			real discounted_reward = 0;
+			real total_reward      = 0;
+			environment.Reset();
+			
+			Vector state = environment.getState();
+			// state.print(stdout);
+			int action =  mcts.PlanPolicy(state);
+			do {
+				
+				running = environment.Act(action);
+				reward = environment.getReward();
+				
+				total_reward += reward;
+				discounted_reward += options.gamma*reward;
+				
+				state = environment.getState();
+				action = mcts.PlanPolicy(state);
+				step++;
+			} while(running && step <  horizon);
+			logmsg("Sampled Episode = %d: Steps = %d, Total Reward = %f, Discounted Reward = %f\n",episode, step, total_reward, discounted_reward);
+			}
+
+			
+
+		
+	}
+	
 	
     double lspi_time = 0;
     double lspi_start = GetCPU();
