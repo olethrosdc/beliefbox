@@ -10,12 +10,6 @@
  ***************************************************************************/
 
 #ifdef MAKE_MAIN
-
-
-#include "UCTMC.h"
-#include "UCTMCL.h"
-
-
 #include "LSTDQ.h"
 #include "LSPI.h"
 #include "Grid.h"
@@ -69,12 +63,6 @@ struct Options
     bool sampling; ///< use sampling online
     real delta; ///< error probability bound
 	real R_max; ///< maximum reward
-	real c_uct; ///< uct factor
-	int n_rollouts_uct; ///< number of rollouts for uct
-	real lambda_uct; ///<  lambda mixing for uct
-	real stepsize_uct; ///< step size
-	int depth_uct; ///< maximum tree depth
-	int horizon_uct; ///< maximum horizon for the rollouts
     Options(RandomNumberGenerator& rng_) :
         gamma(0.99),
         epsilon(1.0),
@@ -376,8 +364,6 @@ void RunTest(Options& options)
     EvenGrid Discretisation(S_L, S_U, options.grid);
     RBFBasisSet RBFs(Discretisation, options.scale);
 
-	UCTMC<Vector, int> mcts(options.gamma, options.c_uct, &environment, &options.rng, Discretisation, options.stepsize_uct, options.lambda_uct, options.depth_uct, options.n_rollouts_uct);
-	  
     // Start with a random policy!
     RandomPolicy random_policy(environment.getNActions(), &options.rng);
 
@@ -619,7 +605,7 @@ static const char* const help_text = "Usage: test [options]\n\
     --seed_file:             select a binary file to choose seeds from (use in conjunction with --seed to select the n-th seed in the file)\n\
     --grid:                  number of grid intervals for LSTD\n\
     --scale:                 RBF scale for LSTD\n\
-    --n_evaluations:         number of evaluations to run\n\
+    --n_evaluations:         number of evaluations\n\
     --reuse_training_data:   reuse the training data in LSPI samples\n\
     --online:                do the online test\n\
     --sampling:              use sampling\n\
