@@ -10,6 +10,7 @@
  ***************************************************************************/
 
 #ifndef RANDOM_NUMBER_FILE_H
+#define RANDOM_NUMBER_FILE_H
 
 #include <string>
 #include <vector>
