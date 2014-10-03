@@ -57,6 +57,9 @@ public:
 		Q = Matrix(discretize.getNIntervals(), nActions);
 		C = Matrix(discretize.getNIntervals(), nActions);
 	};
+	void setEnvironment(ContinuousStateEnvironment* environment_) {
+		environment = environment_;
+	}
 	~UCTMC() {}
 	// Reset statistics
 	void UCT_Reset() {

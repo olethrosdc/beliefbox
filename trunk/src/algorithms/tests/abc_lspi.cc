@@ -98,7 +98,7 @@ struct Options
 	lambda_uct(1),
 	stepsize_uct(0.001),
 	depth_uct(1000),
-	grid_uct(50)
+	grid_uct(20)
     {
     }
      
@@ -408,6 +408,9 @@ void RunTest(Options& options)
     // start ABC-RL
     ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
     
+	// start UCT
+	EvenGrid discretize(environment.StateLowerBound(),environment.StateUpperBound(),options.grid_uct);	
+	UCTMC<Vector, int> mcts(options.gamma, options.c_uct, NULL, &options.rng, discretize, options.stepsize_uct, options.lambda_uct, options.depth_uct, options.n_rollouts_uct);
 
 	logmsg("ABC Generating samples\n");
     std::vector<M> samples;
@@ -460,10 +463,8 @@ void RunTest(Options& options)
 		real reward;
 
 		ContinuousStateEnvironment* sampled_environment = &samples[0];
+		mcts.setEnvironment(sampled_environment);
 
-		EvenGrid discretize(sampled_environment->StateLowerBound(),sampled_environment->StateUpperBound(),options.grid_uct);
-		
-		UCTMC<Vector, int> mcts(options.gamma, options.c_uct, sampled_environment, &options.rng, discretize, options.stepsize_uct, options.lambda_uct, options.depth_uct, options.n_rollouts_uct);
 		int state_dimension = sampled_environment->getNStates();
 		Vector S_L = sampled_environment->StateLowerBound();
 		Vector S_U = sampled_environment->StateUpperBound();
@@ -695,7 +696,7 @@ static const char* const help_text = "Usage: test [options]\n\
     --delta:                 error bound probability\n\
     --Rmax:                  maximum reward value\n\
 	--c_uct;                 uct factor\n\
-	--n_rollouts_uct;        [obsolete]\n\
+	--n_rollouts_uct;        number of rollouts to perform with UCT\n\
 	--lambda_uct;            lambda mixing for uct\n\
 	--stepsize_uct;          step size\n\
 	--depth_uct;             maximum tree depth\n\
