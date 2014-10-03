@@ -74,31 +74,31 @@ struct Options
 	real lambda_uct; ///<  lambda mixing for uct
 	real stepsize_uct; ///< step size
 	int depth_uct; ///< maximum tree depth
-	int grid_utc; ///< grid utc
+	int grid_uct; ///< grid utc
     Options(RandomNumberGenerator& rng_) :
-        gamma(0.99),
-        epsilon(1.0),
-        environment_name(NULL),
-        rng(rng_), n_trajectories(1000),
-        n_samples(128),
-        n_training(10),
-        n_testing(1000),
-        n_model_rollouts(2000),
-        grid(5),
-        scale(0.5),
-        accuracy(1e-6),
-        lspi_iterations(25),
-        n_evaluations(100),
-        reuse_training_data(false),
-        sampling(false),
-        delta(0.5),
-		R_max(1.0),
-		c_uct(1000),
-		n_rollouts_uct(1000),
-		lambda_uct(1),
-		stepsize_uct(0.001),
-		depth_uct(1000),
-		grid_utc(50)
+	gamma(0.99),
+	epsilon(1.0),
+	environment_name(NULL),
+	rng(rng_), n_trajectories(1000),
+	n_samples(128),
+	n_training(10),
+	n_testing(1000),
+	n_model_rollouts(2000),
+	grid(5),
+	scale(0.5),
+	accuracy(1e-6),
+	lspi_iterations(25),
+	n_evaluations(100),
+	reuse_training_data(false),
+	sampling(false),
+	delta(0.5),
+	R_max(1.0),
+	c_uct(1000),
+	n_rollouts_uct(1000),
+	lambda_uct(1),
+	stepsize_uct(0.001),
+	depth_uct(1000),
+	grid_uct(50)
     {
     }
      
@@ -122,8 +122,9 @@ struct Options
         logmsg("reuse_training_data %d\n", reuse_training_data);
         logmsg("n_episodes %d\n", n_episodes);
         logmsg("sampling %d\n", sampling);
-        logmsg("deta %f\n", delta);
+        logmsg("delta %f\n", delta);
         logmsg("R_max %f\n", R_max);
+
         logmsg("------------------------\n");
     }
 };
@@ -423,6 +424,9 @@ void RunTest(Options& options)
     logmsg("Evaluating initial policy on %d samples\n", (int) samples.size());
     real V_initial = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, policy, options.gamma, options.n_testing);
     
+	real V_ABC_UCT = 0;
+	double abc_uct_time = 0;
+
     Vector V_LSPI((uint) samples.size());
     Options estimation_options = options;
     estimation_options.n_training = options.n_model_rollouts;
@@ -452,7 +456,7 @@ void RunTest(Options& options)
 
 		ContinuousStateEnvironment* sampled_environment = &samples[0];
 
-		EvenGrid discretize(sampled_environment->StateLowerBound(),sampled_environment->StateUpperBound(),options.grid_utc);
+		EvenGrid discretize(sampled_environment->StateLowerBound(),sampled_environment->StateUpperBound(),options.grid_uct);
 		
 		UCTMC<Vector, int> mcts(options.gamma, options.c_uct, sampled_environment, &options.rng, discretize, options.stepsize_uct, options.lambda_uct, options.depth_uct, options.n_rollouts_uct);
 		int state_dimension = sampled_environment->getNStates();
@@ -464,7 +468,9 @@ void RunTest(Options& options)
 		logmsg("S_U: "); S_U.print(stdout);
 		
 		int horizon =  (int) ceil(10.0/(1.0 - options.gamma));
-
+		V_ABC_UCT = 0;
+		abc_uct_time = 0;
+		double abc_uct_start = GetCPU();
 		/// Run the UCT planner on the real thing
 		for(int episode = 0; episode<options.n_testing; ++episode) {
 			int step               = 0;
@@ -487,12 +493,12 @@ void RunTest(Options& options)
 				action = mcts.PlanPolicy(state);
 				step++;
 			} while(running && step <  horizon);
-			logmsg("Sampled Episode = %d: Steps = %d, Total Reward = %f, Discounted Reward = %f\n",episode, step, total_reward, discounted_reward);
-			}
-
+			//logmsg("Sampled Episode = %d: Steps = %d, Total Reward = %f, Discounted Reward = %f\n",episode, step, total_reward, discounted_reward);
+			V_ABC_UCT += discounted_reward;
+		}
+		V_ABC_UCT /= (real) options.n_testing;
 			
-
-		
+		abc_uct_time += GetCPU() - abc_uct_start;
 	}
 	
 	
@@ -509,12 +515,14 @@ void RunTest(Options& options)
 
     real V_lspi_oracle = EvaluatePolicy<Vector, int, M, AbstractPolicy<Vector, int> >(environment, *oracle_lspi_policy, options.gamma, options.n_testing);
     
-    printf ("%f %f %f %f %f # V V_ABC_LSPI V_LSPI T_ABC T_LSPI\n",
+    printf ("%f %f %f %f %f %f %f # V V_ABC_LSPI V_LSPI V_ABC_UCT T_ABC T_LSPI T_ABC_UCT\n",
             V_initial,
             V_LSPI.Sum() / (real) V_LSPI.Size(),
             V_lspi_oracle,
+			V_ABC_UCT,
             abc_time,
-            lspi_time);
+            lspi_time,
+			abc_uct_time);
 }
 
 /** Run an online test
@@ -596,7 +604,7 @@ void RunOnlineTest(Options& options)
                                  estimation_options);
             policy_list.push_back(sampled_policy);
         } else {
-training_rollouts.StartingDistributionSampling(n_episodes_per_iteration, rollout_horizon);
+			training_rollouts.StartingDistributionSampling(n_episodes_per_iteration, rollout_horizon);
             printf("%f %f %d # total, discounted reward, steps LSPI\n",
                    training_rollouts.total_rewards.back(),
                    training_rollouts.discounted_rewards.back(),
@@ -720,6 +728,12 @@ int main(int argc, char* argv[])
                 {"seed_file", required_argument, 0, 0}, //16
                 {"delta", required_argument, 0, 0}, //17
 				{"Rmax", required_argument, 0, 0}, //18
+				{"c_uct", required_argument, 0, 0}, //19
+				{"n_rollouts_uct", required_argument, 0, 0}, //20
+				{"lambda_uct", required_argument, 0, 0}, //21
+				{"stepsize_uct", required_argument, 0, 0}, //22
+				{"depth_uct", required_argument, 0, 0}, //23
+				{"grid_uct", required_argument, 0, 0}, //24
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -755,6 +769,12 @@ int main(int argc, char* argv[])
                 case 16: seed_filename = optarg; break;
                 case 17: options.delta = atof(optarg); break;
 				case 18: options.R_max = atof(optarg); break;
+				case 19: options.c_uct = atof(optarg); break;
+				case 20: options.n_rollouts_uct = atoi(optarg); break;
+				case 21: options.lambda_uct = atof(optarg); break;
+				case 22: options.stepsize_uct = atof(optarg); break;
+				case 23: options.depth_uct = atoi(optarg); break;
+				case 24: options.grid_uct = atoi(optarg); break;
                 default:
                     fprintf (stderr, "Invalid options\n");
                     exit(0);
