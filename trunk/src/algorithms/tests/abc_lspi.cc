@@ -124,7 +124,12 @@ struct Options
         logmsg("sampling %d\n", sampling);
         logmsg("delta %f\n", delta);
         logmsg("R_max %f\n", R_max);
-
+		logmsg("c_uct %f\n", c_uct);
+		logmsg("n_rollouts_uct %d\n", n_rollouts_uct);
+		logmsg("lambda_uct %f\n", lambda_uct);
+		logmsg("stepsize_uct %f\n", stepsize_uct);
+		logmsg("depth_uct %d\n", depth_uct); 
+		logmsg("grid_uct %d\n", grid_uct); 
         logmsg("------------------------\n");
     }
 };
@@ -689,6 +694,12 @@ static const char* const help_text = "Usage: test [options]\n\
     --sampling:              use sampling\n\
     --delta:                 error bound probability\n\
     --Rmax:                  maximum reward value\n\
+	--c_uct;                 uct factor\n\
+	--n_rollouts_uct;        [obsolete]\n\
+	--lambda_uct;            lambda mixing for uct\n\
+	--stepsize_uct;          step size\n\
+	--depth_uct;             maximum tree depth\n\
+	--grid_uct;              grid utc\n\
 \n";
 
 int main(int argc, char* argv[])
