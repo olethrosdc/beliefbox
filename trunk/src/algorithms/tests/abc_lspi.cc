@@ -410,7 +410,7 @@ void RunTest(Options& options)
     
 	// start UCT
 	EvenGrid discretize(environment.StateLowerBound(),environment.StateUpperBound(),options.grid_uct);	
-	UCTMC<Vector, int> mcts(options.gamma, options.c_uct, NULL, &options.rng, discretize, options.stepsize_uct, options.lambda_uct, options.depth_uct, options.n_rollouts_uct);
+	UCTMC<Vector, int> mcts(options.gamma, options.c_uct, &environment, &options.rng, discretize, options.stepsize_uct, options.lambda_uct, options.depth_uct, options.n_rollouts_uct);
 
 	logmsg("ABC Generating samples\n");
     std::vector<M> samples;
