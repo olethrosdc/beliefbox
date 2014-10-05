@@ -50,57 +50,57 @@
 /** Options */
 struct Options
 {
-    real gamma; ///< discount factor
-    real epsilon; ///< stopping threshold
-    char* environment_name; ///< environment name
-    RandomNumberGenerator& rng; ///< random number generator
-    int n_trajectories; ///< number of trajectories to take for each sample
-    int n_samples; ///< number of sampled environments
-    int n_training; ///< number of training trajectories
-    int n_testing; ///< number of testing trajectories
-    int n_model_rollouts; ///< number of rollouts to take from the model
-    int grid; ///< grid size for features
-    real scale; ///< scale of RBF basis
-    real accuracy; ///< value/policy iteration accuracy
-    int lspi_iterations; ///< number of lspi iterations
-    int n_evaluations; ///< number of evaluations
-    bool reuse_training_data; ///< reuse training data in lspi
-    int n_episodes; ///< number of episodes
-    bool sampling; ///< use sampling online
-    real delta; ///< error probability bound
-	real R_max; ///< maximum reward
-	real c_uct; ///< uct factor
-	int n_rollouts_uct; ///< number of rollouts for uct
-	real lambda_uct; ///<  lambda mixing for uct
-	real stepsize_uct; ///< step size
-	int depth_uct; ///< maximum tree depth
-	int grid_uct; ///< grid utc
-    Options(RandomNumberGenerator& rng_) :
-	gamma(0.99),
-	epsilon(1.0),
-	environment_name(NULL),
-	rng(rng_), n_trajectories(1000),
-	n_samples(128),
-	n_training(10),
-	n_testing(1000),
-	n_model_rollouts(2000),
-	grid(5),
-	scale(0.5),
-	accuracy(1e-6),
-	lspi_iterations(25),
-	n_evaluations(100),
-	reuse_training_data(false),
-	sampling(false),
-	delta(0.5),
-	R_max(1.0),
-	c_uct(1000),
-	n_rollouts_uct(1000),
-	lambda_uct(1),
-	stepsize_uct(0.001),
-	depth_uct(1000),
-	grid_uct(20)
-    {
-    }
+  real gamma; ///< discount factor
+  real epsilon; ///< stopping threshold
+  char* environment_name; ///< environment name
+  RandomNumberGenerator& rng; ///< random number generator
+  int n_trajectories; ///< number of trajectories to take for each sample
+  int n_samples; ///< number of sampled environments
+  int n_training; ///< number of training trajectories
+  int n_testing; ///< number of testing trajectories
+  int n_model_rollouts; ///< number of rollouts to take from the model
+  int grid; ///< grid size for features
+  real scale; ///< scale of RBF basis
+  real accuracy; ///< value/policy iteration accuracy
+  int lspi_iterations; ///< number of lspi iterations
+  int n_evaluations; ///< number of evaluations
+  bool reuse_training_data; ///< reuse training data in lspi
+  int n_episodes; ///< number of episodes
+  bool sampling; ///< use sampling online
+  real delta; ///< error probability bound
+  real R_max; ///< maximum reward
+  real c_uct; ///< uct factor
+  int n_rollouts_uct; ///< number of rollouts for uct
+  real lambda_uct; ///<  lambda mixing for uct
+  real stepsize_uct; ///< step size
+  int depth_uct; ///< maximum tree depth
+  int grid_uct; ///< grid utc
+  Options(RandomNumberGenerator& rng_) :
+    gamma(0.99),
+    epsilon(1.0),
+    environment_name(NULL),
+    rng(rng_), n_trajectories(1000),
+    n_samples(128),
+    n_training(10),
+    n_testing(1000),
+    n_model_rollouts(2000),
+    grid(5),
+    scale(0.5),
+    accuracy(1e-6),
+    lspi_iterations(25),
+    n_evaluations(100),
+    reuse_training_data(false),
+    sampling(false),
+    delta(0.5),
+    R_max(1.0),
+    c_uct(1000),
+    n_rollouts_uct(1000),
+    lambda_uct(1),
+    stepsize_uct(0.001),
+    depth_uct(1000),
+    grid_uct(20)
+  {
+  }
      
   void ShowOptions()
   {
@@ -408,9 +408,9 @@ void RunTest(Options& options)
   // start ABC-RL
   ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
     
-	// start UCT
-	EvenGrid discretize(environment.StateLowerBound(),environment.StateUpperBound(),options.grid_uct);	
-	UCTMC<Vector, int> mcts(options.gamma, options.c_uct, &environment, &options.rng, discretize, options.stepsize_uct, options.lambda_uct, options.depth_uct, options.n_rollouts_uct);
+  // start UCT
+  EvenGrid discretize(environment.StateLowerBound(),environment.StateUpperBound(),options.grid_uct);	
+  UCTMC<Vector, int> mcts(options.gamma, options.c_uct, &environment, &options.rng, discretize, options.stepsize_uct, options.lambda_uct, options.depth_uct, options.n_rollouts_uct);
 
   logmsg("ABC Generating samples\n");
   std::vector<M> samples;
@@ -463,11 +463,11 @@ void RunTest(Options& options)
     real reward;
 
     ContinuousStateEnvironment* sampled_environment = &samples[0];
-		mcts.setEnvironment(sampled_environment);
+    mcts.setEnvironment(sampled_environment);
 
-		int state_dimension = sampled_environment->getNStates();
-		Vector S_L = sampled_environment->StateLowerBound();
-		Vector S_U = sampled_environment->StateUpperBound();
+    int state_dimension = sampled_environment->getNStates();
+    Vector S_L = sampled_environment->StateLowerBound();
+    Vector S_U = sampled_environment->StateUpperBound();
 		
     logmsg("State dimension: %d\n", state_dimension);
     logmsg("S_L: "); S_L.print(stdout);
@@ -485,7 +485,7 @@ void RunTest(Options& options)
       environment.Reset();
 			
       Vector state = environment.getState();
-      state.print(stdout);
+      //state.print(stdout);
       int action =  mcts.PlanPolicy(state);
       do {
 				
@@ -496,11 +496,11 @@ void RunTest(Options& options)
 	discounted_reward += pow(options.gamma,step)*reward;
 				
 	state = environment.getState();
-	state.print(stdout);
+	//state.print(stdout);
 	action = mcts.PlanPolicy(state);
 	step++;
       } while(running && step <  horizon);
-      logmsg("Sampled Episode = %d: Steps = %d, Total Reward = %f, Discounted Reward = %f\n",episode, step, total_reward, discounted_reward);
+      //logmsg("Sampled Episode = %d: Steps = %d, Total Reward = %f, Discounted Reward = %f\n",episode, step, total_reward, discounted_reward);
       V_ABC_UCT += discounted_reward;
     }
     V_ABC_UCT /= (real) options.n_testing;
