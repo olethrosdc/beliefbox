@@ -186,6 +186,50 @@ public:
   }
 };
 
+/** The features statistic
+    
+    X - observation
+    A - action
+*/
+template <class X, class A>
+class CumulativeFeaturesStatistic
+{
+protected:
+	int delta;
+	real gamma;
+	real C;
+public:
+	CumulativeFeaturesStatistic(real delta_ = 1.0)
+		: delta(delta_), C(0.5*log(1.0/delta))
+	{
+	}
+	void setBound(real delta_, real gamma_, real R_max)
+	{
+		delta = delta_;
+		gamma = gamma_;
+	}
+	real getCumulativeFeatures(Demonstrations<X, A>& data)
+	{
+		Vector r_d(delta);
+		for (uint i=0; i<data.total_rewards.size(); ++i) {
+			r_d += data.total_rewards[i];
+		}
+		r_d /= (real) data.total_rewards.size();
+		return r_d;
+	}
+	
+	real distance(Demonstrations<X, A>& data,
+				  Demonstrations<X, A>& sample)
+	{
+		Vector r_d = getCumulativeFeature(data);
+		Vector r_s = getCumulativeFeature(sample);
+		return abs(r_d - r_s);
+  }
+};
+
+
+
+
 /** get LSPI policy
 
     If the environment is given, then always rollout from the environment.
