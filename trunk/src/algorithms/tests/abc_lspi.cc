@@ -195,7 +195,7 @@ template <class X, class A>
 class CumulativeFeaturesStatistic
 {
 protected:
-	int delta;
+	real delta;
 	real gamma;
 	real C;
 public:
@@ -221,10 +221,10 @@ public:
 	real distance(Demonstrations<X, A>& data,
 				  Demonstrations<X, A>& sample)
 	{
-		Vector r_d = getCumulativeFeature(data);
-		Vector r_s = getCumulativeFeature(sample);
+		Vector r_d = getCumulativeFeatures(data);
+		Vector r_s = getCumulativeFeatures(sample);
 		return abs(r_d - r_s);
-  }
+    }
 };
 
 
