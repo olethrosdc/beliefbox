@@ -8,5 +8,5 @@ horizon=1000
 
 for environment in MountainCar  Pendulum PuddleWorld Bike CartPole Acrobot
 do
-	gdb --args ./bin/abc_lspi --environment $environment --discount $discount --depth_uct $depth --grid_uct $grid --n_rollouts_uct $rollouts --n_evaluations 10 --lambda_uct 1.0 >${environment}_ABC_UCT.out 
+	nice ./bin/abc_lspi --environment $environment --discount $discount --depth_uct $depth --grid_uct $grid --n_rollouts_uct $rollouts --n_evaluations 10 --lambda_uct 1.0 >${environment}_ABC_UCT.out  &
 done
