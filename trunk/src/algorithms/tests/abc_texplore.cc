@@ -234,7 +234,7 @@ public:
 			for (uint t=0; t<data.trajectories[i].size(); ++t) {
 				X s = data.trajectories[i].state(t);
 				if (s.Size() != R.Columns()) { // fudge to avoid adding more methods
-					R.Resize(R.Rows(), s.Size());
+					setDimensions(R.Rows(), s.Size());
 				}
 				phi += R * s;
 				g *= gamma;
