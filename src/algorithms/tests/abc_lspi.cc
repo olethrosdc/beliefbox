@@ -450,7 +450,8 @@ void RunTest(Options& options)
   training_rollouts.StartingDistributionSampling(options.n_training, -1);
 
   // start ABC-RL
-  ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
+  //ABCRL<G, TotalRewardStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
+  ABCRL<G, CumulativeFeaturesStatistic<Vector, int>, M, AbstractPolicy<Vector, int>, Vector, int> abcrl;
     
   // start UCT
   EvenGrid discretize(environment.StateLowerBound(),environment.StateUpperBound(),options.grid_uct);	
