@@ -545,7 +545,7 @@ void RunTest(Options& options)
 	action = mcts.PlanPolicy(state);
 	step++;
       } while(running && step <  horizon);
-      //logmsg("Sampled Episode = %d: Steps = %d, Total Reward = %f, Discounted Reward = %f\n",episode, step, total_reward, discounted_reward);
+      logmsg("Sampled Episode = %d: Steps = %d, Total Reward = %f, Discounted Reward = %f\n",episode, step, total_reward, discounted_reward);
       V_ABC_UCT += discounted_reward;
     }
     V_ABC_UCT /= (real) options.n_testing;
