@@ -74,7 +74,7 @@ struct Options
 	real lambda_uct; ///<  lambda mixing for uct
 	real stepsize_uct; ///< step size
 	int depth_uct; ///< maximum tree depth
-	int grid_uct; ///< grid utc
+	int grid_uct; ///< grid uct
 	Options(RandomNumberGenerator& rng_) :
 		gamma(0.99),
 		epsilon(1.0),
