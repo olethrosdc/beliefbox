@@ -77,9 +77,12 @@ void GaussianProcess::Observe(Vector& x, real y)
 }
 
 
-/// This implements functon space view of a GP
-///
-/// X has a number of columns equal to the amount of data.
+/** This implements functon space view of a GP */
+//
+// X has a number of columns equal to the amount of data.
+// 
+// This is an offline algorithm.
+//
 //void GaussianProcess::Observe(Matrix& X, Vector& y)
 //{
 //    int N = X.Columns();
@@ -105,6 +108,7 @@ void GaussianProcess::Observe(Matrix& x, Vector& y)
 	UpdateGaussianProcess();
 }
 
+/// This is an offline algorithm which creates the matrices on the fly.
 void GaussianProcess::Observe(std::vector<Vector>& x, std::vector<real>& y)
 {
 	int S = x.size();
@@ -118,6 +122,13 @@ void GaussianProcess::Observe(std::vector<Vector>& x, std::vector<real>& y)
 		Observe(X_new, Y_new);
 	}
 }
+
+
+ void GaussianProcess::AddObservation(const Vector& x, const real& y)
+ {
+	 Serror ("Not implemented\n");
+	 exit(-1);	 
+ }
 
 void GaussianProcess::UpdateGaussianProcess()
 {
