@@ -1255,7 +1255,7 @@ real Matrix::L1Norm() const
     real s = 0.0;
     for (int i=0; i<rows; ++i) {
         for (int j=0; j<columns; ++j) {
-            s += abs((*this)(i, j));
+	  s += std::abs((*this)(i, j));
         }
     }                                           
     return s;
