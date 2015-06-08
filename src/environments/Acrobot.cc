@@ -169,6 +169,7 @@ void Acrobot::Simulate(const int action)
 		state[1] = signum(state[1]) * M_PI;
 		state[3] = 0;
 	}
+
 	if (std::abs(state[0]) > M_PI) {
 		state[0] = signum(state[0]) * M_PI;
 		state[2] = 0;
