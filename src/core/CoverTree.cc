@@ -432,7 +432,7 @@ CoverTree::Node* CoverTree::Insert(const Vector& new_point,
   // The set of nodes 2^d-close to the new point
   CoverSet Q_next;
   // go through all the children and only add them if they are close
-  int max_next_level = -INF;
+  int max_next_level = std::numeric_limits<int>::min();
   for (int k=0; k<Q_i.Size(); ++k) {
     int n_children = Q_i.NChildren(k);
     for (int j=-1; j<n_children; ++j) {
@@ -523,7 +523,7 @@ CoverTree::Node* CoverTree::Insert(const Vector& new_point, const Vector& phi, c
   CoverSet Q_next;
 	
   // go through all the children and only add them if they are close
-  int max_next_level = -INF;
+  int max_next_level = std::numeric_limits<int>::min();
   for (int k=0; k<Q_i.Size(); ++k) {
     int n_children = Q_i.NChildren(k);
     for (int j=-1; j<n_children; ++j) {
