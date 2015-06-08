@@ -339,7 +339,7 @@ DiscreteHiddenMarkovModelStateBelief::DiscreteHiddenMarkovModelStateBelief(Discr
 DiscreteHiddenMarkovModelStateBelief::DiscreteHiddenMarkovModelStateBelief(int n_states_) : B(n_states_), n_states(n_states_)
 {
 }
-DiscreteHiddenMarkovModelStateBelief::DiscreteHiddenMarkovModelStateBelief(int n_states_, int start_state) : B(n_states), n_states(n_states_)
+DiscreteHiddenMarkovModelStateBelief::DiscreteHiddenMarkovModelStateBelief(int n_states_, int start_state) : B(n_states_), n_states(n_states_)
 {
 }
 DiscreteHiddenMarkovModelStateBelief::DiscreteHiddenMarkovModelStateBelief(int n_states_, MultinomialDistribution& initial_distribution) : B(initial_distribution), n_states(n_states_)

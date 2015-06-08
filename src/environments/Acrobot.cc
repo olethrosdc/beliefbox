@@ -155,21 +155,21 @@ void Acrobot::Simulate(const int action)
 		state[0] += state[2] * parameters.dt;
 		state[1] += state[3] * parameters.dt;
 	}
-	if (abs(state[2]) > parameters.maxTheta1Dot) {
+	if (std::abs(state[2]) > parameters.maxTheta1Dot) {
 		state[2] = signum(state[2]) * parameters.maxTheta1Dot;
 	}
 	
-	if (abs(state[3]) > parameters.maxTheta2Dot) {
+	if (std::abs(state[3]) > parameters.maxTheta2Dot) {
 		state[3] = signum(state[3]) * parameters.maxTheta2Dot;
 	}
 	/* Put a hard constraint on the Acrobot physics, thetas MUST be in [-PI,+PI]
 	 * if they reach a top then angular velocity becomes zero
 	 */
-	if (abs(state[1]) > M_PI) {
+	if (std::abs(state[1]) > M_PI) {
 		state[1] = signum(state[1]) * M_PI;
 		state[3] = 0;
 	}
-	if (abs(state[0]) > M_PI) {
+	if (std::abs(state[0]) > M_PI) {
 		state[0] = signum(state[0]) * M_PI;
 		state[2] = 0;
 	}
