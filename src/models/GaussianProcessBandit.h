@@ -27,11 +27,11 @@ class GaussianProcessBandit
 {
 private: 
 	SparseGaussianProcess gp;
-	Vector gp_scale_length; //scaling for kernel
-	Vector gp_scale_length_dic; //scaling for dictionary
-	real gp_noise_var;
-	real gp_sig_var;
-	real gp_threshold; 
+	//Vector gp_scale_length; //scaling for kernel
+	//Vector gp_scale_length_dic; //scaling for dictionary
+	//real gp_noise_var;
+	//real gp_sig_var;
+	//real gp_threshold; 
 	
 	real delta;
 	
@@ -40,8 +40,8 @@ private:
 	real beta();
 	
 public:
-	GaussianProcessBandit(Vector gp_scale_length, Vector gp_scale_length_dic, 
-		real gp_noise_var, real gp_sig_var, real gp_threshold, real delta);
+	GaussianProcessBandit(Vector gp_scale_length_, Vector gp_scale_length_dic_, 
+		real gp_noise_var_, real gp_sig_var_, real gp_threshold_, real delta_);
 	~GaussianProcessBandit();
 	int predict(const Matrix& X_, Vector& predictionVector); 
 		//predicts the next index to test;

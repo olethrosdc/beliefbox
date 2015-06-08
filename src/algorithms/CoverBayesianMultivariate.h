@@ -11,7 +11,7 @@
  ***************************************************************************/
 
 #ifndef COVER_BAYESIAN_MULTIVARIATE_H
-#define C0VER_BAYESIAN_MULTIVARIATE_H
+#define COVER_BAYESIAN_MULTIVARIATE_H
 
 #include "DiscretePolicy.h"
 #include "BasisSet.h"
