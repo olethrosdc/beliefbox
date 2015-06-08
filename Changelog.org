@@ -1,0 +1,12 @@
+* Compiler issues
+
+** gcc sometimes complains about linking 
+
+/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../lib/libgsl.so: undefined reference to `cblas_ztrsv'
+/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../lib/libgsl.so: undefined reference to `cblas_scasum'
+
+* Critical bugs
+
+** gcc also complains about setting int x = - std::numeric_limits<real>::infinity();
+
+Possibly fixed by changing to std::numeric_limits<int>::min();
