@@ -20,39 +20,39 @@
 /// Softmax an array \f$p_i = e^{\beta Q_i}/\sum_j^n{e^{\beta Q_i}}\f$
 void SoftMax (int n, real* Q, real* p, real beta)
 {
-    real sum = 0.0;
+  real sum = 0.0;
 
-    // Necessary for avoiding infinities.
-    int arg_max = ArgMax(n, Q);
-    real max = Q[arg_max];
+  // Necessary for avoiding infinities.
+  int arg_max = ArgMax(n, Q);
+  real max = Q[arg_max];
 
-    for (int i=0; i<n; i++) {
-        p[i] = exp (beta * (Q[i]-max));
-        sum += p[i];
-    }
-    sum = 1.0/sum;
-    for (int i=0; i<n; i++) {
-        p[i] *= sum;
-    }
+  for (int i=0; i<n; i++) {
+    p[i] = exp (beta * (Q[i]-max));
+    sum += p[i];
+  }
+  sum = 1.0/sum;
+  for (int i=0; i<n; i++) {
+    p[i] *= sum;
+  }
 }
     
 /// Softmin an array \f$p_i = e^{-\beta Q_i}/\sum_j^n{e^{-\beta Q_i}}\f$
 void SoftMin (int n, real* Q, real* p, real beta)
 {
-    real sum = 0.0;
+  real sum = 0.0;
 
-    // Necessary for avoiding infinities.
-    int arg_min = ArgMin(n, Q);
-    real min = Q[arg_min];
+  // Necessary for avoiding infinities.
+  int arg_min = ArgMin(n, Q);
+  real min = Q[arg_min];
 
-    for (int i=0; i<n; i++) {
-        p[i] = exp (-beta * (Q[i]-min));
-        sum += p[i];
-    }
-    sum = 1.0/sum;
-    for (int i=0; i<n; i++) {
-        p[i] *= sum;
-    }
+  for (int i=0; i<n; i++) {
+    p[i] = exp (-beta * (Q[i]-min));
+    sum += p[i];
+  }
+  sum = 1.0/sum;
+  for (int i=0; i<n; i++) {
+    p[i] *= sum;
+  }
 }
     
     
@@ -65,76 +65,76 @@ void SoftMin (int n, real* Q, real* p, real beta)
 /// It is safe for src and dst to point at the same vector.
 void Normalise (const real* src, real* dst, const int n_elements)
 {
-	printf ("!");
-    real sum = 0;
+  printf ("!");
+  real sum = 0;
+  for (int i=0; i<n_elements; i++) {
+    sum += src[i];
+  }
+  if (sum==0) {
     for (int i=0; i<n_elements; i++) {
-        sum += src[i];
+      dst[i] = src[i];
     }
-    if (sum==0) {
-        for (int i=0; i<n_elements; i++) {
-            dst[i] = src[i];
-        }
-        return;
-    }
-    assert(sum>0);
-	real isum = 1.0 / sum;
-    for (int i=0; i<n_elements; i++) {
-        dst[i] = src[i] * isum;
-    }
+    return;
+  }
+  assert(sum>0);
+  real isum = 1.0 / sum;
+  for (int i=0; i<n_elements; i++) {
+    dst[i] = src[i] * isum;
+  }
 }
 
 /// Return \f$\sum_i^n |a_i-b_i|^2\f$
 real SquareNorm (real* a, real* b, int n)
 {
-    real sum = 0;
-    for (int i=0; i<n; i++) {
-        register real d = (*a++) - (*b++);
-        sum += d*d;
-    }
-    return sum;
+  real sum = 0;
+  for (int i=0; i<n; i++) {
+    real d = (*a++) - (*b++);
+    sum += d*d;
+  }
+  return sum;
 }
 
 /// Return \f$\left(\sum_i^n |a_i-b_i|^2\right)^{1/2}\f$
 real EuclideanNorm (real* a, real* b, int n)
 {
-    register real sum = 0;
-    for (int i=0; i<n; i++) {
-        register real d = (*a++) - (*b++);
-        sum += d*d;
-    }
-    return sqrt(sum);
+  real sum = 0;
+  for (int i=0; i<n; i++) {
+    real d = (*a++) - (*b++);
+    sum += d*d;
+  }
+  return sqrt(sum);
 }
 
 /// Return \f$\left(\sum_i^n |a_i-b_i|^p\right)^{1/p}\f$
 real LNorm (real* a, real* b, int n, real p)
 {
-    real sum = 0;
-    for (int i=0; i<n; i++) {
-        register real d = (*a++) - (*b++);
-        sum += pow(d,p);
-    }
-    return pow(sum,1.0/p);
+  real sum = 0;
+  for (int i=0; i<n; i++) {
+    real d = (*a++) - (*b++);
+    sum += pow(d,p);
+  }
+  return pow(sum,1.0/p);
 }
 
 /// Return \f$\sum_i^n |a_i-b_i|\f$
 real L1Norm (real* a, real* b, int n)
 {
-    real sum = 0;
-    for (int i=0; i<n; i++) {
-        register real d = (*a++) - (*b++);
-        sum += fabs(d);
-    }
-    return sum;
+  real sum = 0;
+  for (int i=0; i<n; i++) {
+    real d = (*a++) - (*b++);
+    sum += fabs(d);
+  }
+  return sum;
 }
 
 /// Return \f$\sum_i^n a_i\f$
 real Sum (real* a, int n)
 {
-    real sum = 0;
-    for (register int i=0; i<n; i++) {
-        sum += *a++;
-    }
-    return sum;
+  real sum = 0;
+  for ( int i=0; i<n; i++) {
+    sum += *a++;
+  }
+  return sum;
 }
 
 
@@ -146,39 +146,39 @@ real Sum (real* a, int n)
 
 real logAdd(real x, real y)
 {
-    if (x < y) {
-        real tmp = x;
-        x = y;
-        y = tmp;
-    }
+  if (x < y) {
+    real tmp = x;
+    x = y;
+    y = tmp;
+  }
 
-    real minusdif = y - x;
+  real minusdif = y - x;
 #ifdef DEBUG
-    if (std::isnan(minusdif))
-        fprintf (stderr, "LogAdd: minusdif (%f) y (%f) or x (%f) is nan",minusdif,y,x);
+  if (std::isnan(minusdif))
+    fprintf (stderr, "LogAdd: minusdif (%f) y (%f) or x (%f) is nan",minusdif,y,x);
 #endif
-    if (minusdif < MINUS_LOG_THRESHOLD)
-        return x;
-    else
-        return x + log1p(exp(minusdif));
+  if (minusdif < MINUS_LOG_THRESHOLD)
+    return x;
+  else
+    return x + log1p(exp(minusdif));
 }
 
 real logSub(real x, real y)
 {
-    if (x < y)
-        fprintf(stderr, "LogSub: x (%f) should be greater than y (%f)", x, y);
+  if (x < y)
+    fprintf(stderr, "LogSub: x (%f) should be greater than y (%f)", x, y);
 
-    real minusdif = y - x;
+  real minusdif = y - x;
 #ifdef DEBUG
-    if (std::isnan(minusdif))
-        fprintf(stderr, "LogSub: minusdif (%f) y (%f) or x (%f) is nan",minusdif,y,x);
+  if (std::isnan(minusdif))
+    fprintf(stderr, "LogSub: minusdif (%f) y (%f) or x (%f) is nan",minusdif,y,x);
 #endif
-    if (x == y)
-        return LOG_ZERO;
-    else if (minusdif < MINUS_LOG_THRESHOLD)
-        return x;
-    else
-        return x + log1p(-exp(minusdif));
+  if (x == y)
+    return LOG_ZERO;
+  else if (minusdif < MINUS_LOG_THRESHOLD)
+    return x;
+  else
+    return x + log1p(-exp(minusdif));
 }
 
 
