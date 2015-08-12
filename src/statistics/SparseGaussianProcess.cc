@@ -55,7 +55,7 @@ Vector SparseGaussianProcess::generate()
     //return Vector();
 }    
 
-real SparseGaussianProcess::pdf(Vector& x, real y)
+real SparseGaussianProcess::pdf(const Vector& x, real y)
 {
     return 0.0;
 }
@@ -160,7 +160,7 @@ real SparseGaussianProcess::GeneratePredictionKernel(const Vector& k)
 	}
 }
 
-void SparseGaussianProcess::Prediction(Vector& x, real& mean, real& var)
+void SparseGaussianProcess::Prediction(const Vector& x, real& mean, real& var)
 {
 	Vector k = Kernel(x);
 	mean     = PredictiveMean(k);

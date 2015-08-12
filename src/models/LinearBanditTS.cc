@@ -30,6 +30,7 @@
 	MultivariateNormal mvn = MultivariateNormal(meanHat,
 												pow(V(),2)*B.Inverse());
 	Vector meanSample = mvn.generate();
+	real v;
 	for(int i=0;i<N;i++) {
 		predictionVector(i) = Product(X_.getRow(i),meanSample);
 	}
