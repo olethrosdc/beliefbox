@@ -418,7 +418,6 @@ int main (int argc, char** argv)
 			exit(-1);
         }
 
-
         // making sure the number of states & actions is correct
         n_states  = environment->getNStates();
         n_actions = environment->getNActions();
