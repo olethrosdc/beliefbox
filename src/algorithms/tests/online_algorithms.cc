@@ -64,6 +64,7 @@
 
 // -- Usual includes -- //
 #include <cstring>
+#include <string>
 #include <getopt.h>
 
 struct EpisodeStatistics
@@ -309,7 +310,8 @@ int main (int argc, char** argv)
     rng = (RandomNumberGenerator*) &mersenne_twister;
 
     if (seed_filename) {
-        RandomNumberFile rnf(seed_filename);
+		std::string str = std::string(seed_filename);
+        RandomNumberFile rnf(str);
         rnf.manualSeed(seed);
         seed = rnf.random();
     }

@@ -15,7 +15,7 @@
 #include <cstdlib>
 #include <cstdio>
 
-RandomNumberFile::RandomNumberFile(std::string filename)
+RandomNumberFile::RandomNumberFile(const std::string & filename)
 {
     FILE* fin = fopen (filename.c_str(), "r");
     if (!fin) {

@@ -21,7 +21,7 @@ protected:
     std::vector<ulong> pool;
     uint position;
 public:
-    RandomNumberFile(std::string filename);
+    RandomNumberFile(const std::string & filename);
     virtual ~RandomNumberFile() {}
 
     /// Initializes the random number generator with the computer clock.
