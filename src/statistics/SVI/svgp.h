@@ -50,11 +50,14 @@ class SVGP
 		real KL;
 		real L;
 
+        //preferably these could be done in minibatches but only with single examples for now
+        //the example is repeated <subsamples> times as in Hoffman et al [2013]
+        local_update(const Matrix& X_samples, const Vector& Y_samples); //updating Z (local/latent variables) unsure how to do this 
+        global_update(const Matrix& X_samples, const Vector& Y_samples); //updating m, S (which parametrizes q(u) and in turn gives global param u)
+
 	public:
 		SVGP(Matrix& X, Vector& Y, Matrix& Z, real noise_var, real sig_var, Vector scale_length);
 		//SVGP(Matrix& X, Vector& Y, Vector& Z);
-		virtual void optimize_Z(); //optimize the positioning of the inducing inputs using likelihood
-		virtual void optimize_svi(); //optimize the variational distribution parameters S, m
 		virtual Matrix Kernel(const Matrix& A, const Matrix& B);
 		virtual void Prediction(const Vector& x, real& mean, real& var);
 		virtual void UpdateGaussianProcess(); //update 

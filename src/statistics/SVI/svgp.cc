@@ -126,27 +126,25 @@ real SVGP::LogLikelihood() {
 	L -= KL;
 	return L;
 }
-void SVGP::optimize_Z() {
-	//TODO
+//OK, here is where I'm a bit confused on how to update the inducing inputs Z
+void SVGP::local_update(const Matrix& X_samples, const Vector& Y_samples) {
+    //here Z should be updated somehow..
 }
-void SVGP::optimize_svi() {
+void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
+    Matrix Kmn_samples = Kernel(M,X_samples);
 
 	Vector theta_1 = S.Inverse() * m;
 	Matrix theta_2 = -0.5 * S.Inverse();
 
-	Vector tmpResult = Beta * invKmm * Kmn * Y - theta_1;
+	Vector tmpResult = Beta * invKmm * Kmn_samples * Y_samples - theta_1;
 	tmpResult *= l;
 	tmpResult += theta_1;
 	theta_1 = tmpResult;
 	theta_2 = theta_2 + l * (-1/2 * q_prec + 1/2 * theta_2);
-	theta_2.print(f);
 
 
 	S = theta_2.Inverse();
-	S *= -2;
-
-	S.print(f);
-
+	S *= -2.0;
 
 	//LUDecomp and LUSolve
 
@@ -186,9 +184,7 @@ void SVGP::optimize_svi() {
 	gsl_vector_free (x);
 	delete [] a_data;
 	delete [] b_data;
-	
 
-	//
 }
 void SVGP::AddObservation(const std::vector<Vector>& x, const std::vector<real>& y) {
 	//assert(x[0].Size()==d);
