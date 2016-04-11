@@ -1,11 +1,36 @@
 #include "svgp.h"
-#include "real.h"
-#include "math.h"
-#include <random>
-#include "MultivariateNormal.h"
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_multimin.h>
+#include <gsl/gsl_blas.h>
 
-SVGP::SVGP(Matrix& X_, Vector& Y_, Matrix& Z_, real noise_var_, real sig_var_, Vector scale_length_)
+SVGP::SVGP(const Matrix& X_, const Vector& Y_, const Matrix& Z_, double noise_var_, double sig_var_, const Vector& scale_length_)
+{
+	Beta = 1/(noise_var*noise_var);
+	N = X_.Rows();
+	d = X_.Columns();
+	num_inducing = Z_.Rows();
+
+	assert(d==Z_.Columns());
+	assert(N==Y_.Size());
+	assert(d==scale_length_.Size());
+
+	X = gsl_matrix_alloc (N,d);
+	Y = gsl_vector_alloc (N);
+	Z = gsl_matrix_alloc (num_inducing,d);
+	scale_length = gsl_vector_alloc (d);
+
+	for(int i = 0;i<N;i++) {
+		for(int j = 0;j<d;j++) {
+			gsl_matrix_set(X,i,j,X_(i,j));
+			gsl_matrix_set(Z,i,j,Z_(i,j));
+		}
+		gsl_vector_set(Y,i,Y_(i));
+		gsl_vector_set(scale_length,i,scale_length_(i));
+	}
+	FullUpdateGaussianProcess();
+}
+SVGP::SVGP(gsl_matrix * X_, gsl_vector * Y_, gsl_matrix * Z_, double noise_var_, double sig_var_, gsl_vector * scale_length_)
+	//TODO make sure data is copied
 	: X(X_),
 	  Y(Y_),
 	  Z(Z_),
@@ -14,41 +39,94 @@ SVGP::SVGP(Matrix& X_, Vector& Y_, Matrix& Z_, real noise_var_, real sig_var_, V
 	  scale_length(scale_length_)
 {
 	Beta = 1/(noise_var*noise_var);
-	N = X.Rows();
-	d = X.Columns();
+	N = X->size1;
+	d = X->size2;
+	num_inducing = Z->size1;
+
+	assert(d==Z->size2);
+	assert(N==Y->size);
+	assert(d==scale_length->size);
+
 	FullUpdateGaussianProcess();
 }
-Matrix SVGP::Kernel(const Matrix& A, const Matrix& B) {
-	assert(A.Columns()==B.Columns());
+void SVGP::init() {
+	Kmm = gsl_matrix_alloc(num_inducing,num_inducing);
+	Kmn = gsl_matrix_alloc(num_inducing,N);
+	Knm = gsl_matrix_alloc(N,num_inducing);
+	Knn = gsl_matrix_alloc(N,N);
+	invKmm = gsl_matrix_alloc(num_inducing,num_inducing);
+	K_tilde = gsl_matrix_alloc(N,N);
 
-	int N_ = A.Rows();
-	int M_ = B.Rows();
+	q_var = gsl_matrix_alloc(num_inducing,num_inducing);
+	q_mean = gsl_vector_alloc(num_inducing);
+	p_var = gsl_matrix_alloc(num_inducing,num_inducing);
+	p_mean = gsl_vector_alloc(num_inducing);
 
-	Matrix cov(N_,M_);
+	S = gsl_matrix_alloc(num_inducing,num_inducing);
+	m = gsl_vector_alloc(num_inducing);
 
-	real extra_noise = 0;
+	u = gsl_vector_alloc(num_inducing);
+}
+void SVGP::Clear() {
+	gsl_matrix_free(Kmm);
+	gsl_matrix_free(Kmn);
+	gsl_matrix_free(Knm);
+	gsl_matrix_free(Knn);
+	gsl_matrix_free(invKmm);
+	gsl_matrix_free(K_tilde);
+
+	gsl_matrix_free(q_var);
+	gsl_vector_free(q_mean);
+	gsl_matrix_free(p_var);
+	gsl_vector_free(p_mean);
+
+	gsl_matrix_free(S);
+	gsl_vector_free(m);
+
+	gsl_vector_free(u);
+}
+void SVGP::Kernel(const gsl_matrix * A, const gsl_matrix * B, gsl_matrix * cov) {
+	assert(A->size2==B->size2);
+
+	int d_ = A->size2;
+	int N_ = A->size1;
+	int M_ = B->size1;
+
+	cov = gsl_matrix_alloc (N_, M_);
+
+	double extra_noise = 0;
 	if(N_ == M_)
 		extra_noise = noise_var*noise_var;
 
-	real sig_noise = sig_var*sig_var;
+	double sig_noise = sig_var*sig_var;
 	for(int i=0; i<M_; ++i) {
-		Vector x = B.getRow(i);
+		gsl_vector * x = gsl_vector_alloc (d_);
+		gsl_matrix_get_row(x,B,i);
 		for(int j=0; j<N_; j++) {
-			real delta = ((x - A.getRow(j))/scale_length).SquareNorm();
+			gsl_vector * A_j = gsl_vector_alloc (d_);
+			gsl_matrix_get_row(A_j,A,j);
+			gsl_vector * x_ = gsl_vector_alloc (d_);
+			gsl_vector_memcpy(x_,x);
+			gsl_vector_sub(x_,A_j);
+			gsl_vector_div(x_,scale_length);
+			double delta = gsl_blas_dnrm2(x_);
 			delta = sig_noise*exp(-0.5*delta);
 			if(i == j) 
 				delta += extra_noise;
-			cov(j,i) = delta;
+			gsl_matrix_set(cov,j,i,delta);
+			gsl_vector_free(x_);
 			//cov(i,j) = delta;
 		}
+		gsl_vector_free(x);
 	}
-	return cov;
 }
 
 void SVGP::UpdateGaussianProcess() {
-	Kmm = Kernel(Z,Z);
-	Knm = Kernel(X,Z);
-	Kmn = Kernel(Z,X);
+	gsl_linalg_LU_decomp(A, p, signum);
+	gsl_linalg_LU_invert(A, p, invA);
+	Kernel(Z,Z,Kmm);
+	Kernel(X,Z,Knm);
+	Kernel(Z,X,Kmn);
 
 	invKmm = Kmm.Inverse();
 	K_tilde = Knn - Knm * invKmm * Kmn;
@@ -69,7 +147,7 @@ void SVGP::FullUpdateGaussianProcess() {
 
 	q_prec = Beta * invKmm * Kmn * Knm * invKmm + invKmm;
 	q_var = q_prec.Inverse();
-	Matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm * Kmn;
+	gsl_matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm * Kmn;
 	q_mean = q_mean_tmp * Y;
 
 	S = q_var;
@@ -77,66 +155,125 @@ void SVGP::FullUpdateGaussianProcess() {
 
 	u = MultivariateNormal(m,S).generate();
 }
-void SVGP::Prediction(const Vector& x, real& mean, real& var) {
-	Matrix tmp(x);
-	Vector Kx = Kernel(tmp,Z).getRow(0);
+void SVGP::Prediction(const gsl_vector& x, double& mean, double& var) {
+	gsl_matrix tmp(x);
+	gsl_vector Kx = Kernel(tmp,Z).getRow(0);
 
 	mean = Product(Kx,invKmm * u);
 	var = sig_var*sig_var - Product(Kx,invKmm * Kx);
 }
-real SVGP::LogLikelihood() {
+double SVGP::LogLikelihood() {
 	//D_KL(q(u)||p(u))
 
 	q_prec = Beta * invKmm * Kmn * Knm * invKmm + invKmm;
 	q_var = q_prec.Inverse();
 
-	Matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm * Kmn;
+	gsl_matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm * Kmn;
 	q_mean = q_mean_tmp * Y;
 
 	p_var = Kmm;
-	p_mean = Vector::Null(q_mean.Size());
+	p_mean = gsl_vector::Null(q_mean.Size());
 
-	Matrix inv_p_var = p_var.Inverse();
-	real lhs = (inv_p_var * q_prec).tr();
-	Vector A = inv_p_var * (p_mean - q_mean);
-	real B = Product((p_mean - q_mean),A);
+	gsl_matrix inv_p_var = p_var.Inverse();
+	double lhs = (inv_p_var * q_prec).tr();
+	gsl_vector A = inv_p_var * (p_mean - q_mean);
+	double B = Product((p_mean - q_mean),A);
 	KL = lhs + B - N + log(p_var.det()/q_prec.det());
 	KL *= 0.5;
 
 	L = 0;
 	for(int i=0;i<N;i++) {
-		Vector k_i = Kmn.getColumn(i);
-		Matrix outer = OuterProduct(k_i,k_i);
+		gsl_vector k_i = Kmn.getColumn(i);
+		gsl_matrix outer = OuterProduct(k_i,k_i);
 
-		Matrix lambda_i = Beta * invKmm * outer * invKmm;
-		real k_ii = K_tilde(i,i);
-		Vector rhs = invKmm * q_mean;
-		real pdfmean = Product(k_i,rhs);
-		real pdfvar = 1/Beta;
-		real pdfcond = Y(i);
+		gsl_matrix lambda_i = Beta * invKmm * outer * invKmm;
+		double k_ii = K_tilde(i,i);
+		gsl_vector rhs = invKmm * q_mean;
+		double pdfmean = Product(k_i,rhs);
+		double pdfvar = 1/Beta;
+		double pdfcond = Y(i);
 
-		real pdf = (real) 1/(pdfvar * sqrt(2 * M_PI));
-		real insideexp = (pdfcond-pdfmean)*(pdfcond-pdfmean)/(2*pdfvar*pdfvar);
-		real expon = exp(-(pdfcond-pdfmean)*(pdfcond-pdfmean)/(2*pdfvar*pdfvar));
+		double pdf = (double) 1/(pdfvar * sqrt(2 * M_PI));
+		double expon = exp(-(pdfcond-pdfmean)*(pdfcond-pdfmean)/(2*pdfvar*pdfvar));
 		pdf *= expon;
-		pdf = (real) log(pdf);
+		pdf = (double) log(pdf);
 		
 		L += pdf - 1/2 * Beta * k_ii - 1/2 * (S * lambda_i).tr();
 	}
 	L -= KL;
 	return L;
 }
-//OK, here is where I'm a bit confused on how to update the inducing inputs Z
-void SVGP::local_update(const Matrix& X_samples, const Vector& Y_samples) {
-    //here Z should be updated somehow..
+
+double SVGP::min_Likelihood(double* data) {
+	gsl_matrix * Z_ = gsl_matrix_alloc (num_inducing, d);
+	gsl_matrix * q_prec_ = gsl_matrix_alloc (num_inducing, num_inducing);
+	gsl_matrix * invKmm_ = gsl_matrix_alloc (num_inducing, num_inducing);
+	gsl_matrix * Kmn_ = gsl_matrix_alloc (num_inducing, num_inducing);
+	Z_->data = data;
 }
-void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
-    Matrix Kmn_samples = Kernel(M,X_samples);
+//OK, here is where I'm a bit confused on how to update the inducing inputs Z
+void SVGP::local_update(const gsl_matrix& X_samples, const gsl_vector& Y_samples) {
+  /*
+  size_t iter = 0;
+  int status;
 
-	Vector theta_1 = S.Inverse() * m;
-	Matrix theta_2 = -0.5 * S.Inverse();
+  const gsl_multimin_fdfminimizer_type *T;
+  gsl_multimin_fdfminimizer *s;
+  double par[2] = { 1.0, 2.0 };
 
-	Vector tmpResult = Beta * invKmm * Kmn_samples * Y_samples - theta_1;
+  gsl_vector *x;
+  gsl_multimin_function_fdf my_func;
+
+  my_func.f = &my_f;
+  my_func.df = &my_df;
+  my_func.fdf = &my_fdf;
+  my_func.n = 2;
+  my_func.params = &par;
+
+  Starting point, x = (5,7) 
+  x = gsl_vector_alloc (2);
+  gsl_vector_set (x, 0, 5.0);
+  gsl_vector_set (x, 1, 7.0);
+
+  T = gsl_multimin_fminimizer_nmsimplex;
+  s = gsl_multimin_fdfminimizer_alloc (T, 2);
+
+  gsl_multimin_fdfminimizer_set (s, &my_func, x, 0.01, 1e-4);
+
+  do
+    {
+      iter++;
+      status = gsl_multimin_fdfminimizer_iterate (s);
+
+      if (status)
+        break;
+
+      status = gsl_multimin_test_gradient (s->gradient, 1e-3);
+
+      if (status == GSL_SUCCESS)
+        printf ("Minimum found at:\n");
+
+      printf ("%5d %.5f %.5f %10.5f\n", iter,
+              gsl_vector_get (s->x, 0), 
+              gsl_vector_get (s->x, 1), 
+              s->f);
+
+    }
+  while (status == GSL_CONTINUE && iter < 100);
+
+  gsl_multimin_fdfminimizer_free (s);
+  gsl_vector_free (x);
+
+  return 0;
+  */
+}
+void SVGP::global_update(const gsl_matrix& X_samples, const gsl_vector& Y_samples) {
+    gsl_matrix Kmn_samples = Kernel(Z,X_samples);
+
+	gsl_vector theta_1 = S.Inverse() * m;
+	gsl_matrix theta_2 = -0.5 * S.Inverse();
+
+	gsl_vector tmpResult = Beta * invKmm * Kmn_samples * Y_samples - theta_1;
 	tmpResult *= l;
 	tmpResult += theta_1;
 	theta_1 = tmpResult;
@@ -148,7 +285,7 @@ void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 
 	//LUDecomp and LUSolve
 
-	Matrix A_ = S.Inverse();
+	gsl_matrix A_ = S.Inverse();
 	int size = A_.Rows();
 	double* a_data = new double[size*size];
 	double* b_data = new double[size];
@@ -172,13 +309,13 @@ void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 
 	gsl_permutation * p = gsl_permutation_alloc (size);
 
-	gsl_linalg_LU_decomp (&m_.matrix, p, &s);
+	gsl_linalg_LU_decomp (&m_.gsl_matrix, p, &s);
 
-	gsl_linalg_LU_solve (&m_.matrix, p, &b.vector, x);
+	gsl_linalg_LU_solve (&m_.gsl_matrix, p, &b.gsl_vector, x);
 
 	gsl_permutation_free (p);
 
-	Vector m = Vector::Null(size);;
+	gsl_vector m = gsl_vector::Null(size);;
 	m.x = x->data;
 
 	gsl_vector_free (x);
@@ -186,19 +323,16 @@ void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 	delete [] b_data;
 
 }
-void SVGP::AddObservation(const std::vector<Vector>& x, const std::vector<real>& y) {
+void SVGP::AddObservation(const std::gsl_vector<gsl_vector>& x, const std::gsl_vector<double>& y) {
 	//assert(x[0].Size()==d);
 	for(int i = 0;i<x.size();i++) {
-		Vector x_ = x[i];
-		real y_ = y[i];
+		gsl_vector x_ = x[i];
+		double y_ = y[i];
 		AddObservation(x_,y_);
 	}
 	FullUpdateGaussianProcess();
 }
-void SVGP::AddObservation(const Vector& x, const real& y) {
+void SVGP::AddObservation(const gsl_vector& x, const double& y) {
 	X.AddRow(x);
 	Y.AddElement(y);
-}
-void SVGP::Clear() {
-	//TODO
 }

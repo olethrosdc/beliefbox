@@ -3,68 +3,75 @@
 
 #define M_PI 3.14159265358979323846
 
+#include "math.h"
 #include "Vector.h"
 #include "Matrix.h"
+
+//TODO 
+//Change so that svgp uses gsl internally
 
 class SVGP
 	{
 	protected:
-		Matrix X; ///< Samples (N x M)
-		Vector Y; ///< Output (N x 1)
+		gsl_matrix * X; ///< Samples (N x d)
+		gsl_vector * Y; ///< Output (N x 1)
 		int N; ///< Number of samples
 		int d;
 
 		// Kernel parameters
-		real noise_var;
-		real sig_var;
-		Vector scale_length;
+		double noise_var;
+		double sig_var;
+		gsl_vector * scale_length;
 		
 		/// SVI parameters
-		int num_inducing; ///< inducing inputs (J)
-		Matrix Z; ///< Hidden variables (N x J)
-		Vector u; ///< Global variables (N x 1) (targets)
+		int num_inducing; ///< inducing inputs (m)
+		gsl_matrix * Z; ///< Hidden variables (m x d)
+		gsl_vector * u; ///< Global variables (m x 1) (targets)
 
 		/// SVI fields
-		Vector q_mean;
-		Matrix q_var;
-		Matrix q_prec;
+		gsl_vector * q_mean;
+		gsl_matrix * q_var;
+		gsl_matrix * q_prec;
 
 		// variational distribution parametrization
-		Matrix S;
-		Vector m;
+		gsl_matrix * S;
+		gsl_vector * m;
 
-		real l; //step length
+		double l; //step length
 		int subsamples; //not currently used.. but should be
 
-		Vector p_mean;
-		Matrix p_var;
+		gsl_vector * p_mean;
+		gsl_matrix * p_var;
 
-		Matrix Kmm;
-		Matrix Knm;
-		Matrix Kmn;
-		Matrix Knn;
-		Matrix invKmm;
-		Matrix K_tilde;
+		gsl_matrix * Kmm;
+		gsl_matrix * Knm;
+		gsl_matrix * Kmn;
+		gsl_matrix * Knn;
+		gsl_matrix * invKmm;
+		gsl_matrix * K_tilde;
 
-		real Beta;
-		real KL;
-		real L;
+		double Beta; //noise precision
+		double KL; //KL divergence
+		double L; //likelihood
 
         //preferably these could be done in minibatches but only with single examples for now
         //the example is repeated <subsamples> times as in Hoffman et al [2013]
-        local_update(const Matrix& X_samples, const Vector& Y_samples); //updating Z (local/latent variables) unsure how to do this 
-        global_update(const Matrix& X_samples, const Vector& Y_samples); //updating m, S (which parametrizes q(u) and in turn gives global param u)
+		virtual void init();
+        virtual void local_update(const gsl_matrix *& X_samples, const gsl_vector *& Y_samples); //updating Z (local/latent variables) unsure how to do this 
+        virtual void global_update(const gsl_matrix *& X_samples, const gsl_vector *& Y_samples); //updating m, S (which parametrizes q(u) and in turn gives global param u)
+		virtual double min_Likelihood(double* data); //to be used as an objective function to minimize likelihood given some Z*
+		virtual void Kernel(const gsl_matrix * A, const gsl_matrix * B, gsl_matrix * cov); 
 
 	public:
-		SVGP(Matrix& X, Vector& Y, Matrix& Z, real noise_var, real sig_var, Vector scale_length);
-		//SVGP(Matrix& X, Vector& Y, Vector& Z);
-		virtual Matrix Kernel(const Matrix& A, const Matrix& B);
-		virtual void Prediction(const Vector& x, real& mean, real& var);
+		SVGP(const Matrix& X, const Vector& Y, const Matrix& Z, double noise_var, double sig_var, const Vector& scale_length);
+		SVGP(gsl_matrix * X, gsl_vector * Y, gsl_matrix * Z, double noise_var, double sig_var, gsl_vector * scale_length);
+		//SVGP(gsl_matrix *& X, gsl_vector *& Y, gsl_vector *& Z);
+		virtual void Prediction(const gsl_vector * x, double mean, double var);
 		virtual void UpdateGaussianProcess(); //update 
 		virtual void FullUpdateGaussianProcess();
-		virtual real LogLikelihood();
-		virtual void AddObservation(const Vector& x, const real& y);
-		virtual void AddObservation(const std::vector<Vector>& x, const std::vector<real>& y);
+		virtual double LogLikelihood();
+		virtual void AddObservation(const gsl_vector * x, const double& y);
+		virtual void AddObservation(const std::vector<gsl_vector *>& x, const std::vector<double>& y);
 		virtual void Clear();
 
 };
