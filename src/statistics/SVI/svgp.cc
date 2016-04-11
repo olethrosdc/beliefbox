@@ -2,6 +2,9 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_blas.h>
+#include <gsl/gsl_cblas.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 
 SVGP::SVGP(const Matrix& X_, const Vector& Y_, const Matrix& Z_, double noise_var_, double sig_var_, const Vector& scale_length_)
 {
@@ -84,6 +87,11 @@ void SVGP::Clear() {
 	gsl_vector_free(m);
 
 	gsl_vector_free(u);
+
+	gsl_matrix_free(X);
+	gsl_vector_free(Y);
+	gsl_matrix_free(Z);
+	gsl_vector_free(scale_length);
 }
 void SVGP::Kernel(const gsl_matrix * A, const gsl_matrix * B, gsl_matrix * cov) {
 	assert(A->size2==B->size2);
@@ -122,45 +130,100 @@ void SVGP::Kernel(const gsl_matrix * A, const gsl_matrix * B, gsl_matrix * cov) 
 }
 
 void SVGP::UpdateGaussianProcess() {
-	gsl_linalg_LU_decomp(A, p, signum);
-	gsl_linalg_LU_invert(A, p, invA);
+
 	Kernel(Z,Z,Kmm);
 	Kernel(X,Z,Knm);
 	Kernel(Z,X,Kmn);
 
-	invKmm = Kmm.Inverse();
-	K_tilde = Knn - Knm * invKmm * Kmn;
+	/* K_tilde = Knn - Knm * invKmm * Kmn; */
 
-	u = MultivariateNormal(m,S).generate();
+	gsl_matrix_memcpy(invKmm,Kmm);
+	gsl_linalg_cholesky_decomp(invKmm);
+	gsl_linalg_cholesky_invert(invKmm);
+
+	gsl_matrix * tmpmn = gsl_matrix_alloc(num_inducing,N);
+	gsl_matrix * tmpnn = gsl_matrix_alloc(N,N);
+
+	gsl_matrix_view A = gsl_matrix_view_array(invKmm->data, num_inducing, num_inducing);
+	gsl_matrix_view B = gsl_matrix_view_array(Kmn->data, num_inducing, N);
+	gsl_matrix_view C = gsl_matrix_view_array(tmpmn->data, num_inducing, N);
+
+	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
+                  1.0, &A.matrix, &B.matrix,
+                  0.0, &C.matrix);
+
+	A = gsl_matrix_view_array(Knm->data, N, num_inducing);
+	B = gsl_matrix_view_array(tmpmn->data,num_inducing,N);
+	C = gsl_matrix_view_array(tmpnn->data,N,N);
+
+	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
+                  1.0, &A.matrix, &B.matrix,
+                  0.0, &C.matrix);
+
+	gsl_matrix_memcpy(K_tilde,Knn);
+	gsl_matrix_sub(K_tilde,&C.matrix);
+
+	gsl_matrix_free(tmpmn);
+	gsl_matrix_free(tmpnn);
+
+	// generate m multivariate samples and save in u
+
+	gsl_matrix * sigmachol = gsl_matrix_alloc(num_inducing,num_inducing);
+	gsl_matrix_memcpy(sigmachol,S);
+	gsl_linalg_cholesky_decomp(sigmachol);
+
+	const gsl_rng_type * T;
+	gsl_rng * r;
+	gsl_rng_env_setup();
+	T = gsl_rng_default;
+	r = gsl_rng_alloc (T);
+
+	for(int i = 0;i<num_inducing;i++) {
+		gsl_vector_set(u,i,gsl_ran_ugaussian(r));
+	}
+
+	gsl_blas_dtrmv(CblasLower, CblasNoTrans, CblasNonUnit, sigmachol, u);
+	gsl_vector_add(u,m);
+	
+	gsl_matrix_free(sigmachol);
+	gsl_rng_free(r);
 }
 void SVGP::FullUpdateGaussianProcess() {
-	Kmm = Kernel(Z,Z);
-	Knm = Kernel(X,Z);
-	Kmn = Kernel(Z,X);
 
 	//expensive stuff
 
-	Knn = Kernel(X,X);
+	Kernel(X,X,Knn);
 
-	invKmm = Kmm.Inverse();
-	K_tilde = Knn - Knm * invKmm * Kmn;
+	// local_update
+	// global_update
 
-	q_prec = Beta * invKmm * Kmn * Knm * invKmm + invKmm;
-	q_var = q_prec.Inverse();
-	gsl_matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm * Kmn;
-	q_mean = q_mean_tmp * Y;
-
-	S = q_var;
-	m = q_mean;
-
-	u = MultivariateNormal(m,S).generate();
+	UpdateGaussianProcess();
 }
-void SVGP::Prediction(const gsl_vector& x, double& mean, double& var) {
-	gsl_matrix tmp(x);
-	gsl_vector Kx = Kernel(tmp,Z).getRow(0);
+void SVGP::Prediction(const gsl_vector * x, double& mean, double& var) {
+	gsl_matrix * tmp = gsl_matrix_alloc(1,d);
+	gsl_matrix_set_row(tmp,0,x);
+	gsl_matrix * Kx = gsl_matrix_alloc(1,num_inducing);
+	gsl_vector * Kxv = gsl_vector_alloc(num_inducing);
+	Kernel(tmp,Z,Kx);
 
-	mean = Product(Kx,invKmm * u);
-	var = sig_var*sig_var - Product(Kx,invKmm * Kx);
+	gsl_matrix_get_row(Kxv,Kx,0);
+	gsl_vector * tmpv = gsl_vector_alloc(d);
+	gsl_blas_dgemv( CblasNoTrans, 1.0, invKmm, u, 0.0, tmpv);
+
+	double * res;
+	gsl_blas_ddot(Kxv,tmpv,res);
+
+	mean = *res;
+
+	gsl_blas_dgemv( CblasNoTrans, 1.0, invKmm, Kxv, 0.0, tmpv);
+	gsl_blas_ddot(Kxv,tmpv,res);
+
+	var = *res;
+	var = sig_var*sig_var - var;
+
+	gsl_matrix_free(tmp);
+	gsl_matrix_free(Kx);
+	gsl_vector_free(Kxv);
 }
 double SVGP::LogLikelihood() {
 	//D_KL(q(u)||p(u))

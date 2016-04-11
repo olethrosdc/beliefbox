@@ -66,7 +66,7 @@ class SVGP
 		SVGP(const Matrix& X, const Vector& Y, const Matrix& Z, double noise_var, double sig_var, const Vector& scale_length);
 		SVGP(gsl_matrix * X, gsl_vector * Y, gsl_matrix * Z, double noise_var, double sig_var, gsl_vector * scale_length);
 		//SVGP(gsl_matrix *& X, gsl_vector *& Y, gsl_vector *& Z);
-		virtual void Prediction(const gsl_vector * x, double mean, double var);
+		virtual void Prediction(const gsl_vector * x, double& mean, double& var);
 		virtual void UpdateGaussianProcess(); //update 
 		virtual void FullUpdateGaussianProcess();
 		virtual double LogLikelihood();
