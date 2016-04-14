@@ -41,7 +41,6 @@ int main() {
 	SVGP svgp(X,Y,Z,1.0,1.0,Vector::Unity(X.Columns()));
 	real a = svgp.LogLikelihood();
 	std::cout<<a;
-	svgp.optimize_svi();
 
 	return 0;
 }

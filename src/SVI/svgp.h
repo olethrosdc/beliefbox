@@ -7,7 +7,7 @@
 #include "Matrix.h"
 #include "GaussianProcess.h"
 
-class SVGP : public GaussianProcess
+class SVGP //: public GaussianProcess
 	{
 	protected:
 		Matrix X; ///< Samples (N x M)
@@ -25,17 +25,12 @@ class SVGP : public GaussianProcess
 		Matrix Z; ///< Hidden variables (N x J)
 		Vector u; ///< Global variables (N x 1) (targets)
 
-		/// SVI fields
-		Vector q_mean;
-		Matrix q_var;
-		Matrix q_prec;
-
 		// variational distribution parametrization
 		Matrix S;
 		Vector m;
 
 		real l; //step length
-		int subsamples; //not currently used.. but should be
+		int samples; //not currently used.. but should be
 
 		Vector p_mean;
 		Matrix p_var;

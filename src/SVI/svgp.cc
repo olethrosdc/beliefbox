@@ -16,6 +16,10 @@ SVGP::SVGP(Matrix& X_, Vector& Y_, Matrix& Z_, real noise_var_, real sig_var_, V
 	Beta = 1/(noise_var*noise_var);
 	N = X.Rows();
 	d = X.Columns();
+
+	assert(d==Z.Columns());
+	assert(N==Y.Size());
+	assert(d==scale_length.Size());
 	FullUpdateGaussianProcess();
 }
 Matrix SVGP::Kernel(const Matrix& A, const Matrix& B) {
@@ -67,10 +71,10 @@ void SVGP::FullUpdateGaussianProcess() {
 	invKmm = Kmm.Inverse();
 	K_tilde = Knn - Knm * invKmm * Kmn;
 
-	q_prec = Beta * invKmm * Kmn * Knm * invKmm + invKmm;
-	q_var = q_prec.Inverse();
+	Matrix q_prec = Beta * invKmm * Kmn * Knm * invKmm + invKmm;
+	Matrix q_var = q_prec.Inverse();
 	Matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm * Kmn;
-	q_mean = q_mean_tmp * Y;
+	Vector q_mean = q_mean_tmp * Y;
 
 	S = q_var;
 	m = q_mean;
@@ -87,11 +91,11 @@ void SVGP::Prediction(const Vector& x, real& mean, real& var) {
 real SVGP::LogLikelihood() {
 	//D_KL(q(u)||p(u))
 
-	q_prec = Beta * invKmm * Kmn * Knm * invKmm + invKmm;
-	q_var = q_prec.Inverse();
+	Matrix q_prec = Beta * invKmm * Kmn * Knm * invKmm + invKmm;
+	Matrix q_var = q_prec.Inverse();
 
 	Matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm * Kmn;
-	q_mean = q_mean_tmp * Y;
+	Vector q_mean = q_mean_tmp * Y;
 
 	p_var = Kmm;
 	p_mean = Vector::Null(q_mean.Size());
@@ -131,10 +135,15 @@ void SVGP::local_update(const Matrix& X_samples, const Vector& Y_samples) {
 }
 void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 
+	Matrix Kmn_samples = Kernel(Z,X_samples);
+	Matrix Knm_samples = Kernel(X_samples,Z);
+
+	Matrix q_prec = Beta * invKmm * Kmn_samples * Knm_samples * invKmm + invKmm;
+
 	Vector theta_1 = S.Inverse() * m;
 	Matrix theta_2 = -0.5 * S.Inverse();
 
-	Vector tmpResult = Beta * invKmm * Kmn * Y_samples - theta_1;
+	Vector tmpResult = Beta * invKmm * Kmn_samples * Y_samples - theta_1;
 	tmpResult *= l;
 	tmpResult += theta_1;
 	theta_1 = tmpResult;
@@ -148,7 +157,6 @@ void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 }
 
 Vector SVGP::optimize_Z(int max_iters) {
-
 
 
 	//eval loglikelihood
