@@ -2,7 +2,7 @@
 #include "GaussianProcess.h"
 #include "SparseGaussianProcess.h"
 
-void main() {
+int main() {
 	double x_data[] = { 0.18, 0.60, 0.57, 0.96,
                       0.41, 0.24, 0.99, 0.58,
                       0.14, 0.30, 0.97, 0.66,
@@ -42,4 +42,6 @@ void main() {
 	real a = svgp.LogLikelihood();
 	std::cout<<a;
 	svgp.optimize_svi();
+
+	return 0;
 }

@@ -6,6 +6,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
+// BUG?: Compilation fails
 SVGP::SVGP(const Matrix& X_, const Vector& Y_, const Matrix& Z_, double noise_var_, double sig_var_, const Vector& scale_length_)
 {
 	Beta = 1/(noise_var*noise_var);

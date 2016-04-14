@@ -10,6 +10,8 @@
 //TODO 
 //Change so that svgp uses gsl internally
 
+// NOTE: Shouldn't SVGP be a child of the gaussian process class? We
+// want to to be interchangeable if necessary.
 class SVGP
 	{
 	protected:
