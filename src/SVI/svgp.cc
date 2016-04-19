@@ -13,14 +13,35 @@ SVGP::SVGP(Matrix& X_, Vector& Y_, Matrix& Z_, real noise_var_, real sig_var_, V
 	  sig_var(sig_var_),
 	  scale_length(scale_length_)
 {
-	Beta = 1/(noise_var*noise_var);
-	N = X.Rows();
-	d = X.Columns();
+    init();
+}
+SVGP::SVGP(Matrix &X_, Vector& Y_, int num_inducing, real noise_var_, real sig_var_, Vector scale_length_)
+    : X(X_),
+      Y(Y_),
+      noise_var(noise_var_),
+      sig_var(sig_var_),
+      scale_length(scale_length_)
+{
+    //create Z with inducing points placed decided by k-means on X
 
-	assert(d==Z.Columns());
-	assert(N==Y.Size());
-	assert(d==scale_length.Size());
-	FullUpdateGaussianProcess();
+    srand(time(NULL));
+    Z = Matrix(num_inducing,X.Columns());
+    for(int i=0;i<num_inducing;i++) {
+        Z.setRow(i,rand()%X.Rows());
+    }
+    //std::vector<std::vector<Vector>> kmeans(num_inducing);
+    //the assignment + update step here...
+    init();
+}
+void SVGP::init() {
+    Beta = 1/(noise_var*noise_var);
+    N = X.Rows();
+    d = X.Columns();
+    m = Z.Rows();
+    assert(d==Z.Columns());
+    assert(N==Y.Size());
+    assert(d==scale_length.Size());
+    FullUpdateGaussianProcess();
 }
 Matrix SVGP::Kernel(const Matrix& A, const Matrix& B) {
 	assert(A.Columns()==B.Columns());
@@ -132,6 +153,9 @@ real SVGP::LogLikelihood() {
 //OK, here is where I'm a bit confused on how to update the inducing inputs Z
 void SVGP::local_update(const Matrix& X_samples, const Vector& Y_samples) {
     //here Z should be updated somehow..
+    //first, transform Z matrix into double array
+
+    double *data;
 }
 void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 

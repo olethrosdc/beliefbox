@@ -51,10 +51,11 @@ class SVGP //: public GaussianProcess
         virtual void local_update(const Matrix& X_samples, const Vector& Y_samples); //updating Z (local/latent variables) unsure how to do this 
         virtual void global_update(const Matrix& X_samples, const Vector& Y_samples); //updating m, S (which parametrizes q(u) and in turn gives global param u)
 		virtual Vector optimize_Z(int max_iters);
-
+        virtual void init();
 	public:
 		SVGP(Matrix& X, Vector& Y, Matrix& Z, real noise_var, real sig_var, Vector scale_length);
-		//SVGP(Matrix& X, Vector& Y, Vector& Z);
+        //initializes Z through k-means
+		SVGP(Matrix& X, Vector& Y, int num_inducing, real noise_var, real sig_var, Vector scale_length);
 		virtual Matrix Kernel(const Matrix& A, const Matrix& B);
 		virtual void Prediction(const Vector& x, real& mean, real& var);
 		virtual void UpdateGaussianProcess(); //update 
