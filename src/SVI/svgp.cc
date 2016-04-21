@@ -151,11 +151,95 @@ real SVGP::LogLikelihood() {
 	return L;
 }
 //OK, here is where I'm a bit confused on how to update the inducing inputs Z
-void SVGP::local_update(const Matrix& X_samples, const Vector& Y_samples) {
+void SVGP::local_update() {
     //here Z should be updated somehow..
     //first, transform Z matrix into double array
 
-    double *data;
+    double *data = new double[m*d];
+    for(int i=0;i<m;i++) {
+        for(int j=0;j<d;j++) {
+            data[i*m+d] = Z(i,j);
+        }
+    }
+    Matrix sampleMatrix;
+    Vector observationVector;
+    getSamples(sampleMatrix,observationVector);
+
+    size_t iter = 0;
+    int status;
+
+    const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
+    gsl_multimin_fminimizer *s = NULL;
+    gsl_vector *ss, *x;
+    gsl_multimin_function minex_func;
+
+    double size;
+
+    gsl_vector_view * dataView = gsl_vector_view_array(data,m*d);
+
+    ss = gsl_vector_alloc(m*d);
+    gsl_vector_set_all(ss,1.0);
+
+    minex_func.n = m*d;
+    minex_func.f = Loglikelihood;
+    minex_func.params = par;
+
+    delete[] data;
+}
+void SVGP::LogLikelihood(double* data, Matrix& sampleMatrix, Vector& observationVector) {
+
+    Matrix Z_ = Matrix(d,m);
+    for(int i=0;i<m;i++) {
+        for(int j=0;j<d;j++) {
+            Z_(i,j) = data[i*d+j]
+        }
+    }
+    Matrix Kmn_samples = Kernel(Z_,sampleMatrix);
+    Matrix Knm_samples = Kernel(sampleMatrix,Z_);
+    Matrix Kmm_ = Kernel(Z_,Z_);
+    Matrix invKmm_ = Kmm_.Inverse();
+    Matrix Knn_ = Kernel(sampleMatrix,sampleMatrix);
+	Matrix K_tilde_ = Knn_ - Knm_samples * invKmm_ * Kmn_samples;
+
+
+    Matrix q_prec = Beta * invKmm_ * Kmn_samples * Knm_samples * invKmm_ + invKmm_;
+    Matrix q_var = q_prec.Inverse();
+
+	Matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm_ * Kmn_;
+	Vector q_mean = q_mean_tmp * observationVector;
+
+	p_var = Kmm_;
+	p_mean = Vector::Null(q_mean.Size());
+
+	Matrix inv_p_var = p_var.Inverse();
+	real lhs = (inv_p_var * q_prec).tr();
+	Vector A = inv_p_var * (p_mean - q_mean);
+	real B = Product((p_mean - q_mean),A);
+	KL = lhs + B - N + log(p_var.det()/q_prec.det());
+	KL *= 0.5;
+
+	L = 0;
+    
+	for(int i=0;i<samples;i++) {
+		Vector k_i = Kmn_.getColumn(i);
+		Matrix outer = OuterProduct(k_i,k_i);
+
+		Matrix lambda_i = Beta * invKmm_ * outer * invKmm_;
+		real k_ii = K_tilde_(i,i);
+		Vector rhs = invKmm_ * q_mean;
+		real pdfmean = Product(k_i,rhs);
+		real pdfvar = 1/Beta;
+		real pdfcond = observationVector(i);
+
+		real pdf = (real) 1/(pdfvar * sqrt(2 * M_PI));
+		real expon = exp(-(pdfcond-pdfmean)*(pdfcond-pdfmean)/(2*pdfvar*pdfvar));
+		pdf *= expon;
+		pdf = (real) log(pdf);
+		
+		L += pdf - 1/2 * Beta * k_ii - 1/2 * (S * lambda_i).tr();
+	}
+	L -= KL;
+	return L;
 }
 void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 
@@ -180,11 +264,15 @@ void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 	m = S * theta_1;
 }
 
-Vector SVGP::optimize_Z(int max_iters) {
+void SVGP::getSamples(Matrix& sampleMatrix,Vector& observationVector) {
+    sampleMatrix = Matrix(d,samples);
 
-
-	//eval loglikelihood
-
+    srand(time(NULL));
+    for(int i=0;i<samples;i++) {
+        int idx = rand()%X.Rows();
+        sampleMatrix.setRow(i,X(idx));
+        observationVector(i) = Y(idx); 
+    }
 }
 void SVGP::AddObservation(const std::vector<Vector>& x, const std::vector<real>& y) {
 	//assert(x[0].Size()==d);

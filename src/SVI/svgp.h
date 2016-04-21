@@ -48,10 +48,12 @@ class SVGP //: public GaussianProcess
 
         //preferably these could be done in minibatches but only with single examples for now
         //the example is repeated <subsamples> times as in Hoffman et al [2013]
-        virtual void local_update(const Matrix& X_samples, const Vector& Y_samples); //updating Z (local/latent variables) unsure how to do this 
+        virtual void local_update(); //updating Z (local/latent variables) unsure how to do this 
         virtual void global_update(const Matrix& X_samples, const Vector& Y_samples); //updating m, S (which parametrizes q(u) and in turn gives global param u)
 		virtual Vector optimize_Z(int max_iters);
         virtual void init();
+        virtual real LogLikelihood(double* data); //computes the likelihood given a Z*, to use for optimizing the position of Z
+        virtual void getSamples(Matrix& X_, Vector& Y_);
 	public:
 		SVGP(Matrix& X, Vector& Y, Matrix& Z, real noise_var, real sig_var, Vector scale_length);
         //initializes Z through k-means
