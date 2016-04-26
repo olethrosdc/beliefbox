@@ -46,11 +46,13 @@ class SVGP //: public GaussianProcess
 		real KL;
 		real L;
 
+        Matrix currentSample;
+        Vector currentObservation;
+
         //preferably these could be done in minibatches but only with single examples for now
         //the example is repeated <subsamples> times as in Hoffman et al [2013]
         virtual void local_update(); //updating Z (local/latent variables) unsure how to do this 
         virtual void global_update(const Matrix& X_samples, const Vector& Y_samples); //updating m, S (which parametrizes q(u) and in turn gives global param u)
-		virtual Vector optimize_Z(int max_iters);
         virtual void init();
         virtual real LogLikelihood(double* data); //computes the likelihood given a Z*, to use for optimizing the position of Z
         virtual void getSamples(Matrix& X_, Vector& Y_);
@@ -63,10 +65,25 @@ class SVGP //: public GaussianProcess
 		virtual void UpdateGaussianProcess(); //update 
 		virtual void FullUpdateGaussianProcess();
 		virtual real LogLikelihood();
+        virtual real LogLikelihood(const gsl_vector *v);
 		virtual void AddObservation(const Vector& x, const real& y);
 		virtual void AddObservation(const std::vector<Vector>& x, const std::vector<real>& y);
 		virtual void Clear();
 
 };
 
+
+template< typename F >
+    class gsl_function_pp : gsl_function {
+        public:
+            gsl_function_pp(const F& func) : _func(func) {
+                function = &gsl_function_pp::invoke;
+                params=this;
+            }
+        private:
+            const F& _func;
+            static real invoke(gsl_vector * x, void *params) {
+                return static_cast<gsl_function_pp*>(params)->_func(x);
+            }
+    };
 #endif
