@@ -6,6 +6,7 @@
 #include "Vector.h"
 #include "Matrix.h"
 #include "GaussianProcess.h"
+#include <gsl/gsl_math.h>
 
 class SVGP //: public GaussianProcess
 	{
@@ -74,7 +75,7 @@ class SVGP //: public GaussianProcess
 
 
 template< typename F >
-    class gsl_function_pp : gsl_function {
+    class gsl_function_pp : public gsl_function {
         public:
             gsl_function_pp(const F& func) : _func(func) {
                 function = &gsl_function_pp::invoke;
