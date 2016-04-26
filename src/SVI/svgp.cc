@@ -268,7 +268,8 @@ real SVGP::LogLikelihood(const gsl_vector *v) {
 		L += pdf - 1/2 * Beta * k_ii - 1/2 * (S * lambda_i).tr();
 	}
 	L -= KL;
-	return L;
+	//return L;
+    return 1/L; //to make it a minimzation problem
 }
 void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 
