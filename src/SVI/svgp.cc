@@ -4,6 +4,7 @@
 #include <random>
 #include "MultivariateNormal.h"
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_multimin.h>
 
 SVGP::SVGP(Matrix& X_, Vector& Y_, Matrix& Z_, real noise_var_, real sig_var_, Vector scale_length_)
 	: X(X_),
@@ -27,7 +28,7 @@ SVGP::SVGP(Matrix &X_, Vector& Y_, int num_inducing, real noise_var_, real sig_v
     srand(time(NULL));
     Z = Matrix(num_inducing,X.Columns());
     for(int i=0;i<num_inducing;i++) {
-        Z.setRow(i,rand()%X.Rows());
+        Z.setRow(i,X.getRow(rand()%X.Rows()));
     }
     //std::vector<std::vector<Vector>> kmeans(num_inducing);
     //the assignment + update step here...
@@ -155,8 +156,8 @@ void SVGP::local_update() {
     //here Z should be updated somehow..
     //first, transform Z matrix into double array
 
-    double *data = new double[m*d];
-    for(int i=0;i<m;i++) {
+    double *data = new double[num_inducing*d];
+    for(int i=0;i<num_inducing;i++) {
         for(int j=0;j<d;j++) {
             data[i*m+d] = Z(i,j);
         }
@@ -175,21 +176,21 @@ void SVGP::local_update() {
 
     double size;
 
-    gsl_vector_view * dataView = gsl_vector_view_array(data,m*d);
+    gsl_vector_view dataView = gsl_vector_view_array(data,num_inducing*d);
 
-    ss = gsl_vector_alloc(m*d);
+    ss = gsl_vector_alloc(num_inducing*d);
     gsl_vector_set_all(ss,1.0);
 
-    minex_func.n = m*d;
-    minex_func.f = Loglikelihood;
+    minex_func.n = num_inducing*d;
+    minex_func.f = LogLikelihood;
     minex_func.params = par;
 
     delete[] data;
 }
 void SVGP::LogLikelihood(double* data, Matrix& sampleMatrix, Vector& observationVector) {
 
-    Matrix Z_ = Matrix(d,m);
-    for(int i=0;i<m;i++) {
+    Matrix Z_ = Matrix(d,num_inducing);
+    for(int i=0;i<num_inducing;i++) {
         for(int j=0;j<d;j++) {
             Z_(i,j) = data[i*d+j]
         }
@@ -205,7 +206,7 @@ void SVGP::LogLikelihood(double* data, Matrix& sampleMatrix, Vector& observation
     Matrix q_prec = Beta * invKmm_ * Kmn_samples * Knm_samples * invKmm_ + invKmm_;
     Matrix q_var = q_prec.Inverse();
 
-	Matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm_ * Kmn_;
+	Matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm_ * Kmn_samples;
 	Vector q_mean = q_mean_tmp * observationVector;
 
 	p_var = Kmm_;
@@ -221,7 +222,7 @@ void SVGP::LogLikelihood(double* data, Matrix& sampleMatrix, Vector& observation
 	L = 0;
     
 	for(int i=0;i<samples;i++) {
-		Vector k_i = Kmn_.getColumn(i);
+		Vector k_i = Kmn_samples.getColumn(i);
 		Matrix outer = OuterProduct(k_i,k_i);
 
 		Matrix lambda_i = Beta * invKmm_ * outer * invKmm_;
