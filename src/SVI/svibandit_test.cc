@@ -38,9 +38,31 @@ int main() {
 	Y(2) = y0[2];
 	Y(3) = y0[3];
 
-	SVGP svgp(X,Y,Z,1.0,1.0,Vector::Unity(X.Columns()));
-	real a = svgp.LogLikelihood();
-	std::cout<<a;
+	real mean;
+	real var;
+
+	SVGP svgp(X,Y,X.Rows(),1.0,1.0,Vector::Unity(X.Columns()),100);
+	//svgp.FullUpdateGaussianProcess();
+	svgp.UpdateGaussianProcess();
+	Vector gp_scale_length = Vector(X.Columns()) + 1.0;
+	SparseGaussianProcess sgp(1.0,gp_scale_length,1.0,1.0,gp_scale_length);
+	sgp.Observe(X,Y);
+	svgp.Prediction(X.getRow(0),mean,var);
+	std::cout<<"mean: "<<mean<<", var "<<var<<"\n";
+	sgp.Prediction(X.getRow(0),mean,var);
+	std::cout<<"mean: "<<mean<<", var "<<var<<"\n";
+	svgp.Prediction(X.getRow(1),mean,var);
+	std::cout<<"mean: "<<mean<<", var "<<var<<"\n";
+	sgp.Prediction(X.getRow(1),mean,var);
+	std::cout<<"mean: "<<mean<<", var "<<var<<"\n";
+	svgp.Prediction(X.getRow(2),mean,var);
+	std::cout<<"mean: "<<mean<<", var "<<var<<"\n";
+	sgp.Prediction(X.getRow(2),mean,var);
+	std::cout<<"mean: "<<mean<<", var "<<var<<"\n";
+	//GaussianProcess gp(X,Y,1.0,1.0,1.0);
+	std::cout<<svgp.LogLikelihood()<<"\n";
+	//std::cout<<sgp.LogLikelihood()<<"\n";
+	//std::cout<<gp.LogLikelihood()<<"\n";
 
 	return 0;
 }

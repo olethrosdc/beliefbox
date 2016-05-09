@@ -6,22 +6,24 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_multimin.h>
 
-SVGP::SVGP(Matrix& X_, Vector& Y_, Matrix& Z_, real noise_var_, real sig_var_, Vector scale_length_)
+SVGP::SVGP(Matrix& X_, Vector& Y_, Matrix& Z_, real noise_var_, real sig_var_, Vector scale_length_, int samples)
 	: X(X_),
 	  Y(Y_),
 	  Z(Z_),
 	  noise_var(noise_var_),
 	  sig_var(sig_var_),
-	  scale_length(scale_length_)
+	  scale_length(scale_length_),
+	  samples(samples)
 {
     init();
 }
-SVGP::SVGP(Matrix &X_, Vector& Y_, int num_inducing, real noise_var_, real sig_var_, Vector scale_length_)
+SVGP::SVGP(Matrix &X_, Vector& Y_, int num_inducing, real noise_var_, real sig_var_, Vector scale_length_, int samples)
     : X(X_),
       Y(Y_),
       noise_var(noise_var_),
       sig_var(sig_var_),
-      scale_length(scale_length_)
+      scale_length(scale_length_),
+	  samples(samples)
 {
     //create Z with inducing points placed decided by k-means on X
 
@@ -72,12 +74,19 @@ Matrix SVGP::Kernel(const Matrix& A, const Matrix& B) {
 }
 
 void SVGP::UpdateGaussianProcess() {
+	Matrix X_samples;
+	Vector Y_samples;
+	getSamples(X_samples,Y_samples);
+
 	Kmm = Kernel(Z,Z);
-	Knm = Kernel(X,Z);
-	Kmn = Kernel(Z,X);
+	Knm = Kernel(X_samples,Z);
+	Kmn = Kernel(Z,X_samples);
+	Knn = Kernel(X_samples,X_samples);
 
 	invKmm = Kmm.Inverse();
 	K_tilde = Knn - Knm * invKmm * Kmn;
+
+	global_update(X_samples,Y_samples);
 
 	u = MultivariateNormal(m,S).generate();
 }
@@ -101,10 +110,13 @@ void SVGP::FullUpdateGaussianProcess() {
 	S = q_var;
 	m = q_mean;
 
+	global_update(X,Y);
+
 	u = MultivariateNormal(m,S).generate();
 }
 void SVGP::Prediction(const Vector& x, real& mean, real& var) {
-	Matrix tmp(x);
+	Matrix tmp(1,d);
+	tmp.setRow(0,x);
 	Vector Kx = Kernel(tmp,Z).getRow(0);
 
 	mean = Product(Kx,invKmm * u);
@@ -153,6 +165,7 @@ real SVGP::LogLikelihood() {
 }
 //OK, here is where I'm a bit confused on how to update the inducing inputs Z
 void SVGP::local_update() {
+	/*
     //here Z should be updated somehow..
     //first, transform Z matrix into double array
 
@@ -182,11 +195,13 @@ void SVGP::local_update() {
     gsl_vector_set_all(ss,1.0);
 
     minex_func.n = num_inducing*d;
-    minex_func.f = LogLikelihood;
+    minex_func.f = &LogLikelihood;
     minex_func.params = par;
 
     delete[] data;
+	*/
 }
+/*
 void SVGP::LogLikelihood(double* data, Matrix& sampleMatrix, Vector& observationVector) {
 
     Matrix Z_ = Matrix(d,num_inducing);
@@ -242,6 +257,7 @@ void SVGP::LogLikelihood(double* data, Matrix& sampleMatrix, Vector& observation
 	L -= KL;
 	return L;
 }
+*/
 void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 
 	Matrix Kmn_samples = Kernel(Z,X_samples);
@@ -266,12 +282,13 @@ void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
 }
 
 void SVGP::getSamples(Matrix& sampleMatrix,Vector& observationVector) {
-    sampleMatrix = Matrix(d,samples);
+    sampleMatrix = Matrix(samples,d);
+	observationVector = Vector(samples);
 
     srand(time(NULL));
     for(int i=0;i<samples;i++) {
         int idx = rand()%X.Rows();
-        sampleMatrix.setRow(i,X(idx));
+        sampleMatrix.setRow(i,X.getRow(idx));
         observationVector(i) = Y(idx); 
     }
 }
