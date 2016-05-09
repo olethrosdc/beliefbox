@@ -6,6 +6,7 @@
 #include "Vector.h"
 #include "Matrix.h"
 #include "GaussianProcess.h"
+#include <gsl/gsl_math.h>
 
 class SVGP //: public GaussianProcess
 	{
@@ -46,6 +47,9 @@ class SVGP //: public GaussianProcess
 		real KL;
 		real L;
 
+        Matrix currentSample;
+        Vector currentObservation;
+
         //preferably these could be done in minibatches but only with single examples for now
         //the example is repeated <subsamples> times as in Hoffman et al [2013]
         virtual void local_update(); //updating Z (local/latent variables)
@@ -63,10 +67,10 @@ class SVGP //: public GaussianProcess
 		virtual void UpdateGaussianProcess(); //update 
 		virtual void FullUpdateGaussianProcess();
 		virtual real LogLikelihood();
+        //virtual real LogLikelihood(const gsl_vector *v);
 		virtual void AddObservation(const Vector& x, const real& y);
 		virtual void AddObservation(const std::vector<Vector>& x, const std::vector<real>& y);
 		virtual void Clear();
 
 };
-
 #endif

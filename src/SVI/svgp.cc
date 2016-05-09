@@ -78,13 +78,13 @@ void SVGP::UpdateGaussianProcess() {
 	Vector Y_samples;
 	getSamples(X_samples,Y_samples);
 
-	Kmm = Kernel(Z,Z);
-	Knm = Kernel(X_samples,Z);
-	Kmn = Kernel(Z,X_samples);
-	Knn = Kernel(X_samples,X_samples);
+	Matrix Kmm_samples = Kernel(Z,Z);
+	Matrix Knm_samples = Kernel(X_samples,Z);
+	Matrix Kmn_samples = Kernel(Z,X_samples);
+	Matrix Knn_samples = Kernel(X_samples,X_samples);
 
-	invKmm = Kmm.Inverse();
-	K_tilde = Knn - Knm * invKmm * Kmn;
+	Matrix invKmm_samples = Kmm_samples.Inverse();
+	K_tilde = Knn_samples - Knm_samples * invKmm_samples * Kmn_samples;
 
 	global_update(X_samples,Y_samples);
 
@@ -189,32 +189,64 @@ void SVGP::local_update() {
 
     double size;
 
-    gsl_vector_view dataView = gsl_vector_view_array(data,num_inducing*d);
+    gsl_vector_view x = gsl_vector_view_array(data,num_inducing*d);
 
     ss = gsl_vector_alloc(num_inducing*d);
     gsl_vector_set_all(ss,1.0);
+    
+    SVGP* ptr2 = this;
+    auto ptr = [=](gsl_vector * x)->real{return ptr2->LogLikelihood(x);};
+    gsl_function_pp<decltype(ptr)> Fp(ptr);
 
+    void *par;
     minex_func.n = num_inducing*d;
     minex_func.f = &LogLikelihood;
+    minex_func.f = static_cast<gsl_function*>(&Fp);
     minex_func.params = par;
 
+    s = gsl_multimin_fminimizer_alloc (T, num_inducing*d);
+    gsl_multimin_fiminimizer_set(s, &minex_func, x, ss);
+
+    do {
+        iter++;
+        status = gsl_multimin_fminimizer_iterate(s);
+
+        if(status)
+            break;
+        
+        size = gsl_multimin_fminimizer_size(s);
+        status = gsl_multimin_test_size(size, 1e-2);
+
+        if (status = GSL_SUCCESS) {
+            printf("converged");
+        }
+    } while(status == GSL_CONTINUE && iter < 10);
+
+    gsl_vector_free(x);
+    gsl_vector_free(ss);
+    gsl_multimin_fminimizer_free(s);
+
+    //TODO save best simplex to Z
     delete[] data;
 	*/
 }
 /*
 void SVGP::LogLikelihood(double* data, Matrix& sampleMatrix, Vector& observationVector) {
+=======
+real SVGP::LogLikelihood(const gsl_vector *v) {
+>>>>>>> 5e630cfe343b7114924c51f3f9d7b8a71a952741
 
     Matrix Z_ = Matrix(d,num_inducing);
     for(int i=0;i<num_inducing;i++) {
         for(int j=0;j<d;j++) {
-            Z_(i,j) = data[i*d+j]
+            Z_(i,j) = gsl_vector_get(v,i*d+j);
         }
     }
-    Matrix Kmn_samples = Kernel(Z_,sampleMatrix);
-    Matrix Knm_samples = Kernel(sampleMatrix,Z_);
+    Matrix Kmn_samples = Kernel(Z_,currentSample);
+    Matrix Knm_samples = Kernel(currentSample,Z_);
     Matrix Kmm_ = Kernel(Z_,Z_);
     Matrix invKmm_ = Kmm_.Inverse();
-    Matrix Knn_ = Kernel(sampleMatrix,sampleMatrix);
+    Matrix Knn_ = Kernel(currentSample,currentSample);
 	Matrix K_tilde_ = Knn_ - Knm_samples * invKmm_ * Kmn_samples;
 
 
@@ -222,7 +254,7 @@ void SVGP::LogLikelihood(double* data, Matrix& sampleMatrix, Vector& observation
     Matrix q_var = q_prec.Inverse();
 
 	Matrix q_mean_tmp = Beta * q_prec.Inverse() * invKmm_ * Kmn_samples;
-	Vector q_mean = q_mean_tmp * observationVector;
+	Vector q_mean = q_mean_tmp * currentObservation;
 
 	p_var = Kmm_;
 	p_mean = Vector::Null(q_mean.Size());
@@ -245,7 +277,7 @@ void SVGP::LogLikelihood(double* data, Matrix& sampleMatrix, Vector& observation
 		Vector rhs = invKmm_ * q_mean;
 		real pdfmean = Product(k_i,rhs);
 		real pdfvar = 1/Beta;
-		real pdfcond = observationVector(i);
+		real pdfcond = currentSample(i);
 
 		real pdf = (real) 1/(pdfvar * sqrt(2 * M_PI));
 		real expon = exp(-(pdfcond-pdfmean)*(pdfcond-pdfmean)/(2*pdfvar*pdfvar));
@@ -255,7 +287,8 @@ void SVGP::LogLikelihood(double* data, Matrix& sampleMatrix, Vector& observation
 		L += pdf - 1/2 * Beta * k_ii - 1/2 * (S * lambda_i).tr();
 	}
 	L -= KL;
-	return L;
+	//return L;
+    return 1/L; //to make it a minimzation problem
 }
 */
 void SVGP::global_update(const Matrix& X_samples, const Vector& Y_samples) {
