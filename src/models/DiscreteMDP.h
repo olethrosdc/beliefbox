@@ -184,6 +184,7 @@ public:
 	}
 };
 
+/// Short-hand for this class
 typedef MDP<int, int> DiscreteMDP;
 
 #endif
