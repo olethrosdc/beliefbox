@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2016 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -9,37 +9,34 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef MDP_H
-#define MDP_H
+#ifndef DISCRETE_MMDP_H
+#define DISCRETE_MMDP_H
 
-class Distribution;
-
-#include "real.h"
-#include "TransitionDistribution.h"
-#include "RewardDistribution.h"
-
-
-
-/** Abstract MDP class */
-class AbstractMDP {
-public:
-    virtual ~AbstractMDP() {}
-};
-
-
-// This is just a template for MDPs
-template <typename StateType, typename ActionType>
-class MDP : public AbstractMDP
+// This is just a simple template for Multi-Agent MDPs
+class DiscreteMMDP
 {
 protected:
-    StateType state;
-    TransitionDistribution<StateType, ActionType>& transition_distribution;
-    RewardDistribution<StateType, ActionType>& reward_distribution;
+	int n_players;
+	int n_actions;
+	int n_states;
+    int state;
+	DiscreteJointAction action;
+	DiscreteTransitionDistribution transition_distribution;
+	int current_player; ///< We need to know who is playing
 public:
-    MDP(TransitionDistribution<StateType, ActionType>& transition_distribution_, RewardDistribution<StateType, ActionType>& reward_distribution_)
-        : transition_distribution(transition_distribution_), reward_distribution(reward_distribution_) {}
+    DiscreteMMDP(int n_players_,
+				 int n_states_,
+				 int n_actions_)
+		: n_players(n_players_),
+		  n_actions(n_actions_),
+		  n_states(n_states_),
+		  state(0),
+		  action(n_players),
+		  transition_distribution(n_players, n_actions, ..... FIXME
+	{
+	}
   virtual ~MDP() {}
-	StateType getState() const
+	int getState() const
 	{
 		return state;
 	}
@@ -49,13 +46,6 @@ public:
     {
         return transition_distribution.pdf(s, a, s2);
     }
-    virtual real getRewardProbability (const StateType& s,
-                                       const ActionType& a, 
-                                       real r) const
-    {
-        return reward_distribution.pdf(s, a, r);
-    }
-
     virtual real getExpectedReward (const StateType& s,
                                     const ActionType& a) const
     {
@@ -86,3 +76,4 @@ public:
 };
 
 #endif
+	
