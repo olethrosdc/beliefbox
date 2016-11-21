@@ -12,35 +12,15 @@
 #ifndef DISCRETE_MMDP_H
 #define DISCRETE_MMDP_H
 
-class DiscreteJointAction
-{
-public:
-	int n_players;
-	int n_actions;
-	std::vector<int> action;
-	DiscreteJointAction(int n_players_,
-						int n_actions_)
-		: n_players(n_players_),
-		  n_actions(n_actions_),
-		  action(n_players_)
-	{
-		for (int i=0; i<n_players; ++i) {
-			action[i] = 0;
-		}
-	}
-	
-	/// Convert the action vector to an integer
-	int to_int()
-	{
-		int F = 1;
-		int a = 0;
-		for (int k=0; k<n_players; ++k) {
-			a += action[k];
-			F *= n_actions;
-		}
-		return a;
-	}
-};
+
+#include <vector>
+#include <memory>
+#include <cassert>
+
+#include "MMDP.h"
+#include "TransitionDistribution.h"
+#include "JointAction.h"
+#include "Random.h"
 
 // maybe use a vector of MoveType instead of that
 
@@ -48,29 +28,40 @@ class DiscreteMultiTransitionDistribution
 {
 public:
 	int n_players;
+	int n_states;
 	int n_actions;
 	int n_joint_actions;
-	DiscreteTransitionDistribution dist;
-	DiscreteTransitionDistribution(n_players_, n_actions_)
+	std::shared_ptr<DiscreteTransitionDistribution> dist;
+	DiscreteMultiTransitionDistribution(const int& n_players_,
+										const int& n_states_,
+										const int& n_actions_)
 		: n_players(n_players_),
+		  n_states(n_states_),
 		  n_actions(n_actions_)
 	{
 		n_joint_actions = n_actions;
 		for (int k=1; k<n_players; ++k) {
 			n_joint_actions *= n_actions;
 		}
-		dist = DiscreteTransitionDistribution(n_states, n_joint_actions);
+		dist = std::make_shared<DiscreteTransitionDistribution>(n_states, n_joint_actions);
 	}
-	real pdf(int s, DiscreteJointAction& a, int s2)
+	real pdf(const int& s, const DiscreteJointAction& a, const int& s2) const
 	{
-		return dist.pdf(s, a.to_int(), s2);
+		return dist->pdf(s, a.to_int(), s2);
+	}
+	int generate(const int& s, const DiscreteJointAction& a) const
+	{
+		return dist->generate(s, a.to_int());
+	}
+	void setTransitionProbability(const int& s, const DiscreteJointAction& a, const int& s2, real p)
+	{
+		dist->SetTransition(s, a.to_int(), s2, p);
 	}
 };
 
 // This is just a simple template for Multi-Agent MDPs
 template<>
 class MMDP<int, int> {
-{
 protected:
 	int n_players;
 	int n_actions;
@@ -81,24 +72,32 @@ protected:
 	int current_player; ///< We need to know who is playing
 	bool simultaneous_moves; ///< should the players move simultaneously
 	std::vector<real> reward; ///< a simple reward vector for now
+	int n_joint_actions;
 public:
-    DiscreteMMDP(int n_players_,
+    MMDP<int,int>(int n_players_,
 				 int n_states_,
 				 int n_actions_)
 		: n_players(n_players_),
 		  n_actions(n_actions_),
 		n_states(n_states_),
 		state(0),
-		action(n_players),
+		action(n_players, n_actions),
 		transition_distribution(n_states, n_players, n_actions),
 		simultaneous_moves(false),
 		reward(n_states)
 		{
-			// nothing to do in the constructor itself
-			
+			// Calculate the number of joint actions
+			n_joint_actions = n_actions;
+			for (int k=1; k<n_players; ++k) {
+				n_joint_actions *= n_actions;
+			}
 		}
-	virtual ~MMDP() {}
+	virtual ~MMDP<int,int>() {}
 
+	int getNJointActions()
+	{
+		return n_joint_actions;
+	}
 	/// Get the current stat
 	int getState() const
 	{
@@ -111,14 +110,25 @@ public:
     {
         return transition_distribution.pdf(s, a, s2);
     }
-    virtual real getReward (const int& s,
-							const DiscreteJointAction& a) const
+	virtual void setTransitionProbability (const int& s,
+                                           const DiscreteJointAction& a,
+                                           const int& s2,
+										   real p) 
+    {
+        transition_distribution.setTransitionProbability(s, a, s2, p);
+    }
+
+    virtual real getReward (const int& s) const
     {
         return reward[s];
     }
+	virtual void setReward (const int& s, const real& r) 
+    {
+        reward[s] = r;
+    }
 
 	/// Generate a state from the transition distribution but don't change the MMDP state.x
-    virtual StateType generateState(const int& s,
+    virtual int generateState(const int& s,
 									const DiscreteJointAction& a) const
     {
         return transition_distribution.generate(s, a);
@@ -126,12 +136,12 @@ public:
     /// generate a new state given the current state and action, then set the current state to be the new state.
     virtual real Act (DiscreteJointAction& a)
     {
-        real r = generateReward(state, a);
+        real r = getReward(state);
         state = generateState(state, a);
         return r;
     }
 	/// Generate a state from the transition distribution for the current state but don't change the MMDP state.
-    virtual StateType generateState(const ActionType& a)
+    virtual int generateState(const DiscreteJointAction& a)
     {
         return generateState(state, a);
     }

@@ -27,7 +27,7 @@ class TransitionDistribution
 public:
     virtual ~TransitionDistribution() {}
     virtual StateType generate(StateType state, ActionType action) = 0;
-    virtual real pdf(StateType state, ActionType action, StateType next_state) = 0;
+    virtual real pdf(StateType state, ActionType action, StateType next_state) const = 0;
 };
 
 template <typename StateType, typename ActionType>
