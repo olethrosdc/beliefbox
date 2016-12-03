@@ -38,7 +38,7 @@
 #include "DiscretisedEnvironment.h"
 #include "HQLearning.h"
 #include "MWAL.h"
-#include "MWAL2.h"
+//#include "MWAL2.h" /??
 #include "PolicyBelief.h"
 #include "RewardPolicyBelief.h"
 #include "PolicyRewardBelief.h"
@@ -624,7 +624,7 @@ int main (int argc, char** argv)
     }
     DV_var /= (real) n_runs;
     DV_var.printf(stdout); printf("# DV_VAR\n");
-    printf("# SMAX IMIT MWAL MWGR MWAL2 PRB RPB # DV_LEGEND\n");
+    printf("# SMAX IMIT MWAL MWGR MWAL2(?) PRB RPB # DV_LEGEND\n");
     std::cout << "# Done" << std::endl;
 
 
