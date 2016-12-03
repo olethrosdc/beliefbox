@@ -70,7 +70,7 @@ Vector MWAL::CalculateFeatureExpectation(const DiscreteMDP& mdp,
 /// an error tolerance and a particular number of iterations T.
 void MWAL::Compute(const DiscreteMDP& original_mdp, real gamma, real epsilon, int T)
 {
-    DiscreteMDP& mdp(original_mdp); // make a copy
+	DiscreteMDP mdp(original_mdp); // make a copy
     // Setup
     real beta = 1.0 / (1.0 + sqrt(2.0 * log((real) n_states) / (real) T));
     Vector W = Vector::Unity(n_states);
