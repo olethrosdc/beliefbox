@@ -7,7 +7,7 @@
 #include "ValueIteration.h"
 
 /// Calculate the feature counts from a given set of demonstrations.
-void MWAL::CalculateFeatureCounts(Demonstrations<int, int>& D)
+void MWAL::CalculateFeatureCounts(const Demonstrations<int, int>& D)
 {
 
     for (int s=0; s<n_states; ++s) {
@@ -28,8 +28,8 @@ void MWAL::CalculateFeatureCounts(Demonstrations<int, int>& D)
 
 /// Calculate the feature expectations for a particular policy and
 /// discount factor gamma, up to accuracy epsilon.
-Vector MWAL::CalculateFeatureExpectation(DiscreteMDP& mdp,
-                                         FixedDiscretePolicy& policy,
+Vector MWAL::CalculateFeatureExpectation(const DiscreteMDP& mdp,
+                                         const FixedDiscretePolicy& policy,
                                          real gamma, real epsilon)
 {
     // Calculate Markov chain transitions
@@ -68,7 +68,7 @@ Vector MWAL::CalculateFeatureExpectation(DiscreteMDP& mdp,
 
 /// Compute a policy for a particular mdp, with discount factor gamma,
 /// an error tolerance and a particular number of iterations T.
-void MWAL::Compute(DiscreteMDP& original_mdp, real gamma, real epsilon, int T)
+void MWAL::Compute(const DiscreteMDP& original_mdp, real gamma, real epsilon, int T)
 {
     DiscreteMDP& mdp(original_mdp); // make a copy
     // Setup

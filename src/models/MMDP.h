@@ -24,6 +24,7 @@ class AbstractMMDP
 {
 	public:
     virtual ~AbstractMMDP() {}
+	// Insert more public functions here if we want to call Abstract MMDPs without knowing their actual type.
 };
 
 

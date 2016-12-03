@@ -55,11 +55,11 @@ public:
           mu_E(n_states), mean_policy(n_states, n_actions)
     {}
 
-    void CalculateFeatureCounts(Demonstrations<int, int>& D);
-    Vector CalculateFeatureExpectation(DiscreteMDP& mdp, 
-                                       FixedDiscretePolicy& policy, 
+    void CalculateFeatureCounts(const Demonstrations<int, int>& D);
+    Vector CalculateFeatureExpectation(const DiscreteMDP& mdp, 
+                                       const FixedDiscretePolicy& policy, 
                                        real gamma, real epsilon);
-    void Compute(DiscreteMDP& mdp_copy, real gamma, real epsilon, int T = -1);
+    void Compute(const DiscreteMDP& mdp_copy, real gamma, real epsilon, int T = -1);
 };
 
 #endif
