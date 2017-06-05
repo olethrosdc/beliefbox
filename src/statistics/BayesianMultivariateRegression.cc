@@ -29,6 +29,7 @@ BayesianMultivariateRegression::BayesianMultivariateRegression(int m_, int d_, M
 	Syy = Syx * Transpose(M);	
 }
 
+// y ~ N(Sx, V)
 void BayesianMultivariateRegression::AddElement(const Vector& y, const Vector& x)
 {
 	assert(y.Size() == d);
