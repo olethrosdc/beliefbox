@@ -1,7 +1,6 @@
 1. Introduction
 ---------------
 
-
 The project's main aim is to support a Bayesian framework for
 reinforcement learning. For this reason, most of the documentation
 is generated via Doxygen. 
