@@ -51,136 +51,23 @@ static const char* const help_text = "Usage bayesian multivariate regression [op
 
 int main(int argc, char* argv[])
 {
-	real randomness = 0.0;
-	int n_samples	= 100;
-	int n_episodes	= 100;
-	int horizon		= 10;
-	int b_functions = 0;
-	int grids		= 3;
 	int a			= 0.1;
 	int N0			= 0.1;
 	
 	
-	const char * environment_name = "Pendulum";
-	{
-		int c;
-		int digit_optind = 0;
-		while(1) {
-			int this_option_optind = optind ? optind : 1;
-			int option_index = 0;
-			static struct option long_options[] =  {
-				{"randomness", required_argument, 0, 0},		//0
-				{"n_samples", required_argument, 0, 0},			//1
-				{"n_episodes", required_argument, 0, 0},		//2
-				{"horizon", required_argument, 0, 0},			//3
-				{"b_functions", required_argument, 0, 0},		//4
-				{"grids", required_argument, 0, 0},				//5
-				{"a", required_argument, 0, 0},					//6
-				{"N0", required_argument, 0, 0},				//7
-				{"environment_name", required_argument, 0, 0},	//8
-				{0, 0, 0, 0}
-			};
-			c = getopt_long(argc, argv, "", long_options, &option_index);
-			if ( c == -1)
-				break;
-			
-			switch (c) {
-				case 0:
-#if 0
-					printf ("option %s (%d)", long_options[option_index].name, option_index);
-					if (optarg)
-						printf (" with arg %s", optarg);
-					printf ("\n");
-#endif
-					switch (option_index) {
-						case 0: randomness = atof(optarg); break;
-						case 1: n_samples = atoi(optarg); break;
-						case 2: n_episodes = atoi(optarg); break;
-						case 3: horizon = atoi(optarg); break;
-						case 4: b_functions = atoi(optarg); break;
-						case 5: grids = atoi(optarg); break;
-						case 6: N0 = atof(optarg); break;
-						case 7: a = atof(optarg); break;
-						case 8: environment_name = optarg; break;
-						default:
-							fprintf (stderr, "%s", help_text);
-							exit(0);
-							break;
-					}
-					break;
-				case '0':
-				case '1':
-				case '2':
-					if (digit_optind != 0 && digit_optind != this_option_optind)
-						printf ("digits occur in two different argv-elements.\n");
-					digit_optind = this_option_optind;
-					printf ("option %c\n", c);
-					break;
-				default:
-					std::cout << help_text;
-					exit (-1);
-            }
-		}
-		if (optind < argc) {
-            printf ("non-option ARGV-elements: ");
-            while (optind < argc) {
-                printf ("%s ", argv[optind++]);
-                
-            }
-            printf ("\n");
-        }	
-	}
-	
-	assert(n_samples > 0);
-	assert(n_episodes > 0);
-	assert(horizon > 0);
-	assert (randomness >= 0 && randomness <= 1);
-	assert (b_functions == 0 || b_functions == 1);
-    assert (grid_size > 0);
-
 	RandomNumberGenerator* rng;
 	RandomNumberGenerator* environment_rng;
-	
-	MersenneTwisterRNG mersenne_twister_env;
-    environment_rng = (RandomNumberGenerator*) &mersenne_twister_env;
-	
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
 	
     srand48(34987235);
     srand(34987235);
     setRandomSeed(34987235);
-    environment_rng->manualSeed(228240153);
     rng->manualSeed(1361690241);
 	
 	std::cout << "Starting test program" << std::endl;
 
-	std::cout << " - Creating environment.." << std::endl;
-	
-	ContinuousStateEnvironment* environment = NULL;
-	
-	if (!strcmp(environment_name, "MountainCar")) {
-		environment = new MountainCar();
-		environment->setRandomness(randomness);
-	}
-	else if (!strcmp(environment_name, "Pendulum")) {
-		environment = new Pendulum();
-		environment->setRandomness(randomness);
-	}
-	else if (!strcmp(environment_name, "PuddleWorld")) {
-		environment = new PuddleWorld();
-	} else {
-		fprintf(stderr, "Unknown environment %s \n", environment_name);
-	}
-	
-	std::cout << environment_name << " environment creation completed" << std::endl;
-	int n_states	= environment->getNStates();
-	int n_actions	= environment->getNActions();
-	
-	std::cout <<  "Creating environment: " << environment_name
-	<< " with " << n_states << " states and , "
-	<< n_actions << " actions.\n";
-	
+
 	int m	= n_states + 1; //Input dimensions (input state dimension plus a dummy state)
 	int d_r = 1;			// Reward dimensions
 	int d_s = n_states;		//Output states dimensions 	
