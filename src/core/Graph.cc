@@ -335,7 +335,13 @@ int Graph::n_in_edges(int i) {
 
 /// Total number of edges for node i
 int Graph::n_edges(int i) {
-    return n_edges(1);
+  int cnt = 0;
+  for (int j=0; j<N; j++){
+    if (edge(j,i)) cnt++;
+    if (edge(i,j)) cnt++;
+  }
+  return cnt;
+
 }
 
 
