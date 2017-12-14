@@ -41,7 +41,7 @@
 class DiscreteChain : public DiscreteEnvironment
 {
 protected:
-	real slip, start, end;
+    real slip, start, end;
 public:
     DiscreteMDP* mdp;
     DiscreteChain(int n, real slip_ = 0.2, real start_ = 0.2, real end_ = 1.0);
@@ -76,29 +76,29 @@ public:
 class DiscreteChainGenerator : public EnvironmentGenerator<int, int>
 {
 protected:
-  int n;
+    int n;
 public:
-  DiscreteChainGenerator(int n_)
-  : n(n_)
-  {
-    assert(n > 0);
-  }
-  virtual DiscreteChain* Generate(bool random = true)
-  {
-    DiscreteChain* chain = NULL;
-    if (random) {
-      real slip = urandom();
-      real start = 0.2;//urandom();
-      
-      chain = new DiscreteChain(n, slip, start);
-    } else {
-      chain = new DiscreteChain(n);
+    DiscreteChainGenerator(int n_)
+        : n(n_)
+    {
+        assert(n > 0);
     }
-    return chain;
-  }
-  virtual ~DiscreteChainGenerator()
-  {
-  }
+    virtual DiscreteChain* Generate(bool random = true)
+    {
+        DiscreteChain* chain = NULL;
+        if (random) {
+            real slip = urandom();
+            real start = 0.2;//urandom();
+      
+            chain = new DiscreteChain(n, slip, start);
+        } else {
+            chain = new DiscreteChain(n);
+        }
+        return chain;
+    }
+    virtual ~DiscreteChainGenerator()
+    {
+    }
 };
 
 #endif

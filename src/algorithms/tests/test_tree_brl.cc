@@ -23,41 +23,49 @@
 /// The basic environment
 #include "DiscreteChain.h"
 
-int main(void)
-{
-	int n_states = 5;
-	int n_actions = 2;
-	int planning_horizon = 10;
-	real discounting = 0.9;
+/// STD
+#include <iostream>
+#include <memory>
+using namespace std;
 
-	DiscreteEnvironment* environment = new DiscreteChain(n_states);
-	n_states = environment->getNStates();
-	n_actions = environment->getNActions();
-	Matrix rewards(n_states, n_actions);
-	for (int s=0; s<n_states; ++s) {
-		for (int a=0; s<n_actions; ++a) {
-			rewards(s,a) = environment->getExpectedReward(s, a);
-		}
-	}
-	DiscreteMDPCounts belief(n_states, n_actions);
+int main(void) {
+    
+    int n_states = 5;
+    int n_actions = 2;
+    int planning_horizon = 10;
+    real discounting = 0.9;
 
-	belief.setFixedRewards(rewards);
+    printf("# Making environment\n");
+    unique_ptr<DiscreteEnvironment> environment;
+    environment = make_unique<DiscreteChain>(n_states);
+    n_states = environment->getNStates();
+    n_actions = environment->getNActions();
+
+    printf("# Setting up belief\n");
+    Matrix rewards(n_states, n_actions);
+    for (int s=0; s<n_states; ++s) {
+        for (int a=0; a<n_actions; ++a) {
+            rewards(s,a) = environment->getExpectedReward(s, a);
+        }
+    }
+    DiscreteMDPCounts belief(n_states, n_actions);
+
+    belief.setFixedRewards(rewards);
 
     RandomNumberGenerator* rng;
 
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
 
+    TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
 
-	TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
+    // Set state to 0
+    tree.Reset(0);
 
-	
+    // Calculate a belief tree
+    tree.CalculateBeliefTree();
 
-	// Set state to 0
-	tree.Reset(0);
-
-
-	return 0;
+    return 0;
 }
 
 #endif
