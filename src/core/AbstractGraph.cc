@@ -114,7 +114,14 @@ int AbstractGraph::n_in_edges(int i)
 /// Total number of edges for node i
 int AbstractGraph::n_edges(int i)
 {
-    return n_edges(1);
+    int cnt = 0;
+    for (int j=0; j<N; j++){
+        if (edge(j,i)) cnt++;
+		if (i!=j && edge(i,j)) cnt++;
+    }
+    return cnt;
+
+
 }
 
 

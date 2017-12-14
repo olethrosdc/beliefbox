@@ -1,6 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2010 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
-// $Revision$
+// copyright (c) 2017 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -13,42 +12,39 @@
 #include "TreeBRL.h"
 
 TreeBRL::TreeBRL(int n_states_,
-                             int n_actions_,
-                             real gamma_,
-                             MDPModel* model_,
-                             RandomNumberGenerator* rng_,
-                             int horizon_,
-                             bool use_upper_bound_)
+				 int n_actions_,
+				 real gamma_,
+				 MDPModel* belief_,
+				 RandomNumberGenerator* rng_,
+				 int horizon_)
     : n_states(n_states_),
       n_actions(n_actions_),
       gamma(gamma_),
-      model(model_),
+      belief(belief_),
       rng(rng_),
       horizon(horizon_),
       T(0)
 {
   
-    printf("# Starting Tree-Bayes-RL with %d states, %d actions, %d horizon %d\n", n_states, n_actions, horizon);
+    printf("# Starting Tree-Bayes-RL with %d states, %d actions, %d horizon\n", n_states, n_actions, horizon);
 
     current_state = -1;
     
 }
+
 TreeBRL::~TreeBRL()
 {
-
-
 }
+
 void TreeBRL::Reset()
 {
     current_state = -1;
-    next_update = T;
-
 }
 /// Full observation
 real TreeBRL::Observe (int state, int action, real reward, int next_state, int next_action)
 {
     if (state>=0) {
-        model->AddTransition(state, action, reward, next_state);
+        belief->AddTransition(state, action, reward, next_state);
     }
     current_state = next_state;
     current_action = next_action;
@@ -58,34 +54,27 @@ real TreeBRL::Observe (int state, int action, real reward, int next_state, int n
 real TreeBRL::Observe (real reward, int next_state, int next_action)
 {
     if (current_state >= 0) {
-        model->AddTransition(current_state, current_action, reward, next_state);
+        belief->AddTransition(current_state, current_action, reward, next_state);
     }
     current_state = next_state;
     current_action = next_action;
     return 0.0;
 }
 
-void TreeBRL::RecalculateTree()
-{
-}
 
-void TreeBRL::Resample()
-{
-
-  /// Get an action using the current exploration policy.
+/// Get an action using the current exploration policy.
 /// it calls Observe as a side-effect.
 int TreeBRL::Act(real reward, int next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
     T++;
 
-    // update the model
+    // update the belief
     if (current_state >= 0) {
-        model->AddTransition(current_state, current_action, reward, next_state);
+        belief->AddTransition(current_state, current_action, reward, next_state);
     }
     current_state = next_state;
 
-    RecalculateTree();
     
     return current_action;
 }
