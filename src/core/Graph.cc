@@ -338,7 +338,7 @@ int Graph::n_edges(int i) {
   int cnt = 0;
   for (int j=0; j<N; j++){
     if (edge(j,i)) cnt++;
-    if (edge(i,j)) cnt++;
+    if (i!=j && edge(i,j)) cnt++;
   }
   return cnt;
 

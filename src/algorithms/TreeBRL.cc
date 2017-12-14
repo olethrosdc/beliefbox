@@ -40,6 +40,12 @@ void TreeBRL::Reset()
 {
     current_state = -1;
 }
+
+void TreeBRL::Reset(int state)
+{
+    current_state = state;
+}
+
 /// Full observation
 real TreeBRL::Observe (int state, int action, real reward, int next_state, int next_action)
 {

@@ -93,7 +93,8 @@ public:
 			int horizon_ = 1);
     virtual ~TreeBRL();
     virtual void Reset();
-    /// Full observation
+	virtual void Reset(int state);
+	/// Full observation
     virtual real Observe (int state, int action, real reward, int next_state, int next_action);
     /// Partial observation 
     virtual real Observe (real reward, int next_state, int next_action);
@@ -113,6 +114,13 @@ public:
 		belief->ShowModel();
 #endif
     }
+
+	virtual real getValue(int state, int action)
+	{
+		return 0;
+	}
+
+
 };
 
 
