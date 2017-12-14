@@ -32,7 +32,7 @@ int main(void)
 
 	DiscreteEnvironment* environment = new DiscreteChain(n_states);
 	n_states = environment->getNStates();
-	n_actions = n_environment->getNActions();
+	n_actions = environment->getNActions();
 	Matrix rewards(n_states, n_actions);
 	for (int s=0; s<n_states; ++s) {
 		for (int a=0; s<n_actions; ++a) {
@@ -41,7 +41,7 @@ int main(void)
 	}
 	DiscreteMDPCounts belief(n_states, n_actions);
 
-	belief -> setFixedRewards(rewards);
+	belief.setFixedRewards(rewards);
 
     RandomNumberGenerator* rng;
 
