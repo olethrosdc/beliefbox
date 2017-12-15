@@ -22,6 +22,8 @@
 
 /// The basic environment
 #include "DiscreteChain.h"
+#include "Blackjack.h"
+#include "InventoryManagement.h"
 
 /// STD
 #include <iostream>
@@ -29,15 +31,21 @@
 using namespace std;
 
 int main(void) {
+    RandomNumberGenerator* rng;
+    MersenneTwisterRNG mersenne_twister;
+    rng = (RandomNumberGenerator*) &mersenne_twister;
     
     int n_states = 5;
     int n_actions = 2;
-    int max_planning_horizon = 10;
+    int max_planning_horizon = 4;
     real discounting = 0.9;
+    int n_samples = 10;
 
     printf("# Making environment\n");
     unique_ptr<DiscreteEnvironment> environment;
     environment = make_unique<DiscreteChain>(n_states);
+    //environment = make_unique<Blackjack>(rng);
+    //environment = make_unique<InventoryManagement>(10, 5, 0.2, 0.1);
     n_states = environment->getNStates();
     n_actions = environment->getNActions();
 
@@ -50,24 +58,37 @@ int main(void) {
     }
     DiscreteMDPCounts belief(n_states, n_actions);
 
-    //belief.setFixedRewards(rewards);
+    // simplify things by fixing the rewards
+    belief.setFixedRewards(rewards);
 
-    RandomNumberGenerator* rng;
 
-    MersenneTwisterRNG mersenne_twister;
-    rng = (RandomNumberGenerator*) &mersenne_twister;
 
-	for (int planning_horizon=0;
-		 planning_horizon<max_planning_horizon;
-		 planning_horizon++) {
-		TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
+    printf("# full sampling\n");
+    for (int planning_horizon=0;
+         planning_horizon<max_planning_horizon;
+         planning_horizon++) {
+        TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
 		
-		// Set state to 0
-		tree.Reset(0);
+        // Set state to 0
+        tree.Reset(0);
 		
-		// Calculate a belief tree
-		tree.CalculateBeliefTree();
-	}
+        // Calculate a belief tree
+        tree.CalculateBeliefTree();
+    }
+
+    printf("# sparse sampling\n");
+    for (int planning_horizon=0;
+         planning_horizon<max_planning_horizon;
+         planning_horizon++) {
+        TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
+		
+        // Set state to 0
+        tree.Reset(0);
+		
+        // Calculate a belief tree
+        tree.CalculateSparseBeliefTree(n_samples);
+    }
+
     return 0;
 }
 

@@ -42,6 +42,7 @@ protected:
     RandomNumberGenerator* rng; ///< random number generator to draw samples from
     int horizon; ///< maximum number of samples to take
     int T; ///< time passed
+    bool Thompson_Sample; ///< whether to use TS at the end
 public:
     class BeliefState
     {
@@ -51,6 +52,7 @@ public:
         int state;
         int prev_action;
         real prev_reward;
+        real probability;
         std::vector<BeliefState> children; ///< previous time
         BeliefState* prev; ///< previous belief state
         int t; ///< time
@@ -58,7 +60,7 @@ public:
         /// This is used for the first belief state
         BeliefState(TreeBRL& tree_,
                     MDPModel* belief_,
-                    int state_) : tree(tree_), belief(belief_), state(state_), t(0)
+                    int state_) : tree(tree_), belief(belief_), state(state_), probability(1), t(0)
         {}
 
         /// Use this to construct a subsequent belief state
@@ -68,21 +70,43 @@ public:
                     int prev_action_,
                     int state_,
                     real r,
-                    BeliefState* prev_) : tree(tree_), belief(belief_), state(state_), prev_action(prev_action_), prev_reward(r), prev(prev_), t(prev_->t + 1)
+                    real p,
+                    BeliefState* prev_) : tree(tree_), belief(belief_), state(state_), prev_action(prev_action_), prev_reward(r), probability(p), prev(prev_), t(prev_->t + 1)
         {
             belief->AddTransition(prev_state_, prev_action, r, state);
+        }
+        /// Generate transitions from the current state for all
+        /// actions. Do this recursively, using the marginal
+        /// distribution, but using sparse sampling.
+        void SparseExpandAllActions(int n_samples)
+        {
+            real p = 1 / (real) n_samples;
+            for (int k=0; k<n_samples; ++k) {
+                for (int a=0; a<tree.n_actions; ++a) {
+                    int next_state = belief->GenerateTransition(state, a);
+                    real reward = belief->GenerateReward(state, a);
+                    children.push_back(BeliefState(tree, belief, state, a, next_state, reward, p, this));
+                }
+            }
+            if (t < tree.horizon) {
+                for (uint i=0; i<children.size(); ++i) {
+                    children[i].SparseExpandAllActions(n_samples);
+                }
+            }
         }
         /// Generate transitions from the current state for all
         /// actions. Do this recursively, using the marginal distribution. 
         void ExpandAllActions()
         {
-			for (int k=0; k<4; ++k) {
-				for (int a=0; a<tree.n_actions; ++a) {
-					int next_state = belief->GenerateTransition(state, a);
-					real reward = belief->GenerateReward(state, a);
-					children.push_back(BeliefState(tree, belief, state, a, next_state, reward, this));
-				}
-			}
+            for (int a=0; a<tree.n_actions; ++a) {
+                for (int next_state=0;
+                     next_state<tree.n_states;
+                     ++next_state) {
+                    real p = belief->getTransitionProbability(state, a, next_state);
+                    real reward = belief->GenerateReward(state, a);
+                    children.push_back(BeliefState(tree, belief, state, a, next_state, reward, p, this));
+                }
+            }
             if (t < tree.horizon) {
                 for (uint i=0; i<children.size(); ++i) {
                     children[i].ExpandAllActions();
@@ -90,34 +114,32 @@ public:
             }
         }
 
-        /// place holder
+            
+        
+        /// Return the values
         real CalculateValues()
         {
-			Vector Q(tree.n_actions);
-			Vector N(tree.n_actions);
-			//Q.Clear();
-			//N.Clear();
-			real V = prev_reward;
+            Vector Q(tree.n_actions);
+            //Q.Clear();
+            //N.Clear();
+            real V = prev_reward;
             if (t < tree.horizon) {
                 for (uint i=0; i<children.size(); ++i) {
-					int a = children[i].prev_action;
-                    Q(a) = (N(a) * Q(a) +  children[i].CalculateValues()) / (++N(a));
+                    int a = children[i].prev_action;
+                    Q(a) += children[i].probability * children[i].CalculateValues();
                 }
-				V += tree.gamma * Max(Q);
+                V += tree.gamma * Max(Q);
             } else {
-				const DiscreteMDP* model = belief->getMeanMDP();
-				ValueIteration VI(model, tree.gamma);
-				VI.ComputeStateValuesStandard(1e-3);
-				V += tree.gamma * VI.getValue(state);
-			}
-			//N.print(stdout);
+                const DiscreteMDP* model = belief->getMeanMDP();
+                ValueIteration VI(model, tree.gamma);
+                VI.ComputeStateValuesStandard(1e-3);
+                V += tree.gamma * VI.getValue(state);
+            }
+            //N.print(stdout);
 							
-			//printf("t: %d, r: %f, v: %f\n", t, prev_reward, V);
+            //printf("t: %d, r: %f, v: %f\n", t, prev_reward, V);
             return V;
         }
-
-        
-    
     };
     TreeBRL(int n_states_, ///< number of states
             int n_actions_, ///< number of actions
@@ -154,13 +176,21 @@ public:
         return 0;
     }
 
+    void CalculateSparseBeliefTree(int n_samples)
+    {
+        // Initialise the root belief state
+        BeliefState belief_state(*this, belief, current_state);
+        belief_state.SparseExpandAllActions(n_samples);
+        printf("Final value %f\n", belief_state.CalculateValues());
+    }
     void CalculateBeliefTree()
     {
         // Initialise the root belief state
         BeliefState belief_state(*this, belief, current_state);
-        belief_state.ExpandAllActions();
+         belief_state.ExpandAllActions();
         printf("Final value %f\n", belief_state.CalculateValues());
     }
+
 };
 
 
