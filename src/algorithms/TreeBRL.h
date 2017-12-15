@@ -50,7 +50,7 @@ public:
         MDPModel* belief;
         int state;
         int prev_action;
-        int prev_reward;
+        real prev_reward;
         std::vector<BeliefState> children; ///< previous time
         BeliefState* prev; ///< previous belief state
         int t; ///< time
@@ -95,15 +95,16 @@ public:
 			Vector N(tree.n_actions);
 			//Q.Clear();
 			//N.Clear();
+			real V = prev_reward;
             if (t < tree.horizon) {
                 for (uint i=0; i<children.size(); ++i) {
 					int a = children[i].prev_action;
                     Q(a) += (N(a) * Q(a) +  children[i].CalculateValues()) / (++N(a));
                 }
+				V += tree.gamma * Max(Q);
             }
-			real MaxQ = Max(Q);
-			printf("t: %d, v: %f\n", t, MaxQ);
-            return MaxQ;
+			printf("t: %d, r: %f, v: %f\n", t, prev_reward, V);
+            return V;
         }
 
         
