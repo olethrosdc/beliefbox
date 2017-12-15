@@ -26,7 +26,7 @@ TreeBRL::TreeBRL(int n_states_,
       T(0)
 {
   
-    printf("# Starting Tree-Bayes-RL with %d states, %d actions, %d horizon\n", n_states, n_actions, horizon);
+    //printf("# Starting Tree-Bayes-RL with %d states, %d actions, %d horizon\n", n_states, n_actions, horizon);
 
     current_state = -1;
     

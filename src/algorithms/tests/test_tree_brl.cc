@@ -32,7 +32,7 @@ int main(void) {
     
     int n_states = 5;
     int n_actions = 2;
-    int planning_horizon = 3;
+    int max_planning_horizon = 10;
     real discounting = 0.9;
 
     printf("# Making environment\n");
@@ -50,21 +50,24 @@ int main(void) {
     }
     DiscreteMDPCounts belief(n_states, n_actions);
 
-    belief.setFixedRewards(rewards);
+    //belief.setFixedRewards(rewards);
 
     RandomNumberGenerator* rng;
 
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
 
-    TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
-
-    // Set state to 0
-    tree.Reset(0);
-
-    // Calculate a belief tree
-    tree.CalculateBeliefTree();
-
+	for (int planning_horizon=0;
+		 planning_horizon<max_planning_horizon;
+		 planning_horizon++) {
+		TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
+		
+		// Set state to 0
+		tree.Reset(0);
+		
+		// Calculate a belief tree
+		tree.CalculateBeliefTree();
+	}
     return 0;
 }
 

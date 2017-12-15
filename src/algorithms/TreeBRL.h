@@ -22,7 +22,7 @@
 #include "MultiMDPValueIteration.h"
 #include "ValueIteration.h"
 #include <vector>
-
+#include <memory>
 /// \ingroup ReinforcementLearning
 /// @{
     
@@ -73,14 +73,16 @@ public:
             belief->AddTransition(prev_state_, prev_action, r, state);
         }
         /// Generate transitions from the current state for all
-        /// actions. Do this recursively, using the marginal distribution
+        /// actions. Do this recursively, using the marginal distribution. 
         void ExpandAllActions()
         {
-            for (int a=0; a<tree.n_actions; ++a) {
-                int next_state = belief->GenerateTransition(state, a);
-                real reward = belief->GenerateReward(state, a);
-                children.push_back(BeliefState(tree, belief, state, a, next_state, reward, this));
-            }
+			for (int k=0; k<4; ++k) {
+				for (int a=0; a<tree.n_actions; ++a) {
+					int next_state = belief->GenerateTransition(state, a);
+					real reward = belief->GenerateReward(state, a);
+					children.push_back(BeliefState(tree, belief, state, a, next_state, reward, this));
+				}
+			}
             if (t < tree.horizon) {
                 for (uint i=0; i<children.size(); ++i) {
                     children[i].ExpandAllActions();
@@ -99,11 +101,18 @@ public:
             if (t < tree.horizon) {
                 for (uint i=0; i<children.size(); ++i) {
 					int a = children[i].prev_action;
-                    Q(a) += (N(a) * Q(a) +  children[i].CalculateValues()) / (++N(a));
+                    Q(a) = (N(a) * Q(a) +  children[i].CalculateValues()) / (++N(a));
                 }
 				V += tree.gamma * Max(Q);
-            }
-			printf("t: %d, r: %f, v: %f\n", t, prev_reward, V);
+            } else {
+				const DiscreteMDP* model = belief->getMeanMDP();
+				ValueIteration VI(model, tree.gamma);
+				VI.ComputeStateValuesStandard(1e-3);
+				V += tree.gamma * VI.getValue(state);
+			}
+			//N.print(stdout);
+							
+			//printf("t: %d, r: %f, v: %f\n", t, prev_reward, V);
             return V;
         }
 
