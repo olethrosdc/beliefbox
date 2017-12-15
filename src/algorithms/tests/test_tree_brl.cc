@@ -32,7 +32,7 @@ int main(void) {
     
     int n_states = 5;
     int n_actions = 2;
-    int planning_horizon = 10;
+    int planning_horizon = 3;
     real discounting = 0.9;
 
     printf("# Making environment\n");

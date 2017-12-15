@@ -91,13 +91,19 @@ public:
         /// place holder
         real CalculateValues()
         {
-            real y = 0;
+			Vector Q(tree.n_actions);
+			Vector N(tree.n_actions);
+			//Q.Clear();
+			//N.Clear();
             if (t < tree.horizon) {
                 for (uint i=0; i<children.size(); ++i) {
-                    y += children[i].CalculateValues();
+					int a = children[i].prev_action;
+                    Q(a) += (N(a) * Q(a) +  children[i].CalculateValues()) / (++N(a));
                 }
             }
-            return y;
+			real MaxQ = Max(Q);
+			printf("t: %d, v: %f\n", t, MaxQ);
+            return MaxQ;
         }
 
         
@@ -143,7 +149,7 @@ public:
         // Initialise the root belief state
         BeliefState belief_state(*this, belief, current_state);
         belief_state.ExpandAllActions();
-        belief_state.CalculateValues();
+        printf("Final value %f\n", belief_state.CalculateValues());
     }
 };
 
