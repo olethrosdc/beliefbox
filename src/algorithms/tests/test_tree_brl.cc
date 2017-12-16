@@ -34,12 +34,13 @@ int main(void) {
     RandomNumberGenerator* rng;
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
-    
+    rng->seed();
     int n_states = 5;
     int n_actions = 2;
-    int max_planning_horizon = 4;
+    int max_planning_horizon = 3;
     real discounting = 0.9;
-    int n_samples = 10;
+    int n_samples = 8; ///< number of state samples when branching
+    int n_mdp_samples = 128; ///< number of MDP samples at leaf nodes
 
     printf("# Making environment\n");
     unique_ptr<DiscreteEnvironment> environment;
@@ -62,18 +63,20 @@ int main(void) {
     belief.setFixedRewards(rewards);
 
 
-
     printf("# full sampling\n");
     for (int planning_horizon=0;
          planning_horizon<max_planning_horizon;
          planning_horizon++) {
         TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
-		
         // Set state to 0
         tree.Reset(0);
-		
+
+        int state = environment->getState();
+        int reward = environment->getReward();
+                tree.Act(reward, state);
+        
         // Calculate a belief tree
-        tree.CalculateBeliefTree();
+        tree.CalculateBeliefTree(n_mdp_samples);
     }
 
     printf("# sparse sampling\n");
@@ -86,7 +89,7 @@ int main(void) {
         tree.Reset(0);
 		
         // Calculate a belief tree
-        tree.CalculateSparseBeliefTree(n_samples);
+        tree.CalculateSparseBeliefTree(n_samples, n_mdp_samples);
     }
 
     return 0;

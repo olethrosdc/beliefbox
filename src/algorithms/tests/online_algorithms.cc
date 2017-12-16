@@ -904,7 +904,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             total_reward += reward;
             discounted_reward += discount * reward;
 
-            discount *= gamma;            
+            discount *= gamma;       
 
             episode++;
             statistics.ep_stats.resize(episode + 1);

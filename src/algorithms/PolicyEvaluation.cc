@@ -78,7 +78,7 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
         }
         n_iter++;
     } while((Delta >= threshold)  && max_iter != 0);
-    printf ("Exiting at delta = %f, after %d iter\n", Delta, n_iter);
+    //printf ("Exiting at delta = %f, after %d iter\n", Delta, n_iter);
 }
 
 /** Evaluate the policy using a discounted state occupancy matrix.

@@ -23,17 +23,19 @@ TreeBRL::TreeBRL(int n_states_,
       belief(belief_),
       rng(rng_),
       horizon(horizon_),
-      T(0)
+      T(0),
+      size(0)
 {
   
     //printf("# Starting Tree-Bayes-RL with %d states, %d actions, %d horizon\n", n_states, n_actions, horizon);
 
     current_state = -1;
-    
+
 }
 
 TreeBRL::~TreeBRL()
 {
+    //printf(" # destroying tree of size %d\n", size);
 }
 
 void TreeBRL::Reset()
