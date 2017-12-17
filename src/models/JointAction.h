@@ -54,8 +54,8 @@ public:
 
 	void set(const int& player, const int& action_)
 	{
-		assert(player >= 0 && player < n_players);
-		assert(action >= 0 && action < n_actions);
+            //		assert(player >= 0 && player < n_players);
+            //		assert(action >= 0 && action < n_actions);
 		action[player] = action_;
 	}
 };

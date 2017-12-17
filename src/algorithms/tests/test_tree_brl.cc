@@ -37,9 +37,9 @@ int main(void) {
     rng->seed();
     int n_states = 5;
     int n_actions = 2;
-    int max_planning_horizon = 3;
+    int max_planning_horizon = 1;
     real discounting = 0.9;
-    int n_samples = 8; ///< number of state samples when branching
+    int n_samples = 2; ///< number of state samples when branching
     int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
 
     printf("# Making environment\n");

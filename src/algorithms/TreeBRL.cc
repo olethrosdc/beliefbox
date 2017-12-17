@@ -42,11 +42,13 @@ TreeBRL::~TreeBRL()
 void TreeBRL::Reset()
 {
     current_state = -1;
+    current_action = -1;
 }
 
 void TreeBRL::Reset(int state)
 {
     current_state = state;
+    current_action = -1;
 }
 
 /// Full observation
@@ -62,7 +64,7 @@ real TreeBRL::Observe (int state, int action, real reward, int next_state, int n
 /// Partial observation 
 real TreeBRL::Observe (real reward, int next_state, int next_action)
 {
-    if (current_state >= 0) {
+    if (current_state >= 0 && current_action >= 0) {
         belief->AddTransition(current_state, current_action, reward, next_state);
     }
     current_state = next_state;
@@ -76,13 +78,18 @@ real TreeBRL::Observe (real reward, int next_state, int next_action)
 int TreeBRL::Act(real reward, int next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
+
     T++;
+    if (current_state >= 0 && current_action >= 0) {
+        belief->AddTransition(current_state, current_action, reward, next_state);
+    }
+
+    current_state = next_state;
+    
     int n_MDP_leaf_samples = 2;
     CalculateBeliefTree(n_MDP_leaf_samples);
     int next_action = ArgMax(Qs);
-    Observe(reward, next_state, next_action);
     current_action = next_action;
-    current_state = next_state;
     return current_action;
 }
 
@@ -96,10 +103,9 @@ void TreeBRL::CalculateSparseBeliefTree(int n_samples, int n_TS)
     // Initialise the root belief state
     BeliefState belief_state(*this, belief, current_state);
     belief_state.SparseExpandAllActions(n_samples);
-    printf("%d %d %f %f %f\n", horizon, n_TS,
-           belief_state.CalculateValues(),
-           belief_state.CalculateLowerBoundValues(n_TS),
-           belief_state.CalculateUpperBoundValues(n_TS));
+    belief_state.CalculateValues();
+    //belief_state.CalculateLowerBoundValues(n_TS),
+    //belief_state.CalculateUpperBoundValues(n_TS));
 }
 
 /// Calculate a sparse belief tree where we take n_TS MDP samples
@@ -109,10 +115,7 @@ void TreeBRL::CalculateBeliefTree(int n_TS)
     // Initialise the root belief state
     BeliefState belief_state(*this, belief, current_state);
     belief_state.ExpandAllActions();
-    printf("%d %d %f %f %f\n", horizon, n_TS,
-           belief_state.CalculateValues(),
-           belief_state.CalculateLowerBoundValues(n_TS),
-           belief_state.CalculateUpperBoundValues(n_TS));
+    belief_state.CalculateValues();
 }
 
 //------------- Belief states ----------------//
@@ -189,8 +192,6 @@ void TreeBRL::BeliefState::ExpandAllActions()
 real TreeBRL::BeliefState::CalculateValues()
 {
     Vector Q(tree.n_actions);
-    //Q.Clear();
-    //N.Clear();
     real V = prev_reward;
     real discount = tree.gamma;
     if (t < tree.horizon) {
