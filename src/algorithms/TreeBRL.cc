@@ -87,6 +87,9 @@ int TreeBRL::Act(real reward, int next_state)
 }
 
 
+    /// Calculate a sparse belief tree where we take n_samples state
+    /// samples and use n_TS MDP samples for the upper and lower bounds at
+    /// the leaf nodes
 
 void TreeBRL::CalculateSparseBeliefTree(int n_samples, int n_TS)
 {
@@ -101,7 +104,7 @@ void TreeBRL::CalculateSparseBeliefTree(int n_samples, int n_TS)
 
 /// Calculate a sparse belief tree where we take n_TS MDP samples
 /// for the upper and lower bounds at the leaf nodes
-void TreeBRL:CalculateBeliefTree(int n_TS)
+void TreeBRL::CalculateBeliefTree(int n_TS)
 {
     // Initialise the root belief state
     BeliefState belief_state(*this, belief, current_state);
