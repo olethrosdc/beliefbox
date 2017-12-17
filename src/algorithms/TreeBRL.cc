@@ -115,7 +115,8 @@ void TreeBRL::CalculateBeliefTree(int n_TS)
     // Initialise the root belief state
     BeliefState belief_state(*this, belief, current_state);
     belief_state.ExpandAllActions();
-    belief_state.CalculateValues();
+    //belief_state.CalculateValues();
+    belief_state.CalculateUpperBoundValues(n_TS);
 }
 
 //------------- Belief states ----------------//
@@ -204,11 +205,13 @@ real TreeBRL::BeliefState::CalculateValues()
         const DiscreteMDP* model = belief->getMeanMDP();
         ValueIteration VI(model, tree.gamma);
         VI.ComputeStateValuesStandard(1e-3);
-        V += VI.getValue(state);
+        V += discount * VI.getValue(state);
     }
     //N.print(stdout);
 
-    tree.Qs = Q;
+    if (t==0) {
+        tree.Qs = Q;
+    }
     //printf("t: %d, r: %f, v: %f #MV\n", t, prev_reward, V);
     return V;
 }
@@ -235,10 +238,13 @@ real TreeBRL::BeliefState::CalculateUpperBoundValues(int n_samples)
             V_next += VI.getValue(state);
             delete model;
         }
-        V +=  V_next / (real) n_samples;
+        V += discount * V_next / (real) n_samples;
     }
     //printf("t: %d, r: %f, v: %f, s:%d #UV\n", t, prev_reward, V, n_samples);
-    tree.Qs = Q;
+    if (t==0) {
+        tree.Qs = Q;
+        //Q.print(stdout);
+    }
     return V;
 }
 

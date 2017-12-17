@@ -894,12 +894,15 @@ Statistics EvaluateAlgorithm (int episode_steps,
     real discounted_reward = 0.0;
     for (uint step = 0; step < n_steps; ++step) {
         if (episode_steps > 0 && current_time >= episode_steps) {
+            logmsg("starting new episode\n");
             action_ok = false;
             if (algorithm) {
                 algorithm->Reset();
             }
             environment->Reset();
         }
+
+        // Here we are in a terminal state, so we don't care about what the algorithm does.
         if (!action_ok) {
             int state = environment->getState();
             real reward = environment->getReward();
@@ -945,7 +948,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
             }
             step++;
         }
-		
+
+        // This is the default part of the main loop
         int state = environment->getState();
         real reward = environment->getReward();
         statistics.reward.resize(step + 1);
@@ -966,7 +970,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             oracle_policy->Observe(reward, state);
             action = oracle_policy->SelectAction();
         }
-        if (0) {
+        if (1) {
             printf ("%d %d %d %f # t-state-action-reward\n", step, state, action, reward);
         }
         action_ok = environment->Act(action);
