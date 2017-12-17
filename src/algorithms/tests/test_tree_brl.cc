@@ -40,7 +40,7 @@ int main(void) {
     int max_planning_horizon = 3;
     real discounting = 0.9;
     int n_samples = 8; ///< number of state samples when branching
-    int n_mdp_samples = 128; ///< number of MDP samples at leaf nodes
+    int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
 
     printf("# Making environment\n");
     unique_ptr<DiscreteEnvironment> environment;
@@ -60,7 +60,7 @@ int main(void) {
     DiscreteMDPCounts belief(n_states, n_actions);
 
     // simplify things by fixing the rewards
-    belief.setFixedRewards(rewards);
+    //belief.setFixedRewards(rewards);
 
 
     printf("# full sampling\n");

@@ -34,6 +34,7 @@
 #include "ContextBanditCollection.h"
 #include "HQLearning.h"
 #include "TdBma.h"
+#include "TreeBRL.h"
 //#include "MDPModelClassPriors.h"
 
 // -- Discrete environments -- //
@@ -100,12 +101,12 @@ Statistics EvaluateAlgorithm (int episode_steps,
                               real gamma);
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma, LGBRL, UGBRL, ABC}\n\
+    --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma, LGBRL, UGBRL, ABC, TBRL}\n\
     --environment:  {Acrobot, Puddle, CartPole, Pendulum, MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory, DoubleLoop}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
-    --gamma:        reward discounting in [0,1] (* 0.95)\n\
-    --lambda:       eligibility trace parameter (for some algorithms)\n\
+    --gamma:        reward discounting in [0,1] (*0.99)\n\
+    --lambda:       eligibility trace in [0,1] (*0.9) \n\
     --randomness:   environment randomness\n\
     --n_runs:       maximum number of runs\n\
     --n_episodes:   maximum number of episodes (ignored if < 0)\n\
@@ -120,7 +121,8 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --n_iterations: maximum number of iterations (*25) for ABC\n\
     --reward_prior: {Beta, Fixed, *Normal}\n\
     --max_samples:  maximum number of samples (*1) for Sampling\n\
-    --initial_reward: [0]\n\
+    --horizon:      planning horizon (*2) for TBRL\n\
+    --initial_reward: initial reward (*0) for value-based RL\n\
     --seed:                  seed all the RNGs with this\n\
     --seed_file:             select a binary file to choose seeds from (use in conjunction with --seed to select the n-th seed in the file)\n\
     \n\
@@ -154,7 +156,8 @@ int main (int argc, char** argv)
     real sampling_threshold = 0.1;
     bool use_sampling_threshold = false;
     real initial_reward = 0.0;
-
+    int horizon = 2;
+    
     enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::NORMAL;
 
     const char * algorithm_name = "QLearning";
@@ -196,6 +199,7 @@ int main (int argc, char** argv)
                 {"seed", required_argument, 0, 0}, //23
                 {"seed_file", required_argument, 0, 0}, //24
                 {"n_iterations", required_argument, 0, 0}, //25
+                {"horizon", required_argument, 0, 0}, //26
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -253,6 +257,7 @@ int main (int argc, char** argv)
                 case 23: seed = atoi(optarg); break;
                 case 24: seed_filename = optarg; break;
                 case 25: n_iterations = atoi(optarg); break;
+                case 26: horizon = atoi(optarg); break;
                 default:
                   fprintf (stderr, "Unknown option\n");
                   fprintf (stderr, "%s", help_text);
@@ -654,6 +659,15 @@ int main (int argc, char** argv)
                                   lambda,
                                   alpha,
                                   exploration_policy);
+        } else if(!strcmp(algorithm_name, "TBRL")) {
+            discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions, dirichlet_mass, reward_prior);
+            model= (MDPModel*) discrete_mdp;
+            algorithm = new TreeBRL(n_states,
+                                    n_actions,
+                                    gamma,
+                                    model,
+                                    rng,
+                                    horizon);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
 			exit(-1);
