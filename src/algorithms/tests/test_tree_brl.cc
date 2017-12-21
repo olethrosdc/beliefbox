@@ -20,7 +20,8 @@
 /// The main thing to test
 #include "TreeBRL.h"
 
-/// The basic environment
+/// The basic environments
+#include "ContextBandit.h"
 #include "DiscreteChain.h"
 #include "Blackjack.h"
 #include "InventoryManagement.h"
@@ -35,14 +36,20 @@ real RunExperiment(shared_ptr<DiscreteEnvironment> environment,
                    int n_steps);
 
 int main(int argc, char** argv) {
+    // use a high-quality RNG for the main program
     RandomNumberGenerator* rng;
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
+
+    // use some arbitrary sequence (e.g. a fixed file) for generating environments, to ensure consistency across runs
+    DefaultRandomNumberGenerator default_rng;
+    RandomNumberGenerator* env_rng = (RandomNumberGenerator*) &default_rng;
     rng->seed();
-    int n_states = 5;
-    int n_actions = 2;
+    env_rng->manualSeed(982374523);
+    int n_states = 1;
+    int n_actions = 16;
     real discounting = 0.95;
-    int n_steps = 1000;
+    int n_steps = 100;
     int n_experiments = 100;
     //    int n_samples = 2; ///< number of state samples when branching
     //int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
@@ -54,7 +61,8 @@ int main(int argc, char** argv) {
 	
     printf("# Making environment\n");
     shared_ptr<DiscreteEnvironment> environment;
-    environment = make_shared<DiscreteChain>(n_states);
+    //environment = make_shared<DiscreteChain>(n_states);
+    environment = make_shared<ContextBandit>(n_states, n_actions, rng, false);
     //environment = make_shared<Blackjack>(rng);
     //environment = make_shared<InventoryManagement>(10, 5, 0.2, 0.1);
     n_states = environment->getNStates();

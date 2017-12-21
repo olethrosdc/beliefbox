@@ -8,7 +8,7 @@ do
 	do
 		fname=out-${horizon}-${leaf}
 		./bin/test_tree_brl $horizon $leaf >$fname
-		grep H $fname >> $summary
+		grep "U:" $fname >> $summary
 	done
 done
 	
