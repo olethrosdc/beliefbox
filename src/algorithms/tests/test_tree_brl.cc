@@ -37,7 +37,7 @@ int main(void) {
     rng->seed();
     int n_states = 5;
     int n_actions = 2;
-    int max_planning_horizon = 10;
+    int max_planning_horizon = 200;
     real discounting = 0.95;
 	//    int n_samples = 2; ///< number of state samples when branching
     //int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
@@ -74,7 +74,7 @@ int main(void) {
 		
         TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
         // Set state to 0
-        tree.Reset(0);
+        tree.Reset(environment->getState());
 
 		real total_reward = 0;
 		for (int t=0; t<10000; ++t) {
