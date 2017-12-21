@@ -45,8 +45,8 @@ protected:
     uint terminal_state;
 
 public:
-    RandomMDP(uint n_actions,
-              uint n_states,
+    RandomMDP(uint n_states,
+              uint n_actions,
               real randomness,
               real step_value,
               real pit_value,

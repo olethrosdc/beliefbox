@@ -30,6 +30,10 @@
 #include <memory>
 using namespace std;
 
+real RunExperiment(shared_ptr<DiscreteEnvironment> environment,
+                   TreeBRL& tree, 
+                   int n_steps);
+
 int main(int argc, char** argv) {
     RandomNumberGenerator* rng;
     MersenneTwisterRNG mersenne_twister;
@@ -38,19 +42,21 @@ int main(int argc, char** argv) {
     int n_states = 5;
     int n_actions = 2;
     real discounting = 0.95;
-	//    int n_samples = 2; ///< number of state samples when branching
+    int n_steps = 1000;
+    int n_experiments = 100;
+    //    int n_samples = 2; ///< number of state samples when branching
     //int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
 
-	// ---- user options ---- //
-	int planning_horizon = atoi(argv[1]);
-	int leaf_value = atoi(argv[2]);
+    // ---- user options ---- //
+    int planning_horizon = atoi(argv[1]);
+    int leaf_value = atoi(argv[2]);
 
 	
     printf("# Making environment\n");
-    unique_ptr<DiscreteEnvironment> environment;
-    environment = make_unique<DiscreteChain>(n_states);
-    //environment = make_unique<Blackjack>(rng);
-    //environment = make_unique<InventoryManagement>(10, 5, 0.2, 0.1);
+    shared_ptr<DiscreteEnvironment> environment;
+    environment = make_shared<DiscreteChain>(n_states);
+    //environment = make_shared<Blackjack>(rng);
+    //environment = make_shared<InventoryManagement>(10, 5, 0.2, 0.1);
     n_states = environment->getNStates();
     n_actions = environment->getNActions();
 
@@ -70,27 +76,46 @@ int main(int argc, char** argv) {
 
 
 	
-	real dirichlet_mass = 0.5;
-	enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
-	DiscreteMDPCounts belief(n_states, n_actions, dirichlet_mass, reward_prior);
-	
+    real dirichlet_mass = 0.5;
+    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
+    DiscreteMDPCounts belief(n_states, n_actions, dirichlet_mass, reward_prior);
 
-	TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon, (TreeBRL::LeafNodeValue) leaf_value);
-	// Set state to 0
-	tree.Reset(environment->getState());
+    Vector U(n_experiments);
+    for (int experiment=0;
+         experiment<n_experiments;
+         experiment++) {
+        
+        TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon, (TreeBRL::LeafNodeValue) leaf_value);
+        // Set state to 0
 
-	real total_reward = 0;
-	for (int t=0; t<10000; ++t) {
-		int state = environment->getState();
-		real reward = environment->getReward();
-		int action = tree.Act(reward, state);
-		//			action = 1;
-		environment->Act(action);
-			total_reward += reward;
-			printf("%d %d %f  # reward\n", state, action, reward);
-	}
-	printf("H:%d,\tV:%d,\tR:%f\n", planning_horizon, leaf_value,total_reward);
+        real total_reward = RunExperiment(environment, tree, n_steps);
+        printf("H:%d,\tV:%d,\tR:%f\n", planning_horizon, leaf_value,total_reward);
+        U(experiment) = total_reward;
+    }
+    printf("L:%f,\tM:%f,\tU:%f\n",
+           Min(U),
+           U.Sum() / (real) U.Size(),
+           Max(U));
     return 0;
+}
+
+real RunExperiment(shared_ptr<DiscreteEnvironment> environment,
+                   TreeBRL& tree, 
+                   int n_steps)
+{
+    environment->Reset();
+    tree.Reset(environment->getState());
+    real total_reward = 0;
+    for (int t=0; t<n_steps; ++t) {
+        int state = environment->getState();
+        real reward = environment->getReward();
+        int action = tree.Act(reward, state);
+        //			action = 1;
+        environment->Act(action);
+        total_reward += reward;
+        printf("%d %d %f  # reward\n", state, action, reward);
+    }
+    return total_reward;
 }
 
 #endif
