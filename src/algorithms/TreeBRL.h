@@ -33,6 +33,10 @@
  */
 class TreeBRL : public OnlineAlgorithm<int, int>
 {
+public:
+	enum LeafNodeValue {
+		NONE = 0x0, V_MIN, V_MAX, V_MEAN, V_UTS, V_LTS
+	};
 protected:
     const int n_states; ///< number of states
     const int n_actions; ///< number 
@@ -46,9 +50,6 @@ protected:
     int T; ///< time passed
     int size; ///< size of tree
     Vector Qs; ///< caching the value of the actions for the current state
-	enum LeafNodeValue {
-		NONE = 0x0, V_MIN, V_MAX, V_MEAN, V_UTS, V_LTS
-	};
 	LeafNodeValue leaf_node_expansion; ///< how to expand the leaf node
 public:
     class BeliefState

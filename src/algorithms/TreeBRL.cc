@@ -29,8 +29,9 @@ TreeBRL::TreeBRL(int n_states_,
       Qs(n_actions),
 	  leaf_node_expansion(leaf_node)
 {
-  
-    //printf("# Starting Tree-Bayes-RL with %d states, %d actions, %d horizon\n", n_states, n_actions, horizon);
+	const char* leaf_value_name[] = {"None", "V_Min", "V_Max", "V_mean", "V_U", "V_L"};
+    printf("# Starting Tree-Bayes-RL with %d states, %d actions, %d horizon, %s bounds\n", n_states, n_actions, horizon, leaf_value_name[leaf_node]);
+
     current_state = -1;
 
 }
