@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
 			total_reward += reward;
 			printf("%d %d %f  # reward\n", state, action, reward);
 	}
-	printf("H: %d, R: %f\n", planning_horizon, total_reward);
+	printf("H:%d,\tV:%d,\tR:%f\n", planning_horizon, leaf_value,total_reward);
     return 0;
 }
 
