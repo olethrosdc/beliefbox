@@ -87,7 +87,7 @@ int TreeBRL::Act(real reward, int next_state)
 
     current_state = next_state;
     
-    int n_MDP_leaf_samples = 1;
+    //int n_MDP_leaf_samples = 1;
     BeliefState belief_state = CalculateBeliefTree();
 	
 	//printf("%f %f %f\n", belief_state.CalculateValues(), 
@@ -203,7 +203,7 @@ void TreeBRL::BeliefState::ExpandAllActions()
 ///
 /// where the expectation is 
 /// Q_t(w, a) = \sum_{s'} {r(w,a,s') + \gamma P(s' | a, s) V_{t+1} (w')\}\f$ and \f$w' = w( | s, a, s')\f$.
-real TreeBRL::BeliefState::CalculateValues(enum LeafNodeValue leaf_node)
+real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
 {
     Vector Q(tree.n_actions);
     real V = 0;

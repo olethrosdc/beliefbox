@@ -39,8 +39,8 @@ int main(void) {
     int n_actions = 2;
     int max_planning_horizon = 10;
     real discounting = 0.95;
-    int n_samples = 2; ///< number of state samples when branching
-    int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
+	//    int n_samples = 2; ///< number of state samples when branching
+    //int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
 
     printf("# Making environment\n");
     unique_ptr<DiscreteEnvironment> environment;
