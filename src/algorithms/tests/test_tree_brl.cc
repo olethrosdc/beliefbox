@@ -25,6 +25,7 @@
 #include "DiscreteChain.h"
 #include "Blackjack.h"
 #include "InventoryManagement.h"
+#include "RandomMDP.h"
 
 /// STD
 #include <iostream>
@@ -46,8 +47,8 @@ int main(int argc, char** argv) {
     RandomNumberGenerator* env_rng = (RandomNumberGenerator*) &default_rng;
     rng->seed();
     env_rng->manualSeed(982374523);
-    int n_states = 1;
-    int n_actions = 16;
+    int n_states = 16;
+    int n_actions = 4;
     real discounting = 0.95;
     int n_steps = 100;
     int n_experiments = 100;
@@ -62,12 +63,15 @@ int main(int argc, char** argv) {
     printf("# Making environment\n");
     shared_ptr<DiscreteEnvironment> environment;
     //environment = make_shared<DiscreteChain>(n_states);
-    environment = make_shared<ContextBandit>(n_states, n_actions, rng, false);
-    //environment = make_shared<Blackjack>(rng);
+    //environment = make_shared<ContextBandit>(n_states, n_actions, env_rng, false);
+    //environment = make_shared<Blackjack>(env_rng);
+    environment = make_shared<RandomMDP>(n_states, n_actions, 0.1, -0.1, -1, 1, env_rng);
     //environment = make_shared<InventoryManagement>(10, 5, 0.2, 0.1);
     n_states = environment->getNStates();
     n_actions = environment->getNActions();
 
+#if 0
+    //simplify things by fixing the rewards
     printf("# Setting up belief\n");
     Matrix rewards(n_states, n_actions);
     for (int s=0; s<n_states; ++s) {
@@ -75,17 +79,15 @@ int main(int argc, char** argv) {
             rewards(s,a) = environment->getExpectedReward(s, a);
         }
     }
-
-    // simplify things by fixing the rewards
-    //belief.setFixedRewards(rewards);
-
+    belief.setFixedRewards(rewards);
+#endif
 
     printf("# full sampling\n");
 
 
 	
     real dirichlet_mass = 0.5;
-    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
+    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::FIXED;
     DiscreteMDPCounts belief(n_states, n_actions, dirichlet_mass, reward_prior);
 
     Vector U(n_experiments);
@@ -119,9 +121,16 @@ real RunExperiment(shared_ptr<DiscreteEnvironment> environment,
         real reward = environment->getReward();
         int action = tree.Act(reward, state);
         //			action = 1;
-        environment->Act(action);
+        bool action_OK = environment->Act(action);
         total_reward += reward;
         printf("%d %d %f  # reward\n", state, action, reward);
+        if (!action_OK) {
+            state = environment->getState();
+            reward = environment->getReward();
+            tree.Act(reward, state);
+            environment->Reset();
+            tree.Reset(environment->getState());
+        }
     }
     return total_reward;
 }
