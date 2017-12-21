@@ -373,8 +373,8 @@ int main (int argc, char** argv)
         EnvironmentGenerator<int, int>* environment_generator
           = NULL;
         if (!strcmp(environment_name, "RandomMDP")) { 
-            environment = new RandomMDP (n_actions,
-                                         n_states,
+            environment = new RandomMDP (n_states,
+                                         n_actions,
                                          randomness,
                                          step_value,
                                          pit_value,

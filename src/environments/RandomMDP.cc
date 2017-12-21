@@ -17,8 +17,8 @@
 #include <iostream>
 #include <fstream>
 
-RandomMDP::RandomMDP(uint n_actions_,
-                     uint n_states_,
+RandomMDP::RandomMDP(uint n_states_,
+                     uint n_actions_,
                      real randomness_,
                      real step_value_,
                      real pit_value_,

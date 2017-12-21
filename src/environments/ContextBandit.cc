@@ -36,10 +36,13 @@ ContextBandit::ContextBandit(uint n_states_,
             }
             mdp->setRewardDistribution(s, a, reward_dist);
             rewards.push_back(reward_dist);
+            printf ("%d %d %f # E[r|s,a]\n",
+                    s, a,
+                    mdp->getExpectedReward(s, a));
         }
     }
 
-    // set up transitions
+    // set up transitions uniformly
     real Pr = 1.0 / (real) n_states;
     for (uint s=0; s<n_states; s++) {
         for (uint a=0; a<n_actions; a++) {

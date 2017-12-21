@@ -52,6 +52,12 @@ public:
     /// Get the MDP
     virtual DiscreteMDP* getMDP() const;
 
+    virtual real getExpectedReward(const int& state, const int& action) const
+    {
+        return mdp->getExpectedReward(state, action);
+    }
+
+    
     /// Get the name of the environment
     virtual const char* Name();
 
