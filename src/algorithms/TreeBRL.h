@@ -46,6 +46,10 @@ protected:
     int T; ///< time passed
     int size; ///< size of tree
     Vector Qs; ///< caching the value of the actions for the current state
+	enum LeafNodeValue {
+		NONE = 0x0, V_MIN, V_MAX, V_MEAN, V_UTS, V_LTS
+	};
+	LeafNodeValue leaf_node_expansion; ///< how to expand the leaf node
 public:
     class BeliefState
     {
@@ -75,9 +79,10 @@ public:
         void ExpandAllActions();
         void SparseExpandAllActions(int n_samples);
         // methods for calculating action values in the tree
-        real CalculateValues();
-        real CalculateUpperBoundValues(int n_samples);
-        real CalculateLowerBoundValues(int n_samples);
+        real CalculateValues(LeafNodeValue leaf_node);
+		real MeanMDPValue();
+        real UTSValue();
+        real LTSValue();
         // methods for adaptively building the tree while calculating values (TODO)
         // real StochasticBranchAndBound(int n_samples);
     };
@@ -86,7 +91,8 @@ public:
             real gamma_, ///< discount factor
             MDPModel* belief_, ///< belief about the MDP
             RandomNumberGenerator* rng_, ///< the RNG
-            int horizon_ = 1);
+            int horizon_ = 1,
+			LeafNodeValue leaf_node_expansion = NONE);
     virtual ~TreeBRL();
     virtual void Reset();
     virtual void Reset(int state);
@@ -99,7 +105,7 @@ public:
     virtual int Act(real reward, int next_state);
     /** Set the rewards to Singular distributions.
 
-        Since this is a Bayesian approach, we can simply set the belief about the reward in each state to be a singular distribution.
+        Since this is a Bayesian approach, we can simply set the belief about the reward in each state to be a singular distribution, if we want. This would correspond to us having a fixed, unshakeable belief about them.
     */
     virtual void setFixedRewards(const Matrix& rewards)
     {
@@ -113,11 +119,12 @@ public:
 
     virtual real getValue(int state, int action)
     {
+		Serror("Not implemented in this context\n");
         return 0;
     }
 
     void CalculateSparseBeliefTree(int n_samples, int n_TS);
-    void CalculateBeliefTree(int n_TS);
+	TreeBRL::BeliefState CalculateBeliefTree();
 
     
 };

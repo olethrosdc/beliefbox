@@ -37,8 +37,8 @@ int main(void) {
     rng->seed();
     int n_states = 5;
     int n_actions = 2;
-    int max_planning_horizon = 1;
-    real discounting = 0.9;
+    int max_planning_horizon = 10;
+    real discounting = 0.95;
     int n_samples = 2; ///< number of state samples when branching
     int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
 
@@ -57,7 +57,6 @@ int main(void) {
             rewards(s,a) = environment->getExpectedReward(s, a);
         }
     }
-    DiscreteMDPCounts belief(n_states, n_actions);
 
     // simplify things by fixing the rewards
     //belief.setFixedRewards(rewards);
@@ -67,29 +66,27 @@ int main(void) {
     for (int planning_horizon=0;
          planning_horizon<max_planning_horizon;
          planning_horizon++) {
+
+		real dirichlet_mass = 0.5;
+		enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
+		DiscreteMDPCounts belief(n_states, n_actions, dirichlet_mass, reward_prior);
+			
+		
         TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
         // Set state to 0
         tree.Reset(0);
 
-        int state = environment->getState();
-        int reward = environment->getReward();
-                tree.Act(reward, state);
-        
-        // Calculate a belief tree
-        tree.CalculateBeliefTree(n_mdp_samples);
-    }
-
-    printf("# sparse sampling\n");
-    for (int planning_horizon=0;
-         planning_horizon<max_planning_horizon;
-         planning_horizon++) {
-        TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon);
-		
-        // Set state to 0
-        tree.Reset(0);
-		
-        // Calculate a belief tree
-        tree.CalculateSparseBeliefTree(n_samples, n_mdp_samples);
+		real total_reward = 0;
+		for (int t=0; t<10000; ++t) {
+			int state = environment->getState();
+			real reward = environment->getReward();
+			int action = tree.Act(reward, state);
+			//			action = 1;
+			environment->Act(action);
+			total_reward += reward;
+			printf("%d %d %f  # reward\n", state, action, reward);
+		}
+		printf("H: %d, R: %f\n", planning_horizon, total_reward);
     }
 
     return 0;
