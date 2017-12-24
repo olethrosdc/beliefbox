@@ -51,14 +51,15 @@ int main(int argc, char** argv) {
     int n_actions = 4;
     real discounting = 0.95;
     int n_steps = 100;
-    int n_experiments = 100;
+
     //    int n_samples = 2; ///< number of state samples when branching
     //int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
 
     // ---- user options ---- //
     int planning_horizon = atoi(argv[1]);
     int leaf_value = atoi(argv[2]);
-
+    int n_experiments = atoi(argv[3]);
+	
 	
     printf("# Making environment\n");
     shared_ptr<DiscreteEnvironment> environment;
