@@ -21,6 +21,7 @@
 #include "Sarsa.h"
 #include "SarsaDirichlet.h"
 #include "QLearning.h"
+#include "WeightedQLearning.h"
 #include "QLearningDirichlet.h"
 #include "ModelBasedRL.h"
 #include "DiscreteABCRL.h"
@@ -101,7 +102,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
                               real gamma);
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:    {*QLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma, LGBRL, UGBRL, ABC, TBRL}\n\
+    --algorithm:    {*QLearning, WQLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma, LGBRL, UGBRL, ABC, TBRL}\n\
     --environment:  {Acrobot, Puddle, CartPole, Pendulum, MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory, DoubleLoop}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
@@ -459,6 +460,13 @@ int main (int argc, char** argv)
                                       lambda,
                                       alpha,
                                       exploration_policy,
+                                      initial_reward);
+        } else if (!strcmp(algorithm_name, "WQLearning")) { 
+            algorithm = new QLearning(n_samples,
+                                      n_states,
+                                      n_actions,
+                                      gamma,
+                                      alpha,
                                       initial_reward);
         } else if (!strcmp(algorithm_name, "HQLearning")) { 
             algorithm = new HQLearning(
