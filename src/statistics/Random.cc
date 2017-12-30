@@ -49,6 +49,7 @@ real urandom(real min, real max)
     return min + ((max-min)*urandom());
 }
 
+/// Return a uniform random number in {min, min+1, .., max - 1}
 int urandom(int min, int max)
 {
     return floor(min + ((max-min)*urandom()));
