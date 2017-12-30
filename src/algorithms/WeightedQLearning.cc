@@ -12,17 +12,20 @@
 
 #include "WeightedQLearning.h"
 
-/** Initialise Q-learning.
+/** Initialise Weighted Q-learning.
 	 
-    As a side-effect, the exploration_policy is initialised with the Q matrix
-    of this Q-learning instance. Thus, the same exploration policy pointer
-    cannot be shared among multiple WeightedQLearning instances.
+    The main parameters are n_models, which is the number of models to
+    use, and epsilon, which is the probability with which each model
+    is activated within a round. Always, only one model is used to
+    make the decisions.
+
 */
 WeightedQLearning::WeightedQLearning(int n_models_,
                                      int n_states_,
                                      int n_actions_,
                                      real gamma_,
                                      real alpha_,
+                                     real epsilon_,
                                      real initial_value_,
                                      real baseline_)
     : n_models(n_models_),
@@ -30,15 +33,20 @@ WeightedQLearning::WeightedQLearning(int n_models_,
       n_actions(n_actions_),
       gamma(gamma_),
       alpha(alpha_),
+      epsilon(epsilon_),
       initial_value(initial_value_),
       baseline(baseline_),
-      Q(n_models)
+      current_model(0),
+      update_interval(1),
+      t(0),
+      T(1)
 {
+    Q.resize(n_models);
     for (int m=0; m<n_models; m++) {
         Q[m].Resize(n_states, n_actions);
         for (int s=0; s<n_states; s++) {
             for (int a=0; a<n_actions; a++) {
-                Q[m](s, a) = initial_value;
+                Q[m](s, a) = initial_value + urandom();
             }
         }
     }
@@ -53,6 +61,10 @@ void WeightedQLearning::Reset()
 {
     state = -1;
     action = -1;
+    current_model = 0;
+    update_interval = n_states;
+    T = update_interval;
+    t = 0;
 }
 
 
@@ -83,25 +95,41 @@ real WeightedQLearning::UpdateModel(int m, real reward, int next_state, int next
     real TD = n_R - p_R;
     real delta = alpha * TD;
     Q[m](state, action) += delta;	    
-
+    //printf ("%d %f # m, TD\n", m, TD);
     return TD;
 }
 
 real WeightedQLearning::Observe(real reward, int next_state, int next_action)
 {
-    int m = urandom(0, n_models);
-    real TD = UpdateModel(m, reward, next_state, next_action);
+    real P = 1;
+    if (state >= 0 && action >= 0) {
+        for (int i=0; i<n_models; ++i) {
+            if (urandom() < P) {
+                int m = urandom(0, n_models);
+                UpdateModel(m, reward, next_state, next_action);
+                P *= epsilon;
+            } else {
+                break;
+            }
+        }
+
+    } 
     state = next_state; // fall back next state;
     action = next_action;
-    
-    return TD;
+    return 0;
 }
 
 int WeightedQLearning::Act(real reward, int next_state)
 {
-    int m = urandom(0, n_models);
+    if (t > T) {
+        current_model = urandom(0, n_models);
+        update_interval += 1;
+        T += update_interval;
+    }
+    int m = current_model;
     int next_action = 0;
-    real Qmax = Q[m](next_state, next_state);
+    //printf ("%d\n", m);
+    real Qmax = Q[m](next_state, next_action);
     for (int i=0; i<n_actions; ++i) {
         real Qsa = Q[m](next_state, i);
         if (Qsa > Qmax) {

@@ -40,25 +40,35 @@ protected:
     const int n_states; ///< number of states
     const int n_actions; ///< number 
     real gamma; ///< discount factor
-    real alpha; ///< learning rate 
+    real alpha; ///< learning rate
+    real epsilon; ///< probability of selecting a model
     real initial_value; ///< initial value for Q values
     real baseline; ///< baseline reward
-
+    
     std::vector<Matrix> Q; ///< The matrices of Q values
 
+    int current_model; ///< currently used model
     int state; ///< current state
     int action; ///< current action
+    int update_interval; ///< update interval
+    int t; ///< current time step
+    int T; ///< switch horizon
 public:
     WeightedQLearning(int n_models_,
                       int n_states_,
                       int n_actions_,
                       real gamma_,
                       real alpha_,
+                      real epsilon_,
                       real initial_value_= 0.0,
                       real baseline_ = 0.0);
 	/// Destructor
     virtual ~WeightedQLearning()
     {
+        for (int i=0; i<n_models; ++i) {
+            printf ("model %d\n", i);
+            Q[i].print(stdout);
+        }
     }
     virtual void Reset();
     virtual real Observe (real reward, int next_state, int next_action);

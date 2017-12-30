@@ -117,11 +117,11 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --maze_name:    (Gridworld) file name for the maze\n\
     --pit_value:    value of falling in a pit (* -1)\n\
     --goal_value:   value of reaching a goal (* 1)\n\
-    --step_value:   value at each time step (* 0)\n\
-    --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0.01)\n\
+    --step_value:   value at each time step (* 0)\n                     \
+    --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0.01)\n \
     --n_iterations: maximum number of iterations (*25) for ABC\n\
     --reward_prior: {Beta, Fixed, *Normal}\n\
-    --max_samples:  maximum number of samples (*1) for Sampling\n\
+    --max_samples:  maximum number of samples (*1) for Sampling and Weighted Q-Learning\n\
     --horizon:      planning horizon (*2) for TBRL\n\
     --initial_reward: initial reward (*0) for value-based RL\n\
     --seed:                  seed all the RNGs with this\n\
@@ -462,15 +462,15 @@ int main (int argc, char** argv)
                                       exploration_policy,
                                       initial_reward);
         } else if (!strcmp(algorithm_name, "WQLearning")) { 
-            algorithm = new QLearning(n_samples,
-                                      n_states,
-                                      n_actions,
-                                      gamma,
-                                      alpha,
+            algorithm = new WeightedQLearning(max_samples,
+                                              n_states,
+                                              n_actions,
+                                              gamma,
+                                              alpha,
+                                              epsilon,
                                       initial_reward);
         } else if (!strcmp(algorithm_name, "HQLearning")) { 
-            algorithm = new HQLearning(
-                                       4,
+            algorithm = new HQLearning(4,
                                        n_states,
                                        n_actions,
                                        gamma,
@@ -978,7 +978,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             oracle_policy->Observe(reward, state);
             action = oracle_policy->SelectAction();
         }
-        if (1) {
+        if (0) {
             printf ("%d %d %d %f # t-state-action-reward\n", step, state, action, reward);
         }
         action_ok = environment->Act(action);
