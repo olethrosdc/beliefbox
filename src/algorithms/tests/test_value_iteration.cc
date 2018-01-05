@@ -128,7 +128,7 @@ int main (void)
         double end_time = GetCPU();
         printf("\nGradient time time: %f\n", end_time - start_time);
 
-        const FixedDiscretePolicy* policy = policy_gradient.getPolicy();
+        FixedDiscretePolicy* policy = policy_gradient.getPolicy();
         for (int s=0; s<n_states; ++s) {
             printf (" %d ", ArgMax(policy->getActionProbabilitiesPtr(s)));
         }
