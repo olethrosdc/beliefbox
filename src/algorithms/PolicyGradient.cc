@@ -33,6 +33,14 @@ PolicyGradient::PolicyGradient(const DiscreteMDP* mdp_,
     n_states = mdp->getNStates();
     
     policy = new FixedDiscretePolicy(n_states, n_actions);
+    real p = 1.0 / (real) n_actions;
+    for (int s=0; s<n_states; s++) {
+        Vector* Theta = policy->getActionProbabilitiesPtr(s);
+        for (int a=0; a<n_actions; a++) {
+            (*Theta)(a) = p;
+        }
+    }
+
     evaluation.policy = policy;
     
     a_max.resize(n_states);
@@ -71,9 +79,13 @@ void PolicyGradient::ModelBasedGradient(real threshold, int max_iter)
         policy_stable = false;
         Delta = 0.0;
         // evaluate policy
-        evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
-        Matrix& F = evaluation.FeatureMatrix;
 
+        
+
+#if 0
+        evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
+                
+        Matrix& F = evaluation.FeatureMatrix;
         // r = E[reward | s]
         Vector r(n_states);
         for (int i=0; i<n_states; i++) {
@@ -108,15 +120,51 @@ void PolicyGradient::ModelBasedGradient(real threshold, int max_iter)
                 Delta += fabs(D(i,a));
             }
         }
+#else
+        evaluation.ComputeStateValues(threshold, max_iter);
 
+        Matrix D(n_states, n_actions);
         for (int i=0; i<n_states; i++) {
-            Vector* Theta = policy->getActionProbabilitiesPtr(i);
+            real baseline = evaluation.getValue(i);
             for (int a=0; a<n_actions; a++) {
-                (*Theta)(a) += step_size * D(i, a);
+                
+                D(i, a) = starting(i) * (evaluation.getValue(i, a) - baseline);
+                Delta += fabs(D(i,a));
             }
         }
+#endif
 
-        if (Delta < 0.1) {
+        //printf("# D\n"); D.print(stdout);
+        //printf(" W\n");
+        Delta = 0;
+        for (int i=0; i<n_states; i++) {
+            Vector* Theta = policy->getActionProbabilitiesPtr(i);
+            //Theta->print(stdout);
+            real s = 0;
+            for (int a=0; a<n_actions; a++) {
+                real new_value = (*Theta)(a) + step_size * D(i, a);
+
+                if (new_value < 0) {
+                    new_value = 0;
+                }
+                if (new_value > 1) {
+                    new_value = 1;
+                }
+                s += new_value;
+                Delta += fabs((*Theta)(a) - new_value);
+                (*Theta)(a) = new_value;
+            }
+            //printf (" -- %f\n", s);
+            (*Theta) /= s;
+            //Theta->print(stdout);
+        }
+
+        real U = 0;
+        for (int i=0; i<n_states; i++) {
+            U += starting(i) * evaluation.getValue(i);
+        }
+        printf ("%f %f %d # Utility\n", U, Delta, iter);
+        if (Delta < threshold && iter > 0) {
             policy_stable = true;
         }
 
@@ -125,7 +173,9 @@ void PolicyGradient::ModelBasedGradient(real threshold, int max_iter)
         }
     } while(policy_stable == false && iter < max_iter);
 
-    printf ("iter left = %d\n", max_iter - iter);
+    printf ("delta = %f, iter left = %d\n", Delta, max_iter - iter);
+    
+    policy->Show();
 }
 
 

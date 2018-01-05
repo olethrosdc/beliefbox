@@ -51,11 +51,11 @@ int main (void)
     //const DiscreteMDP* mdp = random_mdp.getMDP();
     
 
-    real gamma = 0.99;    
+    real gamma = 0.95;    
     int n_states = mdp->getNStates();
     int n_actions = mdp->getNActions();
-    int n_iterations = 100000;
-    real accuracy = 0; //1e-9;
+    int n_iterations = 1000;
+    real accuracy = 1e-9;
 
     bool test_synchronous = false;
     bool test_asynchronous = false;
@@ -130,7 +130,9 @@ int main (void)
 
         FixedDiscretePolicy* policy = policy_gradient.getPolicy();
         for (int s=0; s<n_states; ++s) {
-            printf (" %d ", ArgMax(policy->getActionProbabilitiesPtr(s)));
+            Vector* pi = policy->getActionProbabilitiesPtr(s);
+            int a = ArgMax(pi);
+            printf (" %d@%.1f ", a, (*pi)(a));
         }
         printf("\n");
         for (int s=0; s<n_states; ++s) {
