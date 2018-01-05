@@ -20,7 +20,7 @@
 PolicyGradient::PolicyGradient(const DiscreteMDP* mdp_,
                                real gamma_,
                                real step_size_)
-    : evaluation(NULL, mdp, gamma_),
+    : evaluation(NULL, mdp_, gamma_),
       mdp(mdp_),
       starting(mdp->getNStates()),
       gamma(gamma_),

@@ -26,7 +26,7 @@
 
 /// Return the minimum number in an array
 template<typename T>
-T Min (const int n, T* x)
+T Min (const int n, const T* x)
 {
     T min = x[0];
     for (int i=1; i<n; i++) {
@@ -39,7 +39,7 @@ T Min (const int n, T* x)
 
 /// Return the maximum number in an array
 template<typename T>
-T Max (int n, T* x)
+T Max (const int n, const T* x)
 {
     T max = x[0];
     for (int i=1; i<n; i++) {
@@ -51,7 +51,7 @@ T Max (int n, T* x)
 }
 
 template<typename T>
-int ArgMin (int n, T* x)
+int ArgMin (const int n, const T* x)
 {
     T min = x[0];
     int arg_min = 0;
@@ -66,7 +66,7 @@ int ArgMin (int n, T* x)
 
 /// Return the indeces of the minimum numbers in an array
 template<typename T>
-std::vector<int> ArgMins(int n, T* x) 
+std::vector<int> ArgMins(const int n, const T* x) 
 {
 	std::vector<int> arg_min;
 	T min = x[0];
@@ -86,7 +86,7 @@ std::vector<int> ArgMins(int n, T* x)
 
 /// Return the index of the maximum number in an array
 template<typename T>
-int ArgMax (int n, T* x)
+int ArgMax (const int n, const T* x) 
 {
     T max = x[0];
     int arg_max = 0;
@@ -101,7 +101,7 @@ int ArgMax (int n, T* x)
 
 /// Return the indeces of the maximum numbers in an array
 template<typename T>
-std::vector<int> ArgMaxs(int n, T* x) 
+std::vector<int> ArgMaxs(const int n, const T* x) 
 {
 	std::vector<int> arg_max;
 	T max = x[0];
@@ -274,8 +274,8 @@ inline int ipow(int x, int n)
 }
 
 
-void SoftMax (int n, real* Q, real* p, real beta);
-void SoftMin (int n, real* Q, real* p, real beta);
+void SoftMax (const int n, const real* Q, real* p, const real beta);
+void SoftMin (const int n, const real* Q, real* p, const real beta);
 void Normalise (const real* src, real* dst, const int n_elements);
 real EuclideanNorm (real* a, real* b, int n);
 real SquareNorm (real* a, real* b, int n);

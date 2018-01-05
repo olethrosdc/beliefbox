@@ -51,7 +51,7 @@ public:
     {
         return evaluation.getValue(state);
     }
-    FixedDiscretePolicy* getPolicy()
+    const FixedDiscretePolicy* getPolicy()
     {
         return policy;
     }

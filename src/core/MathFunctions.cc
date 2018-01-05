@@ -18,7 +18,7 @@
 
 
 /// Softmax an array \f$p_i = e^{\beta Q_i}/\sum_j^n{e^{\beta Q_i}}\f$
-void SoftMax (int n, real* Q, real* p, real beta)
+void SoftMax (const int n, const real* Q, real* p, const real beta)
 {
   real sum = 0.0;
 
@@ -37,7 +37,7 @@ void SoftMax (int n, real* Q, real* p, real beta)
 }
     
 /// Softmin an array \f$p_i = e^{-\beta Q_i}/\sum_j^n{e^{-\beta Q_i}}\f$
-void SoftMin (int n, real* Q, real* p, real beta)
+void SoftMin (const int n, const real* Q, real* p, const real beta)
 {
   real sum = 0.0;
 
