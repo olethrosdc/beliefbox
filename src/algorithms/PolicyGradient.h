@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2018 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -10,8 +10,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef POLICY_ITERATION_H
-#define POLICY_ITERATION_H
+#ifndef POLICY_GRADIENT_H
+#define POLICY_GRADIENT_H
 
 #include "PolicyEvaluation.h"
 #include "DiscreteMDP.h"
@@ -26,30 +26,34 @@
 class PolicyGradient
 {
 public:
-    PolicyEvaluation* evaluation; ///< policy evaluation
-    const DiscreteMDP* mdp;
-	Vector starting; ///< starting state distribution
-    FixedDiscretePolicy* policy;
+    PolicyEvaluation evaluation; ///< policy evaluation
+    const DiscreteMDP* mdp; ///< the underlying MDP
+    Vector starting; ///< starting state distribution
+    FixedDiscretePolicy* policy; ///< policy
     std::vector<int> a_max;
     real gamma;
     int n_states;
     int n_actions;
     real Delta;
     real baseline;
-    PolicyGradient(PolicyEvaluation* evaluation_,
-				   const DiscreteMDP* mdp_,
-				   const Vector& starting_,
-				   real gamma_);
+    real step_size;
+    PolicyGradient(const DiscreteMDP* mdp_,
+                   real gamma_,
+                   real step_size_);
     ~PolicyGradient();
     void Reset();
-    void ComputeStateValues(real threshold, int max_iter=-1);
+    void ModelBasedGradient(real threshold, int max_iter=-1);
     inline real getValue (int state, int action)
     {
-        return evaluation->getValue(state, action);
+        return evaluation.getValue(state, action);
     }
     inline real getValue (int state)
     {
-        return evaluation->getValue(state);
+        return evaluation.getValue(state);
+    }
+    FixedDiscretePolicy* getPolicy()
+    {
+        return policy;
     }
 };
 
