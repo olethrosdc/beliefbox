@@ -163,7 +163,7 @@ void PolicyGradient::ModelBasedGradient(real threshold, int max_iter)
         for (int i=0; i<n_states; i++) {
             U += starting(i) * evaluation.getValue(i);
         }
-        printf ("%f %f %d # Utility\n", U, Delta, iter);
+        //printf ("%f %f %d # Utility\n", U, Delta, iter);
         if (Delta < threshold && iter > 0) {
             policy_stable = true;
         }
@@ -173,9 +173,9 @@ void PolicyGradient::ModelBasedGradient(real threshold, int max_iter)
         }
     } while(policy_stable == false && iter < max_iter);
 
-    printf ("delta = %f, iter left = %d\n", Delta, max_iter - iter);
+    //printf ("delta = %f, iter left = %d\n", Delta, max_iter - iter);
     
-    policy->Show();
+    //policy->Show();
 }
 
 

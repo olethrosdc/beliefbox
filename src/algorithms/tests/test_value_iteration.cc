@@ -57,9 +57,9 @@ int main (void)
     int n_iterations = 1000;
     real accuracy = 1e-9;
 
-    bool test_synchronous = false;
-    bool test_asynchronous = false;
-    bool test_elimination = false;
+    bool test_synchronous = true;
+    bool test_asynchronous = true;
+    bool test_elimination = true;
     bool test_gradient = true;
     
     if (test_synchronous)
