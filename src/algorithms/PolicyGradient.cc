@@ -80,59 +80,16 @@ void PolicyGradient::ModelBasedGradient(real threshold, int max_iter)
         Delta = 0.0;
         // evaluate policy
 
-        
-
-#if 0
-        evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
-                
-        Matrix& F = evaluation.FeatureMatrix;
-        // r = E[reward | s]
-        Vector r(n_states);
-        for (int i=0; i<n_states; i++) {
-            for (int a=0; a<n_actions; a++) {
-                r(i) += mdp->getExpectedReward(i, a) * policy->getActionProbability(i, a);
-            }
-        }
-        // L = y' X
-        Vector L(n_states);
-        for (int i=0; i<n_states; i++) {
-            for (int j=0; j<n_states; j++) {
-                L(i) += starting(j) * F(i, j);
-            }
-        }
-
-        // R = X r
-        Vector R(n_states);
-        for (int i=0; i<n_states; i++) {
-            for (int j=0; j<n_states; j++) {
-                R(i) += F(i, j) * r(j);
-            }
-        }
-
-
-        Matrix D(n_states, n_actions);
-        for (int a=0; a<n_actions; a++) {
-            for (int i=0; i<n_states; i++) {
-                for (int j=0; j<n_states; j++) {
-                    D(i, a) += mdp->getTransitionProbability(i, a, j) * R(j);
-                }
-                D(i, a) *= L(i);
-                Delta += fabs(D(i,a));
-            }
-        }
-#else
-        evaluation.ComputeStateValues(threshold, max_iter);
-
-        Matrix D(n_states, n_actions);
+		evaluation.ComputeStateValues(threshold, max_iter);
+		
+		Matrix D(n_states, n_actions);
         for (int i=0; i<n_states; i++) {
             real baseline = evaluation.getValue(i);
             for (int a=0; a<n_actions; a++) {
-                
                 D(i, a) = starting(i) * (evaluation.getValue(i, a) - baseline);
                 Delta += fabs(D(i,a));
             }
         }
-#endif
 
         //printf("# D\n"); D.print(stdout);
         //printf(" W\n");
@@ -175,6 +132,112 @@ void PolicyGradient::ModelBasedGradient(real threshold, int max_iter)
 
     //printf ("delta = %f, iter left = %d\n", Delta, max_iter - iter);
     
+    //policy->Show();
+}
+
+
+
+
+/** Use the feature expectation version instead.
+
+	The computations here should be equivalent to the once in the other model-based gradient. However, they are inherently more complex, and convergence is slower.
+
+ */
+void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int max_iter)
+{
+    bool policy_stable = true;
+    int iter = 0;	
+	//Matrix G (n_states, n_actions);
+    do {
+        policy_stable = false;
+        Delta = 0.0;
+        // evaluate policy
+
+        
+
+        evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
+                
+        Matrix& F = evaluation.FeatureMatrix;
+        // r = E[reward | s]
+        Vector r(n_states);
+        for (int i=0; i<n_states; i++) {
+            for (int a=0; a<n_actions; a++) {
+                r(i) += mdp->getExpectedReward(i, a) * policy->getActionProbability(i, a);
+            }
+        }
+        // L = y' X
+        Vector L(n_states);
+        for (int i=0; i<n_states; i++) {
+            for (int j=0; j<n_states; j++) {
+                L(i) += starting(j) * F(i, j);
+            }
+        }
+
+        // R = X r
+        Vector R(n_states);
+        for (int i=0; i<n_states; i++) {
+            for (int j=0; j<n_states; j++) {
+                R(i) += F(i, j) * r(j);
+            }
+        }
+
+
+        Matrix D(n_states, n_actions);
+        for (int a=0; a<n_actions; a++) {
+            for (int i=0; i<n_states; i++) {
+                for (int j=0; j<n_states; j++) {
+                    D(i, a) += mdp->getTransitionProbability(i, a, j) * R(j);
+                }
+                D(i, a) *= L(i);
+                Delta += fabs(D(i,a));
+            }
+        }
+		
+        //printf(" W\n");
+        Delta = 0;
+        for (int i=0; i<n_states; i++) {
+            Vector* Theta = policy->getActionProbabilitiesPtr(i);
+            //Theta->print(stdout);
+            real s = 0;
+			for (int a=0; a<n_actions; a++) {
+                s += D(i, a);
+			}
+			// The sum of all these should be zero ideally
+			real fudge = s / (real) n_actions;;
+			s = 0;
+            for (int a=0; a<n_actions; a++) {
+                real new_value = (*Theta)(a) + step_size * (D(i, a) - fudge);
+
+                if (new_value < 0) {
+                    new_value = 0;
+                }
+                if (new_value > 1) {
+                    new_value = 1;
+                }
+                s += new_value;
+                Delta += fabs((*Theta)(a) - new_value);
+                (*Theta)(a) = new_value;
+            }
+            //printf (" -- %f\n", s);
+            (*Theta) /= s;
+            //Theta->print(stdout);
+        }
+
+        real U = 0;
+        for (int i=0; i<n_states; i++) {
+            U += starting(i) * evaluation.getValue(i);
+        }
+        //printf ("%f %f %d # Utility\n", U, Delta, iter);
+        if (Delta < threshold && iter > 0) {
+            policy_stable = true;
+        }
+
+        if (max_iter >= 0) {
+            iter++;
+        }
+    } while(policy_stable == false && iter < max_iter);
+	
+    //printf ("delta = %f, iter left = %d\n", Delta, max_iter - iter);
     //policy->Show();
 }
 

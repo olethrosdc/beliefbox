@@ -26,7 +26,7 @@
 int main (void)
 {
     MersenneTwisterRNG rng;
-#if 0
+#if 1
     int period = 30;
     int max_items = 10;
     real demand = 0.1;
@@ -43,10 +43,10 @@ int main (void)
 
 #endif
     
-    DiscreteChain chain(5);
-    const DiscreteMDP* mdp = chain.getMDP();
+    //DiscreteChain chain(5);
+    //const DiscreteMDP* mdp = chain.getMDP();
 
-    //const DiscreteMDP* mdp = inventory_management.getMDP();
+    const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
     //const DiscreteMDP* mdp = random_mdp.getMDP();
     
@@ -54,9 +54,13 @@ int main (void)
     real gamma = 0.95;    
     int n_states = mdp->getNStates();
     int n_actions = mdp->getNActions();
-    int n_iterations = 1000;
+    int n_iterations = 10000;
     real accuracy = 1e-9;
 
+	printf("gamma: %f, iterations: %d, accuracy: %f\n",
+		   gamma,
+		   n_iterations,
+		   accuracy);
     bool test_synchronous = true;
     bool test_asynchronous = true;
     bool test_elimination = true;
@@ -121,12 +125,12 @@ int main (void)
     
     if (test_gradient)
     {
-        real step_size = 0.1;
+        real step_size = 0.5;
         PolicyGradient policy_gradient(mdp, gamma, step_size);
         double start_time = GetCPU();
         policy_gradient.ModelBasedGradient(accuracy, n_iterations);
         double end_time = GetCPU();
-        printf("\nGradient time time: %f\n", end_time - start_time);
+        printf("\nGradient time: %f\n", end_time - start_time);
 
         FixedDiscretePolicy* policy = policy_gradient.getPolicy();
         for (int s=0; s<n_states; ++s) {
@@ -139,7 +143,28 @@ int main (void)
             printf (" %.1f ", policy_gradient.getValue(s));
         }
     }
-    
+
+	if (test_gradient)
+    {
+        real step_size = 0.1;
+        PolicyGradient policy_gradient(mdp, gamma, step_size);
+        double start_time = GetCPU();
+        policy_gradient.ModelBasedGradientFeatureExpectation(accuracy, n_iterations);
+        double end_time = GetCPU();
+        printf("\nGradient FR time: %f\n", end_time - start_time);
+
+        FixedDiscretePolicy* policy = policy_gradient.getPolicy();
+        for (int s=0; s<n_states; ++s) {
+            Vector* pi = policy->getActionProbabilitiesPtr(s);
+            int a = ArgMax(pi);
+            printf (" %d@%.1f ", a, (*pi)(a));
+        }
+        printf("\n");
+        for (int s=0; s<n_states; ++s) {
+            printf (" %.1f ", policy_gradient.getValue(s));
+        }
+    }
+
 
     
     printf("\nDone\n");

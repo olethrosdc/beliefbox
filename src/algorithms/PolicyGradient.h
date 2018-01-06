@@ -43,6 +43,7 @@ public:
     ~PolicyGradient();
     void Reset();
     void ModelBasedGradient(real threshold, int max_iter=-1);
+	void ModelBasedGradientFeatureExpectation(real threshold, int max_iter=-1);
     inline real getValue (int state, int action)
     {
         return evaluation.getValue(state, action);
