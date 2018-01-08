@@ -39,7 +39,7 @@ WeightedQLearning::WeightedQLearning(int n_models_,
       current_model(0),
       update_interval(1),
       t(0),
-      T(1)
+      T(1)      
 {
     Q.resize(n_models);
     for (int m=0; m<n_models; m++) {
@@ -65,6 +65,10 @@ void WeightedQLearning::Reset()
     update_interval = n_states;
     T = update_interval;
     t = 0;
+    weights.Resize(n_models);
+    for (int i=0; i<n_models; ++i) {
+        weights(i) = weight_distribution.generate();
+    }
 }
 
 
@@ -93,7 +97,7 @@ real WeightedQLearning::UpdateModel(int m, real reward, int next_state, int next
     real n_R = (reward - baseline) +  gamma*Qa_max; // partially observed return
     real p_R = Q[m](state, action); // predicted return
     real TD = n_R - p_R;
-    real delta = alpha * TD;
+    real delta = weights(m) * alpha * TD;
     Q[m](state, action) += delta;	    
     //printf ("%d %f # m, TD\n", m, TD);
     return TD;
@@ -101,18 +105,10 @@ real WeightedQLearning::UpdateModel(int m, real reward, int next_state, int next
 
 real WeightedQLearning::Observe(real reward, int next_state, int next_action)
 {
-    real P = 1;
     if (state >= 0 && action >= 0) {
         for (int i=0; i<n_models; ++i) {
-            if (urandom() < P) {
-                int m = urandom(0, n_models);
-                UpdateModel(m, reward, next_state, next_action);
-                P *= epsilon;
-            } else {
-                break;
-            }
+            UpdateModel(i, reward, next_state, next_action);
         }
-
     } 
     state = next_state; // fall back next state;
     action = next_action;
@@ -121,11 +117,15 @@ real WeightedQLearning::Observe(real reward, int next_state, int next_action)
 
 int WeightedQLearning::Act(real reward, int next_state)
 {
-    if (t > T) {
+    if (t++ > T) {
         current_model = urandom(0, n_models);
         update_interval += 1;
         T += update_interval;
+        for (int i=0; i<n_models; ++i) {
+            weights(i) = weight_distribution.generate();
+        }
     }
+    //ShowModel();
     int m = current_model;
     int next_action = 0;
     //printf ("%d\n", m);

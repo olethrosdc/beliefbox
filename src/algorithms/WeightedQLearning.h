@@ -19,6 +19,8 @@
 #include "real.h"
 #include "ExplorationPolicy.h"
 #include "OnlineAlgorithm.h"
+#include "ExponentialDistribution.h"
+#include "Distribution.h"
 #include <vector>
 
 /** Weighted Ensemble Q-Learning .
@@ -53,6 +55,9 @@ protected:
     int update_interval; ///< update interval
     int t; ///< current time step
     int T; ///< switch horizon
+    //ExponentialDistribution weight_distribution; ///< weights distribution for bootstrapping
+    BernoulliDistribution weight_distribution; ///< weights distribution for bootstrapping
+    Vector weights; ///< bootstrapping weights
 public:
     WeightedQLearning(int n_models_,
                       int n_states_,
@@ -65,15 +70,21 @@ public:
 	/// Destructor
     virtual ~WeightedQLearning()
     {
-        for (int i=0; i<n_models; ++i) {
-            printf ("model %d\n", i);
-            Q[i].print(stdout);
-        }
+        //ShowModel();
     }
     virtual void Reset();
     virtual real Observe (real reward, int next_state, int next_action);
     virtual real UpdateModel (int m, real reward, int next_state, int next_action);
     virtual int Act(real reward, int next_state);
+    void ShowModel()
+    {
+        for (int i=0; i<n_models; ++i) {
+            printf ("model %d\n", i);
+            Q[i].print(stdout);
+        }
+        printf("Current Weights: "); weights.print(stdout);
+    }
+
 	/// Get value of state-action
 	virtual real getValue (int s, int a)
     {
