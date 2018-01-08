@@ -56,12 +56,13 @@ real TestChainMDP(int n_states, int n_samples);
 int main(int argc, char** argv)
 {
     
-    logmsg("Random MDP\n");
-    real random_mdp_error = TestRandomMDP(32, 16);
-    printf("\n\n");
+
     logmsg("Chain MDP\n");
     real chain_mdp_error = TestChainMDP(100, 100);
     logmsg("Done\n");
+    logmsg("Random MDP\n");
+    real random_mdp_error = TestRandomMDP(32, 16);
+    printf("\n\n");
     return 0;
 }
 
@@ -82,7 +83,7 @@ real TestRandomMDP(int n_states, int n_samples)
                          pit_value,
                          goal_value,
                          &rng);
-    Gridworld gridworld("/home/olethros/projects/beliefbox/dat/maze5",
+    Gridworld gridworld("/home/olethros/projects/beliefbox/dat/maze1",
                         randomness,
                         pit_value,
                         goal_value,
@@ -92,18 +93,24 @@ real TestRandomMDP(int n_states, int n_samples)
 
     real total_error = 0;
 
-    DiscreteEnvironment& environment = inventory;//random_mdp;//gridworld;
+    DiscreteEnvironment& environment = gridworld;
     printf("%f\n", gridworld.getExpectedReward(0, 0));
     printf("%f\n", environment.getExpectedReward(0, 0));
     n_states = environment.getNStates();
     DiscreteMDP* mdp = environment.getMDP();
+
+    logmsg("Creating model");
 #if 0
+    // use this if you want to use the actual MDP mdoel
     RepresentativeStateModel<DiscreteMDP, int, int> representative_model(discount_factor, accuracy, *mdp, n_samples, n_actions);
 #else
+    // use this for sampling
     RepresentativeStateModel<DiscreteEnvironment, int, int> representative_model(discount_factor, accuracy, environment, n_samples, n_actions);
 #endif
 
 #if 1
+
+    logmsg("Computing values");
     ValueIteration VI(mdp, discount_factor);
     VI.ComputeStateValuesStandard(accuracy);
 

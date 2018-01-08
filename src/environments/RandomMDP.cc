@@ -40,7 +40,7 @@ RandomMDP::RandomMDP(uint n_states_,
     }
 
     // set up the mdp
-    std::cout << "Making the MPD\n";
+    logmsg("Making the MPD\n");
     mdp = generateMDP();
     mdp->Check();
     Reset();
@@ -67,11 +67,12 @@ DiscreteMDP* RandomMDP::generateMDP() const
     }
 
 
-    std::cout << "Setting pit/goal states\n";
-    int pit_state = (int) floor(((real) n_states - 1) * rng->uniform());
+    logmsg("Setting pit/goal states\n");
+    int pit_state = (int) urandom(0, n_states);
     int goal_state = pit_state;
     while (goal_state == pit_state) {
-        goal_state = (int) floor(((real) n_states - 1) * rng->uniform());
+        goal_state = urandom(0, n_states);
+        logmsg("clash - retrying\n");
     }
     for (uint a=0; a<n_actions; ++a) {
         mdp->setFixedReward(goal_state, a, goal_value);
@@ -84,7 +85,7 @@ DiscreteMDP* RandomMDP::generateMDP() const
     }
 
     
-    std::cout << "Assigning transition probabilities\n";
+    logmsg("Assigning transition probabilities\n");
     
     // Step 1: set prior
     for (uint s=0; s<terminal_state; ++s) {   
