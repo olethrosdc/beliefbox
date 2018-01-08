@@ -40,7 +40,15 @@ protected:
 	real scale;
 	bool update_samples;		///< Take new random training samples 
 public:
-	FittedValueIteration(const real& gamma_, const int& N_, const int& M_, const int& grids_, Environment<S,A>* environment_, std::vector<BayesianMultivariateRegression*> regression_t_, RBFBasisSet* RBFs_, real scale_ = 1.0, bool update_samples_ = false):
+	FittedValueIteration(const real& gamma_,
+						 const int& N_,
+						 const int& M_,
+						 const int& grids_,
+						 Environment<S,A>* environment_,
+						 std::vector<BayesianMultivariateRegression*> regression_t_,
+						 RBFBasisSet* RBFs_,
+						 real scale_ = 1.0,
+						 bool update_samples_ = false):
 		gamma(gamma_),
 		N(N_),
 		M(M_),
