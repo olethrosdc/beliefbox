@@ -56,12 +56,41 @@ real TestChainMDP(int n_states, int n_samples);
 int main(int argc, char** argv)
 {
     
+    int n_states = 32;
+    int n_samples = 16;
+    int n_runs = 10;
+    
+    logmsg("Usage: representative_state_model [n_states [n_samples [n_runs]]]\n");
+    if (argc>1) {
+        n_states = atoi(argv[1]);
+    }
+    if (argc>2) {
+        n_samples = atoi(argv[2]);
+    }
+    if (argc>3) {
+        n_runs = atoi(argv[3]);
+    }
+    Vector ChainMDP_error(n_runs);
+    Vector RandomMDP_error(n_runs);
+    for (int i=0; i<n_runs; ++i) {
+        ChainMDP_error(i) = TestChainMDP(n_states, n_samples);
+        RandomMDP_error(i) = TestRandomMDP(n_states, n_samples);
+    }
 
-    logmsg("Chain MDP\n");
-    real chain_mdp_error = TestChainMDP(100, 100);
-    logmsg("Done\n");
-    logmsg("Random MDP\n");
-    real random_mdp_error = TestRandomMDP(32, 16);
+    for (int i=0; i<n_runs; ++i) {
+        printf ("%f ", ChainMDP_error(i));
+    }
+    printf("# chain error\n");
+
+    for (int i=0; i<n_runs; ++i) {
+        printf ("%f # chain error\n", RandomMDP_error(i));
+    }
+    printf("# random MDP error\n");
+    
+    printf ("%f %f # mean error\n",
+            ChainMDP_error.Sum() / (real) n_runs,
+            RandomMDP_error.Sum() / (real) n_runs);
+
     printf("\n\n");
     return 0;
 }
