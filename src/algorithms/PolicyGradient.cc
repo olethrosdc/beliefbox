@@ -140,7 +140,7 @@ void PolicyGradient::ModelBasedGradient(real threshold, int max_iter)
 
 /** Use the feature expectation version instead.
 
-	The computations here should be equivalent to the once in the other model-based gradient. However, they are inherently more complex, and convergence is slower.
+	The computations here should be equivalent to the once in the other model-based gradient. However, they are inherently more complex, and convergence might be slower.
 
  */
 void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int max_iter)

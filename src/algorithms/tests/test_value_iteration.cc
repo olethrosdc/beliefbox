@@ -23,7 +23,7 @@
 #include "DiscreteChain.h"
 #include "EasyClock.h"
 
-int main (void)
+int main (int argc, char** argv)
 {
     MersenneTwisterRNG rng;
 #if 1
@@ -37,16 +37,16 @@ int main (void)
     real margin = 1.1;
 
     InventoryManagement inventory_management (period, max_items, demand, margin);
-    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze9", random, pit, goal, step);
+    Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze1", random, pit, goal, step);
     RandomMDP random_mdp(32, 32, 0.001, 0.1, 0, 1, &rng, false);
 
 
 #endif
     
-    //DiscreteChain chain(5);
-    //const DiscreteMDP* mdp = chain.getMDP();
+    DiscreteChain chain(5);
+    const DiscreteMDP* mdp = chain.getMDP();
 
-    const DiscreteMDP* mdp = inventory_management.getMDP();
+    //const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
     //const DiscreteMDP* mdp = random_mdp.getMDP();
     
@@ -54,9 +54,18 @@ int main (void)
     real gamma = 0.95;    
     int n_states = mdp->getNStates();
     int n_actions = mdp->getNActions();
-    int n_iterations = 10000;
-    real accuracy = 1e-9;
+    int n_iterations = 1000; 
+    real accuracy = 0;
 
+    if (argc > 0) {
+        n_iterations = atoi(argv[1]);
+    }
+    if (argc > 1) {
+        accuracy = atof(argv[2]);
+    }
+
+    printf ("Usage: test_value_iteration [n_iter [accuracy]]\n");
+    
 	printf("gamma: %f, iterations: %d, accuracy: %f\n",
 		   gamma,
 		   n_iterations,
@@ -78,8 +87,10 @@ int main (void)
             printf (" %d ", ArgMax(policy->getActionProbabilitiesPtr(s)));
         }
         printf("\n");
+        real U = 0;
         for (int s=0; s<n_states; ++s) {
             printf (" %.1f ", value_iteration.getValue(s));
+            U += value_iteration.getValue(s);
         }
         delete policy;
     }
@@ -97,8 +108,10 @@ int main (void)
             printf (" %d ", ArgMax(policy->getActionProbabilitiesPtr(s)));
         }
         printf("\n");
+        real U = 0;
         for (int s=0; s<n_states; ++s) {
             printf (" %.1f ", value_iteration.getValue(s));
+            U += value_iteration.getValue(s);
         }
         delete policy;
     }
@@ -116,9 +129,12 @@ int main (void)
             printf (" %d ", ArgMax(policy->getActionProbabilitiesPtr(s)));
         }
         printf("\n");
+        real U = 0;
         for (int s=0; s<n_states; ++s) {
-            printf (" %.1f ", value_iteration.getValue(s));
+            //printf (" %.1f ", value_iteration.getValue(s));
+            U += value_iteration.getValue(s);
         }
+        printf ("%f %f # AVI time util\n", end_time - start_time, U / (real) n_states);
         delete policy;
     }
 
@@ -139,9 +155,12 @@ int main (void)
             printf (" %d@%.1f ", a, (*pi)(a));
         }
         printf("\n");
+        real U = 0;
         for (int s=0; s<n_states; ++s) {
-            printf (" %.1f ", policy_gradient.getValue(s));
-        }
+            U += policy_gradient.getValue(s);
+        //printf (" %.1f ", policy_gradient.getValue(s));
+         }
+        printf ("%f %f # DPG time util\n", end_time - start_time, U / (real) n_states);
     }
 
 	if (test_gradient)
@@ -160,9 +179,12 @@ int main (void)
             printf (" %d@%.1f ", a, (*pi)(a));
         }
         printf("\n");
+        real U = 0;
         for (int s=0; s<n_states; ++s) {
-            printf (" %.1f ", policy_gradient.getValue(s));
+            U += policy_gradient.getValue(s);
+        //printf (" %.1f ", policy_gradient.getValue(s));
         }
+        printf ("%f %f # FEPG time util\n", end_time - start_time, U / (real) n_states);
     }
 
 
