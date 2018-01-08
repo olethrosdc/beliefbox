@@ -48,6 +48,7 @@
 #include "OnlineAlgorithm.h"
 #include "BayesianMultivariateRegression.h"
 #include "RepresentativeStateModel.h"
+#include "FittedQValueIteration.h"
 #include "FittedValueIteration.h"
 #include "FittedLSTD.h"
 #include "BayesianMultivariate.h"
@@ -170,7 +171,7 @@ Statistics EvaluateAlgorithm(real gamma,
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
 --environment:			{MountainCar, Pendulum, Puddle, Bicycle, CartPole, Acrobot}\n\
---method:				{FVI,LSTD}\n\
+--method:				{FVI,LSTD,FQVI,RSM}\n\
 --sampling:				{Thompson, Marginal} (*Thompson)\n\
 --a_model:				enviroment model parameter a \n\
 --N0_model:				enviroment model parameter N0 \n\
@@ -459,6 +460,8 @@ int main(int argc, char* argv[])
 	LinearModel<Vector,int>* lm = NULL;
 	RepresentativeStateModel<LinearModel<Vector,int>, Vector, int> *RSM = NULL;
 	FittedValueIteration<Vector,int> *FVI = NULL;
+	FittedValueIteration<Vector,int> *private_FVI = NULL;
+	FittedQValueIteration<Vector,int> *FQVI = NULL;
 	FittedLSTD<Vector,int> *FLSTD = NULL;
 	
 	if (!strcmp(options.method, "FVI")) {
@@ -468,9 +471,16 @@ int main(int argc, char* argv[])
 	else if(!strcmp(options.method,"LSTD")) {
 		std::cout << "Least Square Temporal Difference (LSTD) Initialization" << std::endl;
 		FLSTD = new FittedLSTD<Vector,int>(options.gamma, options.n_samples, 1, options.grid, environment, regression_t, RBFs, options.scale);
-	}
-	else {
-		fprintf(stderr, "Unknown environment %s \n", options.environment_name);
+	} else if (!strcmp(options.method, "FQVI")) {
+		std::cout << "Fitted Q-Value Iteration (FQVI) Initialization" << std::endl;
+		FQVI = new FittedQValueIteration<Vector,int>(options.gamma, options.n_samples, 1, options.grid, environment, regression_t, RBFs, options.scale);
+	} else if (!strcmp(options.method, "RSM")) {
+		std::cout << "Representative State Model (RSM) Initialization" << std::endl;
+		private_FVI = new FittedValueIteration<Vector,int>(options.gamma, options.n_samples, 1, options.grid, environment, regression_t, RBFs, options.scale);
+		RSM = NULL;
+		//new RepresentativeStateModel<LinearModel<Vector,int>,Vector,int>(gamma, 0.000001, *lm, n_states, n_actions, private_FVI);
+	} else {
+		fprintf(stderr, "Unknown method %s \n", options.method);
 	}
 	
 	BayesianMultivariate* algorithm = new BayesianMultivariate(n_actions,
@@ -484,7 +494,8 @@ int main(int argc, char* argv[])
 															   lm,
 															   RSM,
 															   FVI,
-															   FLSTD);
+															   FLSTD,
+															   FQVI);
 	
 	Statistics run_statistics;
 	Matrix Stats(options.n_runs,options.n_testing_e_steps);
@@ -525,13 +536,24 @@ int main(int argc, char* argv[])
 		algorithm->Reset();
 	}
 	char buffer[100];
-	sprintf (buffer, "%s_LBRL_RESULTS_STEPS_%s",test_mode, options.environment_name);
+	sprintf (buffer, "%s_LBRL_%s_%d_%s_%s.steps",
+			 test_mode,
+			 options.sampling,
+			 options.grid,
+			 options.method,
+			 options.environment_name);
 	FILE *output	= fopen(buffer,"w");
 	if(output!=NULL) { 
 		Stats.print(output);
 	}
 	fclose(output);
-	sprintf (buffer, "%s_LBRL_RESULTS_REWARDS_%s",test_mode, options.environment_name);
+	
+	sprintf (buffer, "%s_LBRL_%s_%d_%s_%s.reward",
+			 test_mode,
+			 options.sampling,
+			 options.grid,
+			 options.method,
+			 options.environment_name);
 	output	= fopen(buffer,"w");
 	if(output!=NULL) { 
 		Statr.print(output);
@@ -544,6 +566,8 @@ int main(int argc, char* argv[])
 	}
 	delete RBFs;
 	delete FVI;
+	delete private_FVI;
+	delete RSM;
 	delete FLSTD;
 	delete algorithm;
 	delete environment;
