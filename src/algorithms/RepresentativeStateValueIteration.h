@@ -21,34 +21,15 @@
 
 	
  */
-template <class S, class A>
+template <class Kernel, typename S>
 class RepresentativeStateValueIteration {
 protected:
     real gamma;					///< discount factor
-	int N;						///< Number of basis points / representative states
-	int M;						///< Number of sampled next states
-	int grids;					///< Number of grids of basis function
-	int dim;					///< Dimension of the basis functions
-	int dim_model;				///< Dimension of the model basis functions
-	int n_actions;				///< Number of actions (Note: what to do for continuous?)
-	Vector weights;				///< Model parameters
-	real lambda;				///< Regularization factor
-	Matrix PHI;
-	Matrix pseudo_inv;
-    std::vector<Vector> states;	///< set of representative states
-	Environment<S, A>* environment;
-	std::vector<BayesianMultivariateRegression*> regression_t;
-	RBFBasisSet* RBFs_model;	///< The Radial basis functions that used in the model.
-	RBFBasisSet* RBFs;
-	real scale;
-	bool update_samples;		///< Take new random training samples 
+	std::vector<S> states; ///< representative states
+	Kernel kernel; ///< similarity kernel
 public:
-	RepresentativeStateValueIteration(const real& gamma_,
-						 const int& N_,
-						 const int& M_,
-						 const int& grids_,
-						 Environment<S,A>* environment_,
-						 std::vector<BayesianMultivariateRegression*> regression_t_,
+	RepresentativeStateValueIteration(Kernel& kernel,
+									  std::vector<S> 
 						 RBFBasisSet* RBFs_,
 						 real scale_ = 1.0,
 						 bool update_samples_ = false):
