@@ -27,6 +27,9 @@
 #include "FittedQValueIteration.h"
 #include "FittedLSTD.h"
 
+/** Bayesian Multivariate model for transitions, rewards and value functions
+ 
+ */
 class BayesianMultivariate 
 {
 protected:
@@ -73,7 +76,7 @@ public:
 	virtual real getValue(Vector state, int action);
 	///
 	real getValue(Vector state);
-	///
+	/// This function updates both the model and the value function
 	virtual void Update();
 	///
 	void Predict();

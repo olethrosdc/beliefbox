@@ -161,6 +161,11 @@ public:
 		}
 		SP = SP_;
 	}
+	const Vector getState()
+	{
+		return environment->getSTate();
+	}
+	
 	const void SetRewardPredictionMean(const Vector& MR_, const int& a)
 	{
 		assert(MR_.Size() == m);
