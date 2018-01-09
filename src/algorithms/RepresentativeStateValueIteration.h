@@ -22,27 +22,20 @@
 
 	
  */
-template <class Kernel, typename S>
-class RepresentativeStateValueIteration {
+template <typename S, typename A, class Kernel>
+class RepresentativeStateValueIteration
+{
 protected:
-    real gamma;					///< discount factor
-    std::vector<S> states; ///< representative states
+    real gamma;	///< discount factor
     Kernel kernel; ///< similarity kernel
+    std::vector<S> states; ///< representative states
 public:
-    RepresentativeStateValueIteration(Kernel& kernel,
-                                      std::vector<S> 
-                                      RBFBasisSet* RBFs_,
-                                      real scale_ = 1.0,
-                                      bool update_samples_ = false):
+    RepresentativeStateValueIteration(real gamma_, /// discount factor
+                                      Kernel& kernel_, /// kernel to use
+                                      std::vector<S> states_ /// similariry)
         gamma(gamma_),
-        N(N_),
-        M(M_),
-        grids(grids_),
-        environment(environment_),
-        regression_t(regression_t_),
-        RBFs_model(RBFs_),
-        scale(scale_),
-        update_samples(update_samples_)
+        kernel(kernel_),
+        states(states_)
     {
         ///Upper and Lower environment's bounds.
         Vector S_L	= environment->StateLowerBound();

@@ -13,9 +13,9 @@
 
 RBFBasisSet::RBFBasisSet(const EvenGrid& grid, real scale)
 {
-	n_bases = 0;
+    n_bases = 0;
     for (int i=0; i<grid.getNIntervals(); ++i) {
-		AddCenter(grid.getCenter(i), grid.delta * scale);
+        AddCenter(grid.getCenter(i), grid.delta * scale);
     }
     //logmsg("Added %d RBFs\n", centers.size());
 }
@@ -32,10 +32,10 @@ void RBFBasisSet::AddCenter(const Vector& v, const Vector& b)
     RBF* rbf = new RBF(v, b);
     centers.push_back(rbf);
     n_bases++;
-	features.Resize(centers.size());
-	features[n_bases-1] = 0.0;
-	log_features.Resize(centers.size());
-	log_features[n_bases-1] = 0.0;
+    features.Resize(centers.size());
+    features[n_bases-1] = 0.0;
+    log_features.Resize(centers.size());
+    log_features[n_bases-1] = 0.0;
     valid_features = false;
     valid_log_features = false;
 }
@@ -44,11 +44,11 @@ void RBFBasisSet::AddCenter(const Vector& v, real b)
 {
     RBF* rbf = new RBF(v, b);
     centers.push_back(rbf);
-	n_bases++;
-	features.Resize(centers.size());
-	features[n_bases-1] = 0.0;
-	log_features.Resize(centers.size());
-	log_features[n_bases-1] = 0.0;
+    n_bases++;
+    features.Resize(centers.size());
+    features[n_bases-1] = 0.0;
+    log_features.Resize(centers.size());
+    log_features[n_bases-1] = 0.0;
     valid_features = false;
     valid_log_features = false;
 }
@@ -78,10 +78,10 @@ void RBFBasisSet::logEvaluate(const Vector& x)
 
 void RBFBasisSet::Evaluate(const Vector& x)
 {
-	for(int i = 0; i<n_bases; ++i){
-		features[i] = centers[i]->Evaluate(x);
-	}
-	valid_log_features = true;
-	valid_features = true;
+    for(int i = 0; i<n_bases; ++i){
+        features[i] = centers[i]->Evaluate(x);
+    }
+    valid_log_features = true;
+    valid_features = true;
 }
 

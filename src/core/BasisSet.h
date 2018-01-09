@@ -27,30 +27,30 @@ public:
     RBF(const Vector& c, real b) : center(c)
     {
         assert(b > 0);
-		Vector var(c.Size(), &b);
-		beta = var;
+        Vector var(c.Size(), &b);
+        beta = var;
     }
 	
-	RBF(const Vector& c, const Vector& b) : center(c), beta(b)
-	{
-		assert(b > 0);
-	}
+    RBF(const Vector& c, const Vector& b) : center(c), beta(b)
+    {
+        assert(b > 0);
+    }
 	
     /// Get the density at point x
     real Evaluate(const Vector& x)
     {
-		Vector d = pow((x - center)/beta, 2.0);
-		real r = d.Sum();
+        Vector d = pow((x - center)/beta, 2.0);
+        real r = d.Sum();
         //real d = EuclideanNorm(&x, &center);
         return exp(-0.5*r);
     }
     /// Evaluate the log density
     real logEvaluate(const Vector& x)
     {
-		Vector d = pow((x - center)/beta,2);
+        Vector d = pow((x - center)/beta,2);
 
-		return d.Sum();
-    //    return (-beta) * EuclideanNorm(&x, &center);		
+        return d.Sum();
+        //    return (-beta) * EuclideanNorm(&x, &center);		
     }
 };
 
@@ -59,8 +59,8 @@ class RBFBasisSet
 protected:
     std::vector<RBF*> centers;
 
-	Vector log_features;
-	Vector features;
+    Vector log_features;
+    Vector features;
     bool valid_features;
     bool valid_log_features;
     int n_bases;
@@ -72,7 +72,7 @@ public:
     {  }
     RBFBasisSet(const EvenGrid& grid, real scale = 1);
     ~RBFBasisSet();
-	void AddCenter(const Vector& v, const Vector& b);
+    void AddCenter(const Vector& v, const Vector& b);
     void AddCenter(const Vector& v, real b);
     void Evaluate(const Vector& x);
     void logEvaluate(const Vector& x);
@@ -86,19 +86,23 @@ public:
         assert(valid_log_features);
         return log_features[j];
     }
-	Vector log_F()
-	{
-		return log_features;
-	}
+    Vector log_F()
+    {
+        return log_features;
+    }
     real F(int j)
     {
         assert(j >= 0 && j < n_bases);
         assert(valid_features);
         return features[j];
     }
-	Vector F()
-	{
-		return features;
-	}
+    Vector F()
+    {
+        return features;
+    }
+    const Vector& F()
+    {
+        return features;
+    }
 };
 #endif
