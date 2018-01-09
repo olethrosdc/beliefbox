@@ -56,7 +56,7 @@ public:
 	void CalculateValues(real threshold = 1e-6,
 						 int max_iter = -1)
 	{
-		Vector Vn(states.size());
+		Vector Vn((int) states.size());
 		model.Reset();
 		int iter = 0;
 		while (1) {
@@ -71,6 +71,8 @@ public:
 			}
 			real error = (V - Vn).L1Norm();
 			V = Vn;
+			printf ("%d %f\n", iter, error);
+			V.print(stdout);
 			if ((max_iter >= 0 && ++iter >= max_iter) || error < threshold) {
 				break;
 			}
@@ -81,7 +83,7 @@ public:
     {
 		kernel.Evaluate(state);
 		Vector F = kernel.F();
-		return V * F / F.Sum();
+		return Product(V , F / F.Sum());
     }
 
 	/// Get the value of a state-action pair usinga finite number of samples
@@ -90,7 +92,8 @@ public:
 		real Q_a = 0;
 		for (uint k=0; k<n_samples; ++k) {
 			model.setState(state);
-			real r = model.Act(action);
+			model.Act(action);
+			real r = model.getReward();
 			S next_state = model.getState();
 			Q_a += r + gamma * getValue(next_state);
 		}

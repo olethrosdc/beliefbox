@@ -53,7 +53,7 @@ void RBFBasisSet::AddCenter(const Vector& v, real b)
     valid_log_features = false;
 }
 
-void RBFBasisSet::logEvaluate(const Vector& x)
+void RBFBasisSet::logEvaluate(const Vector& x) const
 {
     real log_sum = LOG_ZERO;
     for (int i=0; i<n_bases; ++i) {
@@ -76,7 +76,7 @@ void RBFBasisSet::logEvaluate(const Vector& x)
 //    valid_features = true;
 //}
 
-void RBFBasisSet::Evaluate(const Vector& x)
+void RBFBasisSet::Evaluate(const Vector& x) const
 {
     for(int i = 0; i<n_bases; ++i){
         features[i] = centers[i]->Evaluate(x);

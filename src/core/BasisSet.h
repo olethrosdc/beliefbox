@@ -59,10 +59,10 @@ class RBFBasisSet
 protected:
     std::vector<RBF*> centers;
 
-    Vector log_features;
-    Vector features;
-    bool valid_features;
-    bool valid_log_features;
+    mutable Vector log_features;
+    mutable Vector features;
+    mutable bool valid_features;
+    mutable bool valid_log_features;
     int n_bases;
 public:
     RBFBasisSet() :
@@ -74,29 +74,30 @@ public:
     ~RBFBasisSet();
     void AddCenter(const Vector& v, const Vector& b);
     void AddCenter(const Vector& v, real b);
-    void Evaluate(const Vector& x);
-    void logEvaluate(const Vector& x);
+    void Evaluate(const Vector& x) const;
+    void logEvaluate(const Vector& x) const;
     int size()
     {
         return n_bases;
     }
-    real log_F(int j)
+    real log_F(int j) const
     {
         assert(j >= 0 && j < n_bases);
         assert(valid_log_features);
         return log_features[j];
     }
-    Vector log_F()
+    Vector log_F() const
     {
+		assert(valid_log_features);
         return log_features;
     }
-    real F(int j)
+    real F(int j) const
     {
         assert(j >= 0 && j < n_bases);
         assert(valid_features);
         return features[j];
     }
-    Vector F()
+    Vector F() const
     {
         return features;
     }

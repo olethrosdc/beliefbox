@@ -13,6 +13,8 @@
 #ifdef MAKE_MAIN
 
 #include "MountainCar.h"
+#include "CartPole.h"
+#include "Pendulum.h"
 #include "MersenneTwister.h"
 #include "DiscreteChain.h"
 #include "EasyClock.h"
@@ -22,20 +24,24 @@
 int main (int argc, char** argv)
 {
     MersenneTwisterRNG rng;
-	MountainCar environment;
+	CartPole environment;
+	//Pendulum environment;
 	
 	real gamma = 0.95;
-	int grid_size = 16;
+	int grid_size = 4;
 	real grid_scale = 1.0;
-	int n_samples = 100;
-	
+	int n_samples = 10;
+
+	logmsg("Generating grid\n");
 	EvenGrid grid(environment.StateLowerBound(),
 				  environment.StateUpperBound(),
 				  grid_size);
 
+	logmsg("Creating kernel\n");
 	// use an RBF basis for the kernel fromthe grid
 	RBFBasisSet kernel(grid, grid_scale);
 
+	logmsg("Selecting representative states\n");
 	// create the set of representative states (identical to the grid)
 	std::vector<Vector> states;
 	std::vector<int> actions;
@@ -46,8 +52,13 @@ int main (int argc, char** argv)
 	for (int i=0; i<environment.getNActions(); ++i) {
 		actions.push_back(i);
 	}
+
+	logmsg("setting up RSVI\n");
 	RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> > rsvi(gamma, kernel, states, actions, environment, n_samples);
-    
+
+	logmsg("Calculating approximate value function\n");
+	rsvi.CalculateValues(0, 100);
+	
     printf("\nDone\n");
     return 0.0;
 }
