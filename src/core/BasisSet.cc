@@ -81,7 +81,7 @@ void RBFBasisSet::Evaluate(const Vector& x)
     for(int i = 0; i<n_bases; ++i){
         features[i] = centers[i]->Evaluate(x);
     }
-    valid_log_features = true;
+    valid_log_features = false;
     valid_features = true;
 }
 

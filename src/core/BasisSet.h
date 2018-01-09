@@ -47,7 +47,7 @@ public:
     /// Evaluate the log density
     real logEvaluate(const Vector& x)
     {
-        Vector d = pow((x - center)/beta,2);
+        Vector d = pow((x - center)/beta, 2.0);
 
         return d.Sum();
         //    return (-beta) * EuclideanNorm(&x, &center);		
@@ -97,10 +97,6 @@ public:
         return features[j];
     }
     Vector F()
-    {
-        return features;
-    }
-    const Vector& F()
     {
         return features;
     }

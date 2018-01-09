@@ -10,173 +10,91 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef FITTED_VALUE_ITERATION_H
-#define FITTED_VALUE_ITERATION_H
+#ifndef REPRESENTATIVE_STATE_VALUE_ITERATION_H
+#define REPRESENTATIVE_STATE_VALUE_ITERATION_H
 
-#include "BayesianMultivariateRegression.h"
-#include "BasisSet.h"
-#include "Environment.h"
-#include "Matrix.h"
+#include "Vector.h"
 
 /** Representative state value iteration
 
+	Kernel must implement:
+	 - void Evaluate(const S& x); // for inputting a point
+	 - S F(); // for getting the features corresponding to a point
+
+    Current Kernel implementations
+     -  RBFBasisSet
 	
  */
-template <typename S, typename A, class Kernel>
+template <typename S, typename A, class Kernel, class Model>
 class RepresentativeStateValueIteration
 {
 protected:
     real gamma;	///< discount factor
     Kernel kernel; ///< similarity kernel
     std::vector<S> states; ///< representative states
+	std::vector<A> actions; ///< representative actions
+	Vector V; ///< vector of values
+	Model& model; ///< a model
+	int n_samples; ///< the number of samples to take to approximate expectations
 public:
-    RepresentativeStateValueIteration(real gamma_, /// discount factor
-                                      Kernel& kernel_, /// kernel to use
-                                      std::vector<S> states_ /// similariry)
-        gamma(gamma_),
-        kernel(kernel_),
-        states(states_)
+    RepresentativeStateValueIteration(real gamma_,
+                                      Kernel& kernel_,
+                                      std::vector<S> states_,
+									  std::vector<A> actions_,
+									  Model& model_,
+									  int n_samples_) 
+		: gamma(gamma_),
+		  kernel(kernel_),
+		  states(states_),
+		  actions(actions_),
+		  V((int) states.size()),
+		  model(model_),
+		  n_samples(n_samples_)
     {
-        ///Upper and Lower environment's bounds.
-        Vector S_L	= environment->StateLowerBound();
-        Vector S_U	= environment->StateUpperBound();
-		
-        lambda = 0.01; ///Regularize parameter.
-        ///Basis function construction for the API model
-        EvenGrid Discretisation(S_L,S_U,grids);
-        RBFs = new RBFBasisSet(Discretisation,scale); 
-        dim	= RBFs->size() + 1;	
-		
-        n_actions = environment->getNActions();
-		
-        if(RBFs_model!=NULL) {
-            dim_model = RBFs_model->size() + 1;
-        }
-        else {
-            dim_model = environment->getNStates() + 1;
-        }
-		
-        weights = Vector(dim);
-        sampleSelection();
     }
-    const void Update(real threshold = 0.000001, int max_iter = -1) {
-        real distance;
-        Vector phi, next_state;
-        Vector T(N);
-        Vector pW(dim);
-        weights = pW;
-        int n_iter = 0;
-        do {
-            distance = 0.1;
-            for(int i=0; i<N; ++i)
-                {
-                    Vector V(n_actions);
-                    for(int a=0; a<n_actions; ++a) {
-                        V[a] = 0.0;
+	/// Specialisation for discrete actions, arbitrary states
+	void CalculateValues(real threshold = 1e-6,
+						 int max_iter = -1)
+	{
+		Vector Vn(states.size());
+		model.Reset();
+		int iter = 0;
+		while (1) {
+			for (uint i=0; i<states.size(); i++) {
+				real Q_max = -INF;
+				for (uint a=0; a<actions.size(); a++) {
+					real Q_a = getValue(states[i], actions[a]);
+					if (Q_a > Q_max) {
+						Q_max = Q_a;
+					}
+				}
+			}
+			real error = (V - Vn).L1Norm();
+			V = Vn;
+			if ((max_iter >= 0 && ++iter >= max_iter) || error < threshold) {
+				break;
+			}
+		}
+    }
 
-                        for(int j=0; j<M; ++j) {
-                            environment->Reset();
-                            environment->setState(states[i]);
-                            bool running = environment->Act(a);
-                            real r = environment->getReward();
-                            if(running) {
-                                phi = BasisModelCreation(states[i]);
-                                next_state = regression_t[a]->generate(phi);
+    real getValue(const S& state)  const
+    {
+		kernel.Evaluate(state);
+		Vector F = kernel.F();
+		return V * F / F.Sum();
+    }
 
-                                real temp_v = getValue(next_state);
-                                V[a] = V[a] + (r + gamma*temp_v);
-                            }
-                            else {
-                                V[a] = V[a] + r;
-                            }
-                        }
-                        V[a] = V[a]/(real)M;
-                    }
-                    T[i] = Max(V);
-                }
-            //Update the weights parameters.
-            weights = pseudo_inv*T;
-            //Find the distance between the weights of successive learning iterations.
-            distance = (pW - weights).L2Norm();
-            pW = weights;
-            max_iter--;
-            n_iter++;
-            /// If "true" we collect new samples on each iteration
-            if(update_samples==true) {
-                sampleSelection();
-            }
-        } while(distance > threshold && max_iter != 0);
-        printf("#ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", distance, n_iter);
-    }
-	
-    real getValue(const S& state) 
+	/// Get the value of a state-action pair usinga finite number of samples
+    real getValue(const S& state, const A& action)  const
     {
-        Vector phi = BasisAPICreation(state);
-        return Product(weights,phi);
-    }
-    real getValue(const S& state, const A& action) 
-    {
-        bool endsim = environment->getEndsim();
-        Vector true_state = environment->getState();
-        environment->Reset();
-        environment->setState(state);
-        bool final =environment->Act(action);
-        real r = environment->getReward();
-		
-        environment->Reset();
-        environment->setEndsim(endsim);
-        environment->setState(true_state);
-		
-        real temp_v = 0.0;
-	
-        if(final) {
-            Vector phi			= BasisModelCreation(state);
-            Vector next_state	= regression_t[action]->generate(phi);
-            temp_v = getValue(next_state);
-        }
-        else {
-            temp_v = 0;
-        }
-        return (r + gamma*temp_v);
-    }
-    /// SampleSelection collects a number of samples, uniformly random
-    void sampleSelection() {
-        Vector S_L	= environment->StateLowerBound();
-        Vector S_U	= environment->StateUpperBound();
-        states.clear();
-        PHI = Matrix(dim,N);
-        for(int i=0; i<N; ++i) {
-            Vector state = urandom(S_L, S_U);
-            states.push_back(state);
-            Vector phi = BasisAPICreation(state);
-            PHI.setColumn(i,phi);
-        }
-        pseudo_inv = (PHI*Transpose(PHI) + lambda*Matrix::Unity(dim,dim)).Inverse()*PHI;
-    }
-    /// BasisModelCreation returns the basis function for state s that used for the Model prediction algorithm
-    Vector BasisModelCreation(const Vector& s) {
-        Vector phi;
-        if(RBFs_model != NULL) {
-            RBFs_model->Evaluate(s);
-            phi = RBFs_model->F();
-        } else {
-            phi = s;
-        }
-        phi.Resize(dim_model);
-        phi[dim_model-1] = 1.0;
-        return phi;
-    }
-    /// BasisAPICreation returns the basis function for state s that used for the API algorithm
-    Vector BasisAPICreation(const Vector& s) {
-        RBFs->Evaluate(s);
-        Vector phi = RBFs->F();
-        phi.Resize(dim);
-        phi[dim-1] = 1.0;
-        return phi;
-    }
-    void Reset() {
-        sampleSelection();
-        weights = Vector(dim);
+		real Q_a = 0;
+		for (uint k=0; k<n_samples; ++k) {
+			model.setState(state);
+			real r = model.Act(action);
+			S next_state = model.getState();
+			Q_a += r + gamma * getValue(next_state);
+		}
+		return Q_a / (real) n_samples;
     }
 };
 

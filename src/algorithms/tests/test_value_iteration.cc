@@ -22,6 +22,7 @@
 #include "MersenneTwister.h"
 #include "DiscreteChain.h"
 #include "EasyClock.h"
+#include "RepresentativeStateValueIteration.h"
 
 int main (int argc, char** argv)
 {
@@ -74,7 +75,8 @@ int main (int argc, char** argv)
     bool test_asynchronous = true;
     bool test_elimination = true;
     bool test_gradient = true;
-    
+
+
     if (test_synchronous)
     {
         ValueIteration value_iteration(mdp, gamma);
