@@ -24,9 +24,9 @@
 int main (int argc, char** argv)
 {
     MersenneTwisterRNG rng;
-	CartPole environment;
-	//Pendulum environment;
-	
+    //CartPole environment;
+    //Pendulum environment;
+    MountainCar environment;
 	real gamma = 0.95;
 	int grid_size = 4;
 	real grid_scale = 1.0;
