@@ -63,17 +63,20 @@ public:
             for (uint i=0; i<states.size(); i++) {
                 real Q_max = -INF;
                 for (uint a=0; a<actions.size(); a++) {
-                    real Q_a = getValue(states[i], actions[a]);
+                    real Q_a = getValue(states.at(i), actions.at(a));
+                    //printf ("Q[%d] = %f\n", a, Q_a);
                     if (Q_a > Q_max) {
                         Q_max = Q_a;
                     }
                 }
+                Vn(i) = Q_max;
             }
             real error = (V - Vn).L1Norm();
             V = Vn;
-            printf ("%d %f\n", iter, error);
-            V.print(stdout);
+            //printf ("%d %f\n", iter, error);
+            //V.print(stdout);
             if ((max_iter >= 0 && ++iter >= max_iter) || error < threshold) {
+                logmsg ("Exiting after %d iterations with %f delta\n", iter, error);
                 break;
             }
         }
@@ -95,6 +98,9 @@ public:
             model.Act(action);
             real r = model.getReward();
             S next_state = model.getState();
+            //printf ("s: "); state.print(stdout);
+            //printf ("r: %f\n", r);
+            //printf ("s': "); next_state.print(stdout);
             Q_a += r + gamma * getValue(next_state);
         }
         return Q_a / (real) n_samples;
