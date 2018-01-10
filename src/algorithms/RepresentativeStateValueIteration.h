@@ -94,13 +94,14 @@ public:
     {
         real Q_a = 0;
         for (uint k=0; k<n_samples; ++k) {
+            model.Reset();
             model.setState(state);
             model.Act(action);
             real r = model.getReward();
             S next_state = model.getState();
-            //printf ("s: "); state.print(stdout);
-            //printf ("r: %f\n", r);
-            //printf ("s': "); next_state.print(stdout);
+            // printf ("s: "); state.print(stdout);
+            // printf ("r: %f\n", r);
+            // printf ("s': "); next_state.print(stdout);
             Q_a += r + gamma * getValue(next_state);
         }
         return Q_a / (real) n_samples;

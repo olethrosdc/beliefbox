@@ -145,18 +145,19 @@ int main (int argc, char* argv[])
     for (int i=0; i<environment.getNActions(); ++i) {
         actions.push_back(i);
     }
-
-    logmsg("setting up RSVI\n");
-    RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> > rsvi(gamma, kernel, states, actions, environment, n_samples);
-
-    logmsg("Calculating approximate value function\n");
-    rsvi.CalculateValues(threshold, n_iterations);
+    
+    if (algorithm_name == "RSVI") {
+        logmsg("setting up RSVI\n");
+        RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> > rsvi(gamma, kernel, states, actions, environment, n_samples);
+        
+        logmsg("Calculating approximate value function\n");
+        rsvi.CalculateValues(threshold, n_iterations);
 	
-    for (int i=0; i<grid.getNIntervals(); ++i) {
+        for (int i=0; i<grid.getNIntervals(); ++i) {
         printf("%f ", rsvi.getValue(states.at(i)));
+        }
+        printf ("# value\n");
     }
-    printf ("# value\n");
-
 
     printf("\nDone\n");
     return 0.0;
