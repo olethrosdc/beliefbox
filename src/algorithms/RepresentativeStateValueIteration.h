@@ -30,7 +30,7 @@ class RepresentativeStateValueIteration
 {
 protected:
     real gamma;	///< discount factor
-    Kernel kernel; ///< similarity kernel
+    Kernel& kernel; ///< similarity kernel
     std::vector<S> states; ///< representative states
     std::vector<A> actions; ///< representative actions
     Vector V; ///< vector of values
