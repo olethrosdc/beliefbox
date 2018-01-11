@@ -98,11 +98,15 @@ public:
             model.setState(state);
             bool terminal = model.Act(action);
             real r = model.getReward();
-            S next_state = model.getState();
-            // printf ("s: "); state.print(stdout);
-            // printf ("r: %f\n", r);
-            // printf ("s': "); next_state.print(stdout);
-            Q_a += r + gamma * getValue(next_state);
+			if (terminal) {
+				Q_a += r;
+			} else {
+				S next_state = model.getState();
+				// printf ("s: "); state.print(stdout);
+				// printf ("r: %f\n", r);
+				// printf ("s': "); next_state.print(stdout);
+				Q_a += r + gamma * getValue(next_state);
+			}
         }
         return Q_a / (real) n_samples;
     }
