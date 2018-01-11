@@ -22,11 +22,12 @@
 #include "RepresentativeStateValueIteration.h"
 #include "debug.h"
 #include <getopt.h>
+#include <string>
 
 struct Options {
-    real gamma; = 0.95;
-    int grid_size; = 4;
-    real grid_scale; = 0.25;
+    real gamma = 0.95;
+    int grid_size = 4;
+    real grid_scale = 0.25;
     int n_samples = 1;
     real threshold = 0;
     int n_iterations = 1000;
@@ -138,7 +139,7 @@ int main (int argc, char* argv[])
 
     logmsg("Creating kernel\n");
     // use an RBF basis for the kernel fromthe grid
-    RBFBasisSet kernel(options.grid, options.grid_scale);
+    RBFBasisSet kernel(grid, options.grid_scale);
 
     logmsg("Selecting representative states\n");
     // create the set of representative states (identical to the grid)
@@ -157,25 +158,29 @@ int main (int argc, char* argv[])
         RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> > rsvi(options.gamma, kernel, states, actions, environment, options.n_samples);
         
         logmsg("Calculating approximate value function\n");
-        rsvi.CalculateValues(threshold, n_iterations);
-	FILE* outfile = fopen(stdout, "%s_%s_%d_%f_%d_%d\n",
-                              options.algorithm_name,
-                              options.environment_name,
-                              options.grid_size,
-                              options.grid_scale,
-                              options.n_samples,
-                              options.n_iterations);
-        
-        for (int i=0; i<grid.getNIntervals(); ++i) {
-            
-            printf("%f value ", rsvi.getValue(states.at(i)));
-        }
-        printf ("# value\n");
-    }
+        rsvi.CalculateValues(options.threshold, options.n_iterations);
+		std::string filename;
+		filename.append(options.algorithm_name);
+		filename.append(options.environment_name);
+		filename.append(std::to_string(options.grid_size));
+		filename.append(std::to_string(options.grid_scale));
+		filename.append(std::to_string(options.n_samples));
+		filename.append(std::to_string(options.n_iterations));
 
-    printf("\nDone\n");
-        delete envr
-    return 0.0;
+		FILE* outfile = fopen(filename.c_str(), "w");
+        if (outfile) {
+			for (int i=0; i<grid.getNIntervals(); ++i) {
+				states.at(i).print(outfile);
+				fprintf(outfile, "%f value ", rsvi.getValue(states.at(i)));
+			}
+			fclose(outfile);
+		} else {
+			Serror("Failed to write to file %s\n", filename.c_str());
+		}
+	}
+	printf("\nDone\n");
+	delete environment_ptr;
+	return 0.0;
 }
 
 
