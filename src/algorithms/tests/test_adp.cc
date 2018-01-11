@@ -1,6 +1,5 @@
 /* -*- Mode: C++; -*- */
-/* VER: $Id: Distribution.h,v 1.3 2006/11/06 15:48:53 cdimitrakakis Exp cdimitrakakis $*/
-// copyright (c) 2006 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2018 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -31,6 +30,7 @@ struct Options {
     int n_samples = 1;
     real threshold = 0;
     int n_iterations = 1000;
+	int evaluation_grid_size = 32;
     std::string algorithm_name = "RSVI";
     std::string environment_name = "Pendulum";
 };
@@ -39,8 +39,6 @@ int main (int argc, char* argv[])
 {
     MersenneTwisterRNG rng;
     Options options;
-    std::string algorithm_name;
-    std::string environment_name;
     {
         //options
         int c;
@@ -56,6 +54,7 @@ int main (int argc, char* argv[])
                 {"scale", required_argument, 0, 0}, //6
                 {"algorithm", required_argument, 0, 0}, //7
                 {"threshold", required_argument, 0, 0}, //8
+				{"evaluation_grid", required_argument, 0, 0}, //9
                 {0, 0, 0, 0}
             };
             c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -79,6 +78,7 @@ int main (int argc, char* argv[])
                 case 6: options.grid_scale = atof(optarg); break;
                 case 7: options.algorithm_name = optarg; break;
                 case 8: options.threshold = atof(optarg); break;
+				case 9: options.evaluation_grid_size = atoi(optarg); break;
                 default:
                     printf ("Usage options\n");
                     for (int i=0; long_options[i].name; i++) {
@@ -127,7 +127,8 @@ int main (int argc, char* argv[])
     } else if (options.environment_name == "CartPole") {
         environment_ptr = new CartPole;
     } else {
-        std::cerr << "Unknown environment: " <<  environment_name << std::endl;
+        std::cerr << "Unknown environment: " <<  options.environment_name << std::endl;
+		std::cerr << "Choices: MountainCar, Pendulum, CartPole" << std::endl;
         exit(-1);
     }
     Environment<Vector, int>& environment = *environment_ptr;
@@ -153,7 +154,7 @@ int main (int argc, char* argv[])
         actions.push_back(i);
     }
     
-    if (algorithm_name == "RSVI") {
+    if (options.algorithm_name == "RSVI") {
         logmsg("setting up RSVI\n");
         RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> > rsvi(options.gamma, kernel, states, actions, environment, options.n_samples);
         
@@ -161,22 +162,29 @@ int main (int argc, char* argv[])
         rsvi.CalculateValues(options.threshold, options.n_iterations);
 		std::string filename;
 		filename.append(options.algorithm_name);
-		filename.append(options.environment_name);
-		filename.append(std::to_string(options.grid_size));
-		filename.append(std::to_string(options.grid_scale));
-		filename.append(std::to_string(options.n_samples));
-		filename.append(std::to_string(options.n_iterations));
-
+		filename.append("_"); filename.append(options.environment_name);
+		filename.append("_"); filename.append(std::to_string(options.grid_size));
+		filename.append("_"); filename.append(std::to_string(options.grid_scale));
+		filename.append("_"); filename.append(std::to_string(options.n_samples));
+		filename.append("_"); filename.append(std::to_string(options.n_iterations));
+		filename.append(".values"); 
 		FILE* outfile = fopen(filename.c_str(), "w");
         if (outfile) {
-			for (int i=0; i<grid.getNIntervals(); ++i) {
-				states.at(i).print(outfile);
-				fprintf(outfile, "%f value ", rsvi.getValue(states.at(i)));
+			EvenGrid evaluation_grid(environment.StateLowerBound(),
+						  environment.StateUpperBound(),
+						  options.evaluation_grid_size);
+			for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
+				Vector state = evaluation_grid.getCenter(i);
+				fprintf(outfile, "%f ", rsvi.getValue(state));
+				state.print(outfile);
 			}
 			fclose(outfile);
 		} else {
 			Serror("Failed to write to file %s\n", filename.c_str());
 		}
+	} else {
+		std::cerr << "Unknown algorithm " << options.algorithm_name << std::endl;
+		std::cerr << "Choices: RSVI "  << std::endl;
 	}
 	printf("\nDone\n");
 	delete environment_ptr;
