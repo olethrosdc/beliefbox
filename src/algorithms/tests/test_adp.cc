@@ -30,7 +30,7 @@ struct Options {
     int n_samples = 1;
     real threshold = 0;
     int n_iterations = 1000;
-	int evaluation_grid_size = 32;
+    int evaluation_grid_size = 32;
     std::string algorithm_name = "RSVI";
     std::string environment_name = "Pendulum";
 };
@@ -54,7 +54,7 @@ int main (int argc, char* argv[])
                 {"scale", required_argument, 0, 0}, //6
                 {"algorithm", required_argument, 0, 0}, //7
                 {"threshold", required_argument, 0, 0}, //8
-				{"evaluation_grid", required_argument, 0, 0}, //9
+                {"evaluation_grid", required_argument, 0, 0}, //9
                 {0, 0, 0, 0}
             };
             c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -78,7 +78,7 @@ int main (int argc, char* argv[])
                 case 6: options.grid_scale = atof(optarg); break;
                 case 7: options.algorithm_name = optarg; break;
                 case 8: options.threshold = atof(optarg); break;
-				case 9: options.evaluation_grid_size = atoi(optarg); break;
+                case 9: options.evaluation_grid_size = atoi(optarg); break;
                 default:
                     printf ("Usage options\n");
                     for (int i=0; long_options[i].name; i++) {
@@ -128,7 +128,7 @@ int main (int argc, char* argv[])
         environment_ptr = new CartPole;
     } else {
         std::cerr << "Unknown environment: " <<  options.environment_name << std::endl;
-		std::cerr << "Choices: MountainCar, Pendulum, CartPole" << std::endl;
+        std::cerr << "Choices: MountainCar, Pendulum, CartPole" << std::endl;
         exit(-1);
     }
     Environment<Vector, int>& environment = *environment_ptr;
@@ -153,42 +153,46 @@ int main (int argc, char* argv[])
     for (int i=0; i<environment.getNActions(); ++i) {
         actions.push_back(i);
     }
-    
+
+    ValueFunctionAlgorithm<Vector, int>* VFA = NULL;
     if (options.algorithm_name == "RSVI") {
         logmsg("setting up RSVI\n");
         RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> > rsvi(options.gamma, kernel, states, actions, environment, options.n_samples);
-        
-        logmsg("Calculating approximate value function\n");
-        rsvi.CalculateValues(options.threshold, options.n_iterations);
-		std::string filename;
-		filename.append(options.algorithm_name);
-		filename.append("_"); filename.append(options.environment_name);
-		filename.append("_"); filename.append(std::to_string(options.grid_size));
-		filename.append("_"); filename.append(std::to_string(options.grid_scale));
-		filename.append("_"); filename.append(std::to_string(options.n_samples));
-		filename.append("_"); filename.append(std::to_string(options.n_iterations));
-		filename.append(".values"); 
-		FILE* outfile = fopen(filename.c_str(), "w");
-        if (outfile) {
-			EvenGrid evaluation_grid(environment.StateLowerBound(),
-						  environment.StateUpperBound(),
-						  options.evaluation_grid_size);
-			for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
-				Vector state = evaluation_grid.getCenter(i);
-				fprintf(outfile, "%f ", rsvi.getValue(state));
-				state.print(outfile);
-			}
-			fclose(outfile);
-		} else {
-			Serror("Failed to write to file %s\n", filename.c_str());
-		}
-	} else {
-		std::cerr << "Unknown algorithm " << options.algorithm_name << std::endl;
-		std::cerr << "Choices: RSVI "  << std::endl;
-	}
-	printf("\nDone\n");
-	delete environment_ptr;
-	return 0.0;
+        rsvi.setThreshold(options.threshold);
+        rsvi.setMaxIter(options.n_iterations);
+    } else {
+        std::cerr << "Unknown algorithm " << options.algorithm_name << std::endl;
+        std::cerr << "Choices: RSVI "  << std::endl;
+    }
+    
+    logmsg("Calculating approximate value function\n");
+    VFA->CalculateValues();
+    std::string filename;
+    filename.append(options.algorithm_name);
+    filename.append("_"); filename.append(options.environment_name);
+    filename.append("_"); filename.append(std::to_string(options.grid_size));
+    filename.append("_"); filename.append(std::to_string(options.grid_scale));
+    filename.append("_"); filename.append(std::to_string(options.n_samples));
+    filename.append("_"); filename.append(std::to_string(options.n_iterations));
+    filename.append(".values"); 
+    FILE* outfile = fopen(filename.c_str(), "w");
+    if (outfile) {
+        EvenGrid evaluation_grid(environment.StateLowerBound(),
+                                 environment.StateUpperBound(),
+                                 options.evaluation_grid_size);
+        for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
+            Vector state = evaluation_grid.getCenter(i);
+            fprintf(outfile, "%f ", VFA->getValue(state));
+            state.print(outfile);
+        }
+        fclose(outfile);
+    } else {
+        Serror("Failed to write to file %s\n", filename.c_str());
+    }
+
+printf("\nDone\n");
+delete environment_ptr;
+return 0.0;
 }
 
 

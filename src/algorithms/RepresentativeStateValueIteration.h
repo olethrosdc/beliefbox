@@ -13,6 +13,7 @@
 #ifndef REPRESENTATIVE_STATE_VALUE_ITERATION_H
 #define REPRESENTATIVE_STATE_VALUE_ITERATION_H
 
+#include "ValueFunctionAlgorithm.h"
 #include "Vector.h"
 
 /** Representative state value iteration
@@ -26,7 +27,7 @@
 	
 */
 template <typename S, typename A, class Kernel, class Model>
-class RepresentativeStateValueIteration
+class RepresentativeStateValueIteration : public ValueFunctionAlgorithm<S, A>
 {
 protected:
     real gamma;	///< discount factor
@@ -36,6 +37,8 @@ protected:
     Vector V; ///< vector of values
     Model& model; ///< a model
     int n_samples; ///< the number of samples to take to approximate expectations
+    real threshold = 1e-6;
+    int max_iter = -1;
 public:
     RepresentativeStateValueIteration(real gamma_,
                                       Kernel& kernel_,
@@ -52,9 +55,20 @@ public:
           n_samples(n_samples_)
     {
     }
+    /// Nothing to do in the destrucotr
+    virtual ~RepresentativeStateValueIteration()
+    {
+    }
+    virtual void setThreshold(real threshold_)
+    {
+        threshold = threshold_;
+    }
+    virtual void setMaxIter(real max_iter_)
+    {
+        max_iter = max_iter_;
+    }
     /// Specialisation for discrete actions, arbitrary states
-    void CalculateValues(real threshold = 1e-6,
-                         int max_iter = -1)
+    virtual void CalculateValues()
     {
         Vector Vn((int) states.size());
         model.Reset();
