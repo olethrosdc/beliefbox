@@ -45,9 +45,10 @@ public:
 
     virtual bool Act(const int& action) 
     {
-        reward = local_mdp->Act(action);
+        bool action_ok = local_mdp->Act(action);
+        reward = local_mdp->getReward();
         state = local_mdp->getState();
-        return true;
+        return action_ok;
     }
 
 	virtual real getTransitionProbability(const int& state, const int& action, const int& next_state) const 

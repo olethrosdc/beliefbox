@@ -38,9 +38,10 @@ bool RiverSwim::Act(const int& action)
 	}
 	printf("= P(s' | s = %d, a = %d)\n", state, action);
 #endif
-	reward = model->Act(action);
+        bool action_ok = model->Act(action);
+	reward = model->getReward();
 	state = model->getState();
-    return true;
+        return action_ok;
 }
 
 /** getMDP - return a pointer to a newly-created MPD structure

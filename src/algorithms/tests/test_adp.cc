@@ -23,15 +23,21 @@
 #include "debug.h"
 #include <getopt.h>
 
-int main (int argc, char* argv[])
-{
-    MersenneTwisterRNG rng;
-    real gamma = 0.95;
-    int grid_size = 4;
-    real grid_scale = 0.25;
+struct Options {
+    real gamma; = 0.95;
+    int grid_size; = 4;
+    real grid_scale; = 0.25;
     int n_samples = 1;
     real threshold = 0;
     int n_iterations = 1000;
+    std::string algorithm_name = "RSVI";
+    std::string environment_name = "Pendulum";
+};
+
+int main (int argc, char* argv[])
+{
+    MersenneTwisterRNG rng;
+    Options options;
     std::string algorithm_name;
     std::string environment_name;
     {
@@ -64,14 +70,14 @@ int main (int argc, char* argv[])
                 printf ("\n");
 #endif	
                 switch (option_index) {
-                case 1: n_iterations = atoi(optarg); break;
-                case 2: gamma = atof(optarg); break;
-                case 3: n_samples = atoi(optarg); break;
-                case 4: environment_name = optarg; break;
-                case 5: grid_size = atoi(optarg); break;
-                case 6: grid_scale = atof(optarg); break;
-                case 7: algorithm_name = optarg; break;
-                case 8: threshold = atof(optarg); break;
+                case 1: options.n_iterations = atoi(optarg); break;
+                case 2: options.gamma = atof(optarg); break;
+                case 3: options.n_samples = atoi(optarg); break;
+                case 4: options.environment_name = optarg; break;
+                case 5: options.grid_size = atoi(optarg); break;
+                case 6: options.grid_scale = atof(optarg); break;
+                case 7: options.algorithm_name = optarg; break;
+                case 8: options.threshold = atof(optarg); break;
                 default:
                     printf ("Usage options\n");
                     for (int i=0; long_options[i].name; i++) {
@@ -113,11 +119,11 @@ int main (int argc, char* argv[])
     
     
     Environment<Vector, int>* environment_ptr  = NULL;
-    if (environment_name == "MountainCar") {
+    if (options.environment_name == "MountainCar") {
         environment_ptr = new MountainCar;
-    } else if (environment_name == "Pendulum") {
+    } else if (options.environment_name == "Pendulum") {
         environment_ptr = new Pendulum;
-    } else if (environment_name == "CartPole") {
+    } else if (options.environment_name == "CartPole") {
         environment_ptr = new CartPole;
     } else {
         std::cerr << "Unknown environment: " <<  environment_name << std::endl;
@@ -128,11 +134,11 @@ int main (int argc, char* argv[])
     logmsg("Generating grid\n");
     EvenGrid grid(environment.StateLowerBound(),
                   environment.StateUpperBound(),
-                  grid_size);
+                  options.grid_size);
 
     logmsg("Creating kernel\n");
     // use an RBF basis for the kernel fromthe grid
-    RBFBasisSet kernel(grid, grid_scale);
+    RBFBasisSet kernel(options.grid, options.grid_scale);
 
     logmsg("Selecting representative states\n");
     // create the set of representative states (identical to the grid)
@@ -148,18 +154,27 @@ int main (int argc, char* argv[])
     
     if (algorithm_name == "RSVI") {
         logmsg("setting up RSVI\n");
-        RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> > rsvi(gamma, kernel, states, actions, environment, n_samples);
+        RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> > rsvi(options.gamma, kernel, states, actions, environment, options.n_samples);
         
         logmsg("Calculating approximate value function\n");
         rsvi.CalculateValues(threshold, n_iterations);
-	
+	FILE* outfile = fopen(stdout, "%s_%s_%d_%f_%d_%d\n",
+                              options.algorithm_name,
+                              options.environment_name,
+                              options.grid_size,
+                              options.grid_scale,
+                              options.n_samples,
+                              options.n_iterations);
+        
         for (int i=0; i<grid.getNIntervals(); ++i) {
-        printf("%f ", rsvi.getValue(states.at(i)));
+            
+            printf("%f value ", rsvi.getValue(states.at(i)));
         }
         printf ("# value\n");
     }
 
     printf("\nDone\n");
+        delete envr
     return 0.0;
 }
 

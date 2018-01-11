@@ -97,11 +97,15 @@ public:
 		return state;
 	}
 	// generate a new state given the current state and action, then set the current state to be the new state.
-	real Act (int a)
+	bool Act (int a)
 	{
-		reward = generateReward(state, a);
-		state = generateState(state, a);
-		return reward;
+            if (state>=0 && state<n_states && a>=0 && a<n_actions) {
+                reward = generateReward(state, a);
+                state = generateState(state, a);
+                return true;
+            } else {
+                return false;
+            }
 	}
 	/// Simply show the model
 	virtual void ShowModel() const;

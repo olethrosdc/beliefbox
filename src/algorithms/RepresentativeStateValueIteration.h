@@ -96,7 +96,7 @@ public:
         for (uint k=0; k<n_samples; ++k) {
             model.Reset();
             model.setState(state);
-            model.Act(action);
+            bool terminal = model.Act(action);
             real r = model.getReward();
             S next_state = model.getState();
             // printf ("s: "); state.print(stdout);
