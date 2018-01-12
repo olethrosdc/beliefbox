@@ -12,9 +12,14 @@
 #ifndef GAUSSIAN_VALUE_FUNCTION_MODEL_H
 #define GAUSSIAN_VALUE_FUNCTION_MODEL_H
 
-template <typename S, typename A>
-class GaussianValueFunctionModel : public ValueFunctionModel
+#include "ValueFunctionModel.h"
+#include "BayesianMultivariateRegression.h"
+
+template <>
+class GaussianValueFunctionModel<Vector, int> : public ValueFunctionModel
 {
+protected:
+	std::vector<BayesianMultivariateRegression> model;
 public:
     /// Default constructor
     ValueFunctionModel()
