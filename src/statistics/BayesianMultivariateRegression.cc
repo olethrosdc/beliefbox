@@ -58,7 +58,7 @@ Matrix BayesianMultivariateRegression::generate()
 	return S;
 }
 
-Vector BayesianMultivariateRegression::generate(const Vector& x) const;
+Vector BayesianMultivariateRegression::generate(const Vector& x) const
 {	
 	Vector new_state = A*x;
 	return new_state;
