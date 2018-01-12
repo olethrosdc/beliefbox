@@ -29,6 +29,9 @@ public:
 		n_states(n_states_),
 		n_actions(n_actions_)
     {
+		printf("Creating GVFM with %d states dimension, %d discrete actions\n",
+			   n_states,
+			   n_actions);
 		for (int i=0; i<n_actions; i++) {
 			model.push_back(BayesianMultivariateRegression(n_states, 1));
 			model.at(i).Sampling(false);
