@@ -14,23 +14,33 @@
 
 #include "ValueFunctionModel.h"
 #include "BayesianMultivariateRegression.h"
+#include <vector>
 
 template <>
 class GaussianValueFunctionModel<Vector, int> : public ValueFunctionModel
 {
 protected:
 	std::vector<BayesianMultivariateRegression> model;
+	int n_states;
+	int n_actions;
 public:
     /// Default constructor
-    ValueFunctionModel()
+    ValueFunctionModel(int n_states_, int n_actions_) :
+		n_states(n_states_),
+		n_actions(n_actions_),
+		model(n_states)
     {
+		
     }
     /// Default virtual destructor
     virtual ~ValueFunctionModel()
     {
     }
     /// Reset the model
-    virtual void Reset() = 0;
+    virtual void Reset()
+	{
+		
+	}
 	/// Observe a return
 	virtual void AddReturnSample(const S& state, const A& action, const real U) = 0;
 	/// Calculate the values
