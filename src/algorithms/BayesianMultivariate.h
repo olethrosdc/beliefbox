@@ -27,7 +27,10 @@
 #include "FittedQValueIteration.h"
 #include "FittedLSTD.h"
 
-/** Bayesian Multivariate model for transitions, rewards and value functions
+/** Bayesian Multivariate model for transitions, rewards and value functions.
+
+	This packs a lot of stuff into one class, and is more of a
+	demonstration to be used as a standalone class rather than as a component of a more complicated algorithm.
  
  */
 class BayesianMultivariate 
