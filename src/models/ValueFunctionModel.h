@@ -12,6 +12,8 @@
 #ifndef VALUE_FUNCTION_MODEL_H
 #define VALUE_FUNCTION_MODEL_H
 
+#include "real.h"
+
 template <typename S, typename A>
 class ValueFunctionModel
 {

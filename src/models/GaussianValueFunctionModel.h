@@ -17,8 +17,7 @@
 #include "real.h"
 #include <vector>
 
-template <>
-class GaussianValueFunctionModel<Vector, int> : public ValueFunctionModel
+class GaussianValueFunctionModel : public ValueFunctionModel<Vector, int>
 {
 protected:
 	std::vector<BayesianMultivariateRegression> model;
@@ -26,17 +25,17 @@ protected:
 	int n_actions;
 public:
     /// Default constructor
-    ValueFunctionModel(int n_states_, int n_actions_) :
+    GaussianValueFunctionModel(int n_states_, int n_actions_) :
 		n_states(n_states_),
 		n_actions(n_actions_)
     {
 		for (int i=0; i<n_actions; i++) {
-			model.pushback(BayesianMultivariateRegression(n_states, 1));
-			model.Sampling(false);
+			model.push_back(BayesianMultivariateRegression(n_states, 1));
+			model.at(i).Sampling(false);
 		}
     }
     /// Default virtual destructor
-    virtual ~ValueFunctionModel()
+    virtual ~GaussianValueFunctionModel()
     {
     }
     /// Reset the model
@@ -47,9 +46,11 @@ public:
 		}
 	}
 	/// Observe a return
-	virtual void AddReturnSample(const S& state, const A& action, const real U)
+	virtual void AddReturnSample(const Vector& state, const int& action, const real U)
 	{
-		model.at(action).AddElement(U, state);
+		Vector Uv(1);
+		Uv(0) = U;
+		model.at(action).AddElement(Uv, state);
 	}
 	/// Calculate the values, i.e. select a model
     virtual void CalculateValues()
@@ -59,7 +60,7 @@ public:
 		}
 	}
     /// Get the value of a state
-    virtual real getValue(const S& state) const
+    virtual real getValue(const Vector& state) const
 	{
  		real Qmax = -INF;
 		for (int i=0; i<n_actions; ++i) {
@@ -71,7 +72,7 @@ public:
 		return Qmax;
 	}
     /// Get the value of a state-action pair
-    virtual real getValue(const S& state, const A& action)  const
+    virtual real getValue(const Vector& state, const int& action)  const
 	{
 		return model.at(action).generate(state)(0);
 	}

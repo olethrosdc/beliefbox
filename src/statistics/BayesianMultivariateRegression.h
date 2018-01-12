@@ -42,7 +42,7 @@ class BayesianMultivariateRegression
 		BayesianMultivariateRegression(int m_ = 1, int d_ = 1, Matrix S0_ = Matrix::Unity(1,1), real N0_ = 1.0, real a_ = 1.0, bool ThompsonSampling_ = true);
 		void AddElement(const Vector& y, const Vector& x);
 		Matrix generate();
-		Vector generate(const Vector& x);
+		Vector generate(const Vector& x) const;
 		void generate(Matrix& Mean, Matrix& Covariance);
 		Matrix getSxx() { return Sxx; }
 		real Posterior(const Vector& x, const Vector& y);
