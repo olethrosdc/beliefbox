@@ -6,19 +6,34 @@ int main (void)
 {
 	Pendulum pendulum;
 	Environment<Vector, int>& environment = pendulum;
-	GaussianValueFunctionModel gvfm(environment.getNStates(),
-									environment.getNActions());
 		
 	int T = 100;
+	int grid_size = 8;
 	int evaluation_grid_size = 32;
 
 	int n_iter = 10000;
 	real gamma = 0.95;
+
+    logmsg("Generating grid\n");
+    EvenGrid grid(environment.StateLowerBound(),
+                  environment.StateUpperBound(),
+                  grid_size);
+
+    logmsg("Creating kernel\n");
+    // use an RBF basis for the kernel fromthe grid
+    RBFBasisSet kernel(grid, 1.0);
+	int n_features = kernel.size();
+
+	GaussianValueFunctionModel gvfm(n_features,
+									environment.getNActions());
+
 	
 	for (int k=0; k<n_iter; k++) {
 		real U = 0;
 		real discount = 1 ;
 		environment.Reset();
+		environment.setState(urandom(environment.StateLowerBound(),
+									 environment.StateUpperBound()));
 		bool action_ok = true;
 		Vector state = environment.getState();
 		int action = urandom(0, environment.getNActions());
@@ -36,7 +51,8 @@ int main (void)
 		//printf ("END %f | %f, %f\n", reward, discount, U);
 		printf ("%f -- ", U);
 		state.print(stdout);
-		gvfm.AddReturnSample(state, action, -U);
+		kernel.Evaluate(state);
+		gvfm.AddReturnSample(kernel.F(), action, U);
 	}
 	gvfm.CalculateValues();
     FILE* outfile = fopen("Pendulum-gvfm.values", "w");
@@ -46,7 +62,8 @@ int main (void)
                                  evaluation_grid_size);
         for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
             Vector state = evaluation_grid.getCenter(i);
-            fprintf(outfile, "%f ", gvfm.getValue(state));
+			kernel.Evaluate(state);
+            fprintf(outfile, "%f ", gvfm.getValue(kernel.F()));
             state.print(outfile);
         }
         fclose(outfile);

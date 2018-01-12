@@ -33,12 +33,14 @@ public:
 			   n_states,
 			   n_actions);
 		for (int i=0; i<n_actions; i++) {
-			model.push_back(BayesianMultivariateRegression(n_states, 1));
-			model.at(i).Sampling(false);
+			real N0 = 0.1;
+			real a0 = 0.1;
+			Matrix S0 = N0 * Matrix::Unity(1, 1);
+			model.push_back(BayesianMultivariateRegression(n_states, 1, S0, N0, a0, false));
 		}
     }
     /// Default virtual destructor
-    virtual ~GaussianValueFunctionModel()
+	virtual ~GaussianValueFunctionModel()
     {
     }
     /// Reset the model
