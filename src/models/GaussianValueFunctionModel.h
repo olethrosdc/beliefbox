@@ -14,10 +14,10 @@
 
 #include "ValueFunctionModel.h"
 #include "BayesianMultivariateRegression.h"
+#include "real.h"
 #include <vector>
 
-template <>
-class GaussianValueFunctionModel<Vector, int> : public ValueFunctionModel
+class GaussianValueFunctionModel : public ValueFunctionModel<Vector, int>
 {
 protected:
 	std::vector<BayesianMultivariateRegression> model;
@@ -25,30 +25,57 @@ protected:
 	int n_actions;
 public:
     /// Default constructor
-    ValueFunctionModel(int n_states_, int n_actions_) :
+    GaussianValueFunctionModel(int n_states_, int n_actions_) :
 		n_states(n_states_),
-		n_actions(n_actions_),
-		model(n_states)
+		n_actions(n_actions_)
     {
-		
+		for (int i=0; i<n_actions; i++) {
+			model.push_back(BayesianMultivariateRegression(n_states, 1));
+			model.at(i).Sampling(false);
+		}
     }
     /// Default virtual destructor
-    virtual ~ValueFunctionModel()
+    virtual ~GaussianValueFunctionModel()
     {
     }
     /// Reset the model
     virtual void Reset()
 	{
-		
+		for (int i=0; i<n_actions; i++) {
+			model.at(i).Reset();
+		}
 	}
 	/// Observe a return
-	virtual void AddReturnSample(const S& state, const A& action, const real U) = 0;
-	/// Calculate the values
-    virtual void CalculateValues() = 0;
+	virtual void AddReturnSample(const Vector& state, const int& action, const real U)
+	{
+		Vector Uv(1);
+		Uv(0) = U;
+		model.at(action).AddElement(Uv, state);
+	}
+	/// Calculate the values, i.e. select a model
+    virtual void CalculateValues()
+	{
+		for (int i=0; i<n_actions; i++) {
+			model.at(i).Select();
+		}
+	}
     /// Get the value of a state
-    virtual real getValue(const S& state) const = 0;
+    virtual real getValue(const Vector& state) const
+	{
+ 		real Qmax = -INF;
+		for (int i=0; i<n_actions; ++i) {
+			real Qi = getValue(state, i);
+			if (Qi > Qmax) {
+				Qmax = Qi;
+			}
+		}
+		return Qmax;
+	}
     /// Get the value of a state-action pair
-    virtual real getValue(const S& state, const A& action)  const = 0;
+    virtual real getValue(const Vector& state, const int& action)  const
+	{
+		return model.at(action).generate(state)(0);
+	}
 
 };
 
