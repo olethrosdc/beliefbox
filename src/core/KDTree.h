@@ -75,8 +75,8 @@ public:
     void Show();
     KDNode* FindNearestNeighbourLinear(const Vector& x);
     KDNode* FindNearestNeighbour(const Vector& x);
-    OrderedFixedList<KDNode> FindKNearestNeighboursLinear(const Vector& x, const int K);
-    OrderedFixedList<KDNode> FindKNearestNeighbours(const Vector& x, const int K); 
+    OrderedFixedList<KDNode> FindKNearestNeighboursLinear(const Vector& x, const int K) const;
+    OrderedFixedList<KDNode> FindKNearestNeighbours(const Vector& x, const int K) const; 
     typedef std::list<std::pair<real, KDNode*> >::iterator iterator;
 	/// Get number of nodes
     int getNumberOfNodes()

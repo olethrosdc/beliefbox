@@ -91,7 +91,7 @@ KDNode* void_KDTree::FindNearestNeighbour(const Vector& x)
 
 
 /// Find the first K nearest neigbours to X by linear search through the list.
-OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(const Vector& x, const int K)
+OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(const Vector& x, const int K) const
 {
     int N = node_list.size();
     OrderedFixedList<KDNode> knn_list(K);
@@ -103,7 +103,7 @@ OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighboursLinear(const Vector&
 }
 
 /// Find the first K nearest neighbours to x.
-OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighbours(const Vector& x, const int K)
+OrderedFixedList<KDNode> void_KDTree::FindKNearestNeighbours(const Vector& x, const int K) const
 {
     OrderedFixedList<KDNode> knn_list(K);
     if (!root) {
