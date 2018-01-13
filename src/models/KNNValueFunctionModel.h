@@ -80,7 +80,8 @@ public:
     virtual real getValue(const Vector& state, const int& action)  const
 	{
 		Vector Uv;
-		return model.at(action)->Evaluate(state, Uv, n_neighbours);
+		model.at(action)->Evaluate(state, Uv, n_neighbours);
+		return Uv(0);
 	}
 
 };
