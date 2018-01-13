@@ -86,9 +86,9 @@ int main (void)
 	int grid_size = 8;
 	int evaluation_grid_size = 32;
 
-	int n_iter = 100;
+	int n_iter = 10000;
 	real gamma = 0.95;
-	bool use_kernel = true; //false;
+	bool use_kernel = //false;
     logmsg("Generating grid\n");
     EvenGrid grid(environment.StateLowerBound(),
                   environment.StateUpperBound(),
