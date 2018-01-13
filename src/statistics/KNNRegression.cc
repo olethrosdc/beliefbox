@@ -25,7 +25,7 @@ void KNNRegression::AddElement(const PointPair& p)
 }
 
 /// Obtain a K-nearest neighbour estimate of E[y | x].
-void KNNRegression::Evaluate(Vector& x, Vector& y, int K)
+void KNNRegression::Evaluate(const Vector& x, Vector& y, int K) const
 {
 
     RBF rbf(x, 1.0);

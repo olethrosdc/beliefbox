@@ -30,7 +30,7 @@ protected:
 public:	
     KNNRegression(int m, int n);
     void AddElement(const PointPair& p);
-    void Evaluate(Vector&x, Vector& y, int K);
+    void Evaluate(const Vector&x, Vector& y, const int K) const;
 };
 
 

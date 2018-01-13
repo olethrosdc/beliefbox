@@ -35,7 +35,7 @@ public:
 			   n_states,
 			   n_actions);
 		for (int i=0; i<n_actions; i++) {
-			model.push_back(new KNNRegression(n_states, 1);
+			model.push_back(new KNNRegression(n_states, 1));
 		}
     }
     /// Default virtual destructor
@@ -80,7 +80,7 @@ public:
     virtual real getValue(const Vector& state, const int& action)  const
 	{
 		Vector Uv;
-		return model.at(action).Evaluate(state, Uv, n_neighbours);
+		return model.at(action)->Evaluate(state, Uv, n_neighbours);
 	}
 
 };
