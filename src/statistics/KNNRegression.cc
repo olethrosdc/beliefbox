@@ -44,16 +44,16 @@ void KNNRegression::Evaluate(const Vector& x, Vector& y, int K) const
     for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
         KDNode* node = it->second;
         const PointPair* point_pair = kd_tree.getObject(node);
-        real w = 1e-3 + rbf.Evaluate(point_pair->x);
-		printf("R: "); point_pair->x.print(stdout);
-		printf("X: "); rbf.center.print(stdout);
-		printf ("%f ", w); (point_pair->y).print(stdout);
+        real w = rbf.Evaluate(point_pair->x);
+		//printf("R: "); point_pair->x.print(stdout);
+		//printf("X: "); rbf.center.print(stdout);
+		//printf ("%f ", w); (point_pair->y).print(stdout);
         y += point_pair->y * w;
         sum += w;
     }
     y/=sum;
-	printf("S: %f Y: ", sum);
-    y.print(stdout);
+	//printf("S: %f Y: ", sum);
+    //y.print(stdout);
 }
 
 
