@@ -1,4 +1,5 @@
 #include "GaussianValueFunctionModel.h"
+#include "KNNValueFunctionModel.h"
 #include "Pendulum.h"
 #include "Grid.h"
 
@@ -13,7 +14,7 @@ int main (void)
 
 	int n_iter = 10000;
 	real gamma = 0.95;
-
+	bool use_kernel = false;
     logmsg("Generating grid\n");
     EvenGrid grid(environment.StateLowerBound(),
                   environment.StateUpperBound(),
@@ -24,9 +25,16 @@ int main (void)
     RBFBasisSet kernel(grid, 1.0);
 	int n_features = kernel.size();
 
+	if (!use_kernel) {
+		n_features = environment.getNStates();
+	}
 	GaussianValueFunctionModel gvfm(n_features,
 									environment.getNActions());
 
+	KNNValueFunctionModel kvfm(n_features,
+							   environment.getNActions());
+
+	ValueFunctionModel& vfm = kvfm;
 	
 	for (int k=0; k<n_iter; k++) {
 		real U = 0;
@@ -52,10 +60,10 @@ int main (void)
 		printf ("%f -- ", U);
 		state.print(stdout);
 		kernel.Evaluate(state);
-		gvfm.AddReturnSample(kernel.F(), action, U);
+		vfm.AddReturnSample(kernel.F(), action, U);
 	}
-	gvfm.CalculateValues();
-    FILE* outfile = fopen("Pendulum-gvfm.values", "w");
+	vfm.CalculateValues();
+    FILE* outfile = fopen("Pendulum-vfm.values", "w");
     if (outfile) {
         EvenGrid evaluation_grid(environment.StateLowerBound(),
                                  environment.StateUpperBound(),
@@ -63,7 +71,7 @@ int main (void)
         for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
             Vector state = evaluation_grid.getCenter(i);
 			kernel.Evaluate(state);
-            fprintf(outfile, "%f ", gvfm.getValue(kernel.F()));
+            fprintf(outfile, "%f ", vfm.getValue(kernel.F()));
             state.print(outfile);
         }
         fclose(outfile);
