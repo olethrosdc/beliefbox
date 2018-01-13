@@ -28,7 +28,7 @@ void KNNRegression::AddElement(const PointPair& p)
 void KNNRegression::Evaluate(const Vector& x, Vector& y, int K) const
 {
 
-    RBF rbf(x, 1.0);
+    RBF rbf(x, 10.0);
 
     //basis.Evaluate(x);
     assert(N == y.Size());
@@ -43,14 +43,17 @@ void KNNRegression::Evaluate(const Vector& x, Vector& y, int K) const
     real sum = 0;
     for (it = node_list.S.begin(); it != node_list.S.end(); ++it) {
         KDNode* node = it->second;
-        PointPair* point_pair = kd_tree.getObject(node);
-        rbf.center = point_pair->x;
-        real w = rbf.Evaluate(x);
+        const PointPair* point_pair = kd_tree.getObject(node);
+        real w = 1e-3 + rbf.Evaluate(point_pair->x);
+		printf("R: "); point_pair->x.print(stdout);
+		printf("X: "); rbf.center.print(stdout);
+		printf ("%f ", w); (point_pair->y).print(stdout);
         y += point_pair->y * w;
         sum += w;
     }
     y/=sum;
-    
+	printf("S: %f Y: ", sum);
+    y.print(stdout);
 }
 
 

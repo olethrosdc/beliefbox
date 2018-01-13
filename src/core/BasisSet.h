@@ -27,8 +27,10 @@ public:
     RBF(const Vector& c, real b) : center(c)
     {
         assert(b > 0);
-        Vector var(c.Size(), &b);
-        beta = var;
+        beta.Resize(c.Size());
+		for (int i=0; i<beta.Size(); i++) {
+			beta(i) = b;
+		}
     }
 	
     RBF(const Vector& c, const Vector& b) : center(c), beta(b)
@@ -41,7 +43,6 @@ public:
     {
         Vector d = pow((x - center)/beta, 2.0);
         real r = d.Sum();
-        //real d = EuclideanNorm(&x, &center);
         return exp(-0.5*r);
     }
     /// Evaluate the log density

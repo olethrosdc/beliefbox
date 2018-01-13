@@ -12,7 +12,7 @@ int main (void)
 	int grid_size = 8;
 	int evaluation_grid_size = 32;
 
-	int n_iter = 10000;
+	int n_iter = 100;
 	real gamma = 0.95;
 	bool use_kernel = false;
     logmsg("Generating grid\n");
@@ -60,8 +60,12 @@ int main (void)
 		//printf ("END %f | %f, %f\n", reward, discount, U);
 		printf ("%f -- ", U);
 		state.print(stdout);
-		kernel.Evaluate(state);
-		vfm.AddReturnSample(kernel.F(), action, U);
+		if (use_kernel) { 
+			kernel.Evaluate(state);
+			vfm.AddReturnSample(kernel.F(), action, U);
+		} else {
+			vfm.AddReturnSample(state, action, U);
+		}
 	}
 	vfm.CalculateValues();
     FILE* outfile = fopen("Pendulum-vfm.values", "w");
@@ -71,8 +75,12 @@ int main (void)
                                  evaluation_grid_size);
         for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
             Vector state = evaluation_grid.getCenter(i);
-			kernel.Evaluate(state);
-            fprintf(outfile, "%f ", vfm.getValue(kernel.F()));
+			if (use_kernel) {
+				kernel.Evaluate(state);
+				fprintf(outfile, "%f ", vfm.getValue(kernel.F()));
+			} else {
+				fprintf(outfile, "%f ", vfm.getValue(state));
+			}
             state.print(outfile);
         }
         fclose(outfile);

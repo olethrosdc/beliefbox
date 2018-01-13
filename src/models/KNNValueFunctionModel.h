@@ -79,7 +79,7 @@ public:
     /// Get the value of a state-action pair
     virtual real getValue(const Vector& state, const int& action)  const
 	{
-		Vector Uv;
+		Vector Uv(1);
 		model.at(action)->Evaluate(state, Uv, n_neighbours);
 		return Uv(0);
 	}
