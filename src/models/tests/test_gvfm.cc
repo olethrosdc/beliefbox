@@ -35,7 +35,7 @@ int main (void)
 							   environment.getNActions(),
 							   3);
 
-	ValueFunctionModel<Vector, int>& vfm = gvfm;
+	ValueFunctionModel<Vector, int>* vfm = &gvfm;
 	
 	for (int k=0; k<n_iter; k++) {
 		real U = 0;
@@ -62,13 +62,13 @@ int main (void)
 		state.print(stdout);
 		if (use_kernel) { 
 			kernel.Evaluate(state);
-			vfm.AddReturnSample(kernel.F(), action, U);
+			vfm->AddReturnSample(kernel.F(), action, U);
 		} else {
-			vfm.AddReturnSample(state, action, U);
+			vfm->AddReturnSample(state, action, U);
 		}
 	}
-	vfm.CalculateValues();
-    FILE* outfile = fopen("Pendulum-gvfm.values", "w");
+	vfm->CalculateValues();
+    FILE* outfile = fopen("Pendulum-gvfm->values", "w");
     if (outfile) {
         EvenGrid evaluation_grid(environment.StateLowerBound(),
                                  environment.StateUpperBound(),
@@ -77,9 +77,9 @@ int main (void)
             Vector state = evaluation_grid.getCenter(i);
 			if (use_kernel) {
 				kernel.Evaluate(state);
-				fprintf(outfile, "%f ", vfm.getValue(kernel.F()));
+				fprintf(outfile, "%f ", vfm->getValue(kernel.F()));
 			} else {
-				fprintf(outfile, "%f ", vfm.getValue(state));
+				fprintf(outfile, "%f ", vfm->getValue(state));
 			}
             state.print(outfile);
         }
