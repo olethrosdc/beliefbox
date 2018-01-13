@@ -14,7 +14,7 @@ int main (void)
 
 	int n_iter = 100;
 	real gamma = 0.95;
-	bool use_kernel = false;
+	bool use_kernel = true; //false;
     logmsg("Generating grid\n");
     EvenGrid grid(environment.StateLowerBound(),
                   environment.StateUpperBound(),
@@ -35,7 +35,7 @@ int main (void)
 							   environment.getNActions(),
 							   3);
 
-	ValueFunctionModel<Vector, int>& vfm = kvfm;
+	ValueFunctionModel<Vector, int>& vfm = gvfm;
 	
 	for (int k=0; k<n_iter; k++) {
 		real U = 0;
@@ -68,7 +68,7 @@ int main (void)
 		}
 	}
 	vfm.CalculateValues();
-    FILE* outfile = fopen("Pendulum-vfm.values", "w");
+    FILE* outfile = fopen("Pendulum-gvfm.values", "w");
     if (outfile) {
         EvenGrid evaluation_grid(environment.StateLowerBound(),
                                  environment.StateUpperBound(),
