@@ -32,7 +32,8 @@ int main (void)
 									environment.getNActions());
 
 	KNNValueFunctionModel kvfm(n_features,
-							   environment.getNActions());
+							   environment.getNActions(),
+							   3);
 
 	ValueFunctionModel& vfm = kvfm;
 	
