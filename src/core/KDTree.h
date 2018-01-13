@@ -151,13 +151,13 @@ class KDTree : public void_KDTree
         return void_KDTree::FindKNearestNeighboursLinear(x, K);
 
     }
-    OrderedFixedList<KDNode> FindKNearestNeighbours(const Vector& x, const int K)
+    OrderedFixedList<KDNode> FindKNearestNeighbours(const Vector& x, const int K) const
     {
         return void_KDTree::FindKNearestNeighbours(x, K);
     }
 
 
-    T* getObject(KDNode* node)
+    T* getObject(KDNode* node) const
     {
         return (T*) node->object;
     }
