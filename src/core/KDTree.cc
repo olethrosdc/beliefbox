@@ -37,7 +37,7 @@ void void_KDTree::AddVector(const Vector& x, const void* object)
 }
 
 /// Display the tree
-void void_KDTree::Show()
+void void_KDTree::Show() const
 {
     int N = node_list.size();
     for (int i=0; i<N; ++i) {
