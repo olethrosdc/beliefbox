@@ -26,6 +26,7 @@ public:
     virtual ~ValueFunctionModel()
     {
     }
+	virtual const char* Name() = 0;
     /// Reset the model
     virtual void Reset() = 0;
 	/// Observe a return

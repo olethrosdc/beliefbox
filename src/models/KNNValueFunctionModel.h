@@ -45,6 +45,12 @@ public:
 			delete model.at(i);
 		}
     }
+	/// The name of the model
+	virtual const char* Name()
+	{
+		return "kNNVFM";
+	}
+
     /// Reset the model
     virtual void Reset()
 	{

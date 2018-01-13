@@ -2,6 +2,8 @@
 #include "KNNValueFunctionModel.h"
 #include "Pendulum.h"
 #include "Grid.h"
+#include <sstream>
+
 
 int main (void)
 {
@@ -68,7 +70,10 @@ int main (void)
 		}
 	}
 	vfm->CalculateValues();
-    FILE* outfile = fopen("Pendulum-gvfm->values", "w");
+	std::stringstream fname;
+	fname  << environment.Name() << vfm->Name() << ".values";
+	std::string fname_string = fname.str();
+    FILE* outfile = fopen(fname_string.c_str(), "w");
     if (outfile) {
         EvenGrid evaluation_grid(environment.StateLowerBound(),
                                  environment.StateUpperBound(),

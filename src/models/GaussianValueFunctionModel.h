@@ -43,6 +43,11 @@ public:
 	virtual ~GaussianValueFunctionModel()
     {
     }
+	/// The name of the model
+	virtual const char* Name()
+	{
+		return "GVFM";
+	}
     /// Reset the model
     virtual void Reset()
 	{
