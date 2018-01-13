@@ -35,7 +35,7 @@ int main (void)
 							   environment.getNActions(),
 							   3);
 
-	ValueFunctionModel& vfm = kvfm;
+	ValueFunctionModel<Vector, int>& vfm = kvfm;
 	
 	for (int k=0; k<n_iter; k++) {
 		real U = 0;
