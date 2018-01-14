@@ -160,14 +160,15 @@ int main (int argc, char* argv[])
 	ValueFunctionModel<Vector, int>* VFM = NULL;
     if (options.algorithm_name == "RSVI") {
         logmsg("setting up RSVI\n");
-        RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> > rsvi(options.gamma, kernel, states, actions, environment, options.n_samples);
-        rsvi.setThreshold(options.threshold);
-        rsvi.setMaxIter(options.n_iterations);
+        RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> >* rsvi = new RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> >(options.gamma, kernel, states, actions, environment, options.n_samples);
+        rsvi->setThreshold(options.threshold);
+        rsvi->setMaxIter(options.n_iterations);
+		VFA = rsvi;
     } else if (options.algorithm_name == "AVI") {
         logmsg("setting up AVI\n");
-		VFM = new GaussianValueFunctionModel(environment.getNStates(), environment.getNActions());
-        ApproximateValueIteration<Vector, int, ValueFunctionModel<Vector, int>, Environment<Vector, int> > avi(options.gamma, *VFM, states, actions, environment, options.n_samples);
-        avi.setMaxIter(options.n_iterations);
+		//VFM = new GaussianValueFunctionModel(environment.getNStates(), environment.getNActions());
+        //ApproximateValueIteration<Vector, int, ValueFunctionModel<Vector, int>, Environment<Vector, int> > = new avi(options.gamma, *VFM, states, actions, environment, options.n_samples);
+        //avi.setMaxIter(options.n_iterations);
     } else {
 
         std::cerr << "Unknown algorithm " << options.algorithm_name << std::endl;
@@ -199,10 +200,11 @@ int main (int argc, char* argv[])
         Serror("Failed to write to file %s\n", filename.c_str());
     }
 
-printf("\nDone\n");
- delete environment_ptr;
- delete VFM;
-return 0.0;
+	printf("\nDone\n");
+	delete environment_ptr;
+	delete VFM;
+	delete VFA;
+	return 0.0;
 }
 
 
