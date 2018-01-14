@@ -21,6 +21,7 @@
 #include "RepresentativeStateValueIteration.h"
 #include "ApproximateValueIteration.h"
 #include "GaussianValueFunctionModel.h"
+#include "KNNValueFunctionModel.h"
 #include "debug.h"
 #include <getopt.h>
 #include <string>
@@ -166,12 +167,13 @@ int main (int argc, char* argv[])
 		VFA = rsvi;
     } else if (options.algorithm_name == "AVI") {
         logmsg("setting up AVI\n");
-		VFM = new GaussianValueFunctionModel(environment.getNStates(), environment.getNActions());
+		//VFM = new GaussianValueFunctionModel(environment.getNStates(), environment.getNActions());
+		VFM = new KNNValueFunctionModel(environment.getNStates(), environment.getNActions(), 3);
         ApproximateValueIteration<Vector, int, ValueFunctionModel<Vector, int>, Environment<Vector, int> >* AVI = new ApproximateValueIteration<Vector, int, ValueFunctionModel<Vector, int>, Environment<Vector, int> >(options.gamma, *VFM, states, actions, environment, options.n_samples);
         AVI->setMaxIter(options.n_iterations);
 		VFA = AVI;
     } else {
-
+		
         std::cerr << "Unknown algorithm " << options.algorithm_name << std::endl;
         std::cerr << "Choices: RSVI, AVI"  << std::endl;
     }
