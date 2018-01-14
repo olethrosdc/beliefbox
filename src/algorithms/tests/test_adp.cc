@@ -166,9 +166,10 @@ int main (int argc, char* argv[])
 		VFA = rsvi;
     } else if (options.algorithm_name == "AVI") {
         logmsg("setting up AVI\n");
-		//VFM = new GaussianValueFunctionModel(environment.getNStates(), environment.getNActions());
-        //ApproximateValueIteration<Vector, int, ValueFunctionModel<Vector, int>, Environment<Vector, int> > = new avi(options.gamma, *VFM, states, actions, environment, options.n_samples);
-        //avi.setMaxIter(options.n_iterations);
+		VFM = new GaussianValueFunctionModel(environment.getNStates(), environment.getNActions());
+        ApproximateValueIteration<Vector, int, ValueFunctionModel<Vector, int>, Environment<Vector, int> >* AVI = new ApproximateValueIteration<Vector, int, ValueFunctionModel<Vector, int>, Environment<Vector, int> >(options.gamma, *VFM, states, actions, environment, options.n_samples);
+        AVI->setMaxIter(options.n_iterations);
+		VFA = AVI;
     } else {
 
         std::cerr << "Unknown algorithm " << options.algorithm_name << std::endl;

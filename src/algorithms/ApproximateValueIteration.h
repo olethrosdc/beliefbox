@@ -39,8 +39,7 @@ protected:
     Vector V; ///< vector of values
     Model& model; ///< a model
     int n_samples; ///< the number of samples to take to approximate expectations
-    real threshold = 1e-6;
-    int max_iter = -1;
+    int max_iter = 100;
 public:
     ApproximateValueIteration(real gamma_,
 							  VFM& vfm_,
@@ -56,14 +55,11 @@ public:
           model(model_),
           n_samples(n_samples_)
     {
+		max_iter = (int) ceil(1 / (1 - gamma));
     }
     /// Nothing to do in the destrucotr
     virtual ~ApproximateValueIteration()
     {
-    }
-    virtual void setThreshold(real threshold_)
-    {
-		threshold = threshold_;
     }
     virtual void setMaxIter(real max_iter_)
     {
@@ -88,7 +84,7 @@ public:
 		for (uint i=0; i<states.size(); i++) {
 			for (uint a=0; a<actions.size(); a++) {
 				vfm.AddReturnSample(states.at(i),
-									actions.at(i),
+									actions.at(a),
 									Q(i, a));
 			}
 		}
