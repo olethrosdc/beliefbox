@@ -19,6 +19,8 @@
 #include "EasyClock.h"
 #include "BasisSet.h"
 #include "RepresentativeStateValueIteration.h"
+#include "ApproximateValueIteration.h"
+#include "GaussianValueFunctionModel.h"
 #include "debug.h"
 #include <getopt.h>
 #include <string>
@@ -155,14 +157,21 @@ int main (int argc, char* argv[])
     }
 
     ValueFunctionAlgorithm<Vector, int>* VFA = NULL;
+	ValueFunctionModel<Vector, int>* VFM = NULL;
     if (options.algorithm_name == "RSVI") {
         logmsg("setting up RSVI\n");
         RepresentativeStateValueIteration<Vector, int, RBFBasisSet, Environment<Vector, int> > rsvi(options.gamma, kernel, states, actions, environment, options.n_samples);
         rsvi.setThreshold(options.threshold);
         rsvi.setMaxIter(options.n_iterations);
+    } else if (options.algorithm_name == "AVI") {
+        logmsg("setting up AVI\n");
+		VFM = new GaussianValueFunctionModel(environment.getNStates(), environment.getNActions());
+        ApproximateValueIteration<Vector, int, ValueFunctionModel<Vector, int>, Environment<Vector, int> > avi(options.gamma, *VFM, states, actions, environment, options.n_samples);
+        avi.setMaxIter(options.n_iterations);
     } else {
+
         std::cerr << "Unknown algorithm " << options.algorithm_name << std::endl;
-        std::cerr << "Choices: RSVI "  << std::endl;
+        std::cerr << "Choices: RSVI, AVI"  << std::endl;
     }
     
     logmsg("Calculating approximate value function\n");
@@ -191,7 +200,8 @@ int main (int argc, char* argv[])
     }
 
 printf("\nDone\n");
-delete environment_ptr;
+ delete environment_ptr;
+ delete VFM;
 return 0.0;
 }
 

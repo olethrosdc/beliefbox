@@ -1,5 +1,4 @@
 /* -*- Mode: C++; -*- */
-// copyright (c) 2012 by Nikolaos Tziortziotis <ntziorzi@gmail.com>
 // copyright (c) 2018 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
@@ -14,24 +13,27 @@
 #define APPROXIMATE_VALUE_ITERATION_H
 
 #include "ValueFunctionAlgorithm.h"
+#include "ValueFunctionModel.h"
 #include "Vector.h"
 
 /** Representative state value iteration
 
-    Regressor must implement:
-    - void AddElement(const S& y, const S& x, const S& y); // for inputting a point
-    - S F(); // for getting the features corresponding to a point
+    ValueFunctionModel must implement:
+    - void AddReturnSample(const S& state, const A& action, const real U); // for inputting a point
+	- void CalculateValues();
+    - real getValue(const S& state);
+    - real getValue(const S& state, const A& action);
 
     Current Kernel implementations
     -  RBFBasisSet
 	
 */
-template <typename S, typename A, class Kernel, class Model>
+template <typename S, typename A, class VFM, class Model>
 class ApproximateValueIteration : public ValueFunctionAlgorithm<S, A>
 {
 protected:
     real gamma;	///< discount factor
-    Regressor& regressor; ///< regressor
+    VFM& vfm; ///< value function model
     std::vector<S> states; ///< representative states
     std::vector<A> actions; ///< representative actions
     Vector V; ///< vector of values
@@ -41,13 +43,13 @@ protected:
     int max_iter = -1;
 public:
     ApproximateValueIteration(real gamma_,
-							  Kernel& kernel_,
+							  VFM& vfm_,
 							  std::vector<S> states_,
 							  std::vector<A> actions_,
 							  Model& model_,
 							  int n_samples_) 
         : gamma(gamma_),
-          kernel(kernel_),
+          vfm(vfm_),
           states(states_),
           actions(actions_),
           V((int) states.size()),
@@ -67,63 +69,65 @@ public:
     {
         max_iter = max_iter_;
     }
-    /// Specialisation for discrete actions, arbitrary states
+    /// Specialisation for approximation on a fixed set of states and
+    /// actions.
     virtual void CalculateValues()
     {
-        Vector Vn((int) states.size());
-        model.Reset();
-        int iter = 0;
-        while (1) {
+		// First get an estimate of utilities at the next step
+		Matrix Q(states.size(), actions.size());
+		for (int iter=0; iter<max_iter; iter++)
             for (uint i=0; i<states.size(); i++) {
-                real Q_max = -INF;
                 for (uint a=0; a<actions.size(); a++) {
-                    real Q_a = getValue(states.at(i), actions.at(a));
-                    //printf ("Q[%d] = %f\n", a, Q_a);
-                    if (Q_a > Q_max) {
-                        Q_max = Q_a;
-                    }
+					Q(i, a) = getValue(states.at(i), actions.at(a));
                 }
-                Vn(i) = Q_max;
             }
-            real error = (V - Vn).L1Norm();
-            V = Vn;
-            //printf ("%d %f\n", iter, error);
-            //V.print(stdout);
-            if ((max_iter >= 0 && ++iter >= max_iter) || error < threshold) {
-                logmsg ("Exiting after %d iterations with %f delta\n", iter, error);
-                break;
-            }
-        }
-    }
 
-    real getValue(const S& state)  const
-    {
-        kernel.Evaluate(state);
-        Vector F = kernel.F();
-        return Product(V , F / F.Sum());
-    }
-
-    /// Get the value of a state-action pair usinga finite number of samples
-    real getValue(const S& state, const A& action)  const
-    {
-        real Q_a = 0;
-        for (uint k=0; k<n_samples; ++k) {
-            model.Reset();
-            model.setState(state);
-            bool terminal = model.Act(action);
-            real r = model.getReward();
-			if (terminal) {
-				Q_a += r;
-			} else {
-				S next_state = model.getState();
-				// printf ("s: "); state.print(stdout);
-				// printf ("r: %f\n", r);
-				// printf ("s': "); next_state.print(stdout);
-				Q_a += r + gamma * getValue(next_state);
+			
+		// Fit the samples to the model again
+		vfm.Reset();
+		for (uint i=0; i<states.size(); i++) {
+			for (uint a=0; a<actions.size(); a++) {
+				vfm.AddReturnSample(states.at(i),
+									actions.at(i),
+									Q(i, a));
 			}
-        }
-        return Q_a / (real) n_samples;
+		}
+	}
+
+	
+    virtual real getValue(const S& state)  const
+    {
+		real Q_max = -INF;
+		for (uint a=0; a<actions.size(); a++) {
+			real Q_a = getValue(state, actions.at(a));
+			if (Q_a > Q_max) {
+				Q_max = Q_a;
+			}
+		}
+		return Q_max;
     }
+	
+	// Get the value of a state-action pair usinga finite number of samples
+	virtual real getValue(const S& state, const A& action)  const
+	{
+	real Q_a = 0;
+	for (uint k=0; k<n_samples; ++k) {
+		model.Reset();
+		model.setState(state);
+		bool terminal = model.Act(action);
+		real r = model.getReward();
+		if (terminal) {
+			Q_a += r;
+		} else {
+			S next_state = model.getState();
+			// printf ("s: "); state.print(stdout);
+			// printf ("r: %f\n", r);
+			// printf ("s': "); next_state.print(stdout);
+			Q_a += r + gamma * vfm.getValue(next_state);
+		}
+	}
+	return Q_a / (real) n_samples;
+}
 };
 
 #endif

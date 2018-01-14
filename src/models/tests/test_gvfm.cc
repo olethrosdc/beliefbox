@@ -62,13 +62,14 @@ int Evaluate(Environment<Vector, int>& environment,
                                  evaluation_grid_size);
         for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
             Vector state = evaluation_grid.getCenter(i);
+			state.printf(outfile);
 			if (use_kernel) {
 				kernel.Evaluate(state);
-				fprintf(outfile, "%f ", vfm.getValue(kernel.F()));
+				fprintf(outfile, " %f", vfm.getValue(kernel.F()));
 			} else {
-				fprintf(outfile, "%f ", vfm.getValue(state));
+				fprintf(outfile, " %f", vfm.getValue(state));
 			}
-            state.print(outfile);
+			fprintf(outfile, "\n");
         }
         fclose(outfile);
     } else {
@@ -77,7 +78,7 @@ int Evaluate(Environment<Vector, int>& environment,
 	return 0;
 }
 
-int main (void)
+int main (int argc, char* argv[])
 {
 	Pendulum pendulum;
 	Environment<Vector, int>& environment = pendulum;
@@ -88,7 +89,14 @@ int main (void)
 
 	int n_iter = 10000;
 	real gamma = 0.95;
-	bool use_kernel = //false;
+	bool use_kernel = false;
+
+
+	logmsg("Usage: test_gvfm use_kernel [{0,1}] grid_size\n");
+	
+	use_kernel = (atoi(argv[1])!=0);
+	grid_size = atoi(argv[2]);
+	
     logmsg("Generating grid\n");
     EvenGrid grid(environment.StateLowerBound(),
                   environment.StateUpperBound(),
