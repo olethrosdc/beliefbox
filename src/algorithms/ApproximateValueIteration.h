@@ -71,21 +71,21 @@ public:
     {
 		// First get an estimate of utilities at the next step
 		Matrix Q(states.size(), actions.size());
-		for (int iter=0; iter<max_iter; iter++)
+		for (int iter=0; iter<max_iter; iter++) {
             for (uint i=0; i<states.size(); i++) {
                 for (uint a=0; a<actions.size(); a++) {
 					Q(i, a) = getValue(states.at(i), actions.at(a));
                 }
             }
-
 			
-		// Fit the samples to the model again
-		vfm.Reset();
-		for (uint i=0; i<states.size(); i++) {
-			for (uint a=0; a<actions.size(); a++) {
-				vfm.AddReturnSample(states.at(i),
-									actions.at(a),
-									Q(i, a));
+			// Fit the samples to the model again
+			vfm.Reset();
+			for (uint i=0; i<states.size(); i++) {
+				for (uint a=0; a<actions.size(); a++) {
+					vfm.AddReturnSample(states.at(i),
+										actions.at(a),
+										Q(i, a));
+				}
 			}
 		}
 	}
