@@ -110,9 +110,9 @@ public:
 	for (uint k=0; k<n_samples; ++k) {
 		model.Reset();
 		model.setState(state);
-		bool terminal = model.Act(action);
+		bool action_ok = model.Act(action);
 		real r = model.getReward();
-		if (terminal) {
+		if (!action_ok) {
 			Q_a += r;
 		} else {
 			S next_state = model.getState();
