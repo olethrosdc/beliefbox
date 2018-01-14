@@ -28,7 +28,7 @@
 struct Options {
     real gamma = 0.95;
     int grid_size = 4;
-    real grid_scale = 0.25;
+    real grid_scale = 1.0;
     int n_samples = 1;
     real threshold = 0;
     int n_iterations = 1000;
@@ -193,8 +193,8 @@ int main (int argc, char* argv[])
                                  options.evaluation_grid_size);
         for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
             Vector state = evaluation_grid.getCenter(i);
-            fprintf(outfile, "%f ", VFA->getValue(state));
-            state.print(outfile);
+			state.printf(outfile);
+            fprintf(outfile, " %f\n", VFA->getValue(state));
         }
         fclose(outfile);
     } else {
