@@ -139,7 +139,7 @@ real DiscreteMDPCounts::getExpectedReward (int s, int a) const
     return ER[getID (s,a)]->getMean();
 }
 
-/// Reset at the end of an episode (not applicable)
+/// Reset at the end of an episode 
 void DiscreteMDPCounts::Reset()
 {
 }
