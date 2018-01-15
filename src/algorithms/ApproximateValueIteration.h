@@ -116,10 +116,12 @@ public:
 			Q_a += r;
 		} else {
 			S next_state = model.getState();
-			// printf ("s: "); state.print(stdout);
-			// printf ("r: %f\n", r);
-			// printf ("s': "); next_state.print(stdout);
-			Q_a += r + gamma * vfm.getValue(next_state);
+			real V = vfm.getValue(next_state);
+			 Q_a += r + gamma * V;
+			//printf ("s: "); state.print(stdout);
+			 //printf ("r: %f\n", r);
+			 //printf ("s': "); next_state.print(stdout);
+			 //printf ("V: %f\n", V);
 		}
 	}
 	return Q_a / (real) n_samples;

@@ -51,7 +51,9 @@ void KNNRegression::Evaluate(const Vector& x, Vector& y, int K) const
         y += point_pair->y * w;
         sum += w;
     }
-    y/=sum;
+	if (sum > 0) {
+		y/=sum;
+	}
 	//printf("S: %f Y: ", sum);
     //y.print(stdout);
 }
