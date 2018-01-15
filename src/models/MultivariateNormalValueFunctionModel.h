@@ -15,8 +15,8 @@
 #include "ValueFunctionModel.h"
 #include "MultivariateNormalUnknownMeanPrecision.h"
 
-template <>
-class MultivariateNormalValueFunctionModel<Vector, int>
+/// Class only applies to integer states and actions
+class MultivariateNormalValueFunctionModel
 {
 protected:
 	std::vector<MultivariateNormalUnknownMeanPrecision*> distribution;
@@ -29,7 +29,7 @@ public:
 		: n_states(n_states_),
 		  n_actions(n_actions_)
     {
-		distribution.resize(n_actions)
+		distribution.resize(n_actions);
 		for (uint i=0; i<distribution.size(); i++) {
 			distribution.at(i) = NULL;
 		}
@@ -56,13 +56,17 @@ public:
 		}
 	}
 	/// Observe a return
-	virtual void AddReturnSample(const S& state, const A& action, const real U) = 0;
+	virtual void AddReturnSample(const int& state, const int& action, const real U)
+	{
+		//distribution.at(action);
+		// FIX ME
+	}
 	/// Calculate the values
     virtual void CalculateValues() = 0;
     /// Get the value of a state
-    virtual real getValue(const S& state) const = 0;
+    virtual real getValue(const int& state) const = 0;
     /// Get the value of a state-action pair
-    virtual real getValue(const S& state, const A& action)  const = 0;
+    virtual real getValue(const int& state, const int& action)  const = 0;
 
 };
 
