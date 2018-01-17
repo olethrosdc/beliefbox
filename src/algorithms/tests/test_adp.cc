@@ -292,34 +292,30 @@ int main (int argc, char* argv[])
 			for (int iter=0; iter<options.n_iterations; iter++) {
 				real U = 0;
 				VFA->CalculateValues();
-				for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
-					Vector start_state = evaluation_grid.getCenter(i);
-					for (int k=0; k<options.n_eval_samples; k++) {
-						environment.Reset();
-						environment.setState(start_state);
-						real discount = 1;
-						for (int t=0; t<options.eval_horizon; t++) {
-							Vector state = environment.getState();
-							real Q_max = -INF;
-							real a_max = -1;
-							
-							for (int a=0; a<environment.getNActions(); ++a) {
-								real Q_a = VFA->getValue(state, a);
-								if (Q_a > Q_max) {
-									Q_max = Q_a;
-									a_max = a;
-								}
+				for (int k=0; k<options.n_eval_samples; k++) {
+					environment.Reset();
+					real discount = 1;
+					for (int t=0; t<options.eval_horizon; t++) {
+						Vector state = environment.getState();
+						real Q_max = -INF;
+						real a_max = -1;
+						
+						for (int a=0; a<environment.getNActions(); ++a) {
+							real Q_a = VFA->getValue(state, a);
+							if (Q_a > Q_max) {
+								Q_max = Q_a;
+								a_max = a;
 							}
-							bool action_ok = environment.Act(a_max);
-							U += discount * environment.getReward();
-							discount *= options.gamma;
-							if (!action_ok) {
-								break;
-							}
+						}
+						bool action_ok = environment.Act(a_max);
+						U += discount * environment.getReward();
+						discount *= options.gamma;
+						if (!action_ok) {
+							break;
 						}
 					}
 				}
-				 U/= (real) (evaluation_grid.getNIntervals() * options.n_eval_samples);
+				 U/= (real) (options.n_eval_samples);
 				logmsg("U: %f\n", U);
 				fprintf(outfile, " %f\n", U);
 				
