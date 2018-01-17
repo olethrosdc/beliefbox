@@ -54,7 +54,7 @@ void KNNRegression::Evaluate(const Vector& x, Vector& y, int K) const
 	if (sum > 0) {
 		y/=sum;
 	}
-	//printf("S: %f Y: ", sum);
+	//printf("S: %f \n", sum);
     //y.print(stdout);
 }
 

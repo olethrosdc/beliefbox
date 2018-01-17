@@ -36,6 +36,10 @@ struct Options {
     int evaluation_grid_size = 32;
     std::string algorithm_name = "RSVI";
     std::string environment_name = "Pendulum";
+	bool show_value_estimate = false;
+	bool show_expected_utility = false;
+	int n_eval_samples = 1;
+	int eval_horizon = 200; 
 };
 
 int main (int argc, char* argv[])
@@ -58,6 +62,10 @@ int main (int argc, char* argv[])
                 {"algorithm", required_argument, 0, 0}, //7
                 {"threshold", required_argument, 0, 0}, //8
                 {"evaluation_grid", required_argument, 0, 0}, //9
+				{"show_value_estimate", no_argument, 0, 0}, //10
+				{"show_expected_utility", no_argument, 0, 0}, //11
+				{"n_eval_samples", required_argument, 0, 0}, //12
+				{"eval_horizon", required_argument, 0, 0}, //13
                 {0, 0, 0, 0}
             };
             c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -82,6 +90,10 @@ int main (int argc, char* argv[])
                 case 7: options.algorithm_name = optarg; break;
                 case 8: options.threshold = atof(optarg); break;
                 case 9: options.evaluation_grid_size = atoi(optarg); break;
+				case 10: options.show_value_estimate = true; break;
+				case 11: options.show_expected_utility = true; break;
+                case 12: options.n_eval_samples = atoi(optarg); break;
+				case 13: options.eval_horizon = atoi(optarg); break;
                 default:
                     printf ("Usage options\n");
                     for (int i=0; long_options[i].name; i++) {
@@ -169,6 +181,7 @@ int main (int argc, char* argv[])
         logmsg("setting up AVI\n");
 		//VFM = new GaussianValueFunctionModel(environment.getNStates(), environment.getNActions());
 		VFM = new KNNValueFunctionModel(environment.getNStates(), environment.getNActions(), 3);
+		//VFM = new MultivariateNormalValueFunctionModel(environment.getNStates(), environment.getNActions());
         ApproximateValueIteration<Vector, int, ValueFunctionModel<Vector, int>, Environment<Vector, int> >* AVI = new ApproximateValueIteration<Vector, int, ValueFunctionModel<Vector, int>, Environment<Vector, int> >(options.gamma, *VFM, states, actions, environment, options.n_samples);
         AVI->setMaxIter(options.n_iterations);
 		VFA = AVI;
@@ -178,31 +191,85 @@ int main (int argc, char* argv[])
         std::cerr << "Choices: RSVI, AVI"  << std::endl;
     }
     
-    logmsg("Calculating approximate value function\n");
-    VFA->CalculateValues();
-    std::string filename;
-    filename.append(options.algorithm_name);
-    filename.append("_"); filename.append(options.environment_name);
-    filename.append("_"); filename.append(std::to_string(options.grid_size));
-    filename.append("_"); filename.append(std::to_string(options.grid_scale));
-    filename.append("_"); filename.append(std::to_string(options.n_samples));
-    filename.append("_"); filename.append(std::to_string(options.n_iterations));
-    filename.append(".values"); 
-    FILE* outfile = fopen(filename.c_str(), "w");
-    if (outfile) {
-        EvenGrid evaluation_grid(environment.StateLowerBound(),
-                                 environment.StateUpperBound(),
-                                 options.evaluation_grid_size);
-        for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
-            Vector state = evaluation_grid.getCenter(i);
-			state.printf(outfile);
-            fprintf(outfile, " %f\n", VFA->getValue(state));
-        }
-        fclose(outfile);
-    } else {
-        Serror("Failed to write to file %s\n", filename.c_str());
-    }
 
+	if (options.show_value_estimate) {
+		logmsg("Calculating approximate value function\n");
+		VFA->CalculateValues();
+		std::string filename;
+		filename.append(options.algorithm_name);
+		filename.append("_"); filename.append(options.environment_name);
+		filename.append("_"); filename.append(std::to_string(options.grid_size));
+		filename.append("_"); filename.append(std::to_string(options.grid_scale));
+		filename.append("_"); filename.append(std::to_string(options.n_samples));
+		filename.append("_"); filename.append(std::to_string(options.n_iterations));
+		filename.append(".values"); 
+		FILE* outfile = fopen(filename.c_str(), "w");
+		if (outfile) {
+			EvenGrid evaluation_grid(environment.StateLowerBound(),
+									 environment.StateUpperBound(),
+									 options.evaluation_grid_size);
+			for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
+				Vector state = evaluation_grid.getCenter(i);
+				state.printf(outfile);
+				fprintf(outfile, " %f\n", VFA->getValue(state));
+			}
+			fclose(outfile);
+		} else {
+			Serror("Failed to write to file %s\n", filename.c_str());
+		}
+	}
+
+	if (options.show_expected_utility) {
+		logmsg("Estimating performance\n");
+		std::string filename;
+		filename.append(options.algorithm_name);
+		filename.append("_"); filename.append(options.environment_name);
+		filename.append("_"); filename.append(std::to_string(options.grid_size));
+		filename.append("_"); filename.append(std::to_string(options.grid_scale));
+		filename.append("_"); filename.append(std::to_string(options.n_samples));
+		filename.append("_"); filename.append(std::to_string(options.n_iterations));
+		filename.append(".utility"); 
+		FILE* outfile = fopen(filename.c_str(), "w");
+		if (outfile) {
+			EvenGrid evaluation_grid(environment.StateLowerBound(),
+									 environment.StateUpperBound(),
+									 options.evaluation_grid_size);
+			for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
+				Vector start_state = evaluation_grid.getCenter(i);
+				start_state.printf(outfile);
+				real U = 0;
+				for (int k=0; k<options.n_eval_samples; k++) {
+					environment.Reset();
+					environment.setState(start_state);
+					real discount = 1;
+					for (int t=0; t<options.eval_horizon; t++) {
+						Vector state = environment.getState();
+						real Q_max = -INF;
+						real a_max = -1;
+
+						for (int a=0; a<environment.getNActions(); ++a) {
+							real Q_a = VFA->getValue(state, a);
+							if (Q_a > Q_max) {
+								Q_max = Q_a;
+								a_max = a;
+							}
+						}
+						bool action_ok = environment.Act(a_max);
+						U += discount * environment.getReward();
+						discount *= options.gamma;
+						if (!action_ok) {
+							break;
+						}
+					}
+				}
+				fprintf(outfile, " %f\n", U / (real) options.n_eval_samples);
+			}
+			fclose(outfile);
+		} else {
+			Serror("Failed to write to file %s\n", filename.c_str());
+		}
+	}
+	
 	printf("\nDone\n");
 	delete environment_ptr;
 	delete VFM;
