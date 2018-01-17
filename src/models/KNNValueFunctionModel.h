@@ -76,7 +76,7 @@ public:
  		real Qmax = -INF;
 		for (int i=0; i<n_actions; ++i) {
 			real Qi = getValue(state, i);
-			printf ("%f ", Qi);
+			//printf ("%f ", Qi);
 			if (Qi > Qmax) {
 				Qmax = Qi;
 			}
