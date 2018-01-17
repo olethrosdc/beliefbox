@@ -30,6 +30,11 @@ public:
     virtual real getValue(const S& state) const = 0;
     /// Get the value of a state-action pair
     virtual real getValue(const S& state, const A& action)  const = 0;
+	/// Get the value of a state-action pair
+    virtual void setMaxIter(int max_iter_)
+	{
+		Swarning("Option MaxIter does not exist\n");
+	}
 };
 
 #endif

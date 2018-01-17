@@ -61,7 +61,7 @@ public:
     virtual ~ApproximateValueIteration()
     {
     }
-    virtual void setMaxIter(real max_iter_)
+    virtual void setMaxIter(int max_iter_)
     {
         max_iter = max_iter_;
     }
