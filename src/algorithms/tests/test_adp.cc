@@ -291,6 +291,7 @@ int main (int argc, char* argv[])
 			VFA->setMaxIter(1);
 			for (int iter=0; iter<options.n_iterations; iter++) {
 				real U = 0;
+				VFA->CalculateValues();
 				for (int i=0; i<evaluation_grid.getNIntervals(); ++i) {
 					Vector start_state = evaluation_grid.getCenter(i);
 					for (int k=0; k<options.n_eval_samples; k++) {
