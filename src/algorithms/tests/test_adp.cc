@@ -319,7 +319,7 @@ int main (int argc, char* argv[])
 						}
 					}
 				}
-				U *= (real) (evaluation_grid.getNIntervals() * options.n_eval_samples);
+				 U/= (real) (evaluation_grid.getNIntervals() * options.n_eval_samples);
 				logmsg("U: %f\n", U);
 				fprintf(outfile, " %f\n", U);
 				
