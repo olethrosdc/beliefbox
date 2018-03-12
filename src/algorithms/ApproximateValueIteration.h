@@ -16,8 +16,15 @@
 #include "ValueFunctionModel.h"
 #include "Vector.h"
 
-/** Representative state value iteration
+/** Approximate value iteration
 
+	The algorithm is run on a representative set of states and actions.
+	More precisely, we want to find a value function $v_t$ minimising
+	\f[
+	v_t = \arg\min_v \sum_s |r(s) + \gamma max_a \sum_{s'} P(s'|s,a) v_{t+1}(s') - v(s)|^2
+    \f]
+	This is effectively the regression problem: \f$v = r + P v_{t+1}\f$.
+	
     ValueFunctionModel must implement:
     - void AddReturnSample(const S& state, const A& action, const real U); // for inputting a point
 	- void CalculateValues();

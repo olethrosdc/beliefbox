@@ -208,7 +208,7 @@ int DiscreteMDP::generateState (const int& s, const int& a) const
 }
 
 
-#ifdef NDEBUG
+#if 0
 bool DiscreteMDP::Check() const
 {
     return true;
