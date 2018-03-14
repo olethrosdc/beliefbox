@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     int n_states = 16;
     int n_actions = 4;
     real discounting = 0.95;
-    int n_steps = 100;
+    int n_steps = 1000;
 
     //    int n_samples = 2; ///< number of state samples when branching
     //int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
