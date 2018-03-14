@@ -63,12 +63,11 @@ int main(int argc, char** argv) {
 	
     printf("# Making environment\n");
     shared_ptr<DiscreteEnvironment> environment;
-    //environment = make_shared<DiscreteChain>(n_states);
+    environment = make_shared<DiscreteChain>(n_states);
     //environment = make_shared<ContextBandit>(n_states, n_actions, env_rng, false);
     //environment = make_shared<Blackjack>(env_rng);
-    environment = make_shared<RandomMDP>(n_states, n_actions, 0.1, -0.1, -1, 1, env_rng);
-    //environment = make_shared<InventoryManagement>(10, 5, 0.2, 0.1);
-    n_states = environment->getNStates();
+    //environment = make_shared<RandomMDP>(n_states, n_actions, 0.1, -0.1, -1, 1, env_rng);
+	// environment = make_shared<InventoryManagement>(10, 5, 0.2, 0.1);-=  n_states = environment->getNStates();
     n_actions = environment->getNActions();
 
 #if 0
