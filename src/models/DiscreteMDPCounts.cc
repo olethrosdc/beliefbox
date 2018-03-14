@@ -54,6 +54,8 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_tra
 			for (int s_next=0; s_next<n_states; s_next++) {
 				real p = transitions.marginal_pdf(s, a, s_next);
 				mean_mdp.setTransitionProbability(s, a, s_next, p);
+				real expected_reward = getExpectedReward(s,a);
+				mean_mdp.reward_distribution.setFixedReward(s, a, expected_reward);
 			}
 		}
 	}
