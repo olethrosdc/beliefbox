@@ -93,8 +93,11 @@ int TreeBRL::Act(real reward, int next_state)
 	
 	//printf("%f %f %f\n", belief_state.CalculateValues(), 
 	belief_state.CalculateValues(leaf_node_expansion);
-	
+
+	//Qs.printf(stdout);
     int next_action = ArgMax(Qs);
+	//printf("-> %d\n", next_action);
+	// sometimes act randomly
 	if (rng->uniform() < 0) {
 		next_action = rng->random() % n_actions;
 	}
@@ -195,7 +198,8 @@ void TreeBRL::BeliefState::ExpandAllActions()
 
             
         
-/// Return the values using the mean MDP heuristic.
+/// Return the values using Backwards induction on the already
+/// constructed MDP.
 ///
 /// If w is the current belief state, and w' the successor, while a is
 /// our action, then we can write the value function recursion:
@@ -203,18 +207,20 @@ void TreeBRL::BeliefState::ExpandAllActions()
 /// \f$V_t(w) = \max_a Q_t(w, a) = \max_a E\{r(w,a,w') + \gamma V_{t+1} (w')\}\f$,
 ///
 /// where the expectation is 
-/// Q_t(w, a) = \sum_{s'} {r(w,a,s') + \gamma P(s' | a, s) V_{t+1} (w')\}\f$ and \f$w' = w( | s, a, s')\f$.
+/// \f$Q_t(w, a) = \sum_{s'} {r(w,a,s') + \gamma P(s' | a, s) V_{t+1} (w')\}\f$ and \f$w' = w( | s, a, s')\f$.
 real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
 {
     Vector Q(tree.n_actions);
     real V = 0;
     real discount = tree.gamma;
+	
     if (t < tree.horizon) {
         for (uint i=0; i<children.size(); ++i) {
             int a = children[i].prev_action;
             Q(a) += children[i].probability * (children[i].prev_reward + discount * children[i].CalculateValues(leaf_node));
         }
         V += Max(Q);
+		//Q.print(stdout); printf(" %d/%d\n", t, tree.horizon);
     } else {
 		switch(leaf_node) {
 		case NONE: V = 0; break;
@@ -225,6 +231,9 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
 		case V_LTS: V = LTSValue(); break;
 		}
     }
+	
+
+
     if (t==0) {
         tree.Qs = Q;
     }

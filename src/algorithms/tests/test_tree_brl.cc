@@ -56,10 +56,25 @@ int main(int argc, char** argv) {
     //int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
 
     // ---- user options ---- //
-    int planning_horizon = atoi(argv[1]);
-    int leaf_value = atoi(argv[2]);
-    int n_experiments = atoi(argv[3]);
-	
+    int planning_horizon = 1; 
+    int leaf_value = 0; 
+    int n_experiments = 1; 
+
+	if (argc > 1) {
+		planning_horizon = atoi(argv[1]);
+	}
+	if (argc > 2) {
+		leaf_value = atoi(argv[2]);
+	}
+	if (argc > 3) {
+		n_experiments = atoi(argv[3]);
+	}
+	if (argc > 4) {
+		n_steps = atoi(argv[4]);
+	}
+	if (argc > 5) {
+		discounting = atof(argv[5]);
+	}
 	
     printf("# Making environment\n");
     shared_ptr<DiscreteEnvironment> environment;
