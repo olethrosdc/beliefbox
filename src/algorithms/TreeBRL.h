@@ -55,13 +55,13 @@ public:
     class BeliefState
     {
     protected:
-        TreeBRL& tree;
-        MDPModel* belief;
-        int state;
-        int prev_action;
-        real prev_reward;
-        real probability;
-        std::vector<BeliefState> children; ///< previous time
+        TreeBRL& tree; ///< link to the base tree
+        MDPModel belief; ///< current belief
+        int state; ///< current state
+        int prev_action; ///< action taken to arrive here
+        real prev_reward; ///< reward received to arrive here
+        real probability; ///< probability of arriving here given previous state and action
+        std::vector<BeliefState> children; ///< next belief states
         BeliefState* prev; ///< previous belief state
         int t; ///< time
     public:
@@ -84,6 +84,7 @@ public:
 		real MeanMDPValue();
         real UTSValue();
         real LTSValue();
+		void print() const;
         // methods for adaptively building the tree while calculating values (TODO)
         // real StochasticBranchAndBound(int n_samples);
     };
