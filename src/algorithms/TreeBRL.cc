@@ -92,7 +92,7 @@ int TreeBRL::Act(real reward, int next_state)
     BeliefState belief_state = CalculateBeliefTree();
 	
 	//printf("%f %f %f\n", belief_state.CalculateValues(), 
-	belief_state.CalculateValues(leaf_node_expansion);
+	//belief_state.CalculateValues(leaf_node_expansion);
 
 	//Qs.printf(stdout);
     int next_action = ArgMax(Qs);
@@ -126,6 +126,7 @@ TreeBRL::BeliefState TreeBRL::CalculateBeliefTree()
     // Initialise the root belief state
     BeliefState belief_state(*this, belief, current_state);
     belief_state.ExpandAllActions();
+	belief_state.CalculateValues(leaf_node_expansion);
 	return belief_state;
 }
 
@@ -146,9 +147,14 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
                                   int state_,
                                   real r,
                                   real p,
-                                  BeliefState* prev_) : tree(tree_), belief(belief_), state(state_), prev_action(prev_action_), prev_reward(r), probability(p), prev(prev_), t(prev_->t + 1)
+                                  BeliefState* prev_)
+	: tree(tree_), belief(belief_), prev_action(prev_action_),
+	  state(state_), prev_reward(r), probability(p), prev(prev_), t(prev_->t + 1)
 {
-    belief->AddTransition(prev_state_, prev_action, r, state);
+    belief->AddTransition(prev_state_,
+						  prev_action,
+						  prev_reward,
+						  state);
     tree.size++;
 }
 /// Generate transitions from the current state for all
@@ -217,10 +223,17 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
     if (t < tree.horizon) {
         for (uint i=0; i<children.size(); ++i) {
             int a = children[i].prev_action;
-            Q(a) += children[i].probability * (children[i].prev_reward + discount * children[i].CalculateValues(leaf_node));
+			real p = children[i].probability;
+			real r = children[i].prev_reward;
+			int s_next = children[i].state;
+			real V_next = children[i].CalculateValues(leaf_node);
+            Q(a) += p * (r + discount * V_next);
+			printf("t:%d s:%d i:%d a:%d p:%f s2:%d, r:%f v:%f\n",
+				   t, state, i, a, p, s_next, r, V_next);
         }
         V += Max(Q);
-		//Q.print(stdout); printf(" %d/%d\n", t, tree.horizon);
+
+		Q.print(stdout); printf(" %d/%d\n", t, tree.horizon);
     } else {
 		switch(leaf_node) {
 		case NONE: V = 0; break;

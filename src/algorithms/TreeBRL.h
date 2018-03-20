@@ -56,7 +56,7 @@ public:
     {
     protected:
         TreeBRL& tree; ///< link to the base tree
-        MDPModel belief; ///< current belief
+        MDPModel* belief; ///< current belief
         int state; ///< current state
         int prev_action; ///< action taken to arrive here
         real prev_reward; ///< reward received to arrive here
