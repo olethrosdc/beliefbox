@@ -16,13 +16,27 @@
 #include "DiscretePolyaTree.h"
 #include "Random.h"
 
+/** Test learning a discrete Bayesian network.
+   
+	In this setting, we are trying to learn a discrete Bayesian
+	network without knowing the variable structure.
+	 
+	First we generate a random network with n_variables and up to max_values per variable.
+
+	Then we generate n_samples from this network, and calculate a
+	posterior distribution over Polya trees.
+
+	In the end, marginal distributions over Polya trees are used.
+ */
 bool test_dbn(int n_variables, int max_values, int n_samples)
 {
-    if (max_values < 2) {
-        fprintf (stderr, "No reason to do this with less than 2 values per variable!\n");
-        exit(-1);
-    }
-    SparseGraph* graph = NULL;
+	if (max_values < 2) {
+		fprintf (stderr, "No reason to do this with less than 2 values per variable!\n");
+		exit(-1);
+	}
+
+	// Create a random graph for the bayesian network
+	SparseGraph* graph = NULL;
     while (!graph) {
         graph = new SparseGraph(n_variables, true);
         int n_edges = (int) floor(urandom(0, 2*n_variables));
@@ -87,6 +101,9 @@ bool test_dbn(int n_variables, int max_values, int n_samples)
         }
         printf("\n");
     }
+	
+	(P - Q).print(stdout);
+	
     delete graph;
 
     return true;

@@ -148,8 +148,10 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
                                   real r,
                                   real p,
                                   BeliefState* prev_)
-	: tree(tree_), belief(belief_), prev_action(prev_action_),
-	  state(state_), prev_reward(r), probability(p), prev(prev_), t(prev_->t + 1)
+	: tree(tree_), belief(belief_),
+	  state(state_),
+	  prev_action(prev_action_),
+	  prev_reward(r), probability(p), prev(prev_), t(prev_->t + 1)
 {
     belief->AddTransition(prev_state_,
 						  prev_action,
