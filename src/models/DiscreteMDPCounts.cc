@@ -61,6 +61,12 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_tra
 	}
 }
 
+DiscreteMDPCounts* DiscreteMDPCounts::Clone ()
+{
+	DiscreteMDPCounts* clone = new DiscreteMDPCounts(n_states, n_actions, init_transition_count, reward_family);
+}
+
+
 
 DiscreteMDPCounts::~DiscreteMDPCounts()
 {
