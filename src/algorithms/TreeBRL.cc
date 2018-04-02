@@ -39,6 +39,9 @@ TreeBRL::TreeBRL(int n_states_,
 
 }
 
+// Note that the belief tree is only created within Act() and
+// destroyed immediately. Hence there is no need to remove
+// anything here. But on the other hand, this is inefficient.
 TreeBRL::~TreeBRL()
 {
     //printf(" # destroying tree of size %d\n", size);
