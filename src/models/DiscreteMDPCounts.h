@@ -59,41 +59,8 @@ public:
 			sampled_mdp = generate();
 		}
 	}
-	DiscreteMDPCounts(const DiscreteMDPCounts& model) :
-		use_sampling(model.use_sampling),
-		transitions(model.transitions),
-		mean_mdp(model.mean_mdp),
-		reward_family(model.reward_family)
-		N(model.N)
-	{
-		//printf("Creating DiscreteMDPCounts with %d states and %d actions\n",  n_states, n_actions);
-		ER.resize(N);
-		for (int i=0; i<N; ++i) {
-			switch(reward_family) {
-			case BETA:
-				ER[i] = new BetaDistribution();
-				break;
-			case NORMAL:
-				ER[i] = new NormalUnknownMeanPrecision();
-				break;
-			case FIXED:
-				ER[i] = new UnknownSingularDistribution();
-				break;
-			default:
-				Serror("Unknown distribution family %d\n", reward_family);
-			}
-		}
-		for (int s=0; s<n_states; s++) {
-			for (int a=0; a<n_actions; a++) {
-				for (int s_next=0; s_next<n_states; s_next++) {
-					real p = transitions.marginal_pdf(s, a, s_next);
-					mean_mdp.setTransitionProbability(s, a, s_next, p);
-					real expected_reward = getExpectedReward(s,a);
-					mean_mdp.reward_distribution.setFixedReward(s, a, expected_reward);
-				}
-			}
-		}
-	}
+	// copy constructor
+	DiscreteMDPCounts(const DiscreteMDPCounts& model);
 	virtual DiscreteMDPCounts* Clone();
     virtual ~DiscreteMDPCounts();
     virtual void AddTransition(int s, int a, real r, int s2);

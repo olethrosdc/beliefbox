@@ -18,12 +18,12 @@
 
 /** Create a counting model of an MDP.
 	
-   \arg n_states the number of MDP states
-   \arg n_actions the number of MDP actions
-   \arg init_transition_count the prior for the Dirichlet. The higher this is, the more the model will expect to see unseen transitions.
-   \arg init_reward_count the prior number of counts for the reward.  This should be used in conjuction with the prior reward average to bias the rewards.
-   \arg The prior reward average. This can be used to bias the average to some particular value.
- */
+	\arg n_states the number of MDP states
+	\arg n_actions the number of MDP actions
+	\arg init_transition_count the prior for the Dirichlet. The higher this is, the more the model will expect to see unseen transitions.
+	\arg init_reward_count the prior number of counts for the reward.  This should be used in conjuction with the prior reward average to bias the rewards.
+	\arg The prior reward average. This can be used to bias the average to some particular value.
+*/
 DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_transition_count, RewardFamily reward_family_)
     : 
     MDPModel(n_states, n_actions),
@@ -61,9 +61,47 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_tra
 	}
 }
 
+
+DiscreteMDPCounts::DiscreteMDPCounts(const DiscreteMDPCounts& model) :
+	MDPModel(model),
+	use_sampling(model.use_sampling),
+	transitions(model.transitions),
+	mean_mdp(model.mean_mdp),
+	reward_family(model.reward_family),
+	N(model.N)
+{
+	//printf("Creating DiscreteMDPCounts with %d states and %d actions\n",  n_states, n_actions);
+	ER.resize(N);
+	for (int i=0; i<N; ++i) {
+		switch(reward_family) {
+		case BETA:
+			ER[i] = new BetaDistribution();
+			break;
+		case NORMAL:
+			ER[i] = new NormalUnknownMeanPrecision();
+			break;
+		case FIXED:
+			ER[i] = new UnknownSingularDistribution();
+			break;
+		default:
+			Serror("Unknown distribution family %d\n", reward_family);
+		}
+	}
+	for (int s=0; s<n_states; s++) {
+		for (int a=0; a<n_actions; a++) {
+			for (int s_next=0; s_next<n_states; s_next++) {
+				real p = transitions.marginal_pdf(s, a, s_next);
+				mean_mdp.setTransitionProbability(s, a, s_next, p);
+				real expected_reward = getExpectedReward(s,a);
+				mean_mdp.reward_distribution.setFixedReward(s, a, expected_reward);
+			}
+		}
+	}
+}
+
 DiscreteMDPCounts* DiscreteMDPCounts::Clone ()
 {
-	DiscreteMDPCounts* clone = new DiscreteMDPCounts(n_states, n_actions, init_transition_count, reward_family);
+	DiscreteMDPCounts* clone = new DiscreteMDPCounts(*this);
 }
 
 
@@ -178,14 +216,14 @@ void DiscreteMDPCounts::ShowModel() const
         }
     }
 
-   for (int a=0; a<n_actions; a++) {
+	for (int a=0; a<n_actions; a++) {
         for (int i=0; i<n_states; i++) {
             std::cout << "R(" << a << "," << i 
                       << ") = " << getExpectedReward(i, a)
 				//<< " [" << ER[getID(i,a)].n_samples << "]"
                       << std::endl; 
         }
-   }
+	}
 }
 
 DiscreteMDP* DiscreteMDPCounts::generate() const

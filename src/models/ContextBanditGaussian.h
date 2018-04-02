@@ -32,6 +32,11 @@ protected:
     }
 public:
     ContextBanditGaussian (int n_states, int n_actions, real tau, real mu_0, real tau_0);
+	virtual ContextBanditGaussian* Clone()
+	{
+		Serror("Not implemented");
+		return NULL;
+	}
     virtual ~ContextBanditGaussian();
     virtual void AddTransition(int s, int a, real r, int s2);
     virtual real GenerateReward (int s, int a) const;
