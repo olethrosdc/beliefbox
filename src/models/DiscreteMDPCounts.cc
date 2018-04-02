@@ -102,6 +102,7 @@ DiscreteMDPCounts::DiscreteMDPCounts(const DiscreteMDPCounts& model) :
 DiscreteMDPCounts* DiscreteMDPCounts::Clone ()
 {
 	DiscreteMDPCounts* clone = new DiscreteMDPCounts(*this);
+	return clone;
 }
 
 
