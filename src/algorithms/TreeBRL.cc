@@ -11,6 +11,9 @@
 
 #include "TreeBRL.h"
 
+
+//#define TBRL_DEBUG
+
 TreeBRL::TreeBRL(int n_states_,
                  int n_actions_,
                  real gamma_,
@@ -30,7 +33,7 @@ TreeBRL::TreeBRL(int n_states_,
 	  leaf_node_expansion(leaf_node)
 {
 	const char* leaf_value_name[] = {"None", "V_Min", "V_Max", "V_mean", "V_U", "V_L"};
-    printf("# Starting Tree-Bayes-RL with %d states, %d actions, %d horizon, %s bounds\n", n_states, n_actions, horizon, leaf_value_name[leaf_node]);
+    logmsg("Starting Tree-Bayes-RL with %d states, %d actions, %d horizon, %s bounds\n", n_states, n_actions, horizon, leaf_value_name[leaf_node]);
 
     current_state = -1;
 
@@ -231,12 +234,15 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
 			int s_next = children[i].state;
 			real V_next = children[i].CalculateValues(leaf_node);
             Q(a) += p * (r + discount * V_next);
+#ifdef TBRL_DEBUG
 			printf("t:%d s:%d i:%d a:%d p:%f s2:%d, r:%f v:%f\n",
 				   t, state, i, a, p, s_next, r, V_next);
+#endif
         }
         V += Max(Q);
-
+#ifdef TBRL_DEBUG
 		Q.print(stdout); printf(" %d/%d\n", t, tree.horizon);
+#endif
     } else {
 		switch(leaf_node) {
 		case NONE: V = 0; break;

@@ -35,6 +35,11 @@ public:
     virtual real getRewardDensity (int s, int a, real r) const;
     virtual real getExpectedReward (int s, int a) const;
     virtual void Reset();
+	virtual ContextBanditCollection* Clone()
+	{
+		Serror("Not implemented!\n");
+		return NULL;
+	}
     virtual DiscreteMDP* generate() const
     {
         fprintf(stderr, "Not implemented!\n");
