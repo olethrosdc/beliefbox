@@ -65,6 +65,13 @@ public:
         this->n_actions = n_actions;
         mdp_dbg("Creating MDPModel with %d states and %d actions\n",  n_states, n_actions);
     }
+	/// copy constructor
+	MDPModel(const MDPModel& model)
+	{
+		n_states = model.n_states;
+		n_actions = model.n_actions;
+	}
+	/// Clone
 	virtual MDPModel* Clone()
 	{
 		MDPModel* clone = new MDPModel(*this);
