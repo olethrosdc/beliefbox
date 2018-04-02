@@ -103,8 +103,8 @@ int main(int argc, char** argv) {
 	
     real dirichlet_mass = 0.5;
     enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
-    //DiscreteMDPCounts belief(n_states, n_actions, dirichlet_mass, reward_prior);
-	NullMDPModel belief(n_states, n_actions);
+    DiscreteMDPCounts belief(n_states, n_actions, dirichlet_mass, reward_prior);
+	//NullMDPModel belief(n_states, n_actions);
 	
     Vector U(n_experiments);
     for (int experiment=0;
