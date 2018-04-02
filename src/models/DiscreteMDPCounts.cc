@@ -100,7 +100,7 @@ DiscreteMDPCounts::DiscreteMDPCounts(const DiscreteMDPCounts& model) :
 	}
 }
 
-/// BUG: Some parameters are not copied
+/// CHECK: Some parameters are not copied
 DiscreteMDPCounts* DiscreteMDPCounts::Clone ()
 {
 	DiscreteMDPCounts* clone = new DiscreteMDPCounts(*this);
