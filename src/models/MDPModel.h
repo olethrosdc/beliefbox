@@ -75,6 +75,7 @@ public:
 	virtual MDPModel* Clone()
 	{
 		MDPModel* clone = new MDPModel(*this);
+		return clone;
 	}
     inline virtual int getNStates() const
     {
