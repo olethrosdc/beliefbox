@@ -73,6 +73,7 @@ public:
 	}
 	/// Clone
 	virtual MDPModel* Clone() = 0;
+	virtual ~MDPModel();
     inline virtual int getNStates() const
     {
         return n_states;
@@ -80,9 +81,6 @@ public:
     inline virtual int getNActions() const
     {
         return n_actions;
-    }
-    virtual ~MDPModel()
-    {
     }
     virtual void AddTransition(int s, int a, real r, int s2) = 0;
     virtual real GenerateReward (int s, int a) const
@@ -120,33 +118,40 @@ public:
 
 /// This model does nothing!
 class NullMDPModel : public MDPModel
-
 {
 protected:
     int n_states; ///< number of states (or dimensionality of state space)
     int n_actions; ///< number of actions (or dimensionality of action space)
+	int last_s = -1;
+	int last_a = -1;
+	real last_r = 0;
+	int last_s2 = -1;
 public:
     NullMDPModel (int n_states, int n_actions)
+		: MDPModel(n_states, n_actions)
     {
     }
 	/// copy constructor
-	NullMDPModel(const MDPModel& model)
+	NullMDPModel(const MDPModel& model) :
+		MDPModel(model)
 	{
-		n_states = model.n_states;
-		n_actions = model.n_actions;
 	}
 	/// Clone
 	virtual NullMDPModel* Clone()
 	{
 		NullMDPModel* model = new NullMDPModel(*this);
+		return model;
 	}
-    virtual ~NullMDPModel()
-    {
-    }
+	virtual ~NullMDPModel();
+	
     virtual void AddTransition(int s, int a, real r, int s2)
 	{
+		last_s = 2;
+		last_a = a;
+		last_r = r;
+		last_s2 = s2;
 	}
-    virtual int GenerateTransition (int s, int a)
+    virtual int GenerateTransition (int s, int a) const
 	{
 		return s;
 	}
@@ -161,9 +166,13 @@ public:
 	{
 		return NULL;
 	}
-    virtual void ShowModel() const;
+	virtual void ShowModel() const
+	{
+		printf("%d %d %f %d\n", last_s, last_a, last_r, last_s2);
+	}
 	virtual void ShowModelStatistics() const
 	{
+		ShowModel();
 	}
 
 };

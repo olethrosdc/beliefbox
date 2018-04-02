@@ -45,6 +45,11 @@ DiscreteMDP* MDPModel::CreateMDP() const
     return mdp;
 }
 
+MDPModel::~MDPModel()
+{
+}
+
+
 void MDPModel::ShowModel() const
 {
     for (int a=0; a<n_actions; a++) {
@@ -66,6 +71,10 @@ void MDPModel::ShowModel() const
                       << std::endl; 
         }
    }
+}
+
+NullMDPModel::~NullMDPModel()
+{
 }
 
 GradientDescentMDPModel::GradientDescentMDPModel (int n_states, int n_actions, Distribution* initial_transitions, Distribution* initial_rewards) 

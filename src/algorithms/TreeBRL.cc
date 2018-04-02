@@ -160,7 +160,14 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
 	  prev_action(prev_action_),
 	  prev_reward(r), probability(p), prev(prev_), t(prev_->t + 1)
 {
+	
+#ifdef TBRL_DEBUG
+	logmsg("Cloning belief");
+#endif
 	belief = belief_->Clone();
+#ifdef TBRL_DEBUG
+	logmsg("Adding new transition");
+#endif
     belief->AddTransition(prev_state_,
 						  prev_action,
 						  prev_reward,
@@ -179,7 +186,7 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
 TreeBRL::BeliefState::~BeliefState()
 {
 	tree.size--;
-	delete belief;
+	//delete belief;
 }
 
 
