@@ -148,11 +148,12 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
                                   real r,
                                   real p,
                                   BeliefState* prev_)
-	: tree(tree_), belief(belief_),
+	: tree(tree_), 
 	  state(state_),
 	  prev_action(prev_action_),
 	  prev_reward(r), probability(p), prev(prev_), t(prev_->t + 1)
 {
+	belief = belief_->Clone();
     belief->AddTransition(prev_state_,
 						  prev_action,
 						  prev_reward,
