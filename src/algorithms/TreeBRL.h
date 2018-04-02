@@ -76,6 +76,7 @@ public:
                     real r,
                     real p,
                     BeliefState* prev_);
+		~BeliefState();
         // methods for building the tree
         void ExpandAllActions();
         void SparseExpandAllActions(int n_samples);

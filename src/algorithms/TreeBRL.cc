@@ -164,11 +164,24 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
 						  prev_action,
 						  prev_reward,
 						  state);
+	tree.size++;
 #ifdef TBRL_DEBUG
+	logmsg("Previous belief");
+	belief_->ShowModelStatistics();
+	logmsg("Next belief");
 	belief->ShowModelStatistics();
+	logmsg("Tree size: %d\n", tree.size);
 #endif
-    tree.size++;
+
 }
+
+TreeBRL::BeliefState::~BeliefState()
+{
+	tree.size--;
+	delete belief;
+}
+
+
 /// Generate transitions from the current state for all
 /// actions. Do this recursively, using the marginal
 /// distribution, but using sparse sampling.
