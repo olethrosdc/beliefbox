@@ -24,7 +24,9 @@
 /*@{*/
 
 /** 
-    A node in a Polya tree
+    A node in a Polya tree.
+
+	This implements a Dirichlet(1/2) distribution for all nodes in the tree. 
  */
 class PolyaNode
 {
@@ -64,6 +66,7 @@ public:
             nodes[i]->Observe(x);
         }
     }
+	/// Return the marginal probability of x
     real getProbability(std::vector<int>& x)
     {
         int i = x[depth];
@@ -77,6 +80,9 @@ public:
 };
 
 
+/// The discrete Polya tree creates a very simple joint distribution
+/// for all random variables in a DBN. It does not try to estimate any
+/// independence structure.
 class DiscretePolyaTree
 {
 protected:

@@ -73,6 +73,7 @@ public:
 
     virtual void Reset();
     virtual void ShowModel() const;
+	virtual void ShowModelStatistics() const;
 
     virtual DiscreteMDP* generate() const;
     virtual const DiscreteMDP* const getMeanMDP() const;

@@ -8,6 +8,7 @@
 
 	The format is:
 	number_of_lines
+	<data>
  */
 int FileToIntVector(std::vector<int>& data, const char* fname, int tmpT)
 {
@@ -96,12 +97,19 @@ int ReadClassData(Matrix& data, std::vector<int>& labels, const char* fname)
 
 /** Read a matrix of data
 
+	@usage
+
 	Format:
 	number_of_lines number_of_colums
 	<data>
     
-    returns:
-    number of lines read
+	
+	arguments: 
+	@param data matrix to put the data in
+	@param fname file name
+	@param tmpT number of records to read (0 meaning all)
+
+    @return number of lines read
  */
 int ReadFloatDataASCII(Matrix& data, const char* fname, int tmpT) 
 {

@@ -112,6 +112,9 @@ public:
     virtual DiscreteMDP* generate() const = 0;
     virtual const DiscreteMDP* const getMeanMDP() const = 0;
     virtual void ShowModel() const;
+	virtual void ShowModelStatistics() const
+	{
+	}
 
 };
 

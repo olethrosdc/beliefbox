@@ -36,15 +36,12 @@
 
 static const char* const help_text = "Usage bayesian multivariate regression [options] \n\
 \nOptions: \n\
---environment:	{PuddleWorld, MountainCar, Pendulum}\n\
---randomness:	environment randomness (*0.0) \n\
---n_samples:	Total number of representative samples \n\
---n_episodes:	Total number of episodes \n\
+--data:         Data file\n\
 --horizon:		Total number of steps per episode \n\
 --b_functions:  Basis function usage or not \n\
 --grids:		number of grid intervals \n\
---a:			linear model parameter \n\
---N0:			linear model parameter \n\
+--a:			linear model parameter (0.1)\n\
+--N0:			linear model parameter (0.1)\n\
 \n\
 * denotes default parameters \n\
 \n";
@@ -56,7 +53,6 @@ int main(int argc, char* argv[])
 	
 	
 	RandomNumberGenerator* rng;
-	RandomNumberGenerator* environment_rng;
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
 	
@@ -68,17 +64,14 @@ int main(int argc, char* argv[])
 	std::cout << "Starting test program" << std::endl;
 
 
-	int m	= n_states + 1; //Input dimensions (input state dimension plus a dummy state)
-	int d_r = 1;			// Reward dimensions
-	int d_s = n_states;		//Output states dimensions 	
+	int d_in = 1; //Input dimensions (input state dimension plus a dummy state)
+	int d_out = 1;			// Reward dimensions
 	
 	RBFBasisSet* RBFs = NULL;
 	if( b_functions == 1) {
 		//Lower and upper environment bounds
-		Vector S_L	= environment->StateLowerBound();
-		S_L.print(stdout);
-		Vector S_U	= environment->StateUpperBound();
-		S_U.print(stdout);
+		Vector S_L(d_in);
+		Vector S_U(d_in);
 		
 		std::cout << "Creating Radial basis functions..." << std::endl;
 		EvenGrid Discretisation(S_L, S_U, grids);

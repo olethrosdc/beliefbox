@@ -205,10 +205,10 @@ void DiscreteMDPCounts::ShowModel() const
 	printf ("# mean model\n");
     for (int a=0; a<n_actions; a++) {
         for (int i=0; i<n_states; i++) {
-            std::cout << a << "," << i << ":";
+            std::cout << "P: " << a << "," << i << ":";
             for (int j=0; j<n_states; j++) {
                 real p = getTransitionProbability(i, a, j);
-                if (p<0.01) p =0.0f;
+                //if (p<0.01) p =0.0f;
                 std::cout << p << " ";
             }
             std::cout << " ["
@@ -226,6 +226,28 @@ void DiscreteMDPCounts::ShowModel() const
         }
 	}
 }
+
+/// Show the model.
+void DiscreteMDPCounts::ShowModelStatistics() const
+{
+	printf ("# model statistics\n");
+    for (int a=0; a<n_actions; a++) {
+        for (int i=0; i<n_states; i++) {
+            std::cout << "P: " << a << "," << i << ":";
+			transitions.getParameters(i, a).print(stdout);
+        }
+    }
+
+	for (int a=0; a<n_actions; a++) {
+        for (int i=0; i<n_states; i++) {
+            std::cout << "R(" << a << "," << i 
+                      << ") = " << getExpectedReward(i, a)
+				//<< " [" << ER[getID(i,a)].n_samples << "]"
+                      << std::endl; 
+        }
+	}
+}
+
 
 DiscreteMDP* DiscreteMDPCounts::generate() const
 {

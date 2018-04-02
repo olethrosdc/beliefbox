@@ -12,7 +12,7 @@
 #include "TreeBRL.h"
 
 
-//#define TBRL_DEBUG
+#define TBRL_DEBUG
 
 TreeBRL::TreeBRL(int n_states_,
                  int n_actions_,
@@ -164,6 +164,9 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
 						  prev_action,
 						  prev_reward,
 						  state);
+#ifdef TBRL_DEBUG
+	belief->ShowModelStatistics();
+#endif
     tree.size++;
 }
 /// Generate transitions from the current state for all
