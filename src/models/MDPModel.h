@@ -65,6 +65,7 @@ public:
         this->n_actions = n_actions;
         mdp_dbg("Creating MDPModel with %d states and %d actions\n",  n_states, n_actions);
     }
+	virtual MDPModel Clone() = 0;
     inline virtual int getNStates() const
     {
         return n_states;
