@@ -12,7 +12,7 @@
 #include "TreeBRL.h"
 
 
-//#define TBRL_DEBUG
+#define TBRL_DEBUG
 
 TreeBRL::TreeBRL(int n_states_,
                  int n_actions_,
@@ -140,8 +140,9 @@ TreeBRL::BeliefState TreeBRL::CalculateBeliefTree()
 
 TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
                                   MDPModel* belief_,
-                                  int state_) : tree(tree_), belief(belief_), state(state_), probability(1), t(0)
+                                  int state_) : tree(tree_), state(state_), probability(1), t(0)
 {
+	belief = belief_->Clone(); 
     tree.size++;
 }
 
