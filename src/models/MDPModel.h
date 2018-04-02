@@ -118,6 +118,56 @@ public:
 
 };
 
+/// This model does nothing!
+class NullMDPModel : public MDPModel
+
+{
+protected:
+    int n_states; ///< number of states (or dimensionality of state space)
+    int n_actions; ///< number of actions (or dimensionality of action space)
+public:
+    NullMDPModel (int n_states, int n_actions)
+    {
+    }
+	/// copy constructor
+	NullMDPModel(const MDPModel& model)
+	{
+		n_states = model.n_states;
+		n_actions = model.n_actions;
+	}
+	/// Clone
+	virtual NullMDPModel* Clone()
+	{
+		NullMDPModel* model = new NullMDPModel(*this);
+	}
+    virtual ~NullMDPModel()
+    {
+    }
+    virtual void AddTransition(int s, int a, real r, int s2)
+	{
+	}
+    virtual int GenerateTransition (int s, int a)
+	{
+		return s;
+	}
+    virtual void Reset()
+	{
+	}
+    virtual DiscreteMDP* generate() const
+	{
+		return NULL;
+	}
+    virtual const DiscreteMDP* const getMeanMDP() const
+	{
+		return NULL;
+	}
+    virtual void ShowModel() const;
+	virtual void ShowModelStatistics() const
+	{
+	}
+
+};
+
 class GradientDescentMDPModel : public MDPModel
 {
 protected:

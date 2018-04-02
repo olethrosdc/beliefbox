@@ -15,6 +15,7 @@ int main(void)
 {
 	int n_states = 5;
 	int n_actions = 2;
+	real dirichlet_mass = 0.5;
 	enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
     DiscreteMDPCounts belief(n_states, n_actions, dirichlet_mass, reward_prior);
 
@@ -24,6 +25,10 @@ int main(void)
 	belief_copy.AddTransition(0, 0, 0, 0);
 	belief.ShowModelStatistics();
 	belief_copy.ShowModelStatistics();
+
+	DiscreteMDPCounts* clone = belief.Clone();
+
+	delete clone;
 	
 	return 0;
 }
