@@ -21,6 +21,8 @@
 	Here the prior mass is distributed uniformly over the state space.
 	
 	By default, an unvisited state-action pair has a uniform distribution state. This behaviour may not be ideal.
+
+	If uniform_unknown is false, then all unvisited states are absorbing.
  */
 class DirichletTransitions 
 {
@@ -34,7 +36,7 @@ public:
 
 	/// The standard constructor
 	DirichletTransitions(int n_states_, int n_actions_,
-						 real prior_mass_ = 1, bool uniform_unknown_ = false);
+						 real prior_mass_ = 0.5, bool uniform_unknown_ = true);
 
 	/// The destructor
 	virtual ~DirichletTransitions();
