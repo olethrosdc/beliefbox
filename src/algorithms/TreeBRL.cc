@@ -12,7 +12,7 @@
 #include "TreeBRL.h"
 
 
-#define TBRL_DEBUG
+//#define TBRL_DEBUG
 
 TreeBRL::TreeBRL(int n_states_,
                  int n_actions_,
