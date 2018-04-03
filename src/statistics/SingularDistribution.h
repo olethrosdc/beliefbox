@@ -49,6 +49,7 @@ public:
     virtual real pdf(real x) const;
     virtual real marginal_pdf(real x) const;
     virtual real generate() const;
+	virtual real generateMarginal() const;
 	virtual real getMean() const;
 };
 

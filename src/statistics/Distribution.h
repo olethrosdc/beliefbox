@@ -95,6 +95,7 @@ public:
     virtual real Observe(real x) = 0; 
     /// get marginal_pdf
     virtual real marginal_pdf(real x) const  = 0;
+	virtual real generateMarginal() const = 0;
 };
 
 

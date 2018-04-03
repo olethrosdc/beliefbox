@@ -36,6 +36,7 @@ real SingularDistribution::generate() const
 {
     return m;
 }
+
 real SingularDistribution::pdf(real x) const
 {
         if (x==m) {
@@ -103,6 +104,14 @@ real UnknownSingularDistribution::generate() const
 }
 
 real UnknownSingularDistribution::getMean() const
+{
+    if (observed) {
+        return Q.m;
+    }
+    return prior->getMean();
+}
+
+real UnknownSingularDistribution::generateMarginal() const
 {
     if (observed) {
         return Q.m;

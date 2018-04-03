@@ -169,7 +169,7 @@ void DiscreteMDPCounts::AddTransition(int s, int a, real r, int s2)
 /// Generate a reward from the marginal distribution 
 real DiscreteMDPCounts::GenerateReward (int s, int a) const
 {
-    return ER[getID (s, a)]->generate();
+    return ER[getID (s, a)]->generateMarginal();
 }
 
 /// Generate a transition from the marginal distribution
