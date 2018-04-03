@@ -56,20 +56,20 @@ public:
     {
     protected:
         TreeBRL& tree; ///< link to the base tree
-        MDPModel* belief; ///< current belief
+		MDPModel* belief; ///< current belief
         int state; ///< current state
         int prev_action; ///< action taken to arrive here
         real prev_reward; ///< reward received to arrive here
         real probability; ///< probability of arriving here given previous state and action
-        std::vector<BeliefState> children; ///< next belief states
+        std::vector<BeliefState*> children; ///< next belief states
         BeliefState* prev; ///< previous belief state
         int t; ///< time
     public:
         BeliefState(TreeBRL& tree_,
-                    MDPModel* belief_,
+                    const MDPModel* belief_,
                     int state_);
         BeliefState(TreeBRL& tree_,
-                    MDPModel* belief_,
+                    const MDPModel* belief_,
                     int prev_state_,
                     int prev_action_,
                     int state_,

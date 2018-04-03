@@ -72,7 +72,7 @@ public:
 		n_actions = model.n_actions;
 	}
 	/// Clone
-	virtual MDPModel* Clone() = 0;
+	virtual MDPModel* Clone() const = 0;
 	virtual ~MDPModel();
     inline virtual int getNStates() const
     {
@@ -137,7 +137,7 @@ public:
 	{
 	}
 	/// Clone
-	virtual NullMDPModel* Clone()
+	virtual NullMDPModel* Clone() const
 	{
 		NullMDPModel* model = new NullMDPModel(*this);
 		return model;

@@ -32,7 +32,7 @@ protected:
     }
 public:
     ContextBanditGaussian (int n_states, int n_actions, real tau, real mu_0, real tau_0);
-	virtual ContextBanditGaussian* Clone()
+	virtual ContextBanditGaussian* Clone() const
 	{
 		Serror("Not implemented");
 		return NULL;

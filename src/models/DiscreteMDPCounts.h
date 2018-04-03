@@ -61,7 +61,7 @@ public:
 	}
 	// copy constructor
 	DiscreteMDPCounts(const DiscreteMDPCounts& model);
-	virtual DiscreteMDPCounts* Clone();
+	virtual DiscreteMDPCounts* Clone() const;
     virtual ~DiscreteMDPCounts();
     virtual void AddTransition(int s, int a, real r, int s2);
     virtual void setFixedRewards(const Matrix& rewards);

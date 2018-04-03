@@ -32,7 +32,7 @@ protected:
 public:
     DiscreteMDPCollection(int n_aggregates, int n_states, int n_actions);
     DiscreteMDPCollection(Gridworld& gridworld, int n_aggregates, int n_states, int n_actions);
-	virtual DiscreteMDPCollection* Clone()
+	virtual DiscreteMDPCollection* Clone() const
 	{
 		Serror("Not implemented!\n");
 		return NULL;
