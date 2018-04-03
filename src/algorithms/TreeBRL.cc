@@ -17,7 +17,7 @@
 TreeBRL::TreeBRL(int n_states_,
                  int n_actions_,
                  real gamma_,
-                 MDPModel* belief_,
+				 MDPModel* belief_,
                  RandomNumberGenerator* rng_,
                  int horizon_,
 				 enum LeafNodeValue leaf_node)
@@ -139,7 +139,7 @@ TreeBRL::BeliefState TreeBRL::CalculateBeliefTree()
 //------------- Belief states ----------------//
 
 TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
-                                  MDPModel* belief_,
+                                  const MDPModel* belief_,
                                   int state_) : tree(tree_), state(state_), probability(1), t(0)
 {
 	belief = belief_->Clone(); 
@@ -148,7 +148,7 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
 
 /// Use this to construct a subsequent belief state
 TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
-                                  MDPModel* belief_,
+                                  const MDPModel* belief_,
                                   int prev_state_,
                                   int prev_action_,
                                   int state_,

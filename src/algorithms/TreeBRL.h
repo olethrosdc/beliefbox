@@ -56,7 +56,7 @@ public:
     {
     protected:
         TreeBRL& tree; ///< link to the base tree
-        MDPModel* belief; ///< current belief
+		MDPModel* belief; ///< current belief
         int state; ///< current state
         int prev_action; ///< action taken to arrive here
         real prev_reward; ///< reward received to arrive here
@@ -92,7 +92,7 @@ public:
     TreeBRL(int n_states_, ///< number of states
             int n_actions_, ///< number of actions
             real gamma_, ///< discount factor
-            MDPModel* belief_, ///< belief about the MDP
+            const MDPModel* belief_, ///< belief about the MDP
             RandomNumberGenerator* rng_, ///< the RNG
             int horizon_ = 1,
 			LeafNodeValue leaf_node_expansion = NONE);
