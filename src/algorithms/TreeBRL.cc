@@ -186,6 +186,9 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
 TreeBRL::BeliefState::~BeliefState()
 {
 	tree.size--;
+	for (uint i=0; i<children.size(); ++i) {
+        delete children[i];
+    }
 	delete belief;
 }
 
