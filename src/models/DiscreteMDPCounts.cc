@@ -70,7 +70,7 @@ DiscreteMDPCounts::DiscreteMDPCounts(const DiscreteMDPCounts& model) :
 	reward_family(model.reward_family),
 	N(model.N)
 {
-	logmsg("Copying DiscreteMDPCounts with %d states and %d actions",  n_states, n_actions);
+	//logmsg("Copying DiscreteMDPCounts with %d states and %d actions\n",  n_states, n_actions);
 	
 	ER.resize(N);
 	for (int i=0; i<N; ++i) {

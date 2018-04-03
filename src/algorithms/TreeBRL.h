@@ -61,7 +61,7 @@ public:
         int prev_action; ///< action taken to arrive here
         real prev_reward; ///< reward received to arrive here
         real probability; ///< probability of arriving here given previous state and action
-        std::vector<BeliefState> children; ///< next belief states
+        std::vector<BeliefState*> children; ///< next belief states
         BeliefState* prev; ///< previous belief state
         int t; ///< time
     public:
