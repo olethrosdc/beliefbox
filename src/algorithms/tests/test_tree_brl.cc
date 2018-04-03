@@ -47,10 +47,10 @@ int main(int argc, char** argv) {
     RandomNumberGenerator* env_rng = (RandomNumberGenerator*) &default_rng;
     rng->seed();
     env_rng->manualSeed(982374523);
-    int n_states = 2;
+    int n_states = 5;
     int n_actions = 2;
     real discounting = 0.95;
-    int n_steps = 1000;
+    int n_steps = 10000;
 
     //    int n_samples = 2; ///< number of state samples when branching
     //int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
