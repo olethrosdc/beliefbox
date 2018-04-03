@@ -66,10 +66,10 @@ public:
         int t; ///< time
     public:
         BeliefState(TreeBRL& tree_,
-                    MDPModel* belief_,
+                    const MDPModel* belief_,
                     int state_);
         BeliefState(TreeBRL& tree_,
-                    MDPModel* belief_,
+                    const MDPModel* belief_,
                     int prev_state_,
                     int prev_action_,
                     int state_,
@@ -92,7 +92,7 @@ public:
     TreeBRL(int n_states_, ///< number of states
             int n_actions_, ///< number of actions
             real gamma_, ///< discount factor
-            const MDPModel* belief_, ///< belief about the MDP
+            MDPModel* belief_, ///< belief about the MDP
             RandomNumberGenerator* rng_, ///< the RNG
             int horizon_ = 1,
 			LeafNodeValue leaf_node_expansion = NONE);
