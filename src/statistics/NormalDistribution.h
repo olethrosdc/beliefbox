@@ -110,6 +110,7 @@ public:
     }
     virtual real generate();
     virtual real generate() const;
+	virtual real generateMarginal() const;
     /// Note that this the marginal likelihood!
     virtual real pdf(real x) const;
     virtual real marginal_pdf(real x) const;
@@ -139,8 +140,8 @@ public:
 class NormalUnknownMeanPrecision: public ConjugatePrior
 {
 protected:
-    Student marginal;
-    Student marginal_mean;
+    Student marginal; ///< The marginal distribution of x under the prior
+    Student marginal_mean; ///< The marginal distribution of m under the prior
 public:
     // paramters for \xi(m | r) = f(m | \mu, \tau r)
     real mu_0; ///< prior mean
@@ -167,6 +168,7 @@ public:
     virtual real LogLikelihoodLogNormal(const std::vector<real>& x, int K) const;
     virtual real generate();
     virtual real generate() const;
+	virtual real generateMarginal() const;
     virtual real pdf(real mean) const;
     virtual real log_pdf(real mean) const;
     virtual real marginal_pdf(real x) const;

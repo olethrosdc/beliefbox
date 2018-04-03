@@ -82,12 +82,6 @@ real BetaDistribution::getVariance()
     return (alpha/a_b)*(beta/a_b)/(a_b + 1);
 }
 
-/// Generate using ranlib
-real BetaDistribution::generate() 
-{
-	assert(alpha > 0 && (beta >= 0 || alpha >= 0) && beta > 0);
-    return genbet(alpha, beta);
-}
 
 /// Generate using ranlib
 real BetaDistribution::generate() const
@@ -96,8 +90,8 @@ real BetaDistribution::generate() const
     return genbet(alpha, beta);
 }
 
-/// Generate using ranlib
-real BetaDistribution::generateMarginal() 
+/// Generate from the marginal distribution
+real BetaDistribution::generateMarginal() const
 {
 	if (urandom() < getMean()) {
 		return 1.0;

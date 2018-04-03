@@ -142,6 +142,19 @@ real NormalDistributionUnknownMean::marginal_pdf(real x) const
     return exp(-0.5 * d*d)/(sqrt(2.0 * M_PI) * sigma);
 }
 
+/** Generate a sample from the marginal PDF
+
+	TODO Check that the sample is correct
+ */
+real NormalDistributionUnknownMean::generateMarginal() const
+{
+    real mean = mu_n / tau_n;
+    real sigma = 1.0 / tau_n + 1.0 / tau;
+	NormalDistribution normal(mean, sigma);
+	return normal.generate();
+}
+
+
 real NormalDistributionUnknownMean::pdf(real x) const
 {
     return prior.pdf(x);
@@ -217,11 +230,19 @@ real NormalUnknownMeanPrecision::generate()
     return marginal_mean.generate()(0);
 }
 
-/// Generate from the posterior. Uses the ranlib implementation
+/// Generate the marginal from the posterior. Uses the ranlib implementation
 real NormalUnknownMeanPrecision::generate() const
 {
     return marginal.generate()(0);
 }
+
+/// Generate the marginal from the posterior. Uses the ranlib implementation
+real NormalUnknownMeanPrecision::generateMarginal() const
+{
+    return marginal.generate()(0);
+}
+
+
 
 real NormalUnknownMeanPrecision::Observe(real x)
 {

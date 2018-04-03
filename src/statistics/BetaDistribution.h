@@ -56,9 +56,8 @@ public:
     virtual void setVariance(real var);
     virtual real getMean() const;
     virtual real getVariance(); 
-    virtual real generate();
-	real generate() const;
-    virtual real generateMarginal();
+    virtual real generate() const;
+	virtual real generateMarginal() const;
     real Observe(real x);
     real setMaximumLikelihoodParameters(const std::vector<real>& x,
                                         int n_iterations);
