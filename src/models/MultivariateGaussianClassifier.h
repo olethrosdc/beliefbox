@@ -18,7 +18,7 @@
 #include <vector>
 
 /// A classifier using a multivariate gaussian for each class.
-class MultivariateGaussianClassifier
+class MultivariateGaussianClassifier : public Classifier<Vector, int, Vector>
 {
 public:
     const int n_inputs; ///< dimensionality  of observations
@@ -27,13 +27,17 @@ public:
     DirichletDistribution prior; ///< The class prior distribution
     Vector output;
     MultivariateGaussianClassifier(int n_inputs_, int n_classes_);
-    ~MultivariateGaussianClassifier();
-    int Classify(const Vector& x) 
+    virtual ~MultivariateGaussianClassifier();
+    virtual int Classify(const Vector& x) 
     {
         return ArgMax(Output(x));
     }
-    Vector& Output(const Vector& x);
-    real Observe(const Vector& x, const int label);
+    virtual Vector& Output(const Vector& x);
+    virtual real Observe(const Vector& x, const int label);
+	virtual real Observe(const Vector& x, const Vector& labels)
+	{
+		Serror("Not implemented\n");
+	}
     Vector getClassMean(const int label) const;
 
 };
