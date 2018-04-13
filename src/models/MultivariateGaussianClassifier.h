@@ -34,7 +34,7 @@ public:
         return ArgMax(Output(x));
     }
     virtual Vector& Output(const Vector& x);
-    virtual real Observe(const Vector& x, const int label);
+    virtual real Observe(const Vector& x, const int& label);
 	virtual real Observe(const Vector& x, const Vector& labels)
 	{
 		Serror("Not implemented\n");

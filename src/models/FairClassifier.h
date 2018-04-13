@@ -9,6 +9,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#if 0
 
 #ifndef FAIR_CLASSIFIER_H
 #define FAIR_CLASSIFIER_H
@@ -51,5 +52,7 @@ public:
 	virtual real Discrimination();
 		
 };
+
+#endif
 
 #endif

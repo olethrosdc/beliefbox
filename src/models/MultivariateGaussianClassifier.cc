@@ -64,7 +64,7 @@ Vector& MultivariateGaussianClassifier::Output(const Vector& x)
     return output;
 }
 
-real MultivariateGaussianClassifier::Observe(const Vector& x, const int label)
+real MultivariateGaussianClassifier::Observe(const Vector& x, const int& label)
 {
     assert(label >= 0 && label < n_classes);
     real probability = Output(x)(label);

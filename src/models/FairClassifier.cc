@@ -1,3 +1,5 @@
+#if 0
+
 #include "FairClassifier.h"
 
 FairClassifier::FairClassifier(int n_inputs_,
@@ -50,7 +52,7 @@ virtual int FairClassifier::Classify(const Vector& x)
 
 
 
-
+#endif
 
 
 
