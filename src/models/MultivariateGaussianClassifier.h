@@ -13,6 +13,7 @@
 #ifndef MULTIVARIATE_GAUSSIAN_CLASSIFIER_H
 #define MULTIVARIATE_GAUSSIAN_CLASSIFIER_H
 
+#include "Classifier.h"
 #include "MultivariateNormalUnknownMeanPrecision.h"
 #include "Dirichlet.h"
 #include <vector>

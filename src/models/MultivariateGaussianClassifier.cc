@@ -31,7 +31,7 @@ MultivariateGaussianClassifier::MultivariateGaussianClassifier(int n_inputs_, in
 }
 
 /// Destroy
-virtual MultivariateGaussianClassifier::~MultivariateGaussianClassifier()
+MultivariateGaussianClassifier::~MultivariateGaussianClassifier()
 {
     for (int i=0; i<n_classes; ++i) {
         delete class_distribution[i];
@@ -39,7 +39,7 @@ virtual MultivariateGaussianClassifier::~MultivariateGaussianClassifier()
 }
 
 /// Classify a vector x
-virtual Vector& MultivariateGaussianClassifier::Output(const Vector& x)
+Vector& MultivariateGaussianClassifier::Output(const Vector& x)
 {
     for (int i=0; i<n_classes; ++i) {
         output(i) = class_distribution[i]->log_pdf(x);
@@ -64,7 +64,7 @@ virtual Vector& MultivariateGaussianClassifier::Output(const Vector& x)
     return output;
 }
 
-virtual real MultivariateGaussianClassifier::Observe(const Vector& x, const int label)
+real MultivariateGaussianClassifier::Observe(const Vector& x, const int label)
 {
     assert(label >= 0 && label < n_classes);
     real probability = Output(x)(label);

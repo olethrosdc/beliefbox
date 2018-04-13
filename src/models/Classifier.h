@@ -13,6 +13,8 @@
 #ifndef CLASSIFIER_H
 #define CLASSIFIER_H
 
+#include "Vector.h"
+
 /** Generic classifier class.
  */
 template <typename InputSet, typename ClassSet, typename ClassDistribution>
