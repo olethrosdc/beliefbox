@@ -75,6 +75,7 @@ void BayesianMultivariateRegression::generate(Matrix& MM, Matrix& VV)
 	MM.Vec(mean);
 }
 
+/** Return the marginal posterior probability of y */
 real BayesianMultivariateRegression::Posterior(const Vector& x, const Vector& y)
 {
 	Vector xx = (inv_Sxx*x);

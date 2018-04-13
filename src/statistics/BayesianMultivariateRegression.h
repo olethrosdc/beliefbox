@@ -40,7 +40,15 @@ class BayesianMultivariateRegression
 		Matrix Sy_x; ///< Matrix S_{y|x} 
 	public:
 		BayesianMultivariateRegression(int m_ = 1, int d_ = 1, Matrix S0_ = Matrix::Unity(1, 1), real N0_ = 0.1, real a_ = 0.1, bool ThompsonSampling_ = true);
+		virtual ~BayesianMultivariateRegression()
+		{
+		}
 		void AddElement(const Vector& y, const Vector& x);
+		virtual real Observe(const Vector& x, const Vector& y)
+		{
+			AddElement(y, x);
+			return Posterior(x, y);
+		}
 		Matrix generate();
 		Vector generate(const Vector& x) const;
 		void generate(Matrix& Mean, Matrix& Covariance);
