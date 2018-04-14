@@ -1,4 +1,3 @@
-#if 0
 
 #include "FairClassifier.h"
 
@@ -46,13 +45,6 @@ virtual int FairClassifier::Classify(const Vector& x)
 	}
 }
 
-
-
-
-
-
-
-#endif
 
 
 

@@ -9,10 +9,13 @@
  *                                                                         *
  ***************************************************************************/
 
-#if 0
 
 #ifndef FAIR_CLASSIFIER_H
 #define FAIR_CLASSIFIER_H
+
+#include "MultivariateGaussianClassifier.h"
+#include "Matrix.h"
+#include "LinearClassifier.h"
 
 /** Generic fair classifier class.
 
@@ -55,4 +58,3 @@ public:
 
 #endif
 
-#endif
