@@ -21,7 +21,7 @@ FairClassifier::FairClassifier(int n_inputs_,
 	
 }
 
-virtual FairClassifier::~FairClassifier()
+FairClassifier::~FairClassifier()
 {
 	for (int i=0; i<n_sensitive; i++) {
 		delete classifier[i];
@@ -30,7 +30,7 @@ virtual FairClassifier::~FairClassifier()
 	delete blind_classifier;
 }
 
-virtual real FairClassifier::Observe(const Vector& x,
+real FairClassifier::Observe(const Vector& x,
 									 const int label,
 									 const int z)
 {
@@ -38,7 +38,7 @@ virtual real FairClassifier::Observe(const Vector& x,
 }
 
 
-virtual int FairClassifier::Classify(const Vector& x)
+int FairClassifier::Classify(const Vector& x)
 {
 	for (int z=0; z<n_sensitive; z++) {
 		
