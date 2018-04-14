@@ -16,6 +16,7 @@
 #include "MultivariateGaussianClassifier.h"
 #include "Matrix.h"
 #include "LinearClassifier.h"
+#include "Dirichlet.h"
 
 /** Generic fair classifier class.
 
@@ -36,7 +37,7 @@ protected:
 	int n_classes; ///< number of distinct classes
 	int n_sensitive; ///< number of sensitive values
 	int n_actions; ///< number of classification actions
-	Dirichlet dirichlet; ///< stores the values of sensitive variables
+	DirichletDistribution dirichlet; ///< stores the values of sensitive variables
 	Matrix utility; ///< the utility of each decision-class pair
 public:
 	/// Create a fair classifier with n values of the sensitive variable

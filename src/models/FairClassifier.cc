@@ -10,14 +10,19 @@ FairClassifier::FairClassifier(int n_inputs_,
 	  n_sensitive(n_sensitive_),
 	  dirichlet(n_sensitive),
 	  utility(utility_),
-	  n_actions(utility.Rows());
+	  n_actions(utility.Rows())
 {
 	classifier.resize(n_sensitive);
+	Vector mu(n_inputs);
+    real tau = 1.0;
+    real alpha = (real) n_inputs; 
+    Matrix T(Matrix::Unity(n_inputs, n_inputs));
 	for (int i=0; i<n_sensitive; i++) {
 		classifier[i] = new MultivariateGaussianClassifier(n_inputs, n_classes);
-		density[i] = new MultivariateNormalUnknownMeanPrecision(n_inputs);
+		density[i] = new MultivariateNormalUnknownMeanPrecision(mu, tau, alpha, T);
 	}
-	blind_classifier = new MultivariateGaussianClassifier(n_inputs, n_classes);
+
+	blind_classifier = new LinearClassifier(n_inputs, n_classes);
 	
 }
 
