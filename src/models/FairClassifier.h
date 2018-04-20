@@ -25,7 +25,7 @@
 
 	Here we maintain a different classifier for each \f$z\f$, which gives us \fP(y, x, z) = P(y | x, z) P(x | z) P(z)\f$. We then feed this into the blind_classifier model.
 
-	The number of classes may not be the same as the number of decisions. For example, when class may relate to a complicated merit variable, while the decisions may be simple 'accept/reject'.
+	The number of classes may not be the same as the number of decisions. For fexample, when class may relate to a complicated merit variable, while the decisions may be simple 'accept/reject'.
  */
 class FairClassifier
 {

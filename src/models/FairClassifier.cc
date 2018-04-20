@@ -36,8 +36,8 @@ FairClassifier::~FairClassifier()
 }
 
 real FairClassifier::Observe(const Vector& x,
-									 const int label,
-									 const int z)
+							 const int label,
+							 const int z)
 {
 	/// TO-DO
 }
