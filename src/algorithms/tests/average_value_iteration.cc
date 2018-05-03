@@ -212,14 +212,15 @@ Stats Evaluate() {
     real step = -0.1;
     //InventoryManagement inventory_management (period, max_items, demand);
 
-    //Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
-    RandomMDP random_mdp(2, 4, random, step, pit, goal, false);
-    const DiscreteMDP* mdp = random_mdp.getMDP();
+    Gridworld grid_world("maze2", width, height, 4, random, pit, goal, step);
+	//MersenneTwister rng;
+    //RandomMDP random_mdp(2, 4, random, step, pit, goal, &rng, false);
+    const DiscreteMDP* mdp = grid_world.getMDP();
     //GoalStateIteration goal_state_iteration(mdp);
     real diameter = 5.0;//goal_state_iteration.GetMDPDiameter(0.0001, 1000);
     real tau = 0.9;
 
-    random_mdp.AperiodicityTransform(tau);
+    //random_mdp.AperiodicityTransform(tau);
     mdp->Check();
     
     int n_states = mdp->getNStates();
