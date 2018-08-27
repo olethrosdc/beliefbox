@@ -15,16 +15,17 @@
 
 int main (void)
 {
-    int N = 1024;
+    int N = 16; // number of outcomes
     DirichletDistribution dirichlet(N);
     DirichletFiniteOutcomes finite_dirichlet(N);
 
-	Vector pre = dirichlet.GetParameters();
+	Vector pre = dirichlet.getParameters();
 	Vector data(N);
     Vector theta(N);
 
+	int n_active_outcomes = 2;
     for (int i=0; i<N; ++i) {
-        if (i >= 0) {
+        if (i < n_active_outcomes) {
             theta(i) = 1.0; // (1.0 + (real) i);
         } else {
             theta(i) = 0.0;
@@ -36,7 +37,7 @@ int main (void)
 
     int interval = 100;
     int c = interval;
-    for (int t=0; t<1000; t++) {
+    for (int t=0; t<100; t++) {
         Vector x = P.generate();
 
         dirichlet.update(&x);
@@ -47,7 +48,7 @@ int main (void)
 
         //Vector post = dirichlet.getMarginal();
         //Vector gen = finite_dirichlet.getMarginal();
-
+		
         Vector post = finite_dirichlet.getMarginal();
         Vector gen = finite_dirichlet.generate();
         c--;

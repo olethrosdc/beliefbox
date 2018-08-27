@@ -42,6 +42,7 @@ Vector DirichletFiniteOutcomes::generate() const
 }
 
 /// Generate a multinomial vector in-place
+/// This is wrong because the non-existing outcomes should be zero.
 void DirichletFiniteOutcomes::generate(Vector& y) const
 {
     real N_t = (real) n_seen_symbols;
