@@ -24,8 +24,6 @@
 #include "OneDMaze.h"
 #include "DiscreteChain.h"
 #include "RiverSwim.h"
-#include "CartPole.h"
-#include "Bike.h"
 #include "OptimisticTask.h"
 #include "InventoryManagement.h"
 #include "DoubleLoop.h"
@@ -35,6 +33,9 @@
 #include "Pendulum.h"
 #include "PuddleWorld.h"
 #include "LinearDynamicQuadratic.h"
+#include "CartPole.h"
+#include "Bike.h"
+
 #include "DiscretisedEnvironment.h"
 
 // -- Randomness -- //
