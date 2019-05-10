@@ -233,7 +233,7 @@ real NormalUnknownMeanPrecision::generate()
 /// Generate the marginal from the posterior. Uses the ranlib implementation
 real NormalUnknownMeanPrecision::generate() const
 {
-    return marginal.generate()(0);
+    return marginal_mean.generate()(0);
 }
 
 /// Generate the marginal from the posterior. Uses the ranlib implementation
