@@ -258,7 +258,7 @@ DiscreteMDP* DiscreteMDPCounts::generate() const
         for (int a=0; a<n_actions; a++) {
             //Vector C =  P[getID (s,a)].getMarginal();
             Vector C =  transitions.generate(s,a);
-            real expected_reward = GenerateReward(s,a);
+            real expected_reward = ER[getID (s, a)]->generate();
             mdp->reward_distribution.addFixedReward(s, a, expected_reward);
             for (int s2=0; s2<n_states; s2++) {
                 if (C[s2]) {
