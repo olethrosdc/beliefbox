@@ -118,7 +118,7 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --pit_value:    value of falling in a pit (* -1)\n\
     --goal_value:   value of reaching a goal (* 1)\n\
     --step_value:   value at each time step (* 0)\n                     \
-    --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0.01)\n \
+    --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0)\n \
     --n_iterations: maximum number of iterations (*25) for ABC\n\
     --reward_prior: {Beta, Fixed, *Normal}\n\
     --max_samples:  maximum number of samples (*1) for Sampling and Weighted Q-Learning\n\
@@ -146,7 +146,7 @@ int main (int argc, char** argv)
     real pit_value = -1.0;
     real goal_value = 1.0;
     real step_value = 0.0;
-    real epsilon = 0.01;
+    real epsilon = 0.0;
     uint n_runs = 10;
     uint n_episodes = 1000;
     uint n_steps = 100000;
