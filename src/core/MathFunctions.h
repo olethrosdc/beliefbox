@@ -73,7 +73,7 @@ std::vector<int> ArgMins(const int n, const T* x)
 	arg_min.push_back(0);
 	for (int i=1; i<n; i++) {
 		if (min > x[i]) {
-			arg_min.empty();
+			arg_min.clear();
 			arg_min.push_back(i);
 			min = x[i];
 		}
@@ -108,7 +108,7 @@ std::vector<int> ArgMaxs(const int n, const T* x)
 	arg_max.push_back(0);
 	for (int i=1; i<n; i++) {
 		if (max < x[i]) {
-			arg_max.empty();
+			arg_max.clear();
 			arg_max.push_back(i);
 			max = x[i];
 		}
@@ -144,7 +144,7 @@ std::vector<int> ArgMins(const std::vector<T>& x)
 	arg_min.push_back(0);
 	for (int i=1; i<n; i++) {
 		if (min > x[i]) {
-			arg_min.empty();
+			arg_min.clear();
 			arg_min.push_back(i);
 			min = x[i];
 		}
@@ -181,7 +181,7 @@ std::vector<int> ArgMaxs(const std::vector<T>& x)
 	arg_max.push_back(0);
 	for (int i=1; i<n; i++) {
 		if (max < x[i]) {
-			arg_max.empty();
+			arg_max.clear();
 			arg_max.push_back(i);
 			max = x[i];
 		}
