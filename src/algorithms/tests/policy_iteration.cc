@@ -21,6 +21,7 @@
 #include "OptimisticTask.h"
 #include "DiscreteChain.h"
 #include "DiscretePolicy.h"
+#include "RiverSwim.h"
 
 int main (void)
 {
@@ -39,13 +40,15 @@ int main (void)
     Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze2", random, pit, goal, step);
     OptimisticTask optimistic_task(0.1, 0.01);
     DiscreteChain chain_task(5);
+	RiverSwim river_swim();
     //RandomMDP random_mdp(1, 4, 0.01, 0.1, 0, 1, false);
     //random_mdp.AperiodicityTransform(0.99);
     //const DiscreteMDP* mdp = random_mdp.getMDP();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
     //const DiscreteMDP* mdp = optimistic_task.getMDP();
-    const DiscreteMDP* mdp = chain_task.getMDP();
+    //const DiscreteMDP* mdp = chain_task.getMDP();
+	const DiscreteMDP* mdp = river_swim.getMDP();
 
     int n_states = mdp->getNStates();
     int n_actions = mdp->getNActions();
