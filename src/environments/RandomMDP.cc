@@ -30,7 +30,7 @@ RandomMDP::RandomMDP(uint n_states_,
       step_value(step_value_),
       pit_value(pit_value_),
       goal_value(goal_value_),
-    termination(termination_)
+	  termination(termination_)
 {
     
     this->rng = rng;
@@ -104,7 +104,7 @@ DiscreteMDP* RandomMDP::generateMDP() const
         }
     }
 
-        // Step 3: normalize
+	// Step 3: normalize
     for (uint s=0; s<n_states; s++) {   
         for (uint a=0; a<n_actions; ++a) {
             real sum = 0.0;
@@ -136,11 +136,12 @@ void RandomMDP::Reset()
 /// returns true if the action succeeds, false if we are in a terminal state
 bool RandomMDP::Act(const int& action)
 {
-  reward = mdp->Act(action); //mdp->generateReward(state, action);
-  state = mdp->getState();//mdp->generateState(state, action);
-  if (state==terminal_state) {
-      return false;
-  } else {
-    return true;  // we continue
-  }
+	mdp->Act(action);
+	reward = mdp->getReward();
+	state = mdp->getState();//mdp->generateState(state, action);
+	if (state==terminal_state) {
+		return false;
+	} else {
+		return true;  // we continue
+	}
 }
