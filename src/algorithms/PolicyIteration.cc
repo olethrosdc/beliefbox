@@ -114,7 +114,7 @@ void PolicyIteration::ComputeStateValues(real threshold, int max_iter)
         if (max_iter >= 0) {
             iter++;
         }
-    } while(policy_stable == false && iter < max_iter);
+    } while(policy_stable == false && (iter < max_iter || max_iter < 0));
 
     printf ("iter left = %d\n", max_iter - iter);
 }
