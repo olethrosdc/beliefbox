@@ -77,7 +77,7 @@ void PolicyEvaluation::ComputeStateValues(real threshold, int max_iter)
             max_iter--;
         }
         n_iter++;
-    } while((Delta >= threshold)  && max_iter != 0);
+    } while((Delta > threshold)  && max_iter != 0);
     //printf ("Exiting at delta = %f, after %d iter\n", Delta, n_iter);
 }
 
