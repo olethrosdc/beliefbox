@@ -74,7 +74,7 @@ int main (int argc, char** argv)
 		   accuracy);
     bool test_synchronous = true;
     bool test_asynchronous = true;
-    bool test_elimination = true;
+    bool test_elimination = false;
     bool test_gradient = true;
 
 
@@ -144,7 +144,7 @@ int main (int argc, char** argv)
     }
 
     
-    if (test_gradient)
+    if (test_gradient && 0)
     {
         real step_size = 0.5;
         PolicyGradient policy_gradient(mdp, gamma, step_size);
