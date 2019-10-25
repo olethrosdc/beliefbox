@@ -107,7 +107,7 @@ bool MountainCar::Act(const int& action)
 void MountainCar::Simulate(const int action)
 {
     real input=0.0;
-
+	real dt = 0.01;
     switch (action){
     case 0: input = -1.0; break;
     case 1: input = 0.0; break;
@@ -119,7 +119,7 @@ void MountainCar::Simulate(const int action)
     real noise = urandom(-parameters.MCNOISE, parameters.MCNOISE);
     input += noise;
     
-    state[1] = state[1] + parameters.INPUT*input - parameters.GRAVITY*cos(3.0*state[0]);
+    state[1] = state[1] + dt * (parameters.INPUT*input - parameters.GRAVITY*cos(3.0*state[0]));
     if (state[1] > parameters.U_VEL) {
         state[1] = parameters.U_VEL;
     }
@@ -127,7 +127,7 @@ void MountainCar::Simulate(const int action)
         state[1] = parameters.L_VEL;
     }
 
-    state[0] = state[0] + state[1];
+    state[0] = state[0] + dt * state[1];
     if (state[0] > parameters.U_POS) {
         state[0] = parameters.U_POS;
     }
