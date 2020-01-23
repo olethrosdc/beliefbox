@@ -108,7 +108,7 @@ int main (int argc, char** argv)
 {
     int n_actions = 4;
     int n_states = 4;
-    real gamma = 0.9;
+    real gamma = 0.99;
     real lambda = 0.9;
     real alpha = 0.1;
     real randomness = 0.01;
@@ -464,26 +464,33 @@ int main (int argc, char** argv)
                 //SampleBasedRL* SBRL = dynamic_cast<SampleBasedRL*>(algorithm);
                 int n_samples = max_samples;
 
-                real threshold = 1e-9; //0;
+                real threshold = 1e-6; //0;
                 int max_iter = 1;
                 if (gamma < 1.0) {
-                    max_iter = 100.0 * log(threshold * (1 - gamma)) / log(gamma);
+                    max_iter =  log(threshold * (1 - gamma)) / log(gamma);
                 } else {
                     max_iter = 10.0 / threshold;
                 }
-                max_iter=-1;
+                //max_iter=-1;
                 printf ("# using %f epsilon, %d iter, %d samples\n", threshold, max_iter, n_samples);
 
                 // mean MDP policy
+				printf("Calculating Mean MDP\n");fflush(stdout);
                 const DiscreteMDP* const mean_mdp = discrete_mdp->getMeanMDP();
                 ValueIteration MVI(mean_mdp, gamma);
                 MVI.ComputeStateValues(threshold, max_iter);
                 FixedDiscretePolicy* mean_policy = MVI.getPolicy();
 
+				PolicyEvaluation mean_PE(mean_policy, mean_mdp, gamma);
+				mean_PE.ComputeStateValues(0, 10000);
+				Vector meanV = mean_PE.V;
+
+				printf("Calculating MMBI\n");fflush(stdout);
                 // Do MMVI
                 std::vector<const DiscreteMDP*> mdp_samples(n_samples);
                 Vector w(n_samples);                
                 for (int i=0; i<n_samples; ++i) {
+					printf("%d/%d\n", i, n_samples); fflush(stdout);
                     mdp_samples[i] = discrete_mdp->generate();
                     //mdp_samples[i] = SBRL->mdp_list[i];
                     w(i) = 1.0 / (real) n_samples;
@@ -493,6 +500,7 @@ int main (int argc, char** argv)
                 FixedDiscretePolicy* mmvi_policy = MMVI.getPolicy();
 
                 // evaluate
+				printf("Evaluation of bounds\n"); fflush(stdout);
                 Vector hV(n_states);
                 Vector hL(n_states);
                 Vector hL2(n_states);
@@ -502,10 +510,11 @@ int main (int argc, char** argv)
                 Matrix L_k(n_samples, n_states);
                 Matrix U_k(n_samples, n_states);
                 for (int i=0; i<n_samples; ++i) {
+					printf("%d\n", i); fflush(stdout);
                     const DiscreteMDP* sample_mdp = mdp_samples[i];
                     
                     // mean policy
-                    PolicyEvaluation mean_PE(mean_policy, sample_mdp, gamma);
+                    PolicyEvaluation mean_PE(mean_policy, sample_mdp, gamma); 
                     mean_PE.ComputeStateValues(threshold, max_iter);
                     
                     // multi-MDP polichy
@@ -567,7 +576,8 @@ int main (int argc, char** argv)
                     hL[s] *= inv_n;
                     hU[s] *= inv_n;
 
-                    printf ("%f %f %f %f %d %f # hV L L2 hU state\n",
+                    printf ("%f, %f %f %f %f %d %f # hV L L2 hU state\n",
+							meanV[s], 
                             hV[s],
                             hL[s], 
                             hL2[s], 
