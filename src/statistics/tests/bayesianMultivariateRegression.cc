@@ -48,9 +48,6 @@ static const char* const help_text = "Usage bayesian multivariate regression [op
 
 int main(int argc, char* argv[])
 {
-	int a			= 0.1;
-	int N0			= 0.1;
-	
 	
 	RandomNumberGenerator* rng;
     MersenneTwisterRNG mersenne_twister;
@@ -61,89 +58,93 @@ int main(int argc, char* argv[])
     setRandomSeed(34987235);
     rng->manualSeed(1361690241);
 	
-	std::cout << "Starting test program" << std::endl;
+	std::cout << "# Starting test program" << std::endl;
 
 
-	int d_in = 1; //Input dimensions (input state dimension plus a dummy state)
-	int d_out = 1;			// Reward dimensions
-	
-	RBFBasisSet* RBFs = NULL;
-	if( b_functions == 1) {
-		//Lower and upper environment bounds
-		Vector S_L(d_in);
-		Vector S_U(d_in);
-		
-		std::cout << "Creating Radial basis functions..." << std::endl;
-		EvenGrid Discretisation(S_L, S_U, grids);
-		RBFs = new RBFBasisSet(Discretisation);
+	if (argc != 6) {
+		fprintf(stderr, "Usage: Bayesian Multivariate Regression points dimensions a N_0\n");
+		exit(-1);
+	}
+	int n_points = atoi(argv[1]);
+	int n_dimensions_x = atoi(argv[2]);
+	int n_dimensions_y = atoi(argv[3]);
+	real a = atof(argv[4]);
+	real N0 = atof(argv[5]);
 
-		m = RBFs->size() + 1; // redefinition of the input dimensions (size of the created basis functions plus a dummy state)
-		
-		std::cout << "# Number of basis functions: " << (RBFs->size() + 1)<< std::endl;
+
+	int n_train = (int) ceil(n_points / 2);
+	BayesianMultivariateRegression bmr(n_dimensions_x, n_dimensions_y, N0 * Matrix::Unity(n_dimensions_y, n_dimensions_y), N0, a);
+	std::auto_ptr<Distribution> noise(new NormalDistribution(0.0,1.0));
+	Matrix A(n_dimensions_x, n_dimensions_y);
+	for(int i = 0; i < n_dimensions_x; ++i) {
+		for(int j = 0; j < n_dimensions_y; ++j) {
+			A(i,j) = noise->generate();
+		}
+	}
+	std::vector<Vector> X(n_points); ///< Input vector
+	std::vector<Vector> Y(n_points); ///< Output vector
+	for( int i = 0; i < n_points; ++i) {
+		X[i].Resize(n_dimensions_x);
+		for(int j = 0; j < n_dimensions_x; ++j) {
+			X[i](j) = urandom(2.0,7.0);
+		}
+		Y[i].Resize(n_dimensions_y);
+		Vector omega(n_dimensions_x);
+		for(int j = 0; j < n_dimensions_x; ++j) {
+			omega(j) = 0.0 * noise->generate();
+		}
+		Y[i] = A * (X[i] + omega);
+		printf("# X: ");
+		X[i].print(stdout);
+		printf("# Y: ");
+		Y[i].print(stdout);
+	}
+
+	for( int i = 0; i < n_train; ++i) {
+		bmr.AddElement(Y[i],X[i]);
 	}
 	
-	std::cout << "# Creating " << n_actions << " bayesian multivariate models..." << std::endl;
+	const Matrix W1 = bmr.generate();
+	//W1.print(stdout);
 	
+	const Matrix W2 = bmr.generate();
+	//W2.print(stdout);
 	
-	//if (argc != 6) {
-//		fprintf(stderr, "Usage: Bayesian Multivariate Regression points dimensions a N_0\n");
-//		exit(-1);
-//	}
-//	int n_points = atoi(argv[1]);
-//	int n_dimensions_x = atoi(argv[2]);
-//	int n_dimensions_y = atoi(argv[3]);
-//	real a = atof(argv[4]);
-//	real N0 = atof(argv[5]);
-//
-//
-//	BayesianMultivariateRegression bmr(n_dimensions_x, n_dimensions_y, N0 * Matrix::Unity(n_dimensions_y, n_dimensions_y), N0, a);
-//	std::auto_ptr<Distribution> distribution_x(new NormalDistribution(0.0,1.0));
-//	std::auto_ptr<Distribution> distribution_y(new NormalDistribution(1,0));
-//   
-//	std::vector<Vector> X(n_points); ///< Input vector
-//	std::vector<Vector> Y(n_points); ///< Output vector
-//	for( int i = 0; i < n_points; ++i) {
-//		X[i].Resize(n_dimensions_x);
-//		Y[i].Resize(n_dimensions_y);
-//		for(int j = 0; j < n_dimensions_y; ++j) {
-//			real ZX  = distribution_x->generate();
-//			X[i][j] = urandom(2.0,7.0);
-//			Y[i][j] = pow(X[i][j],2.0) + ZX;
-//		}
-//		X[i][n_dimensions_y] = 1.0;
-//	}
-//
-//	for( int i = 0; i < n_points; ++i) {
-//		bmr.AddElement(Y[i],X[i]);
-//	}
-//	
-//	const Matrix W1 = bmr.generate();
-//	W1.print(stdout);
-//
-//	const Matrix W2 = bmr.generate();
-//	W2.print(stdout);
-//
-//	const Matrix W3 = bmr.generate();
-//	W3.print(stdout);
-//	
-//	std::vector<Vector> R1(n_points); 
-//	std::vector<Vector> R2(n_points); 
-//	std::vector<Vector> R3(n_points); 
-//	for(int i = 0; i < n_points; ++i){
-//		R1[i] = W1 * X[i];
-//		R2[i] = W2 * X[i];
-//		R3[i] = W3 * X[i];
-//		printf("Input|");
-//		X[i].print(stdout);
-//		printf("Output|");
-//		Y[i].print(stdout);
-//		printf("Prediction1|");
-//		R1[i].print(stdout);
-//		printf("Prediction2|");
-//		R2[i].print(stdout);
-//		printf("Prediction3|");
-//		R3[i].print(stdout);
-//	}
+	const Matrix W3 = bmr.generate();
+	//W3.print(stdout);
+	
+	std::vector<Vector> R1(n_points); 
+	std::vector<Vector> R2(n_points); 
+	std::vector<Vector> R3(n_points);
+	for(int i = n_train+1; i < n_points; ++i){
+		R1[i] = W1 * X[i];
+		R2[i] = W2 * X[i];
+		R3[i] = W3 * X[i];
+		printf("# Prediction1:");
+		R1[i].print(stdout);
+		if (0) {
+			printf("Input|");
+			X[i].print(stdout);
+			printf("Output|");
+			Y[i].print(stdout);
+			printf("# Prediction1:");
+			R1[i].print(stdout);
+			printf("Prediction2|");
+			R2[i].print(stdout);
+			printf("Prediction3|");
+			R3[i].print(stdout);
+		}
+		printf("# err: %f\n", EuclideanNorm(R1[i], Y[i]));
+	}
+
+	printf("A:\n");
+	A.print(stdout);
+	printf("W1:\n");
+	W1.print(stdout);
+	printf("W2:\n");
+	W2.print(stdout);
+	printf("W3:\n");
+	W3.print(stdout);
 }
 
 #endif
