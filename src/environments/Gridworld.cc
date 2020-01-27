@@ -22,7 +22,7 @@ Gridworld::Gridworld(const char* fname,
                      real pit_,
                      real goal_,
                      real step_)
-    : total_time(0),
+    : total_time(0), start_state(false),
     random(random_), pit_value(pit_), goal_value(goal_), step_value(step_)
 {
     n_actions = 4;
@@ -63,6 +63,7 @@ Gridworld::Gridworld(const char* fname,
             case '#': grid[x][y] = WALL; break;
             case 'X': grid[x][y] = GOAL; break;
             case 'O': grid[x][y] = PIT; break;
+			case 'S': grid[x][y] = START; start_state_x = x; start_state_y = y; start_state = true; break;
             default: std::cerr << "Unknown maze element\n"; exit(-1);
             }
         }
@@ -302,11 +303,18 @@ void Gridworld::Reset()
     total_time = 0;
     int x, y;
     int n_gridpoints = height*width;
-    do {
+	if (start_state) {
+		
+		x = start_state_x;
+		y = start_state_y;
+		state = getState(x, y);
+	} else {
+		do {
         state = rand()%(n_gridpoints);
         x = state % height;
         y = (state - x) / width;
-    } while(whatIs(x, y) != GRID);
+		} while(whatIs(x, y) != GRID);
+	}
     ox = x;
     oy = y;
     reward = 0.0;

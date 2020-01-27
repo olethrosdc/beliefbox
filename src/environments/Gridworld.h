@@ -25,11 +25,15 @@ class Gridworld : public Environment<int, int>
 public:
     uint ox, oy;
     int total_time;
+	bool start_state;
+	int start_state_x = 0;
+	int start_state_y = 0;
+		
     enum MapDirection {
         NORTH=0, SOUTH, EAST, WEST
     };
     enum MapElement {
-        INVALID=-1, GRID, WALL, GOAL, PIT
+        INVALID=-1, GRID, WALL, GOAL, PIT, START
     };
     DiscreteMDP* my_mdp;
     uint terminal_state;
