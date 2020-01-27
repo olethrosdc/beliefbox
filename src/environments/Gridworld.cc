@@ -64,7 +64,7 @@ Gridworld::Gridworld(const char* fname,
             case 'X': grid[x][y] = GOAL; break;
             case 'O': grid[x][y] = PIT; break;
 			case 'S': grid[x][y] = START; start_state_x = x; start_state_y = y; start_state = true; break;
-            default: std::cerr << "Unknown maze element\n"; exit(-1);
+            default: std::cerr << "Unknown maze element (" << line[x] << ")\n"; exit(-1);
             }
         }
         y++;
