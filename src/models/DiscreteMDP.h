@@ -22,6 +22,7 @@
 #include "TransitionDistribution.h"
 #include "Matrix.h"
 #include "DiscreteStateSet.h"
+#include "SimpleTransitionDistribution.h"
 #include <vector>
 #include <set>
 
@@ -49,7 +50,8 @@ public:
 	/// Reward distribution
 	DiscreteSpaceRewardDistribution reward_distribution;
 	/// Transition distribution
-	DiscreteTransitionDistribution transition_distribution; 
+	//DiscreteTransitionDistribution transition_distribution;
+	SimpleTransitionDistribution transition_distribution; 
 
 	/// Default constructor
 	MDP<int, int>(int n_states_, int n_actions_,
