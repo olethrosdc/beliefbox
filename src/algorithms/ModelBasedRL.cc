@@ -91,7 +91,7 @@ int ModelBasedRL::Act(real reward, int next_state)
         //mdp = model->CreateMeanMDP();
         // update values
         value_iteration->setMDP(mdp);
-        value_iteration->ComputeStateValues(1e-6,1);
+        value_iteration->ComputeStateValues(1e-3,1e-3/(1 - gamma));
         for (int i=0; i<n_actions; i++) {
             tmpQ[i] = value_iteration->getValue(next_state, i);
         }
