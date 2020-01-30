@@ -131,6 +131,9 @@ DiscreteMDP* Gridworld::getMDP()  const
                 case PIT:
                     mdp->setFixedReward(s, a, pit_value);
                     break;
+				case START:
+                    mdp->setFixedReward(s, a, 0);
+                    break;
                 default:
                     std::cerr << "Unknown grid point type\n";
                     exit(-1);
