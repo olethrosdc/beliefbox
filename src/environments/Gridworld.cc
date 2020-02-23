@@ -343,7 +343,7 @@ bool Gridworld::Act(const int& action)
     ox = x;
     oy = y;
 
-	//std::cout << " -> (" << x << ", "<< y << ")" << " [" << whatIs(x,y)
+	//	std::cout << " -> (" << x << ", "<< y << ")" << " [" << whatIs(x,y)
 	//<< "] s: " << state << "r: " << reward << std::endl;
     //Show();
 
@@ -370,6 +370,7 @@ void Gridworld::Show()
             case WALL: std::cout << "#"; break;
             case GOAL: std::cout << "X"; break;
             case PIT: std::cout << "O"; break;
+			case START: std::cout << "S"; break;
             default: std::cout << "?"; break;
             }
         }
