@@ -80,7 +80,7 @@ public:
 		else {
 			dim_model = environment->getNStates() + 1;
 		}
-		weights = Vector::Vector(dim);
+		weights = Vector(dim);
 		
 		sampleSelection();
 	}
