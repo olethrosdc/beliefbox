@@ -37,7 +37,7 @@ DiscreteMDP::MDP (int n_states_, int n_actions_, real** initial_transitions)
 /** Partially copies an MDP.
     
     Since there is no way to clone the distribution pointers,
-    we actually create new, singular distributions instead.
+    we actuallcd al create new, singular distributions instead.
 */
 DiscreteMDP::MDP(const MDP<int,int>& mdp)
     : n_states(mdp.n_states),
