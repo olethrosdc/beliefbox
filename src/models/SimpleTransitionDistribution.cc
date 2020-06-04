@@ -14,8 +14,13 @@
 
 SimpleTransitionDistribution::~SimpleTransitionDistribution()
 {
-if (arr)
+if (arr) {
 	free(arr);		// << Somehow this is freeing up automatically
+	arr = NULL;
+} else {
+	fprintf(stderr, "Freeing this twice!?\n");
+	exit(-1);
+}
 /*
 	int n_pairs = 0;
 	for (int s=0; s<n_states; s++) {	
