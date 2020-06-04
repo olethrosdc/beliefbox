@@ -95,7 +95,8 @@ int TreeBRL::Act(real reward, int next_state)
     current_state = next_state;
     
     //int n_MDP_leaf_samples = 1;
-    BeliefState belief_state = CalculateBeliefTree();
+    //BeliefState belief_state = CalculateBeliefTree();
+	BeliefState belief_state = CalculateSparseBeliefTree(2, 2);
 	
 	//printf("%f %f %f\n", belief_state.CalculateValues(), 
 	//belief_state.CalculateValues(leaf_node_expansion);
@@ -116,7 +117,7 @@ int TreeBRL::Act(real reward, int next_state)
     /// samples and use n_TS MDP samples for the upper and lower bounds at
     /// the leaf nodes
 
-void TreeBRL::CalculateSparseBeliefTree(int n_samples, int n_TS)
+TreeBRL::BeliefState TreeBRL::CalculateSparseBeliefTree(int n_samples, int n_TS)
 {
     // Initialise the root belief state
     BeliefState belief_state(*this, belief, current_state);
@@ -124,6 +125,7 @@ void TreeBRL::CalculateSparseBeliefTree(int n_samples, int n_TS)
     belief_state.CalculateValues(leaf_node_expansion);
     //belief_state.CalculateLowerBoundValues(n_TS),
     //belief_state.CalculateUpperBoundValues(n_TS));
+	return belief_state;
 }
 
 /// Calculate a belief tree.

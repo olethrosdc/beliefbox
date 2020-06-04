@@ -126,7 +126,7 @@ public:
         return 0;
     }
 
-    void CalculateSparseBeliefTree(int n_samples, int n_TS);
+    TreeBRL::BeliefState CalculateSparseBeliefTree(int n_samples, int n_TS);
 	TreeBRL::BeliefState CalculateBeliefTree();
 
     

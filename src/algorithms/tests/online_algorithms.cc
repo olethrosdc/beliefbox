@@ -676,7 +676,7 @@ int main (int argc, char** argv)
                                     model,
                                     rng,
                                     horizon,
-									TreeBRL::LeafNodeValue::V_UTS);
+									TreeBRL::LeafNodeValue::V_MEAN);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
 			exit(-1);
