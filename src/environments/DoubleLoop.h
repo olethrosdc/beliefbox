@@ -36,7 +36,7 @@ public:
 
     virtual const char* Name() const
     {
-        return "River Swim";
+        return "Double Loop";
     }
 	virtual real getTransitionProbability(const int& state, const int& action, const int& next_state) const 
     {
