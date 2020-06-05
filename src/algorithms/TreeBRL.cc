@@ -20,6 +20,8 @@ TreeBRL::TreeBRL(int n_states_,
 				 MDPModel* belief_,
                  RandomNumberGenerator* rng_,
                  int horizon_,
+				 int state_samples_,
+				 int policy_samples_,
 				 enum LeafNodeValue leaf_node)
     : n_states(n_states_),
       n_actions(n_actions_),
@@ -27,13 +29,15 @@ TreeBRL::TreeBRL(int n_states_,
       belief(belief_),
       rng(rng_),
       horizon(horizon_),
+	  state_samples(state_samples_),
+	  policy_samples(policy_samples_),
       T(0),
       size(0),
       Qs(n_actions),
 	  leaf_node_expansion(leaf_node)
 {
 	const char* leaf_value_name[] = {"None", "V_Min", "V_Max", "V_mean", "V_U", "V_L"};
-    logmsg("Starting Tree-Bayes-RL with %d states, %d actions, %d horizon, %s bounds\n", n_states, n_actions, horizon, leaf_value_name[leaf_node]);
+    logmsg("Starting Tree-Bayes-RL with %d states, %d actions, %d horizon, %d state samples, %d policy samples, %s bounds\n", n_states, n_actions, horizon, state_samples, policy_samples, leaf_value_name[leaf_node]);
 
     current_state = -1;
 

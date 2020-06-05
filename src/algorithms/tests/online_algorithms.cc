@@ -121,7 +121,8 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0)\n \
     --n_iterations: maximum number of iterations (*25) for ABC\n\
     --reward_prior: {Beta, Fixed, *Normal}\n\
-    --max_samples:  maximum number of samples (*1) for Sampling and Weighted Q-Learning\n\
+    --max_samples:  maximum number of samples (*1) for Sampling, Weighted Q-Learning and TBRLRL\n\
+    --max_policy_samples:  maximum number of policy samples (*2) for and TBRL\n\
     --horizon:      planning horizon (*2) for TBRL\n\
     --initial_reward: initial reward (*0) for value-based RL\n\
     --seed:                  seed all the RNGs with this\n\
@@ -165,6 +166,7 @@ int main (int argc, char** argv)
     const char * environment_name = "Chain";
 
     int max_samples = 1;
+	int max_policy_samples = 2;
     char* maze_name = NULL;
     {
         // options
@@ -201,6 +203,7 @@ int main (int argc, char** argv)
                 {"seed_file", required_argument, 0, 0}, //24
                 {"n_iterations", required_argument, 0, 0}, //25
                 {"horizon", required_argument, 0, 0}, //26
+				{"max_policy_samples", required_argument, 0, 0}, //27
                 {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
@@ -259,6 +262,7 @@ int main (int argc, char** argv)
                 case 24: seed_filename = optarg; break;
                 case 25: n_iterations = atoi(optarg); break;
                 case 26: horizon = atoi(optarg); break;
+				case 27: max_policy_samples = atoi(optarg); break;
                 default:
                   fprintf (stderr, "Unknown option\n");
                   fprintf (stderr, "%s", help_text);
@@ -676,6 +680,8 @@ int main (int argc, char** argv)
                                     model,
                                     rng,
                                     horizon,
+									max_samples,
+									max_policy_samples,
 									TreeBRL::LeafNodeValue::V_MEAN);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
