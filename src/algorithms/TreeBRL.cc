@@ -100,7 +100,7 @@ int TreeBRL::Act(real reward, int next_state)
     
     //int n_MDP_leaf_samples = 1;
     //BeliefState belief_state = CalculateBeliefTree();
-	BeliefState belief_state = CalculateSparseBeliefTree(2, 2);
+	BeliefState belief_state = CalculateSparseBeliefTree(state_samples, policy_samples);
 	
 	//printf("%f %f %f\n", belief_state.CalculateValues(), 
 	//belief_state.CalculateValues(leaf_node_expansion);
@@ -109,9 +109,9 @@ int TreeBRL::Act(real reward, int next_state)
     int next_action = ArgMax(Qs);
 	//printf("-> %d\n", next_action);
 	// sometimes act randomly
-	if (rng->uniform() < 0) {
-		next_action = rng->random() % n_actions;
-	}
+	//if (rng->uniform() < 0) {
+	//next_action = rng->random() % n_actions;
+	//}
     current_action = next_action;
     return current_action;
 }
