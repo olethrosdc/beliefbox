@@ -99,9 +99,11 @@ int TreeBRL::Act(real reward, int next_state)
     current_state = next_state;
     
     //int n_MDP_leaf_samples = 1;
-    //BeliefState belief_state = CalculateBeliefTree();
-	BeliefState belief_state = CalculateSparseBeliefTree(state_samples, policy_samples);
-	
+	if (state_samples >= n_states) {
+		BeliefState belief_state = CalculateBeliefTree();
+	} else {
+		BeliefState belief_state = CalculateSparseBeliefTree(state_samples, policy_samples);
+	}
 	//printf("%f %f %f\n", belief_state.CalculateValues(), 
 	//belief_state.CalculateValues(leaf_node_expansion);
 
