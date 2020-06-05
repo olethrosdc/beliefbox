@@ -95,6 +95,8 @@ public:
             MDPModel* belief_, ///< belief about the MDP
             RandomNumberGenerator* rng_, ///< the RNG
             int horizon_ = 1,
+			int max_samples_ = 2,
+			int max_policy_samples_ = 2,
 			LeafNodeValue leaf_node_expansion = NONE);
     virtual ~TreeBRL();
     virtual void Reset();
