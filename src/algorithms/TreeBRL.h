@@ -47,6 +47,8 @@ protected:
     MDPModel* belief; ///< pointer to the base MDP model
     RandomNumberGenerator* rng; ///< random number generator to draw samples from
     int horizon; ///< maximum number of samples to take
+	int state_samples; ///< number of states to sample when branching
+	int policy_samples; ///< number of actions (or policies) to sample when branching
     int T; ///< time passed
     int size; ///< size of tree
     Vector Qs; ///< caching the value of the actions for the current state
