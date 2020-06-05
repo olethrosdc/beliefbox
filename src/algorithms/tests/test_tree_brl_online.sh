@@ -7,7 +7,7 @@ do
 	do
 		echo $horizon
 		fname=tbrl-${horizon}h-${state_samples}s.out
-		sem -j 4 ./bin/online_algorithms --environment DoubleLoop --n_states 5 --n_episodes 1 --n_runs 10 --gamma 0.99 --n_steps 10000 --algorithm TBRL --horizon $horizon --max_samples $state_samples >$fname
+		sem -j 8 ./bin/online_algorithms --environment DoubleLoop --n_states 5 --n_episodes 1 --n_runs 10 --gamma 0.99 --n_steps 10000 --algorithm TBRL --horizon $horizon --max_samples $state_samples >$fname
 	done
 done
 
