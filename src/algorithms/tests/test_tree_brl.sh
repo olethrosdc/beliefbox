@@ -1,7 +1,7 @@
 #! /bin/bash
 
 ulimit -Sv 4000000
-n=100
+n=1
 T=10000
 gamma=0.95
 for horizon in 0 1 2 3 3 4 5 6 8 

@@ -52,8 +52,9 @@ int main(int argc, char** argv) {
     real discounting = 0.95;
     int n_steps = 10000;
 
-    //    int n_samples = 2; ///< number of state samples when branching
-    //int n_mdp_samples = 2; ///< number of MDP samples at leaf nodes
+	int state_samples = 2; ///< number of state samples when branching
+    int policy_samples = 2; ///< number of policy/MDP samples at leaf nodes
+	int reward_samples = 2; ///< number of reward samples
 
     // ---- user options ---- //
     int planning_horizon = 1; 
@@ -111,7 +112,7 @@ int main(int argc, char** argv) {
          experiment<n_experiments;
          experiment++) {
         
-        TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon, (TreeBRL::LeafNodeValue) leaf_value);
+        TreeBRL tree (n_states, n_actions, discounting, &belief, rng, planning_horizon, state_samples, policy_samples, reward_samples, (TreeBRL::LeafNodeValue) leaf_value);
         // Set state to 0
 
         real total_reward = RunExperiment(environment, tree, n_steps);
