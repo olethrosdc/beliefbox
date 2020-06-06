@@ -12,7 +12,7 @@
 #include "TreeBRL.h"
 
 
-//#define TBRL_DEBUG
+#define TBRL_DEBUG
 
 TreeBRL::TreeBRL(int n_states_,
                  int n_actions_,
@@ -148,7 +148,7 @@ TreeBRL::BeliefState TreeBRL::CalculateBeliefTree()
 
 TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
                                   const MDPModel* belief_,
-                                  int state_) : tree(tree_), state(state_), probability(1), t(0)
+                                  int state_) : tree(tree_), state(state_), probability(1), current_step(0)
 {
 	belief = belief_->Clone();  
     tree.size++;
@@ -166,7 +166,7 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
 	: tree(tree_), 
 	  state(state_),
 	  prev_action(prev_action_),
-	  prev_reward(r), probability(p), prev(prev_), t(prev_->t + 1)
+	  prev_reward(r), probability(p), prev(prev_), current_step(prev_->current_step + 1)
 {
 	
 #ifdef TBRL_DEBUG
@@ -207,7 +207,7 @@ TreeBRL::BeliefState::~BeliefState()
 ///
 void TreeBRL::BeliefState::SparseExpandAllActions(int n_samples)
 {
-    if (t >= tree.horizon) {
+    if (current_step >= tree.horizon) {
         return;
     }
     real p = 1 / (real) n_samples;
@@ -226,9 +226,11 @@ void TreeBRL::BeliefState::SparseExpandAllActions(int n_samples)
 }
 /// Generate transitions from the current state for all
 /// actions. Do this recursively, using the marginal distribution. Only expand the children when we're under the horizon.
+/// We only generate one reward for each next state, which /might/ cause problems
 void TreeBRL::BeliefState::ExpandAllActions()
 {
-    if (t >= tree.horizon) {
+	printf ("Expanding node at depth %d/%d\n", current_step, tree.horizon);
+    if (current_step >= tree.horizon) {
         return;
     }
     for (int a=0; a<tree.n_actions; ++a) {
@@ -263,8 +265,9 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
     Vector Q(tree.n_actions);
     real V = 0;
     real discount = tree.gamma;
-	
-    if (t < tree.horizon) {
+
+	printf ("Getting value for node at depth %d\n", current_step);
+    if (current_step < tree.horizon) {
         for (uint i=0; i<children.size(); ++i) {
             int a = children[i]->prev_action;
 			real p = children[i]->probability;
@@ -274,12 +277,12 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
             Q(a) += p * (r + discount * V_next);
 #ifdef TBRL_DEBUG
 			printf("t:%d s:%d i:%d a:%d p:%f s2:%d, r:%f v:%f\n",
-				   t, state, i, a, p, s_next, r, V_next);
+				   current_step, state, i, a, p, s_next, r, V_next);
 #endif
         }
         V += Max(Q);
 #ifdef TBRL_DEBUG
-		Q.print(stdout); printf(" %d/%d\n", t, tree.horizon);
+		Q.print(stdout); printf(" %d/%d\n", current_step, tree.horizon);
 #endif
     } else {
 		switch(leaf_node) {
@@ -293,8 +296,8 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
     }
 	
 
-
-    if (t==0) {
+	// Save the Q value if we are at the beginning
+    if (current_step==0) {
         tree.Qs = Q;
     }
     return V;
