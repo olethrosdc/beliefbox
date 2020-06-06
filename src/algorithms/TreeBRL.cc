@@ -239,8 +239,8 @@ void TreeBRL::BeliefState::ExpandAllActions()
         for (int next_state=0;
              next_state<tree.n_states;
              ++next_state) {
-            real p = belief->getTransitionProbability(state, a, next_state) / (real) reward_samples;
-			for (int i=0; i<reward_samples; ++i) {
+            real p = belief->getTransitionProbability(state, a, next_state) / (real) tree.reward_samples;
+			for (int i=0; i<tree.reward_samples; ++i) {
 				real reward = belief->GenerateReward(state, a);
 				children.push_back(new BeliefState(tree, belief, state, a, next_state, reward, p, this));
 			}

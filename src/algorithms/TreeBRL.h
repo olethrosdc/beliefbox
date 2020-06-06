@@ -49,6 +49,7 @@ protected:
     int horizon; ///< maximum number of samples to take
 	int state_samples; ///< number of states to sample when branching
 	int policy_samples; ///< number of actions (or policies) to sample when branching
+	int reward_samples; ///< number of reward values to sample when branching
     int T; ///< time passed
     int size; ///< size of tree
     Vector Qs; ///< caching the value of the actions for the current state
@@ -99,6 +100,7 @@ public:
             int horizon_ = 1,
 			int state_samples_ = 2,
 			int policy_samples_ = 2,
+			int reward_samples_ = 2,
 			LeafNodeValue leaf_node_expansion = NONE);
     virtual ~TreeBRL();
     virtual void Reset();
