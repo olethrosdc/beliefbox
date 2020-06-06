@@ -12,7 +12,7 @@
 #include "TreeBRL.h"
 
 
-#define TBRL_DEBUG
+//#define TBRL_DEBUG
 
 TreeBRL::TreeBRL(int n_states_,
                  int n_actions_,
@@ -22,6 +22,7 @@ TreeBRL::TreeBRL(int n_states_,
                  int horizon_,
 				 int state_samples_,
 				 int policy_samples_,
+				 int reward_samples_,
 				 enum LeafNodeValue leaf_node)
     : n_states(n_states_),
       n_actions(n_actions_),
@@ -31,13 +32,14 @@ TreeBRL::TreeBRL(int n_states_,
       horizon(horizon_),
 	  state_samples(state_samples_),
 	  policy_samples(policy_samples_),
+	  reward_samples(reward_samples_),
       T(0),
       size(0),
       Qs(n_actions),
 	  leaf_node_expansion(leaf_node)
 {
 	const char* leaf_value_name[] = {"None", "V_Min", "V_Max", "V_mean", "V_U", "V_L"};
-    logmsg("Starting Tree-Bayes-RL with %d states, %d actions, %d horizon, %d state samples, %d policy samples, %s bounds\n", n_states, n_actions, horizon, state_samples, policy_samples, leaf_value_name[leaf_node]);
+    logmsg("Starting Tree-Bayes-RL with %d states, %d actions, %d horizon, %d state samples, %d policy samples, %d reward samples, %s bounds\n", n_states, n_actions, horizon, state_samples, policy_samples, reward_samples, leaf_value_name[leaf_node]);
 
     current_state = -1;
 
@@ -102,7 +104,7 @@ int TreeBRL::Act(real reward, int next_state)
 	if (state_samples >= n_states) {
 		BeliefState belief_state = CalculateBeliefTree();
 	} else {
-		BeliefState belief_state = CalculateSparseBeliefTree(state_samples, policy_samples);
+		BeliefState belief_state = CalculateSparseBeliefTree(reward_samples * state_samples, policy_samples);
 	}
 	//printf("%f %f %f\n", belief_state.CalculateValues(), 
 	//belief_state.CalculateValues(leaf_node_expansion);
@@ -229,7 +231,7 @@ void TreeBRL::BeliefState::SparseExpandAllActions(int n_samples)
 /// We only generate one reward for each next state, which /might/ cause problems
 void TreeBRL::BeliefState::ExpandAllActions()
 {
-	printf ("Expanding node at depth %d/%d\n", current_step, tree.horizon);
+	//printf ("Expanding node at depth %d/%d\n", current_step, tree.horizon);
     if (current_step >= tree.horizon) {
         return;
     }
@@ -237,9 +239,11 @@ void TreeBRL::BeliefState::ExpandAllActions()
         for (int next_state=0;
              next_state<tree.n_states;
              ++next_state) {
-            real p = belief->getTransitionProbability(state, a, next_state);
-            real reward = belief->GenerateReward(state, a);
-            children.push_back(new BeliefState(tree, belief, state, a, next_state, reward, p, this));
+            real p = belief->getTransitionProbability(state, a, next_state) / (real) reward_samples;
+			for (int i=0; i<reward_samples; ++i) {
+				real reward = belief->GenerateReward(state, a);
+				children.push_back(new BeliefState(tree, belief, state, a, next_state, reward, p, this));
+			}
 		}
     }
             
@@ -266,7 +270,7 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
     real V = 0;
     real discount = tree.gamma;
 
-	printf ("Getting value for node at depth %d\n", current_step);
+	//printf ("Getting value for node at depth %d\n", current_step);
     if (current_step < tree.horizon) {
         for (uint i=0; i<children.size(); ++i) {
             int a = children[i]->prev_action;

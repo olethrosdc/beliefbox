@@ -65,7 +65,7 @@ public:
         real probability; ///< probability of arriving here given previous state and action
         std::vector<BeliefState*> children; ///< next belief states
         BeliefState* prev; ///< previous belief state
-        int t; ///< time
+        int current_step; ///< time
     public:
         BeliefState(TreeBRL& tree_,
                     const MDPModel* belief_,
