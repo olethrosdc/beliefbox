@@ -47,17 +47,17 @@ int main(int argc, char** argv) {
     RandomNumberGenerator* env_rng = (RandomNumberGenerator*) &default_rng;
     rng->seed();
     env_rng->manualSeed(982374523);
-    int n_states = 1;
+    int n_states = 5;
     int n_actions = 2;
     real discounting = 0.95;
-    int n_steps = 10000;
+    int n_steps = 1000;
 
 	int state_samples = 2; ///< number of state samples when branching
     int policy_samples = 2; ///< number of policy/MDP samples at leaf nodes
 	int reward_samples = 2; ///< number of reward samples
 
     // ---- user options ---- //
-    int planning_horizon = 1; 
+    int planning_horizon = 1; staes
     int leaf_value = 0; 
     int n_experiments = 1; 
 
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
     //environment = make_shared<RandomMDP>(n_states, n_actions, 0.1, -0.1, -1, 1, env_rng);
 	// environment = make_shared<InventoryManagement>(10, 5, 0.2, 0.1);-=  n_states = environment->getNStates();
     n_actions = environment->getNActions();
-
+	n_states = environment->getNStates();
 #if 0
     //simplify things by fixing the rewards
     printf("# Setting up belief\n");
