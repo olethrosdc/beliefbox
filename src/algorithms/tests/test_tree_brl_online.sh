@@ -7,7 +7,7 @@ for horizon in 1 2 3 4 5
 do
 	for state_samples in 1 2 3 
 	do
-		for leaf in in Min Mean UBound LBound
+		for leaf in Min Mean UBound LBound
 		do
 			echo $horizon $state_samples
 			fname=tbrl-${env}-${horizon}h-${state_samples}s-${leaf}.out
