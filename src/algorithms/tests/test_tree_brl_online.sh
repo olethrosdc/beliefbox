@@ -5,7 +5,7 @@ env=Chain
 T=1000
 for horizon in 0 1 2 3 4 5
 do
-	for state_samples in 1 3 #2 
+	for state_samples in 1 2 3 
 	do
 		echo $horizon $state_samples
 		fname=tbrl-${env}-${horizon}h-${state_samples}s.out
