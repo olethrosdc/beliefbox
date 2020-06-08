@@ -270,9 +270,9 @@ int main (int argc, char** argv)
 					printf("Setting leaf to %s\n", optarg);
 					if (!strcmp(optarg, "Min")) {
 						leaf_value = TreeBRL::LeafNodeValue::V_MIN;
-					} else if (!strcmp(optarg, "Min")) {
-						leaf_value = TreeBRL::LeafNodeValue::V_MAX;
 					} else if (!strcmp(optarg, "Max")) {
+						leaf_value = TreeBRL::LeafNodeValue::V_MAX;
+					} else if (!strcmp(optarg, "MeanMDP")) {
 						leaf_value = TreeBRL::LeafNodeValue::V_MEAN;
 					} else if (!strcmp(optarg, "UBound")) {
 						leaf_value = TreeBRL::LeafNodeValue::V_UTS;
