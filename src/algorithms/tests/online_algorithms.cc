@@ -123,6 +123,7 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --reward_prior: {Beta, Fixed, *Normal}\n\
     --max_samples:  maximum number of samples (*1) for Sampling, Weighted Q-Learning and TBRLRL\n\
     --max_policy_samples:  maximum number of policy samples (*2) for and TBRL\n\
+    --leaf_value: {Min, Max, *MeanMDP, UBound, LBound} for TBRL\n\
     --horizon:      planning horizon (*2) for TBRL\n\
     --initial_reward: initial reward (*0) for value-based RL\n\
     --seed:                  seed all the RNGs with this\n\
@@ -159,7 +160,8 @@ int main (int argc, char** argv)
     bool use_sampling_threshold = false;
     real initial_reward = 0.0;
     int horizon = 2;
-    
+	TreeBRL::LeafNodeValue leaf_value = TreeBRL::LeafNodeValue::V_MEAN;
+	
     enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::NORMAL;
 
     const char * algorithm_name = "QLearning";
@@ -204,7 +206,7 @@ int main (int argc, char** argv)
                 {"n_iterations", required_argument, 0, 0}, //25
                 {"horizon", required_argument, 0, 0}, //26
 				{"max_policy_samples", required_argument, 0, 0}, //27
-                {0, 0, 0, 0}
+				{"leaf_value", required_argument, 0, 0}, //28                {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
                              long_options, &option_index);
@@ -263,6 +265,22 @@ int main (int argc, char** argv)
                 case 25: n_iterations = atoi(optarg); break;
                 case 26: horizon = atoi(optarg); break;
 				case 27: max_policy_samples = atoi(optarg); break;
+				case 28:
+					printf("Setting leaf to %s\n", optarg);
+					if (!strcmp(optarg, "Min")) {
+						leaf_value = TreeBRL::LeafNodeValue::V_MIN;
+					} else if (!strcmp(optarg, "Min")) {
+						leaf_value = TreeBRL::LeafNodeValue::V_MAX;
+					} else if (!strcmp(optarg, "Max")) {
+						leaf_value = TreeBRL::LeafNodeValue::V_MEAN;
+					} else if (!strcmp(optarg, "UBound")) {
+						leaf_value = TreeBRL::LeafNodeValue::V_UTS;
+					} else if (!strcmp(optarg, "LBound")) {
+						leaf_value = TreeBRL::LeafNodeValue::V_LTS;
+					} else {
+						Serror("Unknown option value %s\n", optarg);
+					}
+					break;
                 default:
                   fprintf (stderr, "Unknown option\n");
                   fprintf (stderr, "%s", help_text);
@@ -682,7 +700,8 @@ int main (int argc, char** argv)
                                     horizon,
 									max_samples,
 									max_policy_samples,
-									TreeBRL::LeafNodeValue::V_MEAN);
+									max_reward_samples,
+									leaf_value);
         } else {
             Serror("Unknown algorithm: %s\n", algorithm_name);
 			exit(-1);
