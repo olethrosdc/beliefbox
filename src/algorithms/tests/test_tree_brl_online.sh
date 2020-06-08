@@ -10,7 +10,7 @@ do
 		for leaf in in Min Mean UBound LBound
 		do
 			echo $horizon $state_samples
-			fname=tbrl-${env}-${horizon}h-${state_samples}s.out
+			fname=tbrl-${env}-${horizon}h-${state_samples}s-${leaf}.out
 			sem -j 8 ./bin/online_algorithms --environment $env --n_episodes 1 --n_runs 10 --gamma 0.95 --n_steps $T --algorithm TBRL --horizon $horizon --max_samples $state_samples --leaf_value $leaf &>$fname
 		done
 	done
