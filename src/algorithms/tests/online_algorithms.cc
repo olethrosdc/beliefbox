@@ -169,6 +169,7 @@ int main (int argc, char** argv)
 
     int max_samples = 1;
 	int max_policy_samples = 2;
+	int max_reward_samples = 2;
     char* maze_name = NULL;
     {
         // options
