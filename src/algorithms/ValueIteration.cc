@@ -67,6 +67,7 @@ ValueIteration::~ValueIteration()
 void ValueIteration::ComputeStateValuesStandard(real threshold, int max_iter)
 {
     int n_iter = 0;
+	V.Clear();
     do {
         Delta = 0.0;
         pV = V;
@@ -93,7 +94,7 @@ void ValueIteration::ComputeStateValuesStandard(real threshold, int max_iter)
         }
         n_iter++;
     } while(Delta >= threshold && max_iter != 0);
-	printf("# ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
+	//printf("# ValueIteration::ComputeStateValues Exiting at d:%f, n:%d\n", Delta, n_iter);
 }
 
 

@@ -12,7 +12,7 @@
 #include "TreeBRL.h"
 
 
-#define TBRL_DEBUG
+//#define TBRL_DEBUG
 
 TreeBRL::TreeBRL(int n_states_,
                  int n_actions_,
@@ -92,6 +92,7 @@ real TreeBRL::Observe (real reward, int next_state, int next_action)
 int TreeBRL::Act(real reward, int next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
+	//belief->ShowModelStatistics();
 
     T++;
     if (current_state >= 0 && current_action >= 0) {
@@ -102,18 +103,20 @@ int TreeBRL::Act(real reward, int next_state)
     
     //int n_MDP_leaf_samples = 1;
 	if (state_samples >= n_states) {
+		//printf("Using full state space\n");
 		BeliefState belief_state = CalculateBeliefTree();
 	} else {
+		//printf("State sampling\n");
 		BeliefState belief_state = CalculateSparseBeliefTree();//reward_samples * state_samples, policy_samples);
 	}
 	//printf("%f %f %f\n", belief_state.CalculateValues(), 
 	//belief_state.CalculateValues(leaf_node_expansion);
 
-	//Qs.printf(stdout);
+	Qs.printf(stdout); printf("# Q\n");
     int next_action = ArgMax(Qs);
 	//printf("-> %d\n", next_action);
 	// sometimes act randomly
-	if (rng->uniform() < 1.0 / (real) T) {
+	if (rng->uniform() < 10.0 / (real) T) {
 		next_action = rng->random() % n_actions;
 	}
     current_action = next_action;
@@ -282,9 +285,9 @@ real TreeBRL::BeliefState::CalculateValues()
 #endif
         }
 		//Q /= action_count;
-        V += Max(Q);
+        V = Max(Q);
 #ifdef TBRL_DEBUG
-		Q.print(stdout); printf(" %d/%d\n", current_step, tree.horizon);
+		Q.print(stdout); printf(" %d/%d # Q\n", current_step, tree.horizon);
 #endif
     } else {
 		switch(tree.leaf_node_expansion) {
@@ -295,6 +298,7 @@ real TreeBRL::BeliefState::CalculateValues()
 		case V_UTS: V = UTSValue(); break;
 		case V_LTS: V = LTSValue(); break;
 		}
+		//printf("V: %f\n", V);
     }
 	
 

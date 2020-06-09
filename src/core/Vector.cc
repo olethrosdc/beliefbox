@@ -531,7 +531,7 @@ const real& Vector::operator[] (int index) const
     return x[index];
 }
 
-/// Change size
+/// Remove all data
 void Vector::Clear()
 { 
     memset(x, 0, sizeof(real) * n);
