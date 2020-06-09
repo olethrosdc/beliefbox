@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 
 	int state_samples = 5;//n_states; ///< number of state samples when branching
     int policy_samples = 1; ///< number of policy/MDP samples at leaf nodes
-	int reward_samples = 1; ///< number of reward samples
+	int reward_samples = 2; ///< number of reward samples
 
     // ---- user options ---- //
     int planning_horizon = 2; 
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 
 	
     real dirichlet_mass = 0.5;
-    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
+    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::NORMAL;
     DiscreteMDPCounts belief(n_states, n_actions, dirichlet_mass, reward_prior);
 	//NullMDPModel belief(n_states, n_actions);
 	
