@@ -50,15 +50,15 @@ int main(int argc, char** argv) {
     int n_states = 5;
     int n_actions = 2;
     real discounting = 0.95;
-    int n_steps = 10000;
+    int n_steps = 1000;
 
 	int state_samples = 2; ///< number of state samples when branching
     int policy_samples = 2; ///< number of policy/MDP samples at leaf nodes
 	int reward_samples = 2; ///< number of reward samples
 
     // ---- user options ---- //
-    int planning_horizon = 1; 
-    int leaf_value = 0; 
+    int planning_horizon = 2; 
+    int leaf_value = 3; 
     int n_experiments = 1; 
 
 	if (argc > 1) {
