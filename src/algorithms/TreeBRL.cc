@@ -349,7 +349,7 @@ real TreeBRL::BeliefState::MeanMDPValue()
 {
     real discount = tree.gamma;
 	const DiscreteMDP* model = belief->getMeanMDP();
-	model.Show();
+	model.ShowModel();
 	ValueIteration VI(model, discount);
 	VI.ComputeStateValuesStandard(1e-3);
 	return VI.getValue(state);
