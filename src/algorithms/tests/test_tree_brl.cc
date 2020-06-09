@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 	int reward_samples = 2; ///< number of reward samples
 
     // ---- user options ---- //
-    int planning_horizon = 1; staes
+    int planning_horizon = 1; 
     int leaf_value = 0; 
     int n_experiments = 1; 
 
