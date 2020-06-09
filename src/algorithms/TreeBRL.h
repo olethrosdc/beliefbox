@@ -82,9 +82,9 @@ public:
 		~BeliefState();
         // methods for building the tree
         void ExpandAllActions();
-        void SparseExpandAllActions(int n_samples);
+        void SparseExpandAllActions();
         // methods for calculating action values in the tree
-        real CalculateValues(LeafNodeValue leaf_node);
+        real CalculateValues();
 		real MeanMDPValue();
         real UTSValue();
         real LTSValue();
@@ -132,7 +132,7 @@ public:
         return 0;
     }
 
-    TreeBRL::BeliefState CalculateSparseBeliefTree(int n_samples, int n_TS);
+    TreeBRL::BeliefState CalculateSparseBeliefTree();
 	TreeBRL::BeliefState CalculateBeliefTree();
 
     
