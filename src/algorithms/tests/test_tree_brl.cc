@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 
 	int state_samples = n_states; ///< number of state samples when branching
     int policy_samples = 2; ///< number of policy/MDP samples at leaf nodes
-	int reward_samples = 10; ///< number of reward samples
+	int reward_samples = 1; ///< number of reward samples
 
     // ---- user options ---- //
     int planning_horizon = 2; 

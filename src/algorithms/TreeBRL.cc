@@ -214,7 +214,12 @@ void TreeBRL::BeliefState::SparseExpandAllActions()
     for (int k=0; k<tree.state_samples; ++k) {
         for (int a=0; a<tree.n_actions; ++a) {
             int next_state = belief->GenerateTransition(state, a);
-            real reward = belief->GenerateReward(state, a);
+            real reward;
+			if (tree.reward_samples == 1) {
+				reward = belief->getExpectedReward(state, a);
+			} else {
+				reward = belief->GenerateReward(state, a);
+			}
             // Generate the new belief state and put it in the tree
             children.push_back(new BeliefState(tree, belief, state, a, next_state, reward, p, this));
         }
