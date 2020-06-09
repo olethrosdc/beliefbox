@@ -272,8 +272,10 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
 
 	//printf ("Getting value for node at depth %d\n", current_step);
     if (current_step < tree.horizon) {
+		Vector action_count(tree.n_actions);
         for (uint i=0; i<children.size(); ++i) {
             int a = children[i]->prev_action;
+			action_count(a) += 1;
 			real p = children[i]->probability;
 			real r = children[i]->prev_reward;
 			int s_next = children[i]->state;
@@ -284,6 +286,7 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
 				   current_step, state, i, a, p, s_next, r, V_next);
 #endif
         }
+		Q /= action_count;
         V += Max(Q);
 #ifdef TBRL_DEBUG
 		Q.print(stdout); printf(" %d/%d\n", current_step, tree.horizon);
