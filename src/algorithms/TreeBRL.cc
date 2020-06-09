@@ -12,7 +12,7 @@
 #include "TreeBRL.h"
 
 
-//#define TBRL_DEBUG
+#define TBRL_DEBUG
 
 TreeBRL::TreeBRL(int n_states_,
                  int n_actions_,
@@ -104,7 +104,7 @@ int TreeBRL::Act(real reward, int next_state)
 	if (state_samples >= n_states) {
 		BeliefState belief_state = CalculateBeliefTree();
 	} else {
-		BeliefState belief_state = CalculateSparseBeliefTree(reward_samples * state_samples, policy_samples);
+		BeliefState belief_state = CalculateSparseBeliefTree();//reward_samples * state_samples, policy_samples);
 	}
 	//printf("%f %f %f\n", belief_state.CalculateValues(), 
 	//belief_state.CalculateValues(leaf_node_expansion);
@@ -113,9 +113,9 @@ int TreeBRL::Act(real reward, int next_state)
     int next_action = ArgMax(Qs);
 	//printf("-> %d\n", next_action);
 	// sometimes act randomly
-	//if (rng->uniform() < 0) {
-	//next_action = rng->random() % n_actions;
-	//}
+	if (rng->uniform() < 1.0 / (real) T) {
+		next_action = rng->random() % n_actions;
+	}
     current_action = next_action;
     return current_action;
 }
@@ -125,12 +125,12 @@ int TreeBRL::Act(real reward, int next_state)
     /// samples and use n_TS MDP samples for the upper and lower bounds at
     /// the leaf nodes
 
-TreeBRL::BeliefState TreeBRL::CalculateSparseBeliefTree(int n_samples, int n_TS)
+TreeBRL::BeliefState TreeBRL::CalculateSparseBeliefTree()
 {
     // Initialise the root belief state
     BeliefState belief_state(*this, belief, current_state);
-    belief_state.SparseExpandAllActions(n_samples);
-    belief_state.CalculateValues(leaf_node_expansion);
+    belief_state.SparseExpandAllActions();
+    belief_state.CalculateValues();//leaf_node_expansion);
     //belief_state.CalculateLowerBoundValues(n_TS),
     //belief_state.CalculateUpperBoundValues(n_TS));
 	return belief_state;
@@ -142,7 +142,7 @@ TreeBRL::BeliefState TreeBRL::CalculateBeliefTree()
     // Initialise the root belief state
     BeliefState belief_state(*this, belief, current_state);
     belief_state.ExpandAllActions();
-	belief_state.CalculateValues(leaf_node_expansion);
+	belief_state.CalculateValues();
 	return belief_state;
 }
 
@@ -172,7 +172,7 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
 {
 	
 #ifdef TBRL_DEBUG
-	logmsg("Cloning belief");
+	logmsg("Modifying belief after cloning");
 #endif
 	belief = belief_->Clone();
 #ifdef TBRL_DEBUG
@@ -207,13 +207,14 @@ TreeBRL::BeliefState::~BeliefState()
 /// actions. Do this recursively, using the marginal
 /// distribution, but using sparse sampling.
 ///
-void TreeBRL::BeliefState::SparseExpandAllActions(int n_samples)
+void TreeBRL::BeliefState::SparseExpandAllActions()
 {
     if (current_step >= tree.horizon) {
         return;
     }
-    real p = 1 / (real) n_samples;
-    for (int k=0; k<n_samples; ++k) {
+	int n_samples = tree.reward_samples * tree.state_samples;
+    real p = 1.0f / (real) n_samples; //tree.reward_samples;
+    for (int k=0; k<tree.state_samples; ++k) {
         for (int a=0; a<tree.n_actions; ++a) {
             int next_state = belief->GenerateTransition(state, a);
             real reward = belief->GenerateReward(state, a);
@@ -223,7 +224,7 @@ void TreeBRL::BeliefState::SparseExpandAllActions(int n_samples)
     }
 
     for (uint i=0; i<children.size(); ++i) {
-        children[i]->SparseExpandAllActions(n_samples);
+        children[i]->SparseExpandAllActions();
     }
 }
 /// Generate transitions from the current state for all
@@ -264,7 +265,7 @@ void TreeBRL::BeliefState::ExpandAllActions()
 ///
 /// where the expectation is 
 /// \f$Q_t(w, a) = \sum_{s'} {r(w,a,s') + \gamma P(s' | a, s) V_{t+1} (w')\}\f$ and \f$w' = w( | s, a, s')\f$.
-real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
+real TreeBRL::BeliefState::CalculateValues()
 {
     Vector Q(tree.n_actions);
     real V = 0;
@@ -272,24 +273,27 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
 
 	//printf ("Getting value for node at depth %d\n", current_step);
     if (current_step < tree.horizon) {
+		Vector action_count(tree.n_actions);
         for (uint i=0; i<children.size(); ++i) {
             int a = children[i]->prev_action;
+			action_count(a) += 1;
 			real p = children[i]->probability;
 			real r = children[i]->prev_reward;
 			int s_next = children[i]->state;
-			real V_next = children[i]->CalculateValues(leaf_node);
+			real V_next = children[i]->CalculateValues();
             Q(a) += p * (r + discount * V_next);
 #ifdef TBRL_DEBUG
 			printf("t:%d s:%d i:%d a:%d p:%f s2:%d, r:%f v:%f\n",
 				   current_step, state, i, a, p, s_next, r, V_next);
 #endif
         }
+		Q /= action_count;
         V += Max(Q);
 #ifdef TBRL_DEBUG
 		Q.print(stdout); printf(" %d/%d\n", current_step, tree.horizon);
 #endif
     } else {
-		switch(leaf_node) {
+		switch(tree.leaf_node_expansion) {
 		case NONE: V = 0; break;
 		case V_MIN: V = 0; break;
 		case V_MAX: V = 1.0 / (1.0 - discount); break;
@@ -310,7 +314,7 @@ real TreeBRL::BeliefState::CalculateValues(LeafNodeValue leaf_node)
 /// Return the values using an upper bound
 real TreeBRL::BeliefState::UTSValue()
 {
-	int n_samples = 2;
+	int n_samples = tree.policy_samples;
 	real V = 0;
 	for (int i=0; i<n_samples; ++i) {
 		DiscreteMDP* model = belief->generate();
@@ -327,7 +331,7 @@ real TreeBRL::BeliefState::UTSValue()
 real TreeBRL::BeliefState::LTSValue()
 {
     real discount = tree.gamma;
-	int n_samples = 2;
+	int n_samples = tree.policy_samples;
 	const DiscreteMDP* model = belief->getMeanMDP();
 	ValueIteration VI(model, discount);
 	VI.ComputeStateValuesStandard(1e-3);
