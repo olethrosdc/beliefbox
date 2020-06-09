@@ -78,10 +78,10 @@ DiscreteMDPCounts::DiscreteMDPCounts(const DiscreteMDPCounts& model) :
 			ER[i] = new BetaDistribution(*((BetaDistribution*) model.ER[i]));
 			break;
 		case NORMAL:
-			ER[i] = new NormalUnknownMeanPrecision();
+			ER[i] = new NormalUnknownMeanPrecision(*((NormalUnknownMeanPrecision*) model.ER[i]));
 			break;
 		case FIXED:
-			ER[i] = new UnknownSingularDistribution();
+			ER[i] = new UnknownSingularDistribution(*((UnknownSingularDistribution*) model.ER[i]));
 			break;
 		default:
 			Serror("Unknown distribution family %d\n", reward_family);

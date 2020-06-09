@@ -46,14 +46,14 @@ int main(int argc, char** argv) {
     DefaultRandomNumberGenerator default_rng;
     RandomNumberGenerator* env_rng = (RandomNumberGenerator*) &default_rng;
     rng->seed();
-    //env_rng->manualSeed(982374523);
+    env_rng->manualSeed(982374523);
     int n_states = 5;
     int n_actions = 2;
     real discounting = 0.99;
     int n_steps = 1000;
 
 	int state_samples = n_states; ///< number of state samples when branching
-    int policy_samples = 2; ///< number of policy/MDP samples at leaf nodes
+    int policy_samples = 1; ///< number of policy/MDP samples at leaf nodes
 	int reward_samples = 1; ///< number of reward samples
 
     // ---- user options ---- //
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 	
     printf("# Making environment\n");
     shared_ptr<DiscreteEnvironment> environment;
-    environment = make_shared<DiscreteChain>(n_states, 0);
+    environment = make_shared<DiscreteChain>(n_states);
     //environment = make_shared<ContextBandit>(n_states, n_actions, env_rng, false);
     //environment = make_shared<Blackjack>(env_rng);
     //environment = make_shared<RandomMDP>(n_states, n_actions, 0.1, -0.1, -1, 1, env_rng);
