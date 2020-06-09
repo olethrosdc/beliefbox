@@ -19,7 +19,7 @@
 ///
 /// Initialises location to zero and precision to identity.
 Student::Student(const int dimension) 
-    : sampler(new MultivariateNormal(dimension)),
+    : sampler(dimension),
       n(1),
       k(dimension),
       mu(k),
@@ -27,11 +27,12 @@ Student::Student(const int dimension)
 {
   //det = T.det();
   T.LUDecomposition(det);
+  sampler.setAccuracy(T);
 }
 
 /// Constructor
 Student::Student(const int degrees, const Vector& location, const Matrix& precision)
-    : sampler(new MultivariateNormal(location.Size())),
+    : sampler(location.Size()),
       n(degrees),
       k(location.Size()),
       mu(location),
@@ -39,11 +40,11 @@ Student::Student(const int degrees, const Vector& location, const Matrix& precis
 {
   //det = T.det();
   T.LUDecomposition(det);
+  sampler.setAccuracy(T);
 }
 
 Student::~Student()
 {
-    delete sampler;
 }
 
 /// Set the degrees
@@ -60,6 +61,7 @@ void Student::setLocation(const Vector& location)
 void Student::setPrecision(const Matrix& precision)
 {
     T = precision;
+	sampler.setAccuracy(T);
     T.LUDecomposition(det);
 	//det = T.det();
     //printf("New Precision det:%f\n", det);
@@ -109,8 +111,8 @@ void Student::Show() const
 */
 Vector Student::generate() const
 {
-    sampler->setAccuracy(T);
-    Vector v = sampler->generate();
+    //sampler.setAccuracy(T);
+    Vector v = sampler.generate();
     real z = genchi((real) n);
     //v.print(stdout);
     //printf ("%f -> ", z);

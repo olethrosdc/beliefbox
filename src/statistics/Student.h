@@ -16,9 +16,9 @@
 #include "Distribution.h"
 #include "Matrix.h"
 #include "Vector.h"
+#include "MultivariateNormal.h"
 
-class MultivariateNormal;
-
+//class MultivariateNormal;
 /**
    \ingroup StatisticsGroup
  */
@@ -40,7 +40,7 @@ class MultivariateNormal;
 class Student
 {
 private:
-    MultivariateNormal* sampler;
+    MultivariateNormal sampler;
 public:
     int n; ///< Degrees of freedom
     const int k; ///< Dimensionality

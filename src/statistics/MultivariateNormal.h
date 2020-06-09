@@ -12,7 +12,9 @@
 #ifndef MULTIVARIATE_NORMAL_H
 #define MULTIVARIATE_NORMAL_H
 
-#include "NormalDistribution.h"
+#include "Distribution.h"
+#include "Matrix.h"
+#include "Vector.h"
 
 /// Multivariate Gaussian probability distribution
 class MultivariateNormal : public VectorDistribution
@@ -46,7 +48,7 @@ class MultivariateNormal : public VectorDistribution
 };
 
 
-class Student;
+//class Student;
 
 
 #endif
