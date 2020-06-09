@@ -12,7 +12,7 @@
 #include "TreeBRL.h"
 
 
-//#define TBRL_DEBUG
+#define TBRL_DEBUG
 
 TreeBRL::TreeBRL(int n_states_,
                  int n_actions_,
@@ -113,9 +113,9 @@ int TreeBRL::Act(real reward, int next_state)
     int next_action = ArgMax(Qs);
 	//printf("-> %d\n", next_action);
 	// sometimes act randomly
-	//if (rng->uniform() < 0) {
-	//next_action = rng->random() % n_actions;
-	//}
+	if (rng->uniform() < 1.0 / (real) T) {
+		next_action = rng->random() % n_actions;
+	}
     current_action = next_action;
     return current_action;
 }
@@ -172,7 +172,7 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
 {
 	
 #ifdef TBRL_DEBUG
-	logmsg("Cloning belief");
+	logmsg("Modifying belief after cloning");
 #endif
 	belief = belief_->Clone();
 #ifdef TBRL_DEBUG
