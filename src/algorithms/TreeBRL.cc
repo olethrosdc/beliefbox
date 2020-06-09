@@ -92,7 +92,7 @@ real TreeBRL::Observe (real reward, int next_state, int next_action)
 int TreeBRL::Act(real reward, int next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
-	//belief->ShowModelStatistics();
+	belief->ShowModelStatistics();
 
     T++;
     if (current_state >= 0 && current_action >= 0) {
@@ -248,7 +248,7 @@ void TreeBRL::BeliefState::ExpandAllActions()
 				if (tree.reward_samples == 1) {
 					reward = belief->getExpectedReward(state, a);
 					//printf("%f\n", reward);
-					belief->ShowModelStatistics();
+					//belief->ShowModelStatistics();
 				} else {
 					reward = belief->GenerateReward(state, a);
 				}
