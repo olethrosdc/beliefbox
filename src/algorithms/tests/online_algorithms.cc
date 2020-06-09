@@ -207,7 +207,9 @@ int main (int argc, char** argv)
                 {"n_iterations", required_argument, 0, 0}, //25
                 {"horizon", required_argument, 0, 0}, //26
 				{"max_policy_samples", required_argument, 0, 0}, //27
-				{"leaf_value", required_argument, 0, 0}, //28                {0, 0, 0, 0}
+				{"leaf_value", required_argument, 0, 0}, //28                
+				{"max_reward_samples", required_argument, 0, 0}, //29
+                {0, 0, 0, 0}
             };
             c = getopt_long (argc, argv, "",
                              long_options, &option_index);
@@ -282,6 +284,7 @@ int main (int argc, char** argv)
 						Serror("Unknown option value %s\n", optarg);
 					}
 					break;
+				case 29: max_reward_samples = atoi(optarg); break;
                 default:
                   fprintf (stderr, "Unknown option\n");
                   fprintf (stderr, "%s", help_text);
