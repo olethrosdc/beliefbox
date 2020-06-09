@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     DefaultRandomNumberGenerator default_rng;
     RandomNumberGenerator* env_rng = (RandomNumberGenerator*) &default_rng;
     rng->seed();
-    env_rng->manualSeed(982374523);
+    //env_rng->manualSeed(982374523);
     int n_states = 5;
     int n_actions = 2;
     real discounting = 0.99;
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 
 	
     real dirichlet_mass = 0.5;
-    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::BETA;
+    enum DiscreteMDPCounts::RewardFamily reward_prior = DiscreteMDPCounts::NORMAL;
     DiscreteMDPCounts belief(n_states, n_actions, dirichlet_mass, reward_prior);
 	//NullMDPModel belief(n_states, n_actions);
 	

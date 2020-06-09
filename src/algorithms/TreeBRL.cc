@@ -244,7 +244,15 @@ void TreeBRL::BeliefState::ExpandAllActions()
              ++next_state) {
             real p = belief->getTransitionProbability(state, a, next_state) / (real) tree.reward_samples;
 			for (int i=0; i<tree.reward_samples; ++i) {
-				real reward = belief->GenerateReward(state, a);
+				real reward;
+				if (tree.reward_samples == 1) {
+					reward = belief->getExpectedReward(state, a);
+					//printf("%f\n", reward);
+					belief->ShowModelStatistics();
+				} else {
+					reward = belief->GenerateReward(state, a);
+				}
+
 				children.push_back(new BeliefState(tree, belief, state, a, next_state, reward, p, this));
 			}
 		}
