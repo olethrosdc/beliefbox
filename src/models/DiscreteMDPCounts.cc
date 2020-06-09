@@ -61,7 +61,7 @@ DiscreteMDPCounts::DiscreteMDPCounts (int n_states, int n_actions, real init_tra
 	}
 }
 
-
+/// Copy consructor
 DiscreteMDPCounts::DiscreteMDPCounts(const DiscreteMDPCounts& model) :
 	MDPModel(model.n_states, model.n_actions),
 	use_sampling(model.use_sampling),
@@ -71,12 +71,11 @@ DiscreteMDPCounts::DiscreteMDPCounts(const DiscreteMDPCounts& model) :
 	N(model.N)
 {
 	//logmsg("Copying DiscreteMDPCounts with %d states and %d actions\n",  n_states, n_actions);
-	
 	ER.resize(N);
 	for (int i=0; i<N; ++i) {
 		switch(reward_family) {
 		case BETA:
-			ER[i] = new BetaDistribution();
+			ER[i] = new BetaDistribution(*((BetaDistribution*) model.ER[i]));
 			break;
 		case NORMAL:
 			ER[i] = new NormalUnknownMeanPrecision();
