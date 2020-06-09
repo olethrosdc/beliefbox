@@ -171,25 +171,19 @@ TreeBRL::BeliefState::BeliefState(TreeBRL& tree_,
 	  prev_reward(r), probability(p), prev(prev_), current_step(prev_->current_step + 1)
 {
 	
-#ifdef TBRL_DEBUG
-	logmsg("Modifying belief after cloning");
-#endif
 	belief = belief_->Clone();
-#ifdef TBRL_DEBUG
-	logmsg("Adding new transition");
-#endif
     belief->AddTransition(prev_state_,
 						  prev_action,
 						  prev_reward,
 						  state);
 	tree.size++;
-#ifdef TBRL_DEBUG
-	logmsg("Previous belief");
-	belief_->ShowModelStatistics();
-	logmsg("Next belief");
-	belief->ShowModelStatistics();
-	logmsg("Tree size: %d\n", tree.size);
-#endif
+	//#ifdef TBRL_DEBUG
+	//logmsg("Previous belief");
+	//belief_->ShowModelStatistics();
+	//	logmsg("Next belief");
+	//	belief->ShowModelStatistics();
+	//	logmsg("Tree size: %d\n", tree.size);
+	//#endif
 
 }
 
@@ -273,10 +267,10 @@ real TreeBRL::BeliefState::CalculateValues()
 
 	//printf ("Getting value for node at depth %d\n", current_step);
     if (current_step < tree.horizon) {
-		Vector action_count(tree.n_actions);
+		//Vector action_count(tree.n_actions);
         for (uint i=0; i<children.size(); ++i) {
             int a = children[i]->prev_action;
-			action_count(a) += 1;
+			//action_count(a) += 1;
 			real p = children[i]->probability;
 			real r = children[i]->prev_reward;
 			int s_next = children[i]->state;
@@ -287,7 +281,7 @@ real TreeBRL::BeliefState::CalculateValues()
 				   current_step, state, i, a, p, s_next, r, V_next);
 #endif
         }
-		Q /= action_count;
+		//Q /= action_count;
         V += Max(Q);
 #ifdef TBRL_DEBUG
 		Q.print(stdout); printf(" %d/%d\n", current_step, tree.horizon);
@@ -350,10 +344,12 @@ real TreeBRL::BeliefState::LTSValue()
 }
         
 /// Return the values using the mean MDP
+/// Bug? This seems not to wrk.
 real TreeBRL::BeliefState::MeanMDPValue()
 {
     real discount = tree.gamma;
 	const DiscreteMDP* model = belief->getMeanMDP();
+	model.Show();
 	ValueIteration VI(model, discount);
 	VI.ComputeStateValuesStandard(1e-3);
 	return VI.getValue(state);
