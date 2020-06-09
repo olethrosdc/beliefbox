@@ -167,9 +167,9 @@ int main (int argc, char** argv)
     const char * algorithm_name = "QLearning";
     const char * environment_name = "Chain";
 
-    int max_samples = 1;
-	int max_policy_samples = 2;
-	int max_reward_samples = 2;
+    int max_samples = 5;
+	int max_policy_samples = 1;
+	int max_reward_samples = 1;
     char* maze_name = NULL;
     {
         // options

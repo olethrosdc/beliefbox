@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     real discounting = 0.99;
     int n_steps = 1000;
 
-	int state_samples = n_states; ///< number of state samples when branching
+	int state_samples = 5;//n_states; ///< number of state samples when branching
     int policy_samples = 1; ///< number of policy/MDP samples at leaf nodes
 	int reward_samples = 1; ///< number of reward samples
 

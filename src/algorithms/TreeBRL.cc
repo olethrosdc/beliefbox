@@ -92,7 +92,7 @@ real TreeBRL::Observe (real reward, int next_state, int next_action)
 int TreeBRL::Act(real reward, int next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
-	belief->ShowModelStatistics();
+	//belief->ShowModelStatistics();
 
     T++;
     if (current_state >= 0 && current_action >= 0) {
@@ -112,7 +112,7 @@ int TreeBRL::Act(real reward, int next_state)
 	//printf("%f %f %f\n", belief_state.CalculateValues(), 
 	//belief_state.CalculateValues(leaf_node_expansion);
 
-	Qs.printf(stdout); printf("# Q\n");
+	//Qs.printf(stdout); printf("# Q\n");
     int next_action = ArgMax(Qs);
 	//printf("-> %d\n", next_action);
 	// sometimes act randomly
