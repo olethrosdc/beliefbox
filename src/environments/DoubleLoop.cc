@@ -26,12 +26,14 @@ void DoubleLoop::Reset()
 bool DoubleLoop::Act(const int& action)
 {
 #if 0
+	printf("%d %d \n", state, action);
 	for (uint i=0; i<n_states; ++i) {
 		printf ("%f ", model->getTransitionProbability(state, action, i));
 	}
 	printf("= P(s' | s = %d, a = %d)\n", state, action);
 #endif
-	reward = model->Act(action);
+	model->Act(action);
+	reward = model->getReward();
 	state = model->getState();
     return true;
 }
