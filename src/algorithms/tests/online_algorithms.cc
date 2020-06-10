@@ -123,6 +123,7 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --reward_prior: {Beta, Fixed, *Normal}\n\
     --max_samples:  maximum number of samples (*1) for Sampling, Weighted Q-Learning and TBRLRL\n\
     --max_policy_samples:  maximum number of policy samples (*2) for and TBRL\n\
+    --max_reward_samples:  maximum number of reward samples (*1 = take the mean) for and TBRL\n\
     --leaf_value: {Min, Max, *MeanMDP, UBound, LBound} for TBRL\n\
     --horizon:      planning horizon (*2) for TBRL\n\
     --initial_reward: initial reward (*0) for value-based RL\n\
