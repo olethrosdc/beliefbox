@@ -10,15 +10,15 @@
  ***************************************************************************/
 #include "Distribution.h"
 
-/// Geometric probability distribution
+/// Geometric probability distribution with support {0,1,...}
 class GeometricDistribution : public ParametricDistribution {
 public:
-    real p; ///< parameter
+    real p; ///< parameter describing the probability of success
     GeometricDistribution() 
     {
         setParameter(0.5);
     }
-    /// Create an exponential distribution with parameter \c lambda
+    /// Create an geometric distribution with parameter \c p 
     GeometricDistribution(real p_)
     {
         setParameter(p_);
