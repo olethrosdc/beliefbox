@@ -28,9 +28,13 @@
     
 /** Gradient Bayesian Reinforcement Learning.
 
+	Based on the paper Monte Carlo Utility Estimates for Bayesian
+	Reinforcement Learning.
+
     The idea is that we sample an MDP at a time, and then move our
     value function closer to the value function of that MDP.  Thus,
-    our value function moves to the expected value function!
+    our value function moves to the expected value function. Currently
+    only works for stationary policies, and so is not very useful.
 
     Unfortunately, calculating the value of an MDP is slow, so just
     perform a single TD update.
