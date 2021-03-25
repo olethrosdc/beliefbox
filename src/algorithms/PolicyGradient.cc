@@ -64,7 +64,7 @@ PolicyGradient::~PolicyGradient()
     delete policy;
 }
 
-/** ComputeStateValues
+/** Model-based policy gradient
    
     threshold - exit policy gradient is smaller than a threshold
     max_iter - exit when the number of iterations reaches max_iter
@@ -240,6 +240,52 @@ void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int ma
     //printf ("delta = %f, iter left = %d\n", Delta, max_iter - iter);
     //policy->Show();
 }
+
+
+/** Sample trajectories from the model to compute gradients. 
+ *
+ * This has the advantage that the Markov property is not required.
+ * Here \f$\nabla U(\pi, \mu) = \sum_h U(h) P_\mu^\pi(h) \sum_t \frac{\nabla \pi(a_t | h_t)}{\pi(a_t | h_t)}\f$.
+ */
+void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
+{
+	MultinomialDistribution starting_state_distribution(starting);
+	GeometricDistribution horizon_distribution(1 - gamma);
+	real eta = 0.5; ///< step size
+	for (int i=0; i<max_iter; ++i) {
+		// Get a sample trajectory
+		int state = starting_state_distribution.generate();
+		int horizon = 1 + horizon_distribution.generate(); // use this for unbiased samples
+		std::vector<int> states(horizon);
+		std::vector<int> actions(horizon);
+		real utility = 0;
+		policy->Reset(state);
+		for (int t=0; t<horizon; t++) {
+            int action = policy->SelectAction();
+			states[i] = state;
+			actions[i] = action;
+			mdp->Act(action);
+			state = mdp->getState();
+			real reward = mdp->getReward();
+			utility += reward;
+		}
+		// apply a gradient step - depends on policy structure
+		for (int t=0; t<horizon; t++) {
+			Vector* Theta  = policy->getActionProbabilitiesPtr(states[t]);
+			real S = (*Theta).Sum();
+			for (int a=0; a<n_actions; ++a) {
+				if (a==actions[t]) {
+					(*Theta)(a) += eta * (S - (*Theta)(a)) / (S*S);
+				} else {
+					(*Theta)(a) += eta * (*Theta)(a) / (S*S);
+				}
+			}
+			(*Theta) /= (*Theta).Sum();
+		}
+	
+   
+}
+
 
 
 
