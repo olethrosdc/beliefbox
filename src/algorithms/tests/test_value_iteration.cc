@@ -144,7 +144,7 @@ int main (int argc, char** argv)
     }
 
     
-    if (test_gradient && 0)
+    if (test_gradient)
     {
         real step_size = 0.5;
         PolicyGradient policy_gradient(mdp, gamma, step_size);

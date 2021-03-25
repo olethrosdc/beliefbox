@@ -14,6 +14,8 @@
 #include "real.h"
 #include "MathFunctions.h"
 #include "Vector.h"
+#include "GeometricDistribution.h"
+#include "MultinomialDistribution.h"
 #include <cmath>
 #include <cassert>
 
@@ -254,7 +256,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 	real eta = 0.5; ///< step size
 	for (int i=0; i<max_iter; ++i) {
 		// Get a sample trajectory
-		int state = starting_state_distribution.generate();
+		int state = starting_state_distribution.generateInt();
 		int horizon = 1 + horizon_distribution.generate(); // use this for unbiased samples
 		std::vector<int> states(horizon);
 		std::vector<int> actions(horizon);
@@ -264,9 +266,8 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
             int action = policy->SelectAction();
 			states[i] = state;
 			actions[i] = action;
-			mdp->Act(action);
-			state = mdp->getState();
-			real reward = mdp->getReward();
+			real reward = mdp->generateReward(state, action);
+			state = mdp->generateState(state, action);
 			utility += reward;
 		}
 		// apply a gradient step - depends on policy structure
@@ -282,7 +283,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 			}
 			(*Theta) /= (*Theta).Sum();
 		}
-	
+	}	
    
 }
 
