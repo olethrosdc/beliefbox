@@ -277,6 +277,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		
 		// apply a gradient step - depends on policy structure
 		for (int t=0; t<horizon; t++) {
+			Matrix D(n_states, n_actions);
 			Vector* Theta  = policy->getActionProbabilitiesPtr(states[t]);
 			real S = (*Theta).Sum();
 			for (int a=0; a<n_actions; ++a) {
@@ -288,12 +289,44 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 				}
 				Delta += fabs(d);
 				//printf("%f %f # D\n", d, Delta);
-				(*Theta)(a) += step_size * d;
+				D(states[t], a) += step_size * d;
 			}
 			//Theta->print(stdout);
-			(*Theta) /= (*Theta).Sum();
+			//(*Theta) /= (*Theta).Sum();
 			//Theta->print(stdout);
 		}
+
+        //printf(" W\n");
+        Delta = 0;
+        for (int i=0; i<n_states; i++) {
+            Vector* Theta = policy->getActionProbabilitiesPtr(i);
+            //Theta->print(stdout);
+            real s = 0;
+			for (int a=0; a<n_actions; a++) {
+                s += D(i, a);
+			}
+			// The sum of all these should be zero ideally
+			real fudge = s / (real) n_actions;;
+			s = 0;
+            for (int a=0; a<n_actions; a++) {
+                real new_value = (*Theta)(a) + step_size * (D(i, a) - fudge);
+
+                if (new_value < 0) {
+                    new_value = 0;
+                }
+                if (new_value > 1) {
+                    new_value = 1;
+                }
+                s += new_value;
+                Delta += fabs((*Theta)(a) - new_value);
+                (*Theta)(a) = new_value;
+            }
+            //printf (" -- %f\n", s);
+            (*Theta) /= s;
+            //Theta->print(stdout);
+        }
+
+		
 		if (1) // evaluate
 		{
 			evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
