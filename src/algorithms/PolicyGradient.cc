@@ -275,28 +275,28 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 			utility += reward;
 		}
 		
-		// apply a gradient step - depends on policy structure
+		// calculate the gradient direction
 		Matrix D(n_states, n_actions);
 		for (int t=0; t<horizon; t++) {
 			Vector* Theta  = policy->getActionProbabilitiesPtr(states[t]);
 			real S = (*Theta).Sum();
 			for (int a=0; a<n_actions; ++a) {
-				real d = utility / (*Theta)(actions[t]);
+				real d_sa = utility / (*Theta)(actions[t]);
 				if (a==actions[t]) {
-					d *= (S - (*Theta)(a)) / (S*S);
+					d_sa *= 1; //(S - (*Theta)(a)) / (S*S);
 				} else {
-					d *= (*Theta)(a) / (S*S);
+					d_sa *= 0; //- (*Theta)(a) / (S*S);
 				}
-				Delta += fabs(d);
-				//printf("%f %f # D\n", d, Delta);
-				D(states[t], a) += step_size * d;
+				//printf("%f (%d %d)\n", d_sa, states[t], a);
+				Delta += fabs(d_sa);
+				D(states[t], a) += d_sa;
 			}
-			//Theta->print(stdout);
-			//(*Theta) /= (*Theta).Sum();
-			//Theta->print(stdout);
 		}
-
-        //printf(" W\n");
+		D *=1.0 /((real) horizon);
+		
+		// Apply the gradient direction
+        //printf(" D:\n");
+		//D.print(stdout);
         Delta = 0;
         for (int i=0; i<n_states; i++) {
             Vector* Theta = policy->getActionProbabilitiesPtr(i);
@@ -311,8 +311,8 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
             for (int a=0; a<n_actions; a++) {
                 real new_value = (*Theta)(a) + step_size * (D(i, a) - fudge);
 
-                if (new_value < 0) {
-                    new_value = 0;
+                if (new_value < 1e-6) {
+                    new_value = 1e-6;
                 }
                 if (new_value > 1) {
                     new_value = 1;
@@ -335,9 +335,11 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 				U += starting(i) * evaluation.getValue(i);
 			}
 			printf ("%f %f %d # Utility\n", U, Delta, iter);
-			policy->Show();
+			//policy->Show();
 		}
 	}
+	policy->Show();
+
 }
 
 
