@@ -276,8 +276,8 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		}
 		
 		// apply a gradient step - depends on policy structure
+		Matrix D(n_states, n_actions);
 		for (int t=0; t<horizon; t++) {
-			Matrix D(n_states, n_actions);
 			Vector* Theta  = policy->getActionProbabilitiesPtr(states[t]);
 			real S = (*Theta).Sum();
 			for (int a=0; a<n_actions; ++a) {
