@@ -10,6 +10,8 @@
  *                                                                         *
  ***************************************************************************/
 
+//#define _LIBCPP_DEBUG_LEVEL 1
+
 #include "PolicyGradient.h"
 #include "real.h"
 #include "MathFunctions.h"
@@ -122,7 +124,7 @@ void PolicyGradient::ModelBasedGradient(real threshold, int max_iter)
         for (int i=0; i<n_states; i++) {
             U += starting(i) * evaluation.getValue(i);
         }
-        printf ("%f %f %d # Utility\n", U, Delta, iter);
+        //printf ("%f %f %d # Utility\n", U, Delta, iter);
         if (Delta < threshold && iter > 0) {
             policy_stable = true;
         }
@@ -230,6 +232,8 @@ void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int ma
             U += starting(i) * evaluation.getValue(i);
         }
         printf ("%f %f %d # Utility\n", U, Delta, iter);
+		policy->Show();
+
         if (Delta < threshold && iter > 0) {
             policy_stable = true;
         }
@@ -253,8 +257,8 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 {
 	MultinomialDistribution starting_state_distribution(starting);
 	GeometricDistribution horizon_distribution(1 - gamma);
-	real eta = 0.5; ///< step size
-	for (int i=0; i<max_iter; ++i) {
+
+	for (int iter=0; iter<max_iter; ++iter) {
 		// Get a sample trajectory
 		int state = starting_state_distribution.generateInt();
 		int horizon = 1 + horizon_distribution.generate(); // use this for unbiased samples
@@ -264,27 +268,43 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		policy->Reset(state);
 		for (int t=0; t<horizon; t++) {
             int action = policy->SelectAction();
-			states[i] = state;
-			actions[i] = action;
+			states[t] = state;
+			actions[t] = action;
 			real reward = mdp->generateReward(state, action);
 			state = mdp->generateState(state, action);
 			utility += reward;
 		}
+		
 		// apply a gradient step - depends on policy structure
 		for (int t=0; t<horizon; t++) {
 			Vector* Theta  = policy->getActionProbabilitiesPtr(states[t]);
 			real S = (*Theta).Sum();
 			for (int a=0; a<n_actions; ++a) {
+				real d = utility / (*Theta)(actions[t]);
 				if (a==actions[t]) {
-					(*Theta)(a) += eta * (S - (*Theta)(a)) / (S*S);
+					d *= (S - (*Theta)(a)) / (S*S);
 				} else {
-					(*Theta)(a) += eta * (*Theta)(a) / (S*S);
+					d *= (*Theta)(a) / (S*S);
 				}
+				Delta += fabs(d);
+				//printf("%f %f # D\n", d, Delta);
+				(*Theta)(a) += step_size * d;
 			}
+			//Theta->print(stdout);
 			(*Theta) /= (*Theta).Sum();
+			//Theta->print(stdout);
 		}
-	}	
-   
+		if (1) // evaluate
+		{
+			evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
+			real U = 0;
+			for (int i=0; i<n_states; i++) {
+				U += starting(i) * evaluation.getValue(i);
+			}
+			printf ("%f %f %d # Utility\n", U, Delta, iter);
+			policy->Show();
+		}
+	}
 }
 
 
