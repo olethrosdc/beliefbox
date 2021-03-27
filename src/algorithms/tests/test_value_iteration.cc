@@ -45,9 +45,9 @@ int main (int argc, char** argv)
 #endif
     
     DiscreteChain chain(5);
-    const DiscreteMDP* mdp = chain.getMDP();
+    //const DiscreteMDP* mdp = chain.getMDP();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
-    //const DiscreteMDP* mdp = grid_world.getMDP();
+    const DiscreteMDP* mdp = grid_world.getMDP();
     //const DiscreteMDP* mdp = random_mdp.getMDP();
     
 
@@ -56,7 +56,7 @@ int main (int argc, char** argv)
     int n_actions = mdp->getNActions();
     int n_iterations = 1000; 
     real accuracy = 0;
-
+	real step_size = 0.001;
 	printf("%d args\n", argc);
     if (argc > 1) {
         n_iterations = atoi(argv[1]);
@@ -64,8 +64,11 @@ int main (int argc, char** argv)
     if (argc > 2) {
         accuracy = atof(argv[2]);
     }
+	if (argc > 3) {
+		step_size = atof(argv[3]);
+	}
 
-    printf ("Usage: test_value_iteration [n_iter [accuracy]]\n");
+    printf ("Usage: test_value_iteration [n_iter [accuracy [step size]]]\n");
 	printf("%d states, %d actions\n", n_states, n_actions);    
 	printf("gamma: %f, iterations: %d, accuracy: %f\n",
 		   gamma,
@@ -140,12 +143,12 @@ int main (int argc, char** argv)
 				end_time - start_time,
 				U / (real) n_states);
         delete policy;
+		fflush (stdout);
     }
 
     
     if (test_gradient && 0)
     {
-        real step_size = 0.1;
         PolicyGradient policy_gradient(mdp, gamma, step_size);
         double start_time = GetCPU();
         policy_gradient.ModelBasedGradient(accuracy, n_iterations);
@@ -164,11 +167,11 @@ int main (int argc, char** argv)
         //printf (" %.1f ", policy_gradient.getValue(s));
          }
         printf ("%d %f %f # Model Based Policy Gradient time util\n", n_iterations, end_time - start_time, U / (real) n_states);
+		fflush (stdout);
     }
 
 	if (test_gradient && 0)
     {
-        real step_size = 0.1;
         PolicyGradient policy_gradient(mdp, gamma, step_size);
         double start_time = GetCPU();
         policy_gradient.ModelBasedGradientFeatureExpectation(accuracy, n_iterations);
@@ -186,17 +189,18 @@ int main (int argc, char** argv)
         //printf (" %.1f ", policy_gradient.getValue(s));
         }
         printf ("%d %f %f # Exact Feature Expectation Policy Gradient time util\n", n_iterations, end_time - start_time, U / (real) n_states);
+				fflush (stdout);
     }
 
 
 	if (test_gradient)
     {
-        real step_size = 0.01;
         PolicyGradient policy_gradient(mdp, gamma, step_size);
         double start_time = GetCPU();
         policy_gradient.TrajectoryGradient(accuracy, n_iterations);
         double end_time = GetCPU();
         FixedDiscretePolicy* policy = policy_gradient.getPolicy();
+		PolicyEvaluation evaluation(policy, mdp, gamma); 
         for (int s=0; s<n_states; ++s) {
             Vector* pi = policy->getActionProbabilitiesPtr(s);
             int a = ArgMax(pi);
@@ -209,6 +213,7 @@ int main (int argc, char** argv)
         //printf (" %.1f ", policy_gradient.getValue(s));
         }
         printf ("%d %f %f # Trajectory Policy Gradient time util\n", n_iterations, end_time - start_time, U / (real) n_states);
+		fflush (stdout);
     }
 
 

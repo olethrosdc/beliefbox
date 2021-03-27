@@ -231,8 +231,8 @@ void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int ma
         for (int i=0; i<n_states; i++) {
             U += starting(i) * evaluation.getValue(i);
         }
-        printf ("%f %f %d # Utility\n", U, Delta, iter);
-		policy->Show();
+        //printf ("%f %f %d # Utility\n", U, Delta, iter);
+		//policy->Show();
 
         if (Delta < threshold && iter > 0) {
             policy_stable = true;
@@ -248,6 +248,7 @@ void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int ma
 }
 
 
+#define SOFTMAX_POLICY
 /** Sample trajectories from the model to compute gradients. 
  *
  * This has the advantage that the Markov property is not required.
@@ -258,6 +259,14 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 	MultinomialDistribution starting_state_distribution(starting);
 	GeometricDistribution horizon_distribution(1 - gamma);
 
+	// randomly initialise the parameter matrix
+	Matrix params(n_states, n_actions); ///< parameters
+	for (int s=0; s<n_states; ++s) {
+		for (int a=0; a<n_actions; ++a) {
+			params(s,a) = urandom(-0.5,0.5);
+		}
+	}
+		
 	for (int iter=0; iter<max_iter; ++iter) {
 		// Get a sample trajectory
 		int state = starting_state_distribution.generateInt();
@@ -278,15 +287,29 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		// calculate the gradient direction
 		Matrix D(n_states, n_actions);
 		for (int t=0; t<horizon; t++) {
-			Vector* Theta  = policy->getActionProbabilitiesPtr(states[t]);
-			real S = (*Theta).Sum();
+#ifdef SOFTMAX_POLICY
+			Vector eW = exp(params.getRow(states[t]));
+			real S = eW.Sum();
+#endif
+			//real S = (*Theta).Sum();
 			for (int a=0; a<n_actions; ++a) {
-				real d_sa = utility / (*Theta)(actions[t]);
+				real d_sa = utility / policy->getActionProbability(states[t], actions[t]);
+#ifdef LINEAR_POLICY
+				// linear
 				if (a==actions[t]) {
 					d_sa *= 1; //(S - (*Theta)(a)) / (S*S);
 				} else {
 					d_sa *= 0; //- (*Theta)(a) / (S*S);
 				}
+#endif
+#ifdef SOFTMAX_POLICY
+				// softmax
+				if (a==actions[t]) {
+					d_sa *= eW(a)*(S - eW(a)) / (S*S);
+				} else {
+					d_sa *= eW(a)*eW(actions[t]) / (S*S);
+				}
+#endif				
 				//printf("%f (%d %d)\n", d_sa, states[t], a);
 				Delta += fabs(d_sa);
 				D(states[t], a) += d_sa;
@@ -294,38 +317,13 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		}
 		D *=1.0 /((real) horizon);
 		
-		// Apply the gradient direction
-        //printf(" D:\n");
-		//D.print(stdout);
-        Delta = 0;
-        for (int i=0; i<n_states; i++) {
-            Vector* Theta = policy->getActionProbabilitiesPtr(i);
-            //Theta->print(stdout);
-            real s = 0;
-			for (int a=0; a<n_actions; a++) {
-                s += D(i, a);
-			}
-			// The sum of all these should be zero ideally
-			real fudge = s / (real) n_actions;;
-			s = 0;
-            for (int a=0; a<n_actions; a++) {
-                real new_value = (*Theta)(a) + step_size * (D(i, a) - fudge);
-
-                if (new_value < 1e-6) {
-                    new_value = 1e-6;
-                }
-                if (new_value > 1) {
-                    new_value = 1;
-                }
-                s += new_value;
-                Delta += fabs((*Theta)(a) - new_value);
-                (*Theta)(a) = new_value;
-            }
-            //printf (" -- %f\n", s);
-            (*Theta) /= s;
-            //Theta->print(stdout);
-        }
-
+		params += step_size * D;
+		for (int s=0; s<n_states; ++s) {
+			Vector* pS = policy->getActionProbabilitiesPtr(s);
+			Vector eW = exp(params.getRow(s));
+			real S = eW.Sum();
+			(*pS) = eW / S;
+		}
 		
 		if (1) // evaluate
 		{
@@ -339,7 +337,6 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		}
 	}
 	policy->Show();
-
 }
 
 

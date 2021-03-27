@@ -36,6 +36,13 @@ public:
         Serror("Not implented\n");
         exit(-1);
     }
+	/// Update with gradient
+	///
+	/// TODO: Refactor PolicyGrdient.cc to use this function?
+	virtual void GradientUpdate()
+	{
+	}
+	
 };
 
 
