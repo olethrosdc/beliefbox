@@ -146,7 +146,7 @@ void PolicyGradient::ModelBasedGradient(real threshold, int max_iter)
 
 	The computations here should be equivalent to the once in the other model-based gradient. However, they are inherently more complex, and convergence might be slower.
 
- */
+*/
 void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int max_iter)
 {
     bool policy_stable = true;
@@ -266,75 +266,77 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 			params(s,a) = urandom(-0.5,0.5);
 		}
 	}
-		
+
+	int n_samples = 100;
 	for (int iter=0; iter<max_iter; ++iter) {
-		// Get a sample trajectory
-		int state = starting_state_distribution.generateInt();
-		int horizon = 1 + horizon_distribution.generate(); // use this for unbiased samples
-		std::vector<int> states(horizon);
-		std::vector<int> actions(horizon);
-		real utility = 0;
-		policy->Reset(state);
-		for (int t=0; t<horizon; t++) {
-            int action = policy->SelectAction();
-			states[t] = state;
-			actions[t] = action;
-			real reward = mdp->generateReward(state, action);
-			state = mdp->generateState(state, action);
-			utility += reward;
-		}
+		for (int sample=0; sample<n_samples; ++sample) {
+			// Get a sample trajectory
+			int state = starting_state_distribution.generateInt();
+			int horizon = 1 + horizon_distribution.generate(); // use this for unbiased samples
+			std::vector<int> states(horizon);
+			std::vector<int> actions(horizon);
+			real utility = 0;
+			policy->Reset(state);
+			for (int t=0; t<horizon; t++) {
+				int action = policy->SelectAction();
+				states[t] = state;
+				actions[t] = action;
+				real reward = mdp->generateReward(state, action);
+				state = mdp->generateState(state, action);
+				utility += reward;
+			}
 		
-		// calculate the gradient direction
-		Matrix D(n_states, n_actions);
-		for (int t=0; t<horizon; t++) {
+			// calculate the gradient direction
+			Matrix D(n_states, n_actions);
+			for (int t=0; t<horizon; t++) {
 #ifdef SOFTMAX_POLICY
-			Vector eW = exp(params.getRow(states[t]));
-			real S = eW.Sum();
+				Vector eW = exp(params.getRow(states[t]));
+				real S = eW.Sum();
 #endif
-			//real S = (*Theta).Sum();
-			for (int a=0; a<n_actions; ++a) {
-				real d_sa = utility / policy->getActionProbability(states[t], actions[t]);
+				//real S = (*Theta).Sum();
+				for (int a=0; a<n_actions; ++a) {
+					real d_sa = utility / policy->getActionProbability(states[t], actions[t]);
 #ifdef LINEAR_POLICY
-				// linear
-				if (a==actions[t]) {
-					d_sa *= 1; //(S - (*Theta)(a)) / (S*S);
-				} else {
-					d_sa *= 0; //- (*Theta)(a) / (S*S);
-				}
+					// linear
+					if (a==actions[t]) {
+						d_sa *= 1; //(S - (*Theta)(a)) / (S*S);
+					} else {
+						d_sa *= 0; //- (*Theta)(a) / (S*S);
+					}
 #endif
 #ifdef SOFTMAX_POLICY
-				// softmax
-				if (a==actions[t]) {
-					d_sa *= eW(a)*(S - eW(a)) / (S*S);
-				} else {
-					d_sa *= eW(a)*eW(actions[t]) / (S*S);
-				}
+					// softmax
+					if (a==actions[t]) {
+						d_sa *= eW(a)*(S - eW(a)) / (S*S);
+					} else {
+						d_sa *= eW(a)*eW(actions[t]) / (S*S);
+					}
 #endif				
-				//printf("%f (%d %d)\n", d_sa, states[t], a);
-				Delta += fabs(d_sa);
-				D(states[t], a) += d_sa;
+					//printf("%f (%d %d)\n", d_sa, states[t], a);
+					Delta += fabs(d_sa);
+					D(states[t], a) += d_sa;
+				}
+			}
+			D *=1.0 /((real) horizon);
+		
+			params += step_size * D;
+			for (int s=0; s<n_states; ++s) {
+				Vector* pS = policy->getActionProbabilitiesPtr(s);
+				Vector eW = exp(params.getRow(s));
+				real S = eW.Sum();
+				(*pS) = eW / S;
 			}
 		}
-		D *=1.0 /((real) horizon);
-		
-		params += step_size * D;
-		for (int s=0; s<n_states; ++s) {
-			Vector* pS = policy->getActionProbabilitiesPtr(s);
-			Vector eW = exp(params.getRow(s));
-			real S = eW.Sum();
-			(*pS) = eW / S;
-		}
-		
 		if (1) // evaluate
-		{
-			evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
-			real U = 0;
-			for (int i=0; i<n_states; i++) {
-				U += starting(i) * evaluation.getValue(i);
+			{
+				evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
+				real U = 0;
+				for (int i=0; i<n_states; i++) {
+					U += starting(i) * evaluation.getValue(i);
+				}
+				printf ("%f %f %d # Utility\n", U, Delta, iter);
+				//policy->Show();
 			}
-			printf ("%f %f %d # Utility\n", U, Delta, iter);
-			//policy->Show();
-		}
 	}
 	policy->Show();
 }
