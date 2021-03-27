@@ -267,8 +267,9 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		}
 	}
 
-	int n_samples = 100;
+	int n_samples = 1000;
 	for (int iter=0; iter<max_iter; ++iter) {
+		real Delta = 0;
 		for (int sample=0; sample<n_samples; ++sample) {
 			// Get a sample trajectory
 			int state = starting_state_distribution.generateInt();
@@ -309,16 +310,16 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 			// update parameters
 			D *=1.0 /((real) horizon);
 			params += step_size * D;
-			printf("---D---\n");
-			D.print(stdout);
-
-			printf("eW\n");
+			//printf("---D---\n");
+			//D.print(stdout);
+		
+			//printf("eW\n");
 			// create policy from parameters
 			for (int s=0; s<n_states; ++s) {
 				Vector* pS = policy->getActionProbabilitiesPtr(s);
 				Vector eW = exp(params.getRow(s));
 				eW /= eW.Sum();
-				eW.print(stdout);
+				//eW.print(stdout);
 				(*pS) = eW;
 			}
 		}
@@ -330,7 +331,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 					U += starting(i) * evaluation.getValue(i);
 				}
 				printf ("%f %f %d # Utility\n", U, Delta, iter);
-				policy->Show();
+				//policy->Show();
 			}
 	}
 	policy->Show();
