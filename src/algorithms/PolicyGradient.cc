@@ -312,32 +312,33 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 			//D *=1.0 /((real) horizon);
 
 		}
-		printf("---D--- %d/%d---\n", iter, max_iter); D.print(stdout);
-		printf("--- params ----\n"); params.print(stdout);			
+		// -- debugging --
+		//printf("---D--- %d/%d---\n", iter, max_iter); D.print(stdout);
+		//printf("--- params ----\n"); params.print(stdout);			
+		// -- end debugging --
 		
+		// update parameters
 		Delta = D.L2Norm() / (real) n_samples;
-			
-		//printf("---D---\n");
-		//D.print(stdout);
-		params += step_size * (D- fudge) / (real) n_samples;
-		
+		params += step_size * (D- fudge) / (real) n_samples;		
 		//printf("eW\n");
-		// update policy from parameters
+
+		// normalise and scale down parameters slightly
 		for (int s=0; s<n_states; ++s) {
 			real max = Max(params.getRow(s));
 			for (int a=0; a<n_actions; ++a) {
 				params(s,a) -= max;
 			}
 		}
+		params*=0.999;
+
+		// update policy from parameters
 		for (int s=0; s<n_states; ++s) {
-			
 			Vector eW = exp(params.getRow(s));
-			
 			eW /= eW.Sum();
-			//eW.print(stdout);
 			Vector* pS = policy->getActionProbabilitiesPtr(s);
 			(*pS) = eW;
 		}
+		// calculate an evaluation of the policy
 		if (1) // evaluate
 			{
 				evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
@@ -346,7 +347,6 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 					U += starting(i) * evaluation.getValue(i);
 				}
 				printf ("%f %f %d # Utility\n", U, Delta, iter);
-				//policy->Show();
 			}
 	}
 	policy->Show();

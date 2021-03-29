@@ -46,10 +46,10 @@ int main (int argc, char** argv)
     
 
     //const DiscreteMDP* mdp = chain.getMDP();
-    //const DiscreteMDP* mdp = inventory_management.getMDP();
+    const DiscreteMDP* mdp = inventory_management.getMDP();
     //const DiscreteMDP* mdp = grid_world.getMDP();
-    const DiscreteMDP* mdp = random_mdp.getMDP();
-    
+    //const DiscreteMDP* mdp = random_mdp.getMDP();
+	
 
     real gamma = 0.95;    
     int n_states = mdp->getNStates();
@@ -57,6 +57,7 @@ int main (int argc, char** argv)
     int n_iterations = 1000; 
     real accuracy = 0;
 	real step_size = 0.001;
+	int n_samples = 1;
 	printf("%d args\n", argc);
     if (argc > 1) {
         n_iterations = atoi(argv[1]);
@@ -67,13 +68,18 @@ int main (int argc, char** argv)
 	if (argc > 3) {
 		step_size = atof(argv[3]);
 	}
+	if (argc > 4) {
+		n_samples = atoi(argv[4]);
+	}
 
-    printf ("Usage: test_value_iteration [n_iter [accuracy [step size]]]\n");
+
+    printf ("Usage: test_value_iteration [n_iter [accuracy [step size [samples]]]]\n");
 	printf("%d states, %d actions\n", n_states, n_actions);    
-	printf("gamma: %f, iterations: %d, accuracy: %f\n",
+	printf("gamma: %f, iterations: %d, accuracy: %f, samples: %d\n",
 		   gamma,
 		   n_iterations,
-		   accuracy);
+		   accuracy,
+		   n_samples);
     bool test_synchronous = true;
     bool test_asynchronous = true;
     bool test_elimination = false;
@@ -197,7 +203,7 @@ int main (int argc, char** argv)
     {
         PolicyGradient policy_gradient(mdp, gamma, step_size);
         double start_time = GetCPU();
-        policy_gradient.TrajectoryGradient(accuracy, n_iterations);
+        policy_gradient.TrajectoryGradient(accuracy, n_iterations, n_samples);
         double end_time = GetCPU();
         FixedDiscretePolicy* policy = policy_gradient.getPolicy();
 		PolicyEvaluation evaluation(policy, mdp, gamma); 
