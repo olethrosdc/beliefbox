@@ -290,15 +290,15 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 				state = mdp->generateState(state, action);
 				utility += reward;
 			}
-			fudge += utility;
+			//fudge += utility;
 			// calculate the gradient direction
 			for (int t=0; t<horizon; t++) {
 				Vector eW = exp(params.getRow(states[t]));
 				real S = eW.Sum();
+				real d_sa = utility / policy->getActionProbability(states[t], actions[t]);
 				//real S = (*Theta).Sum();
+				// softmax - straight-up implementation
 				for (int a=0; a<n_actions; ++a) {
-					real d_sa = utility / policy->getActionProbability(states[t], actions[t]);
-					// softmax
 					if (a==actions[t]) {
 						d_sa *= eW(a)*(S - eW(a)) / (S*S);
 					} else {
@@ -307,6 +307,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 					//printf("%f (%d %d)\n", d_sa, states[t], a);
 					D(states[t], a) += d_sa;
 				}
+
 			}
 			// update parameters after multiple trajectory samples
 			//D *=1.0 /((real) horizon);
@@ -319,7 +320,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 		
 		// update parameters
 		Delta = D.L2Norm() / (real) n_samples;
-		params += step_size * (D- fudge) / (real) n_samples;		
+		params += step_size * (D- fudge) / (real) (n_samples + iter);		
 		//printf("eW\n");
 
 		// normalise and scale down parameters slightly
