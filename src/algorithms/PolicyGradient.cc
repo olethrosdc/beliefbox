@@ -254,7 +254,7 @@ void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int ma
  * Here \f$\nabla U(\pi, \mu) = \sum_h U(h) P_\mu^\pi(h) \sum_t \frac{\nabla \pi(a_t | h_t)}{\pi(a_t | h_t)}\f$.
  *  (possible bug with termination? but grid world MDP has no special terminal state behaviour: it just goes to an absorbing state)
  */
-void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
+void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samples)
 {
 	MultinomialDistribution starting_state_distribution(starting);
 	GeometricDistribution horizon_distribution(1 - gamma);
@@ -267,14 +267,13 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		}
 	}
 
-	int n_samples = 10000;
 	Matrix D(n_states, n_actions);
 	real Delta = 0;
 	for (int iter=0; iter<max_iter; ++iter) {
 		D.Clear();
 					
 		// number of samples before policy evaluation
-
+		real fudge = 0;
 		for (int sample=0; sample<n_samples; ++sample) {
 			// Get a sample trajectory
 			int state = starting_state_distribution.generateInt();
@@ -291,7 +290,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 				state = mdp->generateState(state, action);
 				utility += reward;
 			}
-		
+			fudge += utility;
 			// calculate the gradient direction
 			for (int t=0; t<horizon; t++) {
 				Vector eW = exp(params.getRow(states[t]));
@@ -316,18 +315,27 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		printf("---D--- %d/%d---\n", iter, max_iter); D.print(stdout);
 		printf("--- params ----\n"); params.print(stdout);			
 		
-		Delta = D.L2Norm();
+		Delta = D.L2Norm() / (real) n_samples;
 			
 		//printf("---D---\n");
 		//D.print(stdout);
-		params += step_size * D;
+		params += step_size * (D- fudge) / (real) n_samples;
+		
 		//printf("eW\n");
 		// update policy from parameters
 		for (int s=0; s<n_states; ++s) {
-			Vector* pS = policy->getActionProbabilitiesPtr(s);
+			real max = Max(params.getRow(s));
+			for (int a=0; a<n_actions; ++a) {
+				params(s,a) -= max;
+			}
+		}
+		for (int s=0; s<n_states; ++s) {
+			
 			Vector eW = exp(params.getRow(s));
+			
 			eW /= eW.Sum();
 			//eW.print(stdout);
+			Vector* pS = policy->getActionProbabilitiesPtr(s);
 			(*pS) = eW;
 		}
 		if (1) // evaluate
