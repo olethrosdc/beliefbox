@@ -100,7 +100,7 @@ public:
 	}
 	/// Act in the MDP.
 	/// If the action succeeds, generate a new state given the current state and action, then set the current state to be the new state, and return true.
-	/// Return false if the action failed
+	/// Return false if the action failed. This occurs also when the MDP is in a terminal state when applicable.
 	bool Act (int a)
 	{
 		if (state>=0 && state<n_states && a>=0 && a<n_actions) {

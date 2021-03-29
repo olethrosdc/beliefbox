@@ -252,6 +252,7 @@ void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int ma
  *
  * This has the advantage that the Markov property is not required.
  * Here \f$\nabla U(\pi, \mu) = \sum_h U(h) P_\mu^\pi(h) \sum_t \frac{\nabla \pi(a_t | h_t)}{\pi(a_t | h_t)}\f$.
+ *  (possible bug with termination? but grid world MDP has no special terminal state behaviour: it just goes to an absorbing state)
  */
 void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 {
@@ -273,7 +274,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		D.Clear();
 					
 		// number of samples before policy evaluation
-		// possible bug with termination
+
 		for (int sample=0; sample<n_samples; ++sample) {
 			// Get a sample trajectory
 			int state = starting_state_distribution.generateInt();
