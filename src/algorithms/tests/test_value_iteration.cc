@@ -47,8 +47,8 @@ int main (int argc, char** argv)
 
     //const DiscreteMDP* mdp = chain.getMDP();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
-    const DiscreteMDP* mdp = grid_world.getMDP();
-    //const DiscreteMDP* mdp = random_mdp.getMDP();
+    //const DiscreteMDP* mdp = grid_world.getMDP();
+    const DiscreteMDP* mdp = random_mdp.getMDP();
     
 
     real gamma = 0.95;    

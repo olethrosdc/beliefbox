@@ -248,7 +248,6 @@ void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int ma
 }
 
 
-#define SOFTMAX_POLICY
 /** Sample trajectories from the model to compute gradients. 
  *
  * This has the advantage that the Markov property is not required.
@@ -267,13 +266,18 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 		}
 	}
 
-	int n_samples = 1000;
+	int n_samples = 10000;
+	Matrix D(n_states, n_actions);
+	real Delta = 0;
 	for (int iter=0; iter<max_iter; ++iter) {
-		real Delta = 0;
+		D.Clear();
+					
+		// number of samples before policy evaluation
+		// possible bug with termination
 		for (int sample=0; sample<n_samples; ++sample) {
 			// Get a sample trajectory
 			int state = starting_state_distribution.generateInt();
-			int horizon = 1 + horizon_distribution.generate(); // use this for unbiased samples
+			int horizon = 1.0f + 1.0f/(1 - gamma); horizon_distribution.generate(); // use this for unbiased samples
 			std::vector<int> states(horizon);
 			std::vector<int> actions(horizon);
 			real utility = 0;
@@ -288,7 +292,6 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 			}
 		
 			// calculate the gradient direction
-			Matrix D(n_states, n_actions);
 			for (int t=0; t<horizon; t++) {
 				Vector eW = exp(params.getRow(states[t]));
 				real S = eW.Sum();
@@ -302,26 +305,29 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter)
 						d_sa *= - eW(a)*eW(actions[t]) / (S*S);
 					}
 					//printf("%f (%d %d)\n", d_sa, states[t], a);
-					Delta += fabs(d_sa);
 					D(states[t], a) += d_sa;
 				}
 			}
+			// update parameters after multiple trajectory samples
+			//D *=1.0 /((real) horizon);
 
-			// update parameters
-			D *=1.0 /((real) horizon);
-			params += step_size * D;
-			//printf("---D---\n");
-			//D.print(stdout);
+		}
+		printf("---D--- %d/%d---\n", iter, max_iter); D.print(stdout);
+		printf("--- params ----\n"); params.print(stdout);			
 		
-			//printf("eW\n");
-			// create policy from parameters
-			for (int s=0; s<n_states; ++s) {
-				Vector* pS = policy->getActionProbabilitiesPtr(s);
-				Vector eW = exp(params.getRow(s));
-				eW /= eW.Sum();
-				//eW.print(stdout);
-				(*pS) = eW;
-			}
+		Delta = D.L2Norm();
+			
+		//printf("---D---\n");
+		//D.print(stdout);
+		params += step_size * D;
+		//printf("eW\n");
+		// update policy from parameters
+		for (int s=0; s<n_states; ++s) {
+			Vector* pS = policy->getActionProbabilitiesPtr(s);
+			Vector eW = exp(params.getRow(s));
+			eW /= eW.Sum();
+			//eW.print(stdout);
+			(*pS) = eW;
 		}
 		if (1) // evaluate
 			{
