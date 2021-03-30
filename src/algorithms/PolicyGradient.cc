@@ -250,11 +250,140 @@ void PolicyGradient::ModelBasedGradientFeatureExpectation(real threshold, int ma
 
 /** Sample trajectories from the model to compute gradients. 
  *
- * This has the advantage that the Markov property is not required.
+ * This has the advantage that the Markov property is not required, but convergence is worse.
  * Here \f$\nabla U(\pi, \mu) = \sum_h U(h) P_\mu^\pi(h) \sum_t \frac{\nabla \pi(a_t | h_t)}{\pi(a_t | h_t)}\f$.
- *  (possible bug with termination? but grid world MDP has no special terminal state behaviour: it just goes to an absorbing state)
  */
 void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samples)
+{
+	MultinomialDistribution starting_state_distribution(starting);
+	GeometricDistribution horizon_distribution(1 - gamma);
+
+	// randomly initialise the parameter matrix
+	Matrix params(n_states, n_actions); ///< parameters
+	for (int s=0; s<n_states; ++s) {
+		for (int a=0; a<n_actions; ++a) {
+			params(s,a) = urandom(-0.5,0.5);
+		}
+	}
+
+	Matrix D(n_states, n_actions);
+	real Delta = 0;
+	for (int iter=0; iter<max_iter; ++iter) {
+		D.Clear();
+					
+		// number of samples before policy evaluation
+		real fudge = 0;
+		for (int sample=0; sample<n_samples; ++sample) {
+			// Get a sample trajectory
+			int state = starting_state_distribution.generateInt();
+			int horizon = 1.0f + 1.0f/(1 - gamma); horizon_distribution.generate(); // use this for unbiased samples
+			std::vector<int> states(horizon);
+			std::vector<int> actions(horizon);
+			real utility = 0;
+			policy->Reset(state);
+			for (int t=0; t<horizon; t++) {
+				int action = policy->SelectAction();
+				states[t] = state;
+				actions[t] = action;
+				real reward = mdp->generateReward(state, action);
+				state = mdp->generateState(state, action);
+				utility += reward;
+			}
+			//fudge += utility;
+			// calculate the gradient direction
+#if 0
+			// naive calculation
+			for (int t=0; t<horizon; t++) {
+				Vector eW = exp(params.getRow(states[t]));
+				real S = eW.Sum();
+				real d_sa = utility / policy->getActionProbability(states[t], actions[t]);
+				//real S = (*Theta).Sum();
+				// softmax - straight-up implementation
+				for (int a=0; a<n_actions; ++a) {
+					if (a==actions[t]) {
+						d_sa *= eW(a)*(S - eW(a)) / (S*S);
+					} else {
+						d_sa *= - eW(a)*eW(actions[t]) / (S*S);
+					}
+					//printf("%f (%d %d)\n", d_sa, states[t], a);
+					D(states[t], a) += d_sa;
+				}
+			}
+#else
+			// use the softmax policy property to avoid dividing by small values
+			for (int t=0; t<horizon; t++) {
+				Vector eW = exp(params.getRow(states[t]));
+				real S = eW.Sum();
+				real d_sa = utility;
+				//real S = (*Theta).Sum();
+				// softmax - straight-up implementation
+				for (int a=0; a<n_actions; ++a) {
+					real p_a = policy->getActionProbability(states[t], a);
+					if (a==actions[t]) {
+						d_sa *= 1 - p_a;
+					} else {
+						d_sa *= - p_a;
+					}
+					//printf("%f (%d %d)\n", d_sa, states[t], a);
+					D(states[t], a) += d_sa;
+				}
+
+			}
+#endif
+
+			
+			// update parameters after multiple trajectory samples
+			//D *=1.0 /((real) horizon);
+
+		}
+		// -- debugging --
+		//printf("---D--- %d/%d---\n", iter, max_iter); D.print(stdout);
+		//printf("--- params ----\n"); params.print(stdout);			
+		// -- end debugging --
+		
+		// update parameters
+		Delta = D.L2Norm() / (real) n_samples;
+		params += step_size * (D- fudge) / (real) (n_samples + iter);		
+		//printf("eW\n");
+
+		// normalise and scale down parameters slightly
+		for (int s=0; s<n_states; ++s) {
+			real max = Max(params.getRow(s));
+			for (int a=0; a<n_actions; ++a) {
+				params(s,a) -= max;
+			}
+		}
+		params*=0.999;
+
+		// update policy from parameters
+		for (int s=0; s<n_states; ++s) {
+			Vector eW = exp(params.getRow(s));
+			eW /= eW.Sum();
+			Vector* pS = policy->getActionProbabilitiesPtr(s);
+			(*pS) = eW;
+		}
+		// calculate an evaluation of the policy
+		if (1) // evaluate
+			{
+				evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
+				real U = 0;
+				for (int i=0; i<n_states; i++) {
+					U += starting(i) * evaluation.getValue(i);
+				}
+				printf ("%f %f %d # Utility\n", U, Delta, iter);
+			}
+	}
+	policy->Show();
+}
+
+
+#if 0
+
+/** Sample trajectories from the model to compute gradients. 
+ *
+ * This has the advantage that the Markov property is not required. Here we update the gradient at every step.
+ */
+void PolicyGradient::OnlineTrajectoryGradient(real threshold, int max_iter, int n_samples)
 {
 	MultinomialDistribution starting_state_distribution(starting);
 	GeometricDistribution horizon_distribution(1 - gamma);
@@ -354,5 +483,4 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 }
 
 
-
-
+#endif

@@ -81,7 +81,7 @@ int main (int argc, char** argv)
 		   accuracy,
 		   n_samples);
     bool test_synchronous = true;
-    bool test_asynchronous = true;
+    bool test_asynchronous = false;
     bool test_elimination = false;
     bool test_gradient = true;
 
