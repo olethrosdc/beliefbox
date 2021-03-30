@@ -40,7 +40,7 @@ int main (int argc, char** argv)
     InventoryManagement inventory_management (period, max_items, demand, margin);
     Gridworld grid_world("/home/olethros/projects/beliefbox/dat/maze1", random, pit, goal, step);
     RandomMDP random_mdp(32, 32, 0.001, 0.1, 0, 1, &rng, false);
-    DiscreteChain chain(5, 0.2, 0, 1);
+    DiscreteChain chain(5, 0.2, 0.2, 1);
 
 #endif
     

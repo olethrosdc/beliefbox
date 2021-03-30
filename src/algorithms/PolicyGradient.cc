@@ -10,7 +10,7 @@
  *                                                                         *
  ***************************************************************************/
 
-//#define _LIBCPP_DEBUG_LEVEL 1
+#define _DEBUG_GRADIENT_LEVEL 100
 
 #include "PolicyGradient.h"
 #include "real.h"
@@ -258,6 +258,11 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 	MultinomialDistribution starting_state_distribution(starting);
 	GeometricDistribution horizon_distribution(1 - gamma);
 
+
+
+	bool use_remaining_return = false; 	//< Instead of using U(h), use U(h_{t:T}) for each action.
+	bool fast_softmax = true; //< use the fast softmax calculation
+	
 	// randomly initialise the parameter matrix
 	Matrix params(n_states, n_actions); ///< parameters
 	for (int s=0; s<n_states; ++s) {
@@ -267,18 +272,22 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 	}
 
 	Matrix D(n_states, n_actions);
+	Matrix D2(n_states, n_actions);
 	real Delta = 0;
 	for (int iter=0; iter<max_iter; ++iter) {
 		D.Clear();
+		D2.Clear();
 					
 		// number of samples before policy evaluation
 		real fudge = 0;
 		for (int sample=0; sample<n_samples; ++sample) {
 			// Get a sample trajectory
 			int state = starting_state_distribution.generateInt();
-			int horizon = 1.0f + 1.0f/(1 - gamma); horizon_distribution.generate(); // use this for unbiased samples
+			//int horizon = 1.0f + 1.0f/(1 - gamma); // use this for fixed horizon, but make sure to discount rewards!
+			int horizon = horizon_distribution.generate(); // use this for unbiased samples
 			std::vector<int> states(horizon);
 			std::vector<int> actions(horizon);
+			std::vector<real> rewards(horizon);
 			real utility = 0;
 			policy->Reset(state);
 			for (int t=0; t<horizon; t++) {
@@ -286,64 +295,68 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 				states[t] = state;
 				actions[t] = action;
 				real reward = mdp->generateReward(state, action);
+				rewards[t] = reward;
 				state = mdp->generateState(state, action);
 				utility += reward;
 			}
 			//fudge += utility;
 			// calculate the gradient direction
-#if 0
-			// naive calculation
-			for (int t=0; t<horizon; t++) {
-				Vector eW = exp(params.getRow(states[t]));
-				real S = eW.Sum();
-				real d_sa = utility / policy->getActionProbability(states[t], actions[t]);
-				// softmax - straight-up implementation
-				for (int a=0; a<n_actions; ++a) {
-					if (a==actions[t]) {
-						d_sa *= eW(a)*(S - eW(a)) / (S*S);
-					} else {
-						d_sa *= - eW(a)*eW(actions[t]) / (S*S);
-					}
-					//printf("%f (%d %d)\n", d_sa, states[t], a);
-					D(states[t], a) += d_sa;
-				}
-			}
-#else
-			// use the softmax policy property to avoid dividing by small values
-			// However, 
-			for (int t=0; t<horizon; t++) {
-				real d_sa = utility;
-				//real S = (*Theta).Sum();
-				for (int a=0; a<n_actions; ++a) {
-					real p_a = policy->getActionProbability(states[t], a);
-					if (a==actions[t]) {
-						d_sa *= 1 - p_a;
-					} else {
-						d_sa *= - p_a;
-					}
-					//printf("%f (%d %d)\n", d_sa, states[t], a);
-					D(states[t], a) += d_sa;
-				}
 
-			}
+			for (int t=0; t<horizon; t++) {
+				if (fast_softmax) {
+					// uses the property of the softmax to make a simpler gradient calculation
+					for (int a=0; a<n_actions; ++a) {
+						real d_sa = utility;
+						real p_a = policy->getActionProbability(states[t], a);
+						if (a==actions[t]) {
+							d_sa *= 1 - p_a;
+						} else {
+							d_sa *= - p_a;
+						}
+#if _DEBUG_GRADIENT_LEVEL > 90
+						printf("d:%f (s:%d a:%d r:%f u:%f)\n", d_sa, states[t], a, rewards[t], utility);
 #endif
+						D(states[t], a) += d_sa;
+					}
+				} else {
+					// naive calculation. Should be the same as the
+					// one calculating the log directly, but for some reason it's off by a scaling factor for the non-chosen actions.
+					Vector eW = exp(params.getRow(states[t]));
+					real S = eW.Sum();
+					real d_sa = utility / policy->getActionProbability(states[t], actions[t]);
+					// softmax - straight-up implementation
+					for (int a=0; a<n_actions; ++a) {
+						if (a==actions[t]) {
+							d_sa *= eW(a)*(S - eW(a)) / (S*S);
+						} else {
+							d_sa *= - eW(a)*eW(actions[t]) / (S*S);
+						}
+#if _DEBUG_GRADIENT_LEVEL > 90
+						printf("d:%f (s:%d a:%d r:%f u:%f)\n", d_sa, states[t], a, rewards[t], utility);
+#endif
+						D(states[t], a) += d_sa;
+					}
+				}
+				if (use_remaining_return) {
+					utility -= rewards[t];
+				}
+			}
 
-			
 			// update parameters after multiple trajectory samples
 			//D *=1.0 /((real) horizon);
 
 		}
-		// -- debugging --
+#if _DEBUG_GRADIENT_LEVEL > 0
 		printf("---D--- %d/%d---\n", iter, max_iter); D.print(stdout);
-		printf("--- params ----\n"); params.print(stdout);			
-		// -- end debugging --
-		
+		printf("--- params ----\n"); params.print(stdout);
+#endif
+
 		// update parameters
 		Delta = D.L2Norm() / (real) n_samples;
 		params += step_size * (D- fudge) / (real) (n_samples + iter);		
 		//printf("eW\n");
 
-#if 1
+#if 0
 		// normalise and scale down parameters slightly
 		for (int s=0; s<n_states; ++s) {
 			real max = Max(params.getRow(s));
