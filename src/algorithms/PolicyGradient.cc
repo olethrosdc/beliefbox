@@ -10,7 +10,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#define _DEBUG_GRADIENT_LEVEL 100
+#define _DEBUG_GRADIENT_LEVEL 1
 
 #include "PolicyGradient.h"
 #include "real.h"
@@ -446,7 +446,7 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 				// uses the property of the softmax to make a simpler gradient calculation
 				real Vs =  critic.getValue(states[t]);
 				for (int a=0; a<n_actions; ++a) {
-					real d_sa = critic.getValue(states[t], a) - Vs;
+					real d_sa = utility;//Vs;//critic.getValue(states[t], a) - Vs;
 					real p_a = policy->getActionProbability(states[t], a);
 					if (a==actions[t]) {
 						d_sa *= 1 - p_a;
@@ -470,7 +470,7 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 
 		// update parameters
 		Delta = D.L2Norm();
-		params += step_size * D / (real) (1 + iter);		
+		params += step_size * D; // (real) (1 + iter);		
 		//printf("eW\n");
 
 #if 0
