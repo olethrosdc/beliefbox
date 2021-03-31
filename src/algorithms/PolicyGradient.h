@@ -45,6 +45,7 @@ public:
     void ModelBasedGradient(real threshold, int max_iter=-1);
 	void ModelBasedGradientFeatureExpectation(real threshold, int max_iter=-1);
 	void TrajectoryGradient(real threshold, int max_iter, int n_samples = 1);
+	void TrajectoryGradientActorCritic(real threshold, int max_iter, int n_samples);
 
     inline real getValue (int state, int action)
     {

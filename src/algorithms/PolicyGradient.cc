@@ -18,6 +18,8 @@
 #include "Vector.h"
 #include "GeometricDistribution.h"
 #include "MultinomialDistribution.h"
+#include "Sarsa.h"
+#include "ExplorationPolicy.h"
 #include <cmath>
 #include <cassert>
 
@@ -396,7 +398,11 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
  */
 void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter, int n_samples)
 {
+	MultinomialDistribution starting_state_distribution(starting);
 	GeometricDistribution horizon_distribution(1 - gamma);
+	EpsilonGreedy e_greedy(n_actions, 0);
+	Sarsa critic(n_states, n_actions, gamma, 0.5, step_size, &e_greedy);
+	
 	// randomly initialise the parameter matrix
 	Matrix params(n_states, n_actions); ///< parameters
 	for (int s=0; s<n_states; ++s) {
@@ -416,13 +422,14 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 		real fudge = 0;
 		for (int sample=0; sample<n_samples; ++sample) {
 			// Get a sample trajectory
+			int state = starting_state_distribution.generateInt();
 			int horizon = horizon_distribution.generate(); // use this for unbiased samples
 			std::vector<int> states(horizon);
 			std::vector<int> actions(horizon);
 			std::vector<real> rewards(horizon);
 			real utility = 0;
-			mdp->Reset();
-			int state = MDP->getState();
+			critic.Reset();
+			//state = mdp->getState();
 			policy->Reset(state);
 			for (int t=0; t<horizon; t++) {
 				int action = policy->SelectAction();
@@ -430,6 +437,7 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 				actions[t] = action;
 				real reward = mdp->generateReward(state, action);
 				rewards[t] = reward;
+				critic.Observe(reward, state, action);
 				state = mdp->generateState(state, action);
 				utility += reward;
 			}
@@ -437,49 +445,23 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 			// calculate the gradient direction
 
 			for (int t=0; t<horizon; t++) {
-				if (fast_softmax) {
-					// uses the property of the softmax to make a simpler gradient calculation
-					for (int a=0; a<n_actions; ++a) {
-						real d_sa = utility;
-						real p_a = policy->getActionProbability(states[t], a);
-						if (a==actions[t]) {
-							d_sa *= 1 - p_a;
-						} else {
-							d_sa *= - p_a;
-						}
-#if _DEBUG_GRADIENT_LEVEL > 90
-						printf("d:%f (s:%d a:%d r:%f u:%f)\n", d_sa, states[t], a, rewards[t], utility);
-#endif
-						D(states[t], a) += d_sa;
+				// uses the property of the softmax to make a simpler gradient calculation
+				for (int a=0; a<n_actions; ++a) {
+					real d_sa = critic.getValue(states[t], a);
+					real p_a = policy->getActionProbability(states[t], a);
+					if (a==actions[t]) {
+						d_sa *= 1 - p_a;
+					} else {
+						d_sa *= - p_a;
 					}
-				} else {
-					// naive calculation. Should be the same as the
-					// one calculating the log directly, but for some reason it's off by a scaling factor for the non-chosen actions.
-					Vector eW = exp(params.getRow(states[t]));
-					real S = eW.Sum();
-					real d_sa = utility / policy->getActionProbability(states[t], actions[t]);
-					// softmax - straight-up implementation
-					for (int a=0; a<n_actions; ++a) {
-						if (a==actions[t]) {
-							d_sa *= eW(a)*(S - eW(a)) / (S*S);
-						} else {
-							d_sa *= - eW(a)*eW(actions[t]) / (S*S);
-						}
 #if _DEBUG_GRADIENT_LEVEL > 90
-						printf("d:%f (s:%d a:%d r:%f u:%f)\n", d_sa, states[t], a, rewards[t], utility);
+					printf("d:%f (s:%d a:%d r:%f u:%f)\n", d_sa, states[t], a, rewards[t], critic.getValue(states[t], a));
 #endif
-						D(states[t], a) += d_sa;
-					}
-				}
-				if (use_remaining_return) {
-					utility -= rewards[t];
+					D(states[t], a) += d_sa;
 				}
 			}
-
-			// update parameters after multiple trajectory samples
-			//D *=1.0 /((real) horizon);
-
 		}
+		
 #if _DEBUG_GRADIENT_LEVEL > 10
 		printf("---D--- %d/%d---\n", iter, max_iter); D.print(stdout);
 		printf("--- params ----\n"); params.print(stdout);
@@ -521,6 +503,12 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 			}
 	}
 	policy->Show();
+	for (int s=0; s<n_states; ++s) {
+		for (int a=0; a<n_actions; ++a) {
+			printf("%f ", critic.getValue(s, a));
+		}
+		printf(" | %d\n", s);
+	}
 }
 
 

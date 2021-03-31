@@ -49,7 +49,7 @@ Sarsa::~Sarsa()
 {
 }
 
-
+/// Use when starting a new episode.
 void Sarsa::Reset()
 {
     state = -1;

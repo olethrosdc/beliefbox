@@ -45,9 +45,9 @@ int main (int argc, char** argv)
 #endif
     
 
-    //const DiscreteMDP* mdp = chain.getMDP();
+    const DiscreteMDP* mdp = chain.getMDP();
     //const DiscreteMDP* mdp = inventory_management.getMDP();
-    const DiscreteMDP* mdp = grid_world.getMDP();
+    //const DiscreteMDP* mdp = grid_world.getMDP();
     //const DiscreteMDP* mdp = random_mdp.getMDP();
 	
 
@@ -199,7 +199,7 @@ int main (int argc, char** argv)
     }
 
 
-	if (test_gradient)
+	if (test_gradient && 0)
     {
         PolicyGradient policy_gradient(mdp, gamma, step_size);
         double start_time = GetCPU();
@@ -222,6 +222,30 @@ int main (int argc, char** argv)
 		fflush (stdout);
     }
 
+	if (test_gradient)
+    {
+        PolicyGradient policy_gradient(mdp, gamma, step_size);
+        double start_time = GetCPU();
+        policy_gradient.TrajectoryGradientActorCritic(accuracy, n_iterations, n_samples);
+        double end_time = GetCPU();
+        FixedDiscretePolicy* policy = policy_gradient.getPolicy();
+		PolicyEvaluation evaluation(policy, mdp, gamma); 
+        for (int s=0; s<n_states; ++s) {
+            Vector* pi = policy->getActionProbabilitiesPtr(s);
+            int a = ArgMax(pi);
+            printf (" %d@%.1f ", a, (*pi)(a));
+        }
+        printf("\n");
+        real U = 0;
+        for (int s=0; s<n_states; ++s) {
+            U += policy_gradient.getValue(s);
+        //printf (" %.1f ", policy_gradient.getValue(s));
+        }
+        printf ("%d %f %f # Actor Critic Policy Gradient: time util\n", n_iterations, end_time - start_time, U / (real) n_states);
+		fflush (stdout);
+    }
+
+	
 
 	
     
