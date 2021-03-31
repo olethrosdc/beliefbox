@@ -10,7 +10,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#define _DEBUG_GRADIENT_LEVEL 100
+#define _DEBUG_GRADIENT_LEVEL 1
 
 #include "PolicyGradient.h"
 #include "real.h"
@@ -260,7 +260,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 
 
 
-	bool use_remaining_return = false; 	//< Instead of using U(h), use U(h_{t:T}) for each action.
+	bool use_remaining_return = true; 	//< Instead of using U(h), use U(h_{t:T}) for each action.
 	bool fast_softmax = true; //< use the fast softmax calculation
 	
 	// randomly initialise the parameter matrix
@@ -346,7 +346,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 			//D *=1.0 /((real) horizon);
 
 		}
-#if _DEBUG_GRADIENT_LEVEL > 0
+#if _DEBUG_GRADIENT_LEVEL > 10
 		printf("---D--- %d/%d---\n", iter, max_iter); D.print(stdout);
 		printf("--- params ----\n"); params.print(stdout);
 #endif
@@ -356,7 +356,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 		params += step_size * (D- fudge) / (real) (n_samples + iter);		
 		//printf("eW\n");
 
-#if 0
+#if 1
 		// normalise and scale down parameters slightly
 		for (int s=0; s<n_states; ++s) {
 			real max = Max(params.getRow(s));
@@ -364,7 +364,7 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 				params(s,a) -= max;
 			}
 		}
-		params*=0.999;
+		//params*=0.999;
 #endif
 		// update policy from parameters
 		for (int s=0; s<n_states; ++s) {
@@ -381,10 +381,147 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 				for (int i=0; i<n_states; i++) {
 					U += starting(i) * evaluation.getValue(i);
 				}
+#if _DEBUG_GRADIENT_LEVEL > 0
 				printf ("%f %f %d # Utility\n", U, Delta, iter);
+#endif
 			}
 	}
 	policy->Show();
 }
+
+/** Sample trajectories from the model to compute gradients. 
+ *
+ * This has the advantage that the Markov property is not required, but convergence is worse.
+ * Here \f$\nabla U(\pi, \mu) = \sum_h U(h) P_\mu^\pi(h) \sum_t \frac{\nabla \pi(a_t | h_t)}{\pi(a_t | h_t)}\f$.
+ */
+void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter, int n_samples)
+{
+	GeometricDistribution horizon_distribution(1 - gamma);
+	// randomly initialise the parameter matrix
+	Matrix params(n_states, n_actions); ///< parameters
+	for (int s=0; s<n_states; ++s) {
+		for (int a=0; a<n_actions; ++a) {
+			params(s,a) = urandom(-0.5,0.5);
+		}
+	}
+
+	Matrix D(n_states, n_actions);
+	Matrix D2(n_states, n_actions);
+	real Delta = 0;
+	for (int iter=0; iter<max_iter; ++iter) {
+		D.Clear();
+		D2.Clear();
+					
+		// number of samples before policy evaluation
+		real fudge = 0;
+		for (int sample=0; sample<n_samples; ++sample) {
+			// Get a sample trajectory
+			int horizon = horizon_distribution.generate(); // use this for unbiased samples
+			std::vector<int> states(horizon);
+			std::vector<int> actions(horizon);
+			std::vector<real> rewards(horizon);
+			real utility = 0;
+			mdp->Reset();
+			int state = MDP->getState();
+			policy->Reset(state);
+			for (int t=0; t<horizon; t++) {
+				int action = policy->SelectAction();
+				states[t] = state;
+				actions[t] = action;
+				real reward = mdp->generateReward(state, action);
+				rewards[t] = reward;
+				state = mdp->generateState(state, action);
+				utility += reward;
+			}
+			//fudge += utility;
+			// calculate the gradient direction
+
+			for (int t=0; t<horizon; t++) {
+				if (fast_softmax) {
+					// uses the property of the softmax to make a simpler gradient calculation
+					for (int a=0; a<n_actions; ++a) {
+						real d_sa = utility;
+						real p_a = policy->getActionProbability(states[t], a);
+						if (a==actions[t]) {
+							d_sa *= 1 - p_a;
+						} else {
+							d_sa *= - p_a;
+						}
+#if _DEBUG_GRADIENT_LEVEL > 90
+						printf("d:%f (s:%d a:%d r:%f u:%f)\n", d_sa, states[t], a, rewards[t], utility);
+#endif
+						D(states[t], a) += d_sa;
+					}
+				} else {
+					// naive calculation. Should be the same as the
+					// one calculating the log directly, but for some reason it's off by a scaling factor for the non-chosen actions.
+					Vector eW = exp(params.getRow(states[t]));
+					real S = eW.Sum();
+					real d_sa = utility / policy->getActionProbability(states[t], actions[t]);
+					// softmax - straight-up implementation
+					for (int a=0; a<n_actions; ++a) {
+						if (a==actions[t]) {
+							d_sa *= eW(a)*(S - eW(a)) / (S*S);
+						} else {
+							d_sa *= - eW(a)*eW(actions[t]) / (S*S);
+						}
+#if _DEBUG_GRADIENT_LEVEL > 90
+						printf("d:%f (s:%d a:%d r:%f u:%f)\n", d_sa, states[t], a, rewards[t], utility);
+#endif
+						D(states[t], a) += d_sa;
+					}
+				}
+				if (use_remaining_return) {
+					utility -= rewards[t];
+				}
+			}
+
+			// update parameters after multiple trajectory samples
+			//D *=1.0 /((real) horizon);
+
+		}
+#if _DEBUG_GRADIENT_LEVEL > 10
+		printf("---D--- %d/%d---\n", iter, max_iter); D.print(stdout);
+		printf("--- params ----\n"); params.print(stdout);
+#endif
+
+		// update parameters
+		Delta = D.L2Norm() / (real) n_samples;
+		params += step_size * (D- fudge) / (real) (n_samples + iter);		
+		//printf("eW\n");
+
+#if 1
+		// normalise and scale down parameters slightly
+		for (int s=0; s<n_states; ++s) {
+			real max = Max(params.getRow(s));
+			for (int a=0; a<n_actions; ++a) {
+				params(s,a) -= max;
+			}
+		}
+		//params*=0.999;
+#endif
+		// update policy from parameters
+		for (int s=0; s<n_states; ++s) {
+			Vector eW = exp(params.getRow(s));
+			eW /= eW.Sum();
+			Vector* pS = policy->getActionProbabilitiesPtr(s);
+			(*pS) = eW;
+		}
+		// calculate an evaluation of the policy
+		if (1) // evaluate
+			{
+				evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
+				real U = 0;
+				for (int i=0; i<n_states; i++) {
+					U += starting(i) * evaluation.getValue(i);
+				}
+#if _DEBUG_GRADIENT_LEVEL > 0
+				printf ("%f %f %d # Utility\n", U, Delta, iter);
+#endif
+			}
+	}
+	policy->Show();
+}
+
 
 
