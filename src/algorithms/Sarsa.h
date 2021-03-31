@@ -44,9 +44,9 @@ public:
     Sarsa(int n_states_,
           int n_actions_,
           real gamma_,
-          real lambda_,
-          real alpha_,
-          VFExplorationPolicy* exploration_policy_,
+          real lambda_=0.0,
+          real alpha_=0.5,
+          VFExplorationPolicy* exploration_policy_=NULL,
           real initial_value_= 0.0,
           real baseline_ = 0.0);
     virtual ~Sarsa();

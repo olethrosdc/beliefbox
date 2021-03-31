@@ -10,7 +10,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#define _DEBUG_GRADIENT_LEVEL 1
+#define _DEBUG_GRADIENT_LEVEL 100
 
 #include "PolicyGradient.h"
 #include "real.h"
@@ -419,7 +419,6 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 		D2.Clear();
 					
 		// number of samples before policy evaluation
-		real fudge = 0;
 		for (int sample=0; sample<n_samples; ++sample) {
 			// Get a sample trajectory
 			int state = starting_state_distribution.generateInt();
@@ -441,12 +440,11 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 				state = mdp->generateState(state, action);
 				utility += reward;
 			}
-			//fudge += utility;
 			// calculate the gradient direction
 
 			for (int t=0; t<horizon; t++) {
 				// uses the property of the softmax to make a simpler gradient calculation
-				real Vs = critic.getValue(states[t]);
+				real Vs =  critic.getValue(states[t]);
 				for (int a=0; a<n_actions; ++a) {
 					real d_sa = critic.getValue(states[t], a) - Vs;
 					real p_a = policy->getActionProbability(states[t], a);
@@ -462,18 +460,20 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 				}
 			}
 		}
+		D *= 1.0 / (real) n_samples;
 		
 #if _DEBUG_GRADIENT_LEVEL > 10
 		printf("---D--- %d/%d---\n", iter, max_iter); D.print(stdout);
 		printf("--- params ----\n"); params.print(stdout);
 #endif
 
+
 		// update parameters
-		Delta = D.L2Norm() / (real) n_samples;
-		params += step_size * (D- fudge) / (real) (n_samples + iter);		
+		Delta = D.L2Norm();
+		params += step_size * D / (real) (1 + iter);		
 		//printf("eW\n");
 
-#if 1
+#if 0
 		// normalise and scale down parameters slightly
 		for (int s=0; s<n_states; ++s) {
 			real max = Max(params.getRow(s));
@@ -491,17 +491,16 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 			(*pS) = eW;
 		}
 		// calculate an evaluation of the policy
-		if (1) // evaluate
-			{
-				evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
-				real U = 0;
-				for (int i=0; i<n_states; i++) {
-					U += starting(i) * evaluation.getValue(i);
-				}
-#if _DEBUG_GRADIENT_LEVEL > 0
-				printf ("%f %f %d # Utility\n", U, Delta, iter);
-#endif
+		if (1) {
+			evaluation.ComputeStateValuesFeatureExpectation(threshold, max_iter);
+			real U = 0;
+			for (int i=0; i<n_states; i++) {
+				U += starting(i) * evaluation.getValue(i);
 			}
+#if _DEBUG_GRADIENT_LEVEL > 0
+			printf ("%f %f %d # Utility\n", U, Delta, iter);
+#endif
+		}
 	}
 	policy->Show();
 	for (int s=0; s<n_states; ++s) {

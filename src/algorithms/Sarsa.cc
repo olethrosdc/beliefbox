@@ -116,9 +116,22 @@ real Sarsa::Observe (real reward, int next_state, int next_action)
 
 int Sarsa::Act(real reward, int next_state)
 {
-    exploration_policy->Observe(reward, next_state);
-    exploration_policy->setValueMatrix(&Q);
-    int next_action = exploration_policy->SelectAction();
+    int next_action = 0;
+	if (exploration_policy) {
+		exploration_policy->Observe(reward, next_state);
+		exploration_policy->setValueMatrix(&Q);
+		next_action = exploration_policy->SelectAction();
+	} else {
+		real Qa_max = getValue(next_state, 0);
+		next_action = 0;
+		for (int a=1; a<n_actions; ++a) {
+			real Qa = getValue(next_state, a);
+			if (Qa > Qa_max) {
+				next_action = a;
+				Qa_max = Qa;
+			}
+		}
+	}
     Observe(reward, next_state, next_action);
     //printf ("Sarsa: %f %d %d\n", reward, next_state, next_action);
     //Q.print(stdout);

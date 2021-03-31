@@ -19,9 +19,9 @@
 #include "real.h"
 #include <vector>
 
-/** Analyitical policy gradient algorithm.
+/** Analytical policy gradient algorithm.
 	
-	This algorithm works only for discrete MDPs
+	This algorithm works only for discrete MDPs.
  */
 class PolicyGradient
 {

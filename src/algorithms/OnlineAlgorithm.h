@@ -47,7 +47,7 @@ public:
     virtual void Reset()
     {
     }
-    /// Partial SARSA observation (can be used with eligibility traces)
+    /// Partial observation (when another algorithm is used to take the action, or as a helper function)
     virtual real Observe (real reward, S next_state, A next_action) = 0;
     /// Get an action using the current exploration policy.
     /// it calls Observe as a side-effect.
