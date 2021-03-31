@@ -103,9 +103,16 @@ int main (int argc, char** argv)
             U += value_iteration.getValue(s);
         }
 		printf("\n");
+		for (int s=0; s<n_states; ++s) {
+			for (int a=0; a<n_actions; ++a) {
+				printf("%f ", value_iteration.getValue(s, a));
+			}
+			printf(" | %d\n", s);
+		}
+		
 		printf ("%d %f %f # Synchronous Value Iteration time util\n", n_iterations, end_time - start_time, U / (real) n_states);
-        delete policy;
-    }
+		delete policy;
+	}
 
     if (test_asynchronous)
     {

@@ -446,8 +446,9 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 
 			for (int t=0; t<horizon; t++) {
 				// uses the property of the softmax to make a simpler gradient calculation
+				real Vs = critic.getValue(states[t]);
 				for (int a=0; a<n_actions; ++a) {
-					real d_sa = critic.getValue(states[t], a);
+					real d_sa = critic.getValue(states[t], a) - Vs;
 					real p_a = policy->getActionProbability(states[t], a);
 					if (a==actions[t]) {
 						d_sa *= 1 - p_a;

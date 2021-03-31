@@ -28,6 +28,7 @@ Sarsa::Sarsa(int n_states_,
       exploration_policy(exploration_policy_),
       initial_value(initial_value_),
       baseline(baseline_),
+	  V(n_states_, Vector::CHECK_BOUNDS),
       Q(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
       el(n_states_, n_actions_, Matrix::CHECK_BOUNDS)
 {
@@ -36,6 +37,7 @@ Sarsa::Sarsa(int n_states_,
     assert (gamma >=0 && gamma <= 1);
     
     for (int s=0; s<n_states; s++) {
+		V(s) = initial_value;
         for (int a=0; a<n_actions; a++) {
             Q(s, a) = initial_value;
         }
@@ -62,6 +64,9 @@ void Sarsa::Reset()
 
 }
 
+/// Observe a state-action-reward-state-action tuplet.
+///
+/// No eligibility trace update!
 real Sarsa::Observe (int state, int action, real reward, int next_state, int next_action)
 {
     real n_R = (reward - baseline) + gamma*Q(next_state, next_action); // partially observed return
@@ -69,7 +74,7 @@ real Sarsa::Observe (int state, int action, real reward, int next_state, int nex
     real TD = n_R - p_R;
 
     Q(state, action) += alpha * TD;
-    
+    V(state) += alpha * (n_R - V(state));
     return TD;
 }
 
@@ -78,9 +83,11 @@ real Sarsa::Observe (int state, int action, real reward, int next_state, int nex
 real Sarsa::Observe (real reward, int next_state, int next_action)
 {
     real n_R = (reward - baseline) + gamma*Q(next_state, next_action); // partially observed return
+
     //real p_R = 0.0;
     real TD = 0.0;
     if (state >= 0 && action >= 0) {
+		V(state) += alpha * (n_R - V(state));
         real p_R = Q(state, action); // predicted return
         TD = n_R - p_R;
     

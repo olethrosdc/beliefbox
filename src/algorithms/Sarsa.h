@@ -33,6 +33,7 @@ protected:
     real initial_value; ///< initial value for Q values
     real baseline; ///< baseline reward
 
+	Vector V;
     Matrix Q;
     Matrix el;
 
@@ -62,6 +63,11 @@ public:
     {
         return Q(state, action);
     }
+	virtual real getValue (int state)
+    {
+        return V(state);
+    }
+
     
 };
 
