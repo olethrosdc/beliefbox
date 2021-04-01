@@ -21,7 +21,7 @@ real PolicyGradientActorCritic::Observe(real reward, int next_state, int next_ac
 		Q(state, action) += step_size * (reward + gamma * Q(next_state, next_action) - Q(state, action));
 	}
 	critic.Observe(reward, next_state, next_action);
-
+	UpdatePolicy();
 	state = next_state;
 	action = next_action;
 	return 0;
