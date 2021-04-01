@@ -5,7 +5,7 @@ PolicyGradientActorCritic::PolicyGradientActorCritic(int n_states_, int n_action
 	n_actions(n_actions_),
 	gamma(gamma_),
 	step_size(step_size_),
-	critic(n_states, n_actions, 0.0, step_size),
+	critic(n_states, n_actions, gamma, 0.0, step_size),
 	policy(n_states, n_actions),
 	params(n_states, n_actions),
 	Q(n_states, n_actions)
@@ -38,7 +38,8 @@ real PolicyGradientActorCritic::GradientUpdate(int s, int a)
 {
 	//real U = critic.getValue(s);
 	//real U = critic.getValue(s);
-	real U = Q(s,a); 
+	real U = Q(s,a);
+	printf("s:%d, a:%d: Q_w:%f Q_S:%f\n", s, a, U, critic.getValue(s,a));
 	real delta = 0;
 	for (int j=0; j<n_actions; ++j) {
 		real p_a = policy.getActionProbability(s, j);

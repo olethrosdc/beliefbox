@@ -100,16 +100,14 @@ real Sarsa::Observe (real reward, int next_state, int next_action)
             }
         }
 
-        if (state >= 0 && action >= 0) {
-            el(state, action) = 1;
-        }
+		el(state, action) = 1;
 
         for (int i=0; i<n_states; ++i) {
             for (int j=0; j<n_actions; ++j ) {
                 Q(i, j) += el(i, j) * alpha * TD;
             }
         }
-    }
+	}
     state = next_state; // fall back next state;
     action = next_action; // fall back next action
     
