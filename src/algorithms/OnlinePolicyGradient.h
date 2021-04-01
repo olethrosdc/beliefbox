@@ -69,6 +69,8 @@ public:
 	/// returns the gradient norm
 	real GradientUpdate(int s, int a);
 
+	void UpdatePolicy();
+
 };
 
 #endif

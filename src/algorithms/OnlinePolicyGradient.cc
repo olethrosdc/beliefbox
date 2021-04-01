@@ -7,7 +7,8 @@ PolicyGradientActorCritic::PolicyGradientActorCritic(int n_states_, int n_action
 	step_size(step_size_),
 	critic(n_states, n_actions, 0.0, step_size),
 	policy(n_states, n_actions),
-	params(n_states, n_actions)
+	params(n_states, n_actions),
+	Q(n_states, n_actions)
 {
 	Reset();
 }
@@ -16,8 +17,8 @@ real PolicyGradientActorCritic::Observe(real reward, int next_state, int next_ac
 {
 	if (state >= 0) {
 		real d = GradientUpdate(state, action); // not sure how much difference it makes to update the next state-action pair instead
-		//printf("%d %d %f\n", state, action, d);
-		Q(state, action) += step_size * (reward + gamma * Q(next_state, next_action - Q(state, action)));
+		//printf("%d %d %d %d%f\n", state, action, d);
+		Q(state, action) += step_size * (reward + gamma * Q(next_state, next_action) - Q(state, action));
 	}
 	critic.Observe(reward, next_state, next_action);
 
@@ -51,4 +52,14 @@ real PolicyGradientActorCritic::GradientUpdate(int s, int a)
 		delta += fabs(d_sj);
 	}
 	return delta;
+}
+
+void PolicyGradientActorCritic::UpdatePolicy()
+{
+	for (int s=0; s<n_states; ++s) {
+		Vector eW = exp(params.getRow(s));
+		eW /= eW.Sum();
+		Vector* pS = policy.getActionProbabilitiesPtr(s);
+		(*pS) = eW;
+	}
 }
