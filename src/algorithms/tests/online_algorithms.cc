@@ -12,6 +12,7 @@
 #ifdef MAKE_MAIN
 
 // -- Algorithms and models -- //
+#include "OnlinePolicyGradient.h"
 #include "PolicyEvaluation.h"
 #include "PolicyIteration.h"
 #include "ValueIteration.h"
@@ -102,11 +103,12 @@ Statistics EvaluateAlgorithm (int episode_steps,
                               real gamma);
 static const char* const help_text = "Usage: online_algorithms [options] algorithm environment\n\
 \nOptions:\n\
-    --algorithm:    {Oracle, *QLearning, WQLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma, LGBRL, UGBRL, ABC, TBRL}\n\
+    --algorithm:    {Oracle, *QLearning, WQLearning, Model, Sarsa, LSampling, USampling, UCRL, TdBma, LGBRL, UGBRL, ABC, TBRL, PGAC}\n\
     --environment:  {Acrobot, Puddle, CartPole, Pendulum, MountainCar, ContextBandit, RandomMDP, Gridworld, Chain, Optimistic, RiverSwim, Inventory, DoubleLoop}\n\
     --n_states:     number of states (usually there is no need to specify it)\n\
     --n_actions:    number of actions (usually there is no need to specify it)\n\
     --gamma:        reward discounting in [0,1] (*0.99)\n\
+    --alpha:        step size in (0,1] (*0.1)\n\
     --lambda:       eligibility trace in [0,1] (*0.9) \n\
     --randomness:   environment randomness\n\
     --n_runs:       maximum number of runs\n\
@@ -117,8 +119,8 @@ static const char* const help_text = "Usage: online_algorithms [options] algorit
     --maze_name:    (Gridworld) file name for the maze\n\
     --pit_value:    value of falling in a pit (* -1)\n\
     --goal_value:   value of reaching a goal (* 1)\n\
-    --step_value:   value at each time step (* 0)\n                     \
-    --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0)\n \
+    --step_value:   value at each time step (* 0)\n\
+    --epsilon:      use epsilon-greedy with randomness in [0,1] (* 0)\n\
     --n_iterations: maximum number of iterations (*25) for ABC\n\
     --reward_prior: {Beta, Fixed, *Normal}\n\
     --max_samples:  maximum number of samples (*1) for Sampling, Weighted Q-Learning and TBRLRL\n\
@@ -519,6 +521,11 @@ int main (int argc, char** argv)
                                            lambda,
                                            alpha,
                                            exploration_policy);
+		} else if (!strcmp(algorithm_name, "PGAC")) { 
+            algorithm = new PolicyGradientActorCritic(n_states,
+													  n_actions,
+													  gamma,
+													  alpha);
         } else if (!strcmp(algorithm_name, "Model")) {
             discrete_mdp =  new DiscreteMDPCounts(n_states, n_actions,
                                                   dirichlet_mass,

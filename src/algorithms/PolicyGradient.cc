@@ -306,19 +306,21 @@ void PolicyGradient::TrajectoryGradient(real threshold, int max_iter, int n_samp
 
 			for (int t=0; t<horizon; t++) {
 				if (fast_softmax) {
-					// uses the property of the softmax to make a simpler gradient calculation
+					// uses the property of the softmax to make a
+					// simpler gradient calculation, where d/da =
+					// I{a_t = a} - \pi(a | s_t).
 					for (int a=0; a<n_actions; ++a) {
-						real d_sa = utility;
+						real d_sa = 0;
 						real p_a = policy->getActionProbability(states[t], a);
 						if (a==actions[t]) {
-							d_sa *= 1 - p_a;
+							d_sa = 1 - p_a;
 						} else {
-							d_sa *= - p_a;
+							d_sa = - p_a;
 						}
 #if _DEBUG_GRADIENT_LEVEL > 90
 						printf("d:%f (s:%d a:%d r:%f u:%f)\n", d_sa, states[t], a, rewards[t], utility);
 #endif
-						D(states[t], a) += d_sa;
+						D(states[t], a) += utility * d_sa;
 					}
 				} else {
 					// naive calculation. Should be the same as the
@@ -446,7 +448,7 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 				// uses the property of the softmax to make a simpler gradient calculation
 				real Vs =  critic.getValue(states[t]);
 				for (int a=0; a<n_actions; ++a) {
-					real d_sa = utility;//Vs;//critic.getValue(states[t], a) - Vs;
+					real d_sa = critic.getValue(states[t], actions[t]);// - Vs;
 					real p_a = policy->getActionProbability(states[t], a);
 					if (a==actions[t]) {
 						d_sa *= 1 - p_a;
