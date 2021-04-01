@@ -35,10 +35,11 @@ int PolicyGradientActorCritic::Act(real reward, int next_state)
 
 real PolicyGradientActorCritic::GradientUpdate(int s, int a)
 {
-	real V = critic.getValue(s);
+	//real U = critic.getValue(s);
+	//real U = critic.getValue(s);
+	real U = Q(s,a); 
 	real delta = 0;
 	for (int j=0; j<n_actions; ++j) {
-		real U = Q(s,a); //critic.getValue(s,a);
 		real p_a = policy.getActionProbability(s, j);
 		real d_sj =  0;
 		if (j==a) {
