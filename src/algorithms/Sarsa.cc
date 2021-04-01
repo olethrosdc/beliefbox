@@ -42,7 +42,9 @@ Sarsa::Sarsa(int n_states_,
             Q(s, a) = initial_value;
         }
     }
-    exploration_policy->setValueMatrix(&Q);
+	if (exploration_policy) {
+		exploration_policy->setValueMatrix(&Q);
+	}
     Reset();
 }
 
