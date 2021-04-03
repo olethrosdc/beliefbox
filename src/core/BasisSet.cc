@@ -67,14 +67,6 @@ void RBFBasisSet::logEvaluate(const Vector& x) const
     valid_features = false;
 }
 
-//void RBFBasisSet::Evaluate(const Vector& x)
-//{
-//    logEvaluate(x);
-//    for (int i=0; i<n_bases; ++i) {
-//        features[i] = exp(log_features[i]);
-//    }
-//    valid_features = true;
-//}
 
 void RBFBasisSet::Evaluate(const Vector& x) const
 {
@@ -85,3 +77,74 @@ void RBFBasisSet::Evaluate(const Vector& x) const
     valid_features = true;
 }
 
+void RBFBasisSet::Observe(const Vector& x)
+{
+    logEvaluate(x);
+    for (int i=0; i<n_bases; ++i) {
+        features[i] = exp(log_features[i]);
+    }
+	valid_log_features = true;
+    valid_features = true;
+}
+
+void CountsBasis::Reset()
+{
+	state = -1;
+}
+
+CountsBasis::~CountsBasis()
+{
+	// nothing to do
+}
+
+void CountsBasis::Observe(int action, real reward, int next_state)
+{
+	if (state >= 0) {
+		int N = model.getCounts(state, action);
+		real alpha = 1.0f / (real) (N + 1);
+		average_reward(state, action) += alpha * (reward - 			average_reward(state, action));
+	}
+			
+	model.Observe(state, action, next_state);
+	
+	// split observation in three parts.
+	// 1: current state |S|
+	// 2: current reward 1
+	// 3: average transitions |S^2A|
+	// 4: transition counts |S^2A|
+	// 5: empirical average rewards |SA|
+	features.Clear();
+	features(next_state) = 1;
+	features(n_states) = reward;
+	int i = n_states + 1;
+
+
+	
+	for (int s = 0; s < n_states; ++s) {
+		for (int a = 0; a < n_actions; ++a) {
+			Vector marginal = model.getMarginal(s, a);
+			for (int s2 = 0; s2 < n_states; ++s2, ++i) {
+				features(i) = marginal(s2);
+			}
+		}
+	}
+
+	for (int s = 0; s < n_states; ++s) {
+		for (int a = 0; a < n_actions; ++a) {
+			Vector counts = model.getParameters(s, a);
+			for (int s2 = 0; s2 < n_states; ++s2, ++i) {
+				features(i) = log(1 + counts(s2));
+			}
+		}
+	}
+
+
+	for (int s = 0; s < n_states; ++s) {
+		for (int a = 0; a < n_actions; ++a, ++i) {
+			features(i) = average_reward(s, a);
+		}
+	}
+	state = next_state;
+	valid_features = true;
+	valid_log_features = false;
+}

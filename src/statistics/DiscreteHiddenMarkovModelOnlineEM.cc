@@ -53,7 +53,7 @@ void DiscreteHiddenMarkovModelOnlineEM::InitPhi()
 void DiscreteHiddenMarkovModelOnlineEM::Reset()
 {
     DiscreteHiddenMarkovModel::Reset();
-    Phi->Reset();
+    Phi->Clear();
     real p = 1.0 / (real) n_states;
     for (int i=0; i<n_states; ++i) {
         q[i] = p;

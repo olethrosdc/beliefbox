@@ -73,5 +73,60 @@ public:
 
 };
 
+/** PGAC with features
+
+ */
+class PolicyGradientActorCriticPhi : public OnlineAlgorithm<int, Vector>
+{
+protected:
+	int n_states;
+	int n_actions;
+	real gamma;
+	real step_size;
+	Sarsa critic;
+	FixedDiscretePolicy policy;
+	Matrix params;
+	Matrix Q;
+	int state, action; ///< last state and action
+public:
+	PolicyGradientActorCriticPhi(int n_states_,
+							  int n_actions_,
+							  real gamma_=0.95,
+							  real step_size_ = 0.1);
+	virtual ~PolicyGradientActorCriticPhi()
+	{
+	}
+    virtual void Reset()
+	{
+		state = -1;
+		action = -1;
+		critic.Reset();
+		policy.Reset();
+	}
+    /// Update the actor and critic
+    virtual real Observe (real reward, int next_state, int next_action);
+    /// Get an action using the current policy.
+    /// it calls Observe as a side-effect.
+    virtual int Act(real reward, int next_state);
+
+    virtual real getValue (int state, int action)
+    {
+        return critic.getValue(state, action);
+    }
+	virtual real getValue (int state)
+    {
+        return critic.getValue(state);
+    }
+	/// Update the policy for a given state and action/
+	///
+	/// s, a: state-action pair observed
+	/// returns the gradient norm
+	real GradientUpdate(int s, int a);
+
+	void UpdatePolicy();
+
+};
+
+
 #endif
 

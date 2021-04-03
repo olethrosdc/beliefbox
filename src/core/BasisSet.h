@@ -16,6 +16,8 @@
 #include <cassert>
 #include "Vector.h"
 #include "Grid.h"
+#include "DirichletTransitions.h"
+#include "Matrix.h"
 
 /** A simple radial basis function */
 class RBF
@@ -55,33 +57,36 @@ public:
     }
 };
 
-class RBFBasisSet
+/// Abstract class for a basis
+class BasisSet
 {
 protected:
-    std::vector<RBF*> centers;
-
-    mutable Vector log_features;
+	int n_bases;
+	mutable Vector log_features;
     mutable Vector features;
     mutable bool valid_features;
     mutable bool valid_log_features;
-    int n_bases;
 public:
-    RBFBasisSet() :
-        valid_features(false),
-        valid_log_features(false),
-        n_bases(0)
-    {  }
-    RBFBasisSet(const EvenGrid& grid, real scale = 1);
-    ~RBFBasisSet();
-    void AddCenter(const Vector& v, const Vector& b);
-    void AddCenter(const Vector& v, real b);
-    void Evaluate(const Vector& x) const;
-    void logEvaluate(const Vector& x) const;
-    int size()
+	BasisSet()
+		: n_bases(0),
+		  valid_features(false),
+		  valid_log_features(false)
+	{
+	}
+	virtual ~BasisSet()
+	{
+	}
+	int size()
     {
         return n_bases;
     }
-    real log_F(int j) const
+	/// Reset statistics for history-dependent features
+	virtual void Reset()  = 0;
+	/// Obtain a new observation.
+	///
+	/// To be used especially with history-dependent features
+	virtual void Observe(const Vector& v) = 0;
+	real log_F(int j) const
     {
         assert(j >= 0 && j < n_bases);
         assert(valid_log_features);
@@ -100,7 +105,66 @@ public:
     }
     Vector F() const
     {
+		assert(valid_features);
         return features;
     }
 };
+
+/// Simple RBF basis
+class RBFBasisSet : public BasisSet
+{
+protected:
+    std::vector<RBF*> centers;
+public:
+    RBFBasisSet()
+    {
+		Reset();
+	}
+    RBFBasisSet(const EvenGrid& grid, real scale = 1);
+    virtual ~RBFBasisSet();
+	virtual void Reset()
+	{
+		valid_log_features = false;
+		valid_features = false;
+	}
+	virtual void Observe(const Vector& v);
+    void AddCenter(const Vector& v, const Vector& b);
+    void AddCenter(const Vector& v, real b);
+    void Evaluate(const Vector& x) const;
+    void logEvaluate(const Vector& x) const;
+
+
+};
+
+
+/// Simple basis for counts
+class CountsBasis : public BasisSet
+{
+protected:
+	int n_states;
+	int n_actions;
+	int state;
+	DirichletTransitions model;
+	Matrix average_reward;
+
+public:
+    CountsBasis(int n_states_, int n_actions_): 
+		n_states(n_states_),
+		n_actions(n_actions_),
+		model(n_states, n_actions),
+		average_reward(n_states, n_actions)
+    {
+		n_bases = n_states*n_actions*n_states * 2 + n_states*n_actions + n_states + 1;
+		features = Vector(n_bases, Vector::CHECK_BOUNDS);
+		Reset();
+	}
+	virtual ~CountsBasis();
+	virtual void Reset();
+	virtual void Observe(const Vector& v)
+	{
+		// nothing to do
+	}
+	void Observe(int action, real reward, int next_state);
+};
+
 #endif
