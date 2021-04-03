@@ -403,7 +403,7 @@ void PolicyGradient::TrajectoryGradientActorCritic(real threshold, int max_iter,
 	MultinomialDistribution starting_state_distribution(starting);
 	GeometricDistribution horizon_distribution(1 - gamma);
 	EpsilonGreedy e_greedy(n_actions, 0);
-	Sarsa critic(n_states, n_actions, gamma, 0.5, step_size, &e_greedy);
+	Sarsa critic(n_states, n_actions, gamma, 0.0, step_size, &e_greedy);
 	
 	// randomly initialise the parameter matrix
 	Matrix params(n_states, n_actions); ///< parameters
