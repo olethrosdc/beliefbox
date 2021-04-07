@@ -16,6 +16,7 @@
 #include "PolicyEvaluation.h"
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
+#include "BasisSet.h"
 #include "real.h"
 #include "Sarsa.h"
 #include <vector>
@@ -70,41 +71,43 @@ public:
 	real GradientUpdate(int s, int a);
 
 	void UpdatePolicy();
-
 };
 
-/** PGAC with features
+/** PGAC with features, for the continuous case.
 
  */
 class PolicyGradientActorCriticPhi : public OnlineAlgorithm<int, Vector>
 {
 protected:
+	BasisSet<Vector, int>& basis;
 	int n_states;
 	int n_actions;
 	real gamma;
 	real step_size;
 	Sarsa critic;
 	FixedDiscretePolicy policy;
-	Matrix params;
-	Matrix Q;
-	int state, action; ///< last state and action
+	Vector params;
+	Vector state;
+	int action; ///< last state and action
+	bool valid_state;
 public:
-	PolicyGradientActorCriticPhi(int n_states_,
-							  int n_actions_,
-							  real gamma_=0.95,
-							  real step_size_ = 0.1);
+	PolicyGradientActorCriticPhi(BasisSet<Vector, int>& basis_,
+								 int n_states_,
+								 int n_actions_,
+								 real gamma_=0.95,
+								 real step_size_ = 0.1);
 	virtual ~PolicyGradientActorCriticPhi()
 	{
 	}
     virtual void Reset()
 	{
-		state = -1;
+		valid_state = false;
 		action = -1;
 		critic.Reset();
 		policy.Reset();
 	}
     /// Update the actor and critic
-    virtual real Observe (real reward, int next_state, int next_action);
+    virtual real Observe (real reward, Vector& next_state, int next_action);
     /// Get an action using the current policy.
     /// it calls Observe as a side-effect.
     virtual int Act(real reward, int next_state);

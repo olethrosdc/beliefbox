@@ -90,4 +90,32 @@ public:
     }
 };
 
+class SoftmaxContinuousPolicy : public ContinuousPolicy
+{
+public:
+	Vector p;
+    bool epsilon_greedy;
+    real epsilon;
+	SoftmaxContinuousPolicy(int n_dimension_, int n_actions_);
+	virtual ~SoftmaxContinuousPolicy();
+	virtual int SelectAction();
+	virtual int SelectAction(const Vector& state);
+	virtual void Observe(const Vector& previous_state, const int& action, real r, const Vector& next_state);
+	virtual void Observe(real r, const Vector& next_state);
+	virtual void Reset()
+	{
+		Vector reset_state(n_dimension);
+		Reset(reset_state);
+	}
+	virtual void Reset(const Vector& start_state);
+	virtual real getActionProbability(const int& action) const;
+	virtual real getActionProbability(const Vector& state, const int& action);
+	virtual void Show();
+	virtual void Update(const Vector& weights_)
+	{
+		assert(weights_.Size()==weights.Size());
+		weights = weights_;
+	}
+};
+
 #endif

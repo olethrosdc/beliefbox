@@ -77,9 +77,9 @@ void RBFBasisSet::Evaluate(const Vector& x) const
     valid_features = true;
 }
 
-void RBFBasisSet::Observe(const Vector& x)
+void RBFBasisSet::Observe(const int& action, real reward, const Vector& next_state)
 {
-    logEvaluate(x);
+    logEvaluate(next_state);
     for (int i=0; i<n_bases; ++i) {
         features[i] = exp(log_features[i]);
     }
@@ -97,7 +97,7 @@ CountsBasis::~CountsBasis()
 	// nothing to do
 }
 
-void CountsBasis::Observe(int action, real reward, int next_state)
+void CountsBasis::Observe(const int& action, real reward, const int& next_state)
 {
 	if (state >= 0) {
 		int N = model.getCounts(state, action);

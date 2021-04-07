@@ -58,6 +58,7 @@ public:
 };
 
 /// Abstract class for a basis
+template <typename S, typename A>
 class BasisSet
 {
 protected:
@@ -82,10 +83,12 @@ public:
     }
 	/// Reset statistics for history-dependent features
 	virtual void Reset()  = 0;
-	/// Obtain a new observation.
+	/// Obtain a new observation \f$a_t, r_t, s_{t+1}\f$.
 	///
 	/// To be used especially with history-dependent features
-	virtual void Observe(const Vector& v) = 0;
+	virtual void Observe(const A& action, real reward, const S& next_state) = 0;
+	/// Obtain state observation \f$s_1\f$.
+	virtual void Observe(const S& next_state) = 0;
 	real log_F(int j) const
     {
         assert(j >= 0 && j < n_bases);
@@ -111,7 +114,9 @@ public:
 };
 
 /// Simple RBF basis
-class RBFBasisSet : public BasisSet
+///
+/// Provides a basis only over states, ignoring actions.
+class RBFBasisSet : public BasisSet<Vector, int>
 {
 protected:
     std::vector<RBF*> centers;
@@ -127,7 +132,7 @@ public:
 		valid_log_features = false;
 		valid_features = false;
 	}
-	virtual void Observe(const Vector& v);
+	virtual void Observe(const int& action, real reward, const Vector& next_state);
     void AddCenter(const Vector& v, const Vector& b);
     void AddCenter(const Vector& v, real b);
     void Evaluate(const Vector& x) const;
@@ -138,7 +143,7 @@ public:
 
 
 /// Simple basis for counts
-class CountsBasis : public BasisSet
+class CountsBasis : public BasisSet<int, int>
 {
 protected:
 	int n_states;
@@ -160,11 +165,7 @@ public:
 	}
 	virtual ~CountsBasis();
 	virtual void Reset();
-	virtual void Observe(const Vector& v)
-	{
-		// nothing to do
-	}
-	void Observe(int action, real reward, int next_state);
+	virtual void Observe(const int& action, real reward, const int& next_state);
 };
 
 #endif
