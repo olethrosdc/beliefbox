@@ -80,19 +80,19 @@ PolicyGradientActorCriticPhi::PolicyGradientActorCriticPhi(BasisSet<Vector, int>
 	step_size(step_size_),
 	critic(n_states, n_actions, gamma, 0.0, step_size),
 	policy(n_states, n_actions),
-	params(basis.size()),
+	params(basis.size())
 
 {
 	Reset();
 }
 
-real PolicyGradientActorCriticPhi::Observe(real reward, Vector& next_state, int next_action)
+real PolicyGradientActorCriticPhi::Observe(real reward, const Vector& next_state, const int& next_action)
 {
 	basis.Observe(reward, next_state, next_action);
 	if (valid_state) {
 		real d = GradientUpdate(state, action);
 	}
-	critic.Observe(reward, next_state, next_action);
+	//critic.Observe(reward, next_state, next_action);
 	UpdatePolicy();
 	state = next_state;
 	action = next_action;
@@ -110,7 +110,7 @@ int PolicyGradientActorCriticPhi::Act(real reward, int next_state)
 	return next_action;
 }
 
-real PolicyGradientActorCriticPhi::GradientUpdate(Vector& s, int a)
+real PolicyGradientActorCriticPhi::GradientUpdate(Vector s, int a)
 {
 	//real U = critic.getValue(s);
 	//real U = critic.getValue(s);

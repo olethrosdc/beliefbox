@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2021 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -10,8 +10,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SARSA_H
-#define SARSA_H
+#ifndef FSARSA_H
+#define FSARSA_H
 
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
@@ -21,7 +21,8 @@
 #include "OnlineAlgorithm.h"
 #include <vector>
 
-class Sarsa : public OnlineAlgorithm<int, int>
+/// Sarsa with features
+class Sarsa : public OnlineAlgorithm<int, Vector>
 {
 protected:
     const int n_states; ///< number of states
@@ -44,6 +45,7 @@ public:
     Sarsa(int n_states_,
           int n_actions_,
           real gamma_,
+		  BasisSet& basis,
           real lambda_=0.0,
           real alpha_=0.5,
           VFExplorationPolicy* exploration_policy_=NULL,
@@ -52,14 +54,14 @@ public:
     virtual ~Sarsa();
     virtual void Reset();
     /// Full SARSA observation (no eligibility traces)
-    virtual real Observe (const int& state, const int& action, real reward, const int& next_state, const int& next_action);
+    virtual real Observe (const Vector& state, const int& action, real reward, const Vector& next_state, const int& next_action);
     /// Partial SARSA observation (can be used with eligibility traces)
-    virtual real Observe (real reward, const int& next_state, const int& next_action);
+    virtual real Observe (real reward, const Vector& next_state, const int& next_action);
     /// Get an action using the current exploration policy.
     /// it calls Observe as a side-effect.
-    virtual int Act(real reward, const int& next_state);
+    virtual int Act(real reward, const Vector& next_state);
 
-    virtual real getValue (const int& state, const int& action)
+    virtual real getValue (const Vector& state, const int& action)
     {
         return Q(state, action);
     }

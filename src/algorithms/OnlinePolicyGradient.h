@@ -107,7 +107,7 @@ public:
 		policy.Reset();
 	}
     /// Update the actor and critic
-    virtual real Observe (real reward, Vector& next_state, int next_action);
+    virtual real Observe (real reward, const Vector& next_state, const int& next_action);
     /// Get an action using the current policy.
     /// it calls Observe as a side-effect.
     virtual int Act(real reward, int next_state);
@@ -124,7 +124,7 @@ public:
 	///
 	/// s, a: state-action pair observed
 	/// returns the gradient norm
-	real GradientUpdate(int s, int a);
+	real GradientUpdate(const Vector s, int a);
 
 	void UpdatePolicy();
 

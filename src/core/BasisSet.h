@@ -86,9 +86,9 @@ public:
 	/// Obtain a new observation \f$a_t, r_t, s_{t+1}\f$.
 	///
 	/// To be used especially with history-dependent features
-	virtual void Observe(const A& action, real reward, const S& next_state) = 0;
+	virtual void Observe(real reward, const S& next_state, const A& next_action) = 0;
 	/// Obtain state observation \f$s_1\f$.
-	virtual void Observe(const S& next_state) = 0;
+	virtual void Observe(const S& state) = 0;
 	real log_F(int j) const
     {
         assert(j >= 0 && j < n_bases);
@@ -132,7 +132,9 @@ public:
 		valid_log_features = false;
 		valid_features = false;
 	}
-	virtual void Observe(const int& action, real reward, const Vector& next_state);
+	virtual void Observe(real reward, const Vector& next_state, const int& next_action);
+	virtual void Observe(const Vector& state);
+	
     void AddCenter(const Vector& v, const Vector& b);
     void AddCenter(const Vector& v, real b);
     void Evaluate(const Vector& x) const;
@@ -165,7 +167,7 @@ public:
 	}
 	virtual ~CountsBasis();
 	virtual void Reset();
-	virtual void Observe(const int& action, real reward, const int& next_state);
+	virtual void Observe(real reward, const int& next_state, const int& next_action);
 };
 
 #endif

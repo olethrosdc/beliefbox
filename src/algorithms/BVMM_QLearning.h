@@ -62,14 +62,14 @@ public:
         action = 0;
     }
     /// Partial observation
-    virtual real Observe (real reward, int next_state, int next_action)
+    virtual real Observe (real reward, const int& next_state, const int& next_action)
     {
         _Observe(next_action, next_state, reward);
         return _QLearning(alpha, gamma);
     }
     /// Get an action using the current exploration policy.
     /// it calls Observe as a side-effect.
-    virtual int Act(real reward, int next_state) 
+    virtual int Act(real reward, const int& next_state) 
     {
         assert(next_state >= 0 && next_state < n_obs);
 
