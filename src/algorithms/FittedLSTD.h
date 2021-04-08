@@ -193,7 +193,7 @@ public:
 		}
 	}
 	// BasisModelCreation returns the basis function for state s that used for the Model prediction algorithm
-	Vector BasisModelCreation(const Vector& s) {
+	Vector BasisModelCreation(const S& s) {
 		Vector phi;
 		if(RBFs_model != NULL) {
 			RBFs_model->Evaluate(s);
@@ -206,7 +206,7 @@ public:
 		return phi;
 	}
 	// BasisAPICreation returns the basis function for state s that used for the API algorithm
-	Vector BasisAPICreation(const Vector& s) {
+	Vector BasisAPICreation(const S& s) {
 		RBFs->Evaluate(s);
 		Vector phi = RBFs->F();
 		phi.Resize(dim);
