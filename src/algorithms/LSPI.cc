@@ -11,7 +11,7 @@
 
 #include "LSPI.h"
 
-LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_)
+LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, BasisSet<Vector, int>& bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_)
  :gamma(gamma_),
   Delta(Delta_), 
   n_dimension(n_dimension_), 
@@ -22,7 +22,7 @@ LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_i
   policy(n_dimension, n_actions, bfs)
 {
 	assert(gamma>=0 && gamma <=1);
-	n_basis = n_actions*(bfs->size() + 1);
+	n_basis = n_actions*(bfs.size() + 1);
 	algorithm = 1;
 	A.Resize(n_basis, n_basis);
 	A = Matrix::Unity(n_basis,n_basis) * 1e-6;
@@ -30,7 +30,7 @@ LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_i
 	w.Resize(n_basis);
 }
 
-LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_)
+LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, BasisSet<Vector, int>& bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_)
 	:gamma(gamma_),
      Delta(Delta_), 
      n_dimension(n_dimension_), 
@@ -43,7 +43,7 @@ LSPI::LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_i
 {
 	assert(gamma>=0 && gamma <=1);
 	assert(algorithm>=1 && algorithm<=2);
-	n_basis = n_actions*(bfs->size() + 1);
+	n_basis = n_actions*(bfs.size() + 1);
 //	n_basis = n_actions*20;
 	A.Resize(n_basis, n_basis);
 	A = Matrix::Unity(n_basis,n_basis) * 1e-6;
@@ -57,13 +57,13 @@ LSPI::~LSPI()
 
 Vector LSPI::BasisFunction(const Vector& state, int action)
 {
-	bfs->Evaluate(state);
-	Vector Phi_state = bfs->F();
+	bfs.Evaluate(state);
+	Vector Phi_state = bfs.F();
 	Vector Phi(n_basis);
-	Phi[(bfs->size() + 1)*action] = 1.0;
-	for(int i = 0; i<bfs->size(); ++i)
+	Phi[(bfs.size() + 1)*action] = 1.0;
+	for(int i = 0; i<bfs.size(); ++i)
 	{
-            Phi[(bfs->size() + 1)*action + i + 1] = Phi_state[i];
+            Phi[(bfs.size() + 1)*action + i + 1] = Phi_state[i];
 	}
 	return Phi;
 }

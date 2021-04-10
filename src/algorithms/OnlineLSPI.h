@@ -34,11 +34,11 @@ protected:
 	Matrix A;
 	Vector b;
 	Vector w;
-	RBFBasisSet* bfs;
+	BasisSet<Vector, int>& bfs;
 	FixedContinuousPolicy policy;
 public:	
-	OnlineLSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, RBFBasisSet* bfs_);
-	OnlineLSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, RBFBasisSet* bfs_);
+	OnlineLSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, BasisSet<Vector, int>& bfs_);
+	OnlineLSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, BasisSet<Vector, int>& bfs_);
 	~OnlineLSPI();
 	
 	Vector BasisFunction(const Vector& state, int action);

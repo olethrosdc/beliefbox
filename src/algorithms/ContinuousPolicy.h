@@ -57,8 +57,8 @@ public:
 	Vector p;
     bool epsilon_greedy;
     real epsilon;
-	FixedContinuousPolicy(int n_dimension_, int n_actions_, RBFBasisSet* bfs_);
-	FixedContinuousPolicy(int n_dimension_, int n_actions_, RBFBasisSet* bfs_, const Vector& weights_);
+	FixedContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_);
+	FixedContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_, const Vector& weights_);
 	virtual ~FixedContinuousPolicy();
 	virtual int SelectAction();
 	virtual int SelectAction(const Vector& next_state);

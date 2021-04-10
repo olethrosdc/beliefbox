@@ -41,14 +41,14 @@ public:
     }
 	
     /// Get the density at point x
-    real Evaluate(const Vector& x)
+    real Evaluate(const Vector& x) const
     {
         Vector d = pow((x - center)/beta, 2.0);
         real r = d.Sum();
         return exp(-0.5*r);
     }
     /// Evaluate the log density
-    real logEvaluate(const Vector& x)
+    real logEvaluate(const Vector& x) const
     {
         Vector d = pow((x - center)/beta, 2.0);
 
@@ -111,6 +111,8 @@ public:
 		assert(valid_features);
         return features;
     }
+	virtual void Evaluate(const Vector& x) const  = 0;
+    virtual void logEvaluate(const Vector& x) const = 0;
 };
 
 /// Simple RBF basis
@@ -137,8 +139,8 @@ public:
 	
     void AddCenter(const Vector& v, const Vector& b);
     void AddCenter(const Vector& v, real b);
-    void Evaluate(const Vector& x) const;
-    void logEvaluate(const Vector& x) const;
+    virtual void Evaluate(const Vector& x) const;
+    virtual void logEvaluate(const Vector& x) const;
 
 
 };

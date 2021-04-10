@@ -11,7 +11,7 @@
 
 #include "OnlineLSPI.h"
 
-OnlineLSPI::OnlineLSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, RBFBasisSet* bfs_)
+OnlineLSPI::OnlineLSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, BasisSet<Vector, int>& bfs_)
 :gamma(gamma_),
 Delta(Delta_), 
 n_dimension(n_dimension_), 
@@ -21,7 +21,7 @@ bfs(bfs_),
 policy(n_dimension, n_actions, bfs)
 {
 	assert(gamma>=0 && gamma <=1);
-	n_basis = n_actions*(bfs->size() + 1);
+	n_basis = n_actions*(bfs.size() + 1);
 	algorithm = 1;
 	A.Resize(n_basis, n_basis);
 	A = Matrix::Unity(n_basis,n_basis) * 1e-6;
@@ -29,7 +29,7 @@ policy(n_dimension, n_actions, bfs)
 	w.Resize(n_basis);
 }
 
-OnlineLSPI::OnlineLSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, RBFBasisSet* bfs_)
+OnlineLSPI::OnlineLSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, BasisSet<Vector, int>& bfs_)
 :gamma(gamma_),
 Delta(Delta_), 
 n_dimension(n_dimension_), 
@@ -41,7 +41,7 @@ policy(n_dimension, n_actions, bfs)
 {
 	assert(gamma>=0 && gamma <=1);
 	assert(algorithm>=1 && algorithm<=2);
-	n_basis = n_actions*(bfs->size() + 1);
+	n_basis = n_actions*(bfs.size() + 1);
 	A.Resize(n_basis, n_basis);
 	A = Matrix::Unity(n_basis,n_basis) * 1e-6;
 	b.Resize(n_basis);
@@ -54,14 +54,14 @@ OnlineLSPI::~OnlineLSPI()
 
 Vector OnlineLSPI::BasisFunction(const Vector& state, int action)
 {
-	bfs->Evaluate(state);
-	Vector Phi_state = bfs->F();
+	bfs.Evaluate(state);
+	Vector Phi_state = bfs.F();
 	Vector Phi(n_basis);
-	Phi[(bfs->size() + 1)*action] = 1.0;
+	Phi[(bfs.size() + 1)*action] = 1.0;
 	
-	for(int i = 0; i<bfs->size(); ++i)
+	for(int i = 0; i<bfs.size(); ++i)
 	{
-		Phi[(bfs->size() + 1)*action + i + 1] = Phi_state[i];
+		Phi[(bfs.size() + 1)*action + i + 1] = Phi_state[i];
 	}
 	return Phi;
 }

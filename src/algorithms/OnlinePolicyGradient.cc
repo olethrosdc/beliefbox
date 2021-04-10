@@ -80,7 +80,7 @@ PolicyGradientActorCriticPhi::PolicyGradientActorCriticPhi(BasisSet<Vector, int>
 	gamma(gamma_),
 	step_size(step_size_),
 	critic(n_states, n_actions, basis, gamma),
-	policy(n_states, n_actions, &basis),
+	policy(n_states, n_actions, basis),
 	params(basis.size())
 
 {
@@ -115,29 +115,11 @@ real PolicyGradientActorCriticPhi::GradientUpdate(const Vector& s, int a)
 {
 	//real U = critic.getValue(s);
 	//real U = critic.getValue(s);
-	real U = Q(s,a);
-	printf("s:%d, a:%d: Q_w:%f Q_S:%f\n", s, a, U, critic.getValue(s,a));
-	real delta = 0;
-	for (int j=0; j<n_actions; ++j) {
-		real p_a = policy.getActionProbability(s, j);
-		real d_sj =  0;
-		if (j==a) {
-			d_sj = (1.0 - p_a) * U;
-		} else {
-			d_sj = -p_a * U;
-		}
-		params(s,j) += step_size * d_sj;
-		delta += fabs(d_sj);
-	}
-	return delta;
+	// TODO
+	return 0;
 }
 
 void PolicyGradientActorCriticPhi::UpdatePolicy()
 {
-	for (int s=0; s<n_states; ++s) {
-		Vector eW = exp(params.getRow(s));
-		eW /= eW.Sum();
-		Vector* pS = policy.getActionProbabilitiesPtr(s);
-		(*pS) = eW;
-	}
+
 }
