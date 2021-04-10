@@ -76,7 +76,7 @@ void QLearning::ClearTraces()
 	@param next_state \f$s_{t+1}\f$
 	@param next_action \f$a_{t+1}\f$
 */
-real QLearning::Observe (real reward, int next_state, int next_action)
+real QLearning::Observe (real reward, const int& next_state, const int& next_action)
 {
     // select maximising action for the next state
     int a_max = 0;
@@ -122,7 +122,7 @@ real QLearning::Observe (real reward, int next_state, int next_action)
     return TD;
 }
 
-int QLearning::Act(real reward, int next_state)
+int QLearning::Act(real reward, const int& next_state)
 {
     exploration_policy->Observe(reward, next_state);
     int next_action = exploration_policy->SelectAction();

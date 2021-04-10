@@ -109,7 +109,7 @@ void FixedContinuousPolicy::StatePolicy()
 		Q[i] = weights[(bfs.size() + 1)*i];
 		for(int j = 0; j<bfs.size(); ++j)
 		{
-			Q[i] += Phi[j]*weights[i*(bfs->size() + 1) + j + 1];
+			Q[i] += Phi[j]*weights[i*(bfs.size() + 1) + j + 1];
 		}
 	}
 	p.Clear();

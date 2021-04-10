@@ -69,7 +69,7 @@ void Sarsa::Reset()
 /// Observe a state-action-reward-state-action tuplet.
 ///
 /// No eligibility trace update!
-real Sarsa::Observe (int state, int action, real reward, int next_state, int next_action)
+real Sarsa::Observe (const int& state, const int& action, real reward, const int& next_state, const int& next_action)
 {
     real n_R = (reward - baseline) + gamma*Q(next_state, next_action); // partially observed return
     real p_R = Q(state, action); // predicted return
@@ -82,7 +82,7 @@ real Sarsa::Observe (int state, int action, real reward, int next_state, int nex
 
 
 
-real Sarsa::Observe (real reward, int next_state, int next_action)
+real Sarsa::Observe (real reward, const int& next_state, const int& next_action)
 {
     real n_R = (reward - baseline) + gamma*Q(next_state, next_action); // partially observed return
 
@@ -114,7 +114,7 @@ real Sarsa::Observe (real reward, int next_state, int next_action)
     return TD;
 }
 
-int Sarsa::Act(real reward, int next_state)
+int Sarsa::Act(real reward, const int& next_state)
 {
     int next_action = 0;
 	if (exploration_policy) {

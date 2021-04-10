@@ -55,7 +55,7 @@ public:
 	void Calculate();
 	void Calculate_Opt();
 	virtual void Reset();
-	virtual void Observe(real reward, const S& next_state, const A& next_action);
+	virtual void Observe(real reward, const Vector& next_state, const int& next_action);
 	virtual real getValue(const Vector& state, int action) const;
 	virtual real getValue(const Vector& state) const
 	{
