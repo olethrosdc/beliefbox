@@ -22,7 +22,10 @@
 #include "RandomPolicy.h"
 #include "ContinuousPolicy.h"
 
-///*Fitted Value Iteration Algorithm*/
+/// Fitted Least Squares Temporal Differences
+///
+/// This version is tightly integrated with an environment and a
+/// regression model.
 template <class S, class A>
 class FittedLSTD {
 protected:
@@ -131,8 +134,7 @@ public:
 					///In this point we calculate the basis function for the next state			
 					phi_ = BasisAPICreation(next_state);
 					dif = phi - (phi_*gamma);
-				}
-				else {
+				} else {
 					dif = phi;
 				}	
 				Matrix res = OuterProduct(phi,dif);

@@ -11,8 +11,8 @@
  ***************************************************************************/
 
 
-#ifndef CONTINUES_POLICY_H
-#define CONTINUES_POLICY_H
+#ifndef CONTINUOUS_POLICY_H
+#define CONTINUOUS_POLICY_H
 
 #include "MultinomialDistribution.h"
 #include "AbstractPolicy.h"
@@ -29,13 +29,13 @@ class ContinuousPolicy: public AbstractPolicy<Vector,int>
 protected:
 	int n_dimension;
 	int n_actions;
-	RBFBasisSet* bfs;
+	BasisSet<Vector, int>& bfs;
 	Vector weights;
 public:
-	ContinuousPolicy( int n_dimension_, int n_actions_, RBFBasisSet* bfs_)
+	ContinuousPolicy( int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_)
 		: n_dimension(n_dimension_),n_actions(n_actions_),bfs(bfs_)
 	{}
-	ContinuousPolicy( int n_dimension_, int n_actions_, RBFBasisSet* bfs_, const Vector& weights_)
+	ContinuousPolicy( int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_, const Vector& weights_)
 		: n_dimension(n_dimension_),n_actions(n_actions_),bfs(bfs_),weights(weights_)
 	{}
 	virtual ~ContinuousPolicy() {}

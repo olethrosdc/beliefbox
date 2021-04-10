@@ -17,17 +17,17 @@
 #include <cmath>
 
 ///Create an uniform policy with a given number of basis functions.
-FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension, int n_actions_, RBFBasisSet* bfs_)
+FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension, int n_actions_, BasisSet<Vector, int>& bfs_)
 	: ContinuousPolicy(n_dimension, n_actions_, bfs_ ),
       epsilon_greedy(false),
       epsilon(0.0)
 {
-	Vector w(n_actions*(bfs_->size() + 1));
+	Vector w(n_actions*(bfs_.size() + 1));
 	weights = w;
 	p.Resize(n_actions);
 }
 
-FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension_, int n_actions_, RBFBasisSet* bfs_, const Vector& weights_)
+FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_, const Vector& weights_)
 	: ContinuousPolicy(n_dimension_, n_actions_, bfs_, weights_),
       epsilon_greedy(false),
       epsilon(0.0)
@@ -102,12 +102,12 @@ void FixedContinuousPolicy::Show()
 void FixedContinuousPolicy::StatePolicy()
 {
 	Vector Q(n_actions);
-	bfs->Evaluate(state);
-	Vector Phi = bfs->F();
+	bfs.Evaluate(state);
+	Vector Phi = bfs.F();
 	for(int i = 0; i< n_actions; ++i)
 	{
-		Q[i] = weights[(bfs->size() + 1)*i];
-		for(int j = 0; j<bfs->size(); ++j)
+		Q[i] = weights[(bfs.size() + 1)*i];
+		for(int j = 0; j<bfs.size(); ++j)
 		{
 			Q[i] += Phi[j]*weights[i*(bfs->size() + 1) + j + 1];
 		}

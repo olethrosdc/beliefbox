@@ -19,9 +19,10 @@
 #include "Matrix.h"
 #include "real.h"
 #include "OnlineAlgorithm.h"
+#include "Critic.h"
 #include <vector>
 
-class Sarsa : public OnlineAlgorithm<int, int>
+class Sarsa : public Critic<int, int>
 {
 protected:
     const int n_states; ///< number of states
@@ -59,11 +60,11 @@ public:
     /// it calls Observe as a side-effect.
     virtual int Act(real reward, const int& next_state);
 
-    virtual real getValue (const int& state, const int& action)
+    virtual real getValue (const int& state, const int& action) const
     {
         return Q(state, action);
     }
-	virtual real getValue (int state)
+	virtual real getValue (const int& state) const
     {
         return V(state);
     }

@@ -108,7 +108,7 @@ CountsBasis::~CountsBasis()
 }
 
 
-void CountsBasis::Observe(real reward, const int& next_state, const int& next_action)
+void CountsBasis::Observe(const int& action, real reward, const int& next_state)
 {
 	if (state >= 0) {
 		int N = model.getCounts(state, action);

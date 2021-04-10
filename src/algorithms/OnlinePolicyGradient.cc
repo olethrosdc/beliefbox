@@ -15,8 +15,9 @@ PolicyGradientActorCritic::PolicyGradientActorCritic(int n_states_, int n_action
 
 real PolicyGradientActorCritic::Observe(real reward, int next_state, int next_action)
 {
+	real d = 0;
 	if (state >= 0) {
-		real d = GradientUpdate(state, action); // not sure how much difference it makes to update the next state-action pair instead
+		d = GradientUpdate(state, action); // not sure how much difference it makes to update the next state-action pair instead
 		//printf("%d %d %d %d%f\n", state, action, d);
 		Q(state, action) += step_size * (reward + gamma * Q(next_state, next_action) - Q(state, action));
 	}
@@ -24,7 +25,7 @@ real PolicyGradientActorCritic::Observe(real reward, int next_state, int next_ac
 	UpdatePolicy();
 	state = next_state;
 	action = next_action;
-	return 0;
+	return d;
 }
 
 int PolicyGradientActorCritic::Act(real reward, int next_state)
@@ -78,8 +79,8 @@ PolicyGradientActorCriticPhi::PolicyGradientActorCriticPhi(BasisSet<Vector, int>
 	n_actions(n_actions_),
 	gamma(gamma_),
 	step_size(step_size_),
-	critic(n_states, n_actions, gamma, 0.0, step_size),
-	policy(n_states, n_actions),
+	critic(n_states, n_actions, basis, gamma),
+	policy(n_states, n_actions, &basis),
 	params(basis.size())
 
 {
@@ -88,29 +89,29 @@ PolicyGradientActorCriticPhi::PolicyGradientActorCriticPhi(BasisSet<Vector, int>
 
 real PolicyGradientActorCriticPhi::Observe(real reward, const Vector& next_state, const int& next_action)
 {
-	basis.Observe(reward, next_state, next_action);
+	basis.Observe(action, reward, next_state);
+	real d = 0;
 	if (valid_state) {
-		real d = GradientUpdate(state, action);
+		d = GradientUpdate(state, action);
 	}
 	//critic.Observe(reward, next_state, next_action);
 	UpdatePolicy();
 	state = next_state;
 	action = next_action;
 	valid_state = true;
-	return 0;
+	return d;
 }
 
-int PolicyGradientActorCriticPhi::Act(real reward, int next_state)
+int PolicyGradientActorCriticPhi::Act(real reward, const Vector& next_state)
 {
 	basis.Observe(action, reward, next_state);
 	Vector features = basis.F();
-	policy.SelectAction(features);
-	int next_action = policy.SelectAction();
+	int next_action = policy.SelectAction(features);
 	Observe(reward, next_state, next_action);
 	return next_action;
 }
 
-real PolicyGradientActorCriticPhi::GradientUpdate(Vector s, int a)
+real PolicyGradientActorCriticPhi::GradientUpdate(const Vector& s, int a)
 {
 	//real U = critic.getValue(s);
 	//real U = critic.getValue(s);

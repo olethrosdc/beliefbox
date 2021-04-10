@@ -16,9 +16,11 @@
 #include "PolicyEvaluation.h"
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
+#include "ContinuousPolicy.h"
 #include "BasisSet.h"
 #include "real.h"
 #include "Sarsa.h"
+#include "FeatureTD.h"
 #include <vector>
 
 /** Online policy gradient algorithms using an actor-critic architecture.
@@ -84,8 +86,8 @@ protected:
 	int n_actions;
 	real gamma;
 	real step_size;
-	Sarsa critic;
-	FixedDiscretePolicy policy;
+	FeatureTD critic;
+	FixedContinuousPolicy policy;
 	Vector params;
 	Vector state;
 	int action; ///< last state and action
@@ -110,13 +112,13 @@ public:
     virtual real Observe (real reward, const Vector& next_state, const int& next_action);
     /// Get an action using the current policy.
     /// it calls Observe as a side-effect.
-    virtual int Act(real reward, int next_state);
+    virtual int Act(real reward, const Vector& next_state);
 
-    virtual real getValue (int state, int action)
+    virtual real getValue (const Vector& state, const int&  action) const
     {
         return critic.getValue(state, action);
     }
-	virtual real getValue (int state)
+	virtual real getValue (const Vector& state) const
     {
         return critic.getValue(state);
     }
@@ -124,7 +126,7 @@ public:
 	///
 	/// s, a: state-action pair observed
 	/// returns the gradient norm
-	real GradientUpdate(const Vector s, int a);
+	real GradientUpdate(const Vector& s, int a);
 
 	void UpdatePolicy();
 
