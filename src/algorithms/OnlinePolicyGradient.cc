@@ -13,7 +13,7 @@ PolicyGradientActorCritic::PolicyGradientActorCritic(int n_states_, int n_action
 	Reset();
 }
 
-real PolicyGradientActorCritic::Observe(real reward, int next_state, int next_action)
+real PolicyGradientActorCritic::Observe(real reward, const int& next_state, const int& next_action)
 {
 	real d = 0;
 	if (state >= 0) {
@@ -28,7 +28,7 @@ real PolicyGradientActorCritic::Observe(real reward, int next_state, int next_ac
 	return d;
 }
 
-int PolicyGradientActorCritic::Act(real reward, int next_state)
+int PolicyGradientActorCritic::Act(real reward, const int& next_state)
 {
 	policy.Observe(reward, next_state);
 	int next_action = policy.SelectAction();

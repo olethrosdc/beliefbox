@@ -53,16 +53,16 @@ public:
 		policy.Reset();
 	}
     /// Update the actor and critic
-    virtual real Observe (real reward, int next_state, int next_action);
+    virtual real Observe (real reward, const int& next_state, const int& next_action);
     /// Get an action using the current policy.
     /// it calls Observe as a side-effect.
-    virtual int Act(real reward, int next_state);
+    virtual int Act(real reward, const int& next_state);
 
-    virtual real getValue (int state, int action)
+    virtual real getValue (const int& state, const int& action)
     {
         return critic.getValue(state, action);
     }
-	virtual real getValue (int state)
+	virtual real getValue (const int& state)
     {
         return critic.getValue(state);
     }
