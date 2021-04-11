@@ -65,7 +65,7 @@ void HQLearning::Reset()
     }
 }
 
-real HQLearning::Observe (real reward, const& int action, const int& next_state)
+real HQLearning::Observe (real reward, const int& action, const int& next_state)
 {
 	return 0;
 }
