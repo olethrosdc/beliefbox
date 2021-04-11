@@ -55,7 +55,7 @@ void GradientBRL::Reset()
     Resample();
 }
 /// Full observation
-real GradientBRL::Observe (int state, int action, real reward, int next_state, int next_action)
+real GradientBRL::Observe (const int& state, const int& action, real reward, const int& next_state, const int& next_action)
 {
     if (state>=0) {
         model->AddTransition(state, action, reward, next_state);
@@ -63,7 +63,7 @@ real GradientBRL::Observe (int state, int action, real reward, int next_state, i
     return 0.0;
 }
 /// Partial observation 
-real GradientBRL::Observe (real reward, int next_state, int next_action)
+real GradientBRL::Observe (real reward, const int& next_state, const int& next_action)
 {
     if (current_state >= 0) {
         model->AddTransition(current_state, current_action, reward, next_state);
@@ -85,7 +85,7 @@ void GradientBRL::Resample()
 
 /// Get an action using the current exploration policy.
 /// it calls Observe as a side-effect.
-int GradientBRL::Act(real reward, int next_state)
+int GradientBRL::Act(real reward, const int& next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
     T++;
