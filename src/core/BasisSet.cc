@@ -77,7 +77,7 @@ void RBFBasisSet::Evaluate(const Vector& x) const
     valid_features = true;
 }
 
-void RBFBasisSet::Observe(real reward, const Vector& next_state, const int& next_action)
+void RBFBasisSet::Observe(const int& action, real reward, const Vector& next_state)
 {
     logEvaluate(next_state);
     for (int i=0; i<n_bases; ++i) {
