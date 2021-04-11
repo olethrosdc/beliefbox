@@ -106,12 +106,12 @@ public:
     virtual void Reset();
     virtual void Reset(int state);
     /// Full observation
-    virtual real Observe (int state, int action, real reward, int next_state, int next_action);
+    virtual real Observe (const int& state, const int& action, real reward, const int& next_state, const int& next_action);
     /// Partial observation 
-    virtual real Observe (real reward, int next_state, int next_action);
+    virtual real Observe (real reward, const int& next_state, const int& next_action);
     /// Get an action using the current exploration policy.
     /// it calls Observe as a side-effect.
-    virtual int Act(real reward, int next_state);
+    virtual int Act(real reward, const int& next_state);
     /** Set the rewards to Singular distributions.
 
         Since this is a Bayesian approach, we can simply set the belief about the reward in each state to be a singular distribution, if we want. This would correspond to us having a fixed, unshakeable belief about them.

@@ -22,7 +22,7 @@
 #include "Critic.h"
 #include <vector>
 
-class Sarsa : public Critic<int, int>
+class Sarsa : public OnlineAlgorithm<int, int>
 {
 protected:
     const int n_states; ///< number of states

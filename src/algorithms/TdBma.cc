@@ -70,7 +70,7 @@ void TdBma::Reset()
 
 /// Full TD-MB observation (no eligibility traces)
 
-real TdBma::Observe(const int state, const int action, const real reward, const int next_state, const int next_action)
+real TdBma::Observe(const int& state, const int& action, real reward, const int& next_state, const int& next_action)
 {
 	// o If the episode is finished (episode = T steps),
 	//   use it to refine the estimate Q
@@ -166,7 +166,7 @@ real TdBma::Observe(const int state, const int action, const real reward, const 
 	return Q(next_state, next_action);
 }
 
-real TdBma::Observe(const real reward, const int next_state, const int next_action)
+real TdBma::Observe(real reward, const int& next_state, const int& next_action)
 {
 	if(state >= 0)
 	{
@@ -182,7 +182,7 @@ real TdBma::Observe(const real reward, const int next_state, const int next_acti
 /// Get an action using the current exploration policy.
 /// It calls Observe as a side-effect.
 
-int TdBma::Act(const real reward, const int next_state)
+int TdBma::Act(real reward, const int& next_state)
 {
 	exploration_policy->Observe(reward, next_state);
 	int next_action = exploration_policy->SelectAction();
