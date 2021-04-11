@@ -105,7 +105,7 @@ void SampleBasedRL::Reset()
     //model->Reset();
 }
 /// Full observation
-real SampleBasedRL::Observe (int state, int action, real reward, int next_state, int next_action)
+real SampleBasedRL::Observe (const int& state, const int& action, real reward, const int& next_state, const int& next_action)
 {
     if (state>=0) {
         model->AddTransition(state, action, reward, next_state);
@@ -115,7 +115,7 @@ real SampleBasedRL::Observe (int state, int action, real reward, int next_state,
     return 0.0;
 }
 /// Partial observation 
-real SampleBasedRL::Observe (real reward, int next_state, int next_action)
+real SampleBasedRL::Observe (real reward, const int& next_state, const int& next_action)
 {
     if (current_state >= 0) {
         model->AddTransition(current_state, current_action, reward, next_state);
@@ -192,7 +192,7 @@ void SampleBasedRL::CalculateLowerBound(real accuracy, int iterations)
 
 /// Get an action using the current exploration policy.
 /// it calls Observe as a side-effect.
-int SampleBasedRL::Act(real reward, int next_state)
+int SampleBasedRL::Act(real reward, const int& next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
     T++;
