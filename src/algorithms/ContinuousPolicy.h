@@ -29,8 +29,8 @@ class ContinuousPolicy: public AbstractPolicy<Vector,int>
 protected:
 	int n_dimension;
 	int n_actions;
-	BasisSet<Vector, int>& bfs;
-	Vector weights;
+	BasisSet<Vector, int>& bfs; ///< basis 
+	Vector weights; ///< policy parameters
 public:
 	ContinuousPolicy( int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_)
 		: n_dimension(n_dimension_),n_actions(n_actions_),bfs(bfs_)
@@ -49,12 +49,25 @@ public:
 	virtual real getActionProbability(const Vector& state, const int& action) = 0;
 	virtual void Show() = 0;
 	virtual void Update(const Vector& weights_) = 0;
+	virtual const Vector GradientUpdate(const Vector& phi, const real U)
+	{
+		Serror("Not implemented\n");
+		exit(-1);
+	}
 };
 
+/// Fixed continuous policy
+///
+/// The policy includes a 
 class FixedContinuousPolicy : public ContinuousPolicy
 {
-public:
+protected:
+	/// Helper function for calculating action probabilities
+	inline void StatePolicy();
+	/// Temporary action probabilities
 	Vector p;
+public:
+
     bool epsilon_greedy;
     real epsilon;
 	FixedContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_);
@@ -82,7 +95,7 @@ public:
 	{
 		return weights;
 	}
-	inline void StatePolicy();
+
     virtual void setEpsilonGreedy(real epsilon_) 
     {
         epsilon_greedy = true;
@@ -90,13 +103,18 @@ public:
     }
 };
 
+/// Softmax continuous policy
+///
+///
 class SoftmaxContinuousPolicy : public ContinuousPolicy
 {
-public:
+protected:
+	inline void StatePolicy();
 	Vector p;
-    bool epsilon_greedy;
-    real epsilon;
-	SoftmaxContinuousPolicy(int n_dimension_, int n_actions_);
+public:
+
+	SoftmaxContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_);
+	SoftmaxContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_, const Vector& weights_);
 	virtual ~SoftmaxContinuousPolicy();
 	virtual int SelectAction();
 	virtual int SelectAction(const Vector& state);
@@ -116,6 +134,7 @@ public:
 		assert(weights_.Size()==weights.Size());
 		weights = weights_;
 	}
+	virtual const Vector GradientUpdate(const Vector& s, const int& a, const real U);
 };
 
 #endif

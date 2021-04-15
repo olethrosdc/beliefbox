@@ -111,8 +111,8 @@ public:
 		assert(valid_features);
         return features;
     }
-	virtual void Evaluate(const Vector& x) const  = 0;
-    virtual void logEvaluate(const Vector& x) const = 0;
+	virtual void Evaluate(const S& s) const  = 0;
+    virtual void logEvaluate(const S& s) const = 0;
 };
 
 /// Simple RBF basis

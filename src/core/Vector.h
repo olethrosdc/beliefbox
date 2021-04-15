@@ -77,6 +77,7 @@ public:
     real L1Norm() const;
     real L2Norm() const;
     real SquareNorm() const;
+	void Insert(const Vector& rhs, int k); ///< insert a vector in index k
 	const bool operator< (const real& rhs) const;
     const bool operator< (const Vector& rhs) const;
 	const bool operator> (const real& rhs) const;

@@ -126,6 +126,9 @@ public:
 	///
 	/// s, a: state-action pair observed
 	/// returns the gradient norm
+	///
+	/// For softmax policies, the gradient update is simply
+	/// phi(s,a) - \sum_b \phi(s,b) \pi(b|s)
 	real GradientUpdate(const Vector& s, int a);
 
 	void UpdatePolicy();

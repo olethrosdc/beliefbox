@@ -113,11 +113,19 @@ int PolicyGradientActorCriticPhi::Act(real reward, const Vector& next_state)
 
 real PolicyGradientActorCriticPhi::GradientUpdate(const Vector& s, int a)
 {
-	//real U = critic.getValue(s);
-	//real U = critic.getValue(s);
-	// TODO
+	basis.Observe(s);
+	Vector phi = basis.F();
+	// copy the state-features into a larger state-action feature vector
+	Vector features(phi.Size()*n_actions);
+	int k = a * phi.Size();
+	for (int i=0; i<phi.Size(); ++i) {
+		features(k) = phi(i);
+	}
+	real U = critic.getValue(s);	
+	policy.GradientUpdate(s, a, U);
 	return 0;
 }
+
 
 void PolicyGradientActorCriticPhi::UpdatePolicy()
 {
