@@ -23,6 +23,7 @@ FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension, int n_actions_, Ba
       epsilon_greedy(false),
       epsilon(0.0)
 {
+	logmsg("Initialising epsilon-greedy continuous policy");
 	Vector w(n_actions*(bfs_.size() + 1));
 	weights = w;
 	p.Resize(n_actions);
@@ -33,6 +34,7 @@ FixedContinuousPolicy::FixedContinuousPolicy(int n_dimension_, int n_actions_, B
       epsilon_greedy(false),
       epsilon(0.0)
 {
+	logmsg("Initialising epsilon-greedy continuous policy");
 	p.Resize(n_actions);
 }
 
@@ -125,6 +127,7 @@ void FixedContinuousPolicy::StatePolicy()
 SoftmaxContinuousPolicy::SoftmaxContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_)
 	: ContinuousPolicy(n_dimension_, n_actions_, bfs_ )
 {
+	logmsg("Initialising softmax continuous policy");
 	Vector w(n_actions*(bfs_.size() + 1));
 	weights = w;
 	p.Resize(n_actions);
@@ -133,6 +136,7 @@ SoftmaxContinuousPolicy::SoftmaxContinuousPolicy(int n_dimension_, int n_actions
 SoftmaxContinuousPolicy::SoftmaxContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_, const Vector& weights_)
 	: ContinuousPolicy(n_dimension_, n_actions_, bfs_, weights_)
 {
+	logmsg("Initialising softmax continuous policy");
 	p.Resize(n_actions);
 }
 

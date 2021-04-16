@@ -36,7 +36,7 @@ protected:
 	real gamma;
 	real step_size;
 	Sarsa critic;
-	FixedContinuousPolicy policy;
+	FixedDiscretePolicy policy;
 	Matrix params;
 	Matrix Q;
 	int state, action; ///< last state and action

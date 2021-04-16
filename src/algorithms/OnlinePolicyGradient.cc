@@ -80,7 +80,7 @@ PolicyGradientActorCriticPhi::PolicyGradientActorCriticPhi(BasisSet<Vector, int>
 	gamma(gamma_),
 	step_size(step_size_),
 	critic(n_states, n_actions, basis, gamma),
-	policy(n_states, n_actions, basis),
+	policy(n_states, n_actions, basis), // bug?
 	params(basis.size())
 
 {
