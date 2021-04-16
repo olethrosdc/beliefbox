@@ -1,6 +1,7 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2012 by Nikolaos Tziortziotis <ntziorzi@gmail.com>
-// $Revision$
+// (c) 2012 by Nikolaos Tziortziotis <ntziorzi@gmail.com>
+// (c) 2021 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -122,7 +123,7 @@ void FixedContinuousPolicy::StatePolicy()
 
 ///Create an uniform policy with a given number of basis functions.
 SoftmaxContinuousPolicy::SoftmaxContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_)
-	: ContinuousPolicy(n_dimension, n_actions_, bfs_ )
+	: ContinuousPolicy(n_dimension_, n_actions_, bfs_ )
 {
 	Vector w(n_actions*(bfs_.size() + 1));
 	weights = w;
@@ -223,7 +224,7 @@ const Vector SoftmaxContinuousPolicy::GradientUpdate(const Vector& s, const int&
 	Vector delta(phi.Size()*n_actions);
 	for (int b=0; b<n_actions; ++b) {
 		Vector features(phi.Size()*n_actions);
-		features.Insert(phi.F(), b * phi.Size());
+		features.Insert(phi, b * phi.Size());
 		real p = getActionProbability(b);
 		if (b==a) {
 			delta += (1 - p) * features;
@@ -231,5 +232,5 @@ const Vector SoftmaxContinuousPolicy::GradientUpdate(const Vector& s, const int&
 			delta -= p * features;
 		}
 	}
-	
+	return delta;
 }

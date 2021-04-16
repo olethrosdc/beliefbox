@@ -49,7 +49,7 @@ public:
 	virtual real getActionProbability(const Vector& state, const int& action) = 0;
 	virtual void Show() = 0;
 	virtual void Update(const Vector& weights_) = 0;
-	virtual const Vector GradientUpdate(const Vector& phi, const real U)
+	virtual const Vector GradientUpdate(const Vector& s, const int& a, const real U)
 	{
 		Serror("Not implemented\n");
 		exit(-1);
