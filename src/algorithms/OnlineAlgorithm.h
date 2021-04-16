@@ -67,4 +67,9 @@ public:
 
 /// @}
 
+typedef OnlineAlgorithm<int, int> DiscreteAlgorithm;
+typedef OnlineAlgorithm<Vector, int> ContinuousStateAlgorithm;
+typedef OnlineAlgorithm<int, Vector> ContinuousActionAlgorithm;
+typedef OnlineAlgorithm<Vector, Vector> ContinuousAlgorithm;
+
 #endif

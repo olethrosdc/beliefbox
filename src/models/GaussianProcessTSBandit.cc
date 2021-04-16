@@ -92,7 +92,7 @@ real GaussianProcessTSBandit::descend(const Matrix& X_, const Matrix& learnedMat
 int GaussianProcessTSBandit::predict(const Matrix& X_, Vector& predictionVector, int projections, int horizon, real probability) 
 {
 	int N = X_.Rows();
-	int n = X.Rows();
+	//	int n = X.Rows();
 	predictionVector = predictionVector.Null(N);
 
 	SparseGaussianProcess tmpGP(gp_noise_var,gp_scale_length,gp_sig_var,gp_threshold,gp_scale_length_dic);

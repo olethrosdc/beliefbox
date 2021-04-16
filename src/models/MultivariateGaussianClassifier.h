@@ -38,6 +38,7 @@ public:
 	virtual real Observe(const Vector& x, const Vector& labels)
 	{
 		Serror("Not implemented\n");
+		exit(-1);
 	}
     Vector getClassMean(const int label) const;
 
