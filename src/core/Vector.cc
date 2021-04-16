@@ -151,7 +151,7 @@ Vector::~Vector()
     }
 }
 
-void Insert(const Vector& rhs, int k)
+void Vector::Insert(const Vector& rhs, int k)
 {
 	assert(n > rhs.size() + k);
 	for (int i=0; i<n; ++i, ++k) {
