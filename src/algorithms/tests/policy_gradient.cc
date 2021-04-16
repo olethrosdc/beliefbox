@@ -213,8 +213,6 @@ int main(int argc, char* argv[])
     assert (n_train_episodes > 0);
     assert (n_test_episodes > 0);
     assert (n_steps > 0);
-    assert (rbfs == 0 || rbfs == 1);
-    assert (grid_size > 0);
 
     n_steps = n_test_episodes * episode_steps;
 	
@@ -496,7 +494,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
         if (0) {
 			printf("%d ", step);
 			state.printf(stdout);
-            printf (" %d %d %f # t-state-action-reward\n",  action, reward);
+            printf (" %d %f # t-state-action-reward\n",  action, reward);
         }
         action_ok = environment->Act(action);
         current_time++;
