@@ -105,7 +105,7 @@ real PolicyGradientActorCriticPhi::Observe(real reward, const Vector& next_state
 int PolicyGradientActorCriticPhi::Act(real reward, const Vector& next_state)
 {
 	basis.Observe(action, reward, next_state);
-	Vector features = basis.F();
+	//Vector features = basis.F();
 	int next_action = policy.SelectAction(next_state);
 	Observe(reward, next_state, next_action);
 	return next_action;

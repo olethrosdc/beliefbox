@@ -84,7 +84,7 @@ Usage: BMR [options] algorithm environment\n\
 --n_test_episodes:  maximum number of test episodes (ignored if < 0)\n\
 --episode_steps:    maximum number of steps in each episode (ignored if <0)\n\
 --n_steps:			maximum number of total steps\n\
---rbf:				use of basis functions or not (* 0 or 1)\n\
+--rbf:				use of basis functions or not (0 or *1)\n\
 --grids:			number of grid intervals for discretised environments (*3)\n\
 --epsilon:			use epsilon-greedy with randomness in [0,1] (* 0.01)\n\
 --a:				first linear model parameter (*0.1) \n\
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
     int n_test_episodes		= 1000;
     uint episode_steps		= 1000;
     uint n_steps			= 10000000;
-    uint rbf				= 0;
+    uint rbf				= 1;
     uint grids				= 4;
     int n_samples			= 40;
     int sampling			= 1;

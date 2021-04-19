@@ -201,7 +201,7 @@ void SoftmaxContinuousPolicy::Show()
 void SoftmaxContinuousPolicy::StatePolicy()
 {
 	Vector Q(n_actions);
-	bfs.Evaluate(state);
+	bfs.Evaluate(state); // state should be 2 dimensional
 	Vector Phi = bfs.F();
 	for(int i = 0; i< n_actions; ++i)
 	{
@@ -231,9 +231,9 @@ const Vector SoftmaxContinuousPolicy::GradientUpdate(const Vector& s, const int&
 		features.Insert(phi, b * phi.Size());
 		real p = getActionProbability(b);
 		if (b==a) {
-			delta += (1 - p) * features;
+			delta += features * (1.0-p);
 		} else {
-			delta -= p * features;
+			delta -= features * p;
 		}
 	}
 	return delta;
