@@ -153,7 +153,7 @@ Vector::~Vector()
 
 void Vector::Insert(const Vector& rhs, int k)
 {
-	assert(n > rhs.Size() + k);
+	assert(n >= rhs.Size() + k);
 	for (int i=0; i<n; ++i, ++k) {
 		x[i] = rhs[i];
 	}
