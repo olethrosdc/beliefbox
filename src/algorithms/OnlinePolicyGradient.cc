@@ -94,7 +94,7 @@ real PolicyGradientActorCriticPhi::Observe(real reward, const Vector& next_state
 	if (valid_state) {
 		d = GradientUpdate(state, action);
 	}
-	//critic.Observe(reward, next_state, next_action);
+	critic.Observe(reward, next_state, next_action);
 	UpdatePolicy();
 	state = next_state;
 	action = next_action;

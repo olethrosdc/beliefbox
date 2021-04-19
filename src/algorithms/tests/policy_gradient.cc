@@ -79,7 +79,7 @@ Usage: BMR [options] algorithm environment\n\
 --n_actions:		number of actions (usually there is no need to specify it)\n\
 --gamma:			reward discounting in [0,1] (* 0.99)\n\
 --randomness:		environment randomness (* 0.0)\n\
---n_runs:			maximum number of runs (* 1)\n\
+--n_runs:			maximum number of runs (* 100)\n\
 --n_train_episodes:	maximum number of train episodes (ignored if < 0)\n\
 --n_test_episodes:  maximum number of test episodes (ignored if < 0)\n\
 --episode_steps:    maximum number of steps in each episode (ignored if <0)\n\
@@ -447,7 +447,8 @@ Statistics EvaluateAlgorithm (int episode_steps,
             discounted_reward += discount * reward;
 
             discount *= gamma;       
-
+			printf ("# ep: %d, s: %d, R: %f, U: %f\n", episode, statistics.ep_stats[episode].steps, statistics.ep_stats[episode].total_reward, statistics.ep_stats[episode].discounted_reward );
+			
             episode++;
             statistics.ep_stats.resize(episode + 1);
             statistics.ep_stats[episode].total_reward = 0.0;
@@ -460,7 +461,7 @@ Statistics EvaluateAlgorithm (int episode_steps,
             }
             action_ok = true;
             current_time = 0;
-            //printf ("# episode %d complete\n", episode);
+            
             if (n_episodes > 0 && episode >= n_episodes) {
                 logmsg (" Breaking after %d episodes,  %d steps\n",
                          episode, step);
