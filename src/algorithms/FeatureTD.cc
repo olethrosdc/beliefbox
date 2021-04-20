@@ -59,6 +59,19 @@ real FeatureTD::Observe (real reward,
 	state = next_state;
 	action = next_action;
 }
+real FeatureTD::getValue (const Vector& state, const int& action) const
+{
+	Serror("Not implemented\n");
+	exit(-1);
+}
+real FeatureTD::getValue (const Vector& state) const
+{
+	features.Evaluate(state);
+	Vector phi_t = features.F();
+	real V = Product(phi_t, params);
+	return V;
+}
+
 
 int FeatureTD::Act(real reward, const Vector& next_state)
 {
