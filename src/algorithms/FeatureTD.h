@@ -52,14 +52,9 @@ public:
     /// it calls Observe as a side-effect.
     virtual int Act(real reward, const Vector& next_state);
 
-    virtual real getValue (const Vector& state, const int& action) const
-    {
-		return 0;
-    }
-	virtual real getValue (const Vector& state) const
-    {
-        return 0;
-    }
+    virtual real getValue (const Vector& state, const int& action) const;
+
+	virtual real getValue (const Vector& state) const;
 
 };
 
