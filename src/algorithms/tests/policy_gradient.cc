@@ -1,5 +1,6 @@
 /* -*- Mode: C++; -*- */
 // copyright (c) 2012 by Nikolaos Tziortziotis <ntziorzi@gmail.com>
+// copyright (c) 2021 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
