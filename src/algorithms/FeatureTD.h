@@ -35,7 +35,7 @@ protected:
     Vector params; ///< parameters
     Vector state; ///< current state
     int action; ///< current action
-
+	bool valid_state; ///< are we at the start of an episode?
 public:
     FeatureTD(int n_states_,
 			  int n_actions_,
