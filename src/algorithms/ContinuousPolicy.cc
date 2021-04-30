@@ -243,6 +243,5 @@ const Vector SoftmaxContinuousPolicy::GradientUpdate(const Vector& s, const int&
 	printf("D:\n");
 	delta.print(stdout);
 #endif
-	weights += delta;
 	return delta;
 }

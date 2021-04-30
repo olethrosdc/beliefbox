@@ -123,7 +123,7 @@ real PolicyGradientActorCriticPhi::GradientUpdate(const Vector& s, int a)
 	}
 	real U = critic.getValue(s);	
 	Vector delta = policy.GradientUpdate(s, a, U);
-
+	policy.GradientUpdateForward(delta, step_size);
 	return U;
 }
 

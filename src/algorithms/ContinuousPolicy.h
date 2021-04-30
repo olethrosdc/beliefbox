@@ -136,6 +136,12 @@ public:
 	}
 	// Perform the backwards pass of the gradient update
 	virtual const Vector GradientUpdate(const Vector& s, const int& a, const real U);
+	// Perform the forward pass of the gradient update
+	virtual const Vector GradientUpdateForward(const Vector& delta, real alpha)
+	{
+		weights += delta * alpha;
+		return Vector(0);
+	}
 };
 
 #endif
