@@ -58,11 +58,7 @@ real FeatureTD::Observe (real reward,
 		real V = Product(phi_t, params);
 		real V_n = reward + gamma * Product(phi_tn, params);
 		delta = V_n - V;
-		//printf("Phi:\n");
-		//phi_t.print(stdout);
-		printf("Params:\n");
-		params.print(stdout);
-		params += phi_t * (alpha * delta); // sanity check: increase when delta >0
+		params += phi_t * (alpha * delta); 
 	}
 	state = next_state;
 	action = next_action;
