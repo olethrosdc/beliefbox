@@ -237,6 +237,6 @@ const Vector SoftmaxContinuousPolicy::GradientUpdate(const Vector& s, const int&
 			delta -= features * p;
 		}
 	}
-	
+	weights += delta;
 	return delta;
 }
