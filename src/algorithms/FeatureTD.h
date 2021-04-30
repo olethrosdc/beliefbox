@@ -44,16 +44,11 @@ public:
 			  real alpha_=0.5);
     virtual ~FeatureTD();
     virtual void Reset();
-    /// Partial SARSA observation (can be used with eligibility traces)
+    /// Partial observation
     virtual real Observe (real reward,
 						  const Vector& next_state,
 						  const int& next_action);
-    /// Get an action using the current exploration policy.
-    /// it calls Observe as a side-effect.
-    virtual int Act(real reward, const Vector& next_state);
-
     virtual real getValue (const Vector& state, const int& action) const;
-
 	virtual real getValue (const Vector& state) const;
 
 };

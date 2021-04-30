@@ -83,11 +83,6 @@ real FeatureTD::getValue (const Vector& state) const
 }
 
 
-int FeatureTD::Act(real reward, const Vector& next_state)
-{
-	return 0;
-}
-
 
 
 
