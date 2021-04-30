@@ -21,7 +21,6 @@
 #include "OnlineAlgorithm.h"
 #include "BasisSet.h"
 #include "Critic.h"
-
 #include <vector>
 
 class FeatureTD : public Critic<Vector, int>

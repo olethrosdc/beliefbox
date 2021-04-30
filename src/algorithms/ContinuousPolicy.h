@@ -134,6 +134,7 @@ public:
 		assert(weights_.Size()==weights.Size());
 		weights = weights_;
 	}
+	// Perform the backwards pass of the gradient update
 	virtual const Vector GradientUpdate(const Vector& s, const int& a, const real U);
 };
 
