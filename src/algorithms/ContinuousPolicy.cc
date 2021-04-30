@@ -211,9 +211,9 @@ void SoftmaxContinuousPolicy::StatePolicy()
 			Q[i] += Phi[j]*weights[i*(bfs.size() + 1) + j + 1];
 		}
 	}
-	p = exp(Q - Max(Q));
-	p/= Q.Sum();
-
+	p = Q - Max(Q);
+	p -= Q.logSum();
+	p = exp(p);
 }
 
 
@@ -237,6 +237,12 @@ const Vector SoftmaxContinuousPolicy::GradientUpdate(const Vector& s, const int&
 			delta -= features * p;
 		}
 	}
+#if 0
+	printf("W:\n");
+	weights.print(stdout);
+	printf("D:\n");
+	delta.print(stdout);
+#endif
 	weights += delta;
 	return delta;
 }
