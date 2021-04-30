@@ -44,11 +44,12 @@ void FeatureTD::Reset()
 ///
 /// We need to perform the update
 /// V += a * (r - g V')
-
+/// Returns the TD error, if applicable
 real FeatureTD::Observe (real reward,
 						 const Vector& next_state,
 						 const int& next_action)
 {
+	real delta = 0;
 	if (valid_state==true) {
 		features.Evaluate(state);
 		Vector phi_t = features.F();
@@ -56,12 +57,17 @@ real FeatureTD::Observe (real reward,
 		Vector phi_tn = features.F();
 		real V = Product(phi_t, params);
 		real V_n = reward + gamma * Product(phi_tn, params);
-		real delta = V_n - V;
-		params += alpha * phi_t * delta; // sanity check: increase when delta >0
+		delta = V_n - V;
+		//printf("Phi:\n");
+		//phi_t.print(stdout);
+		printf("Params:\n");
+		params.print(stdout);
+		params += phi_t * (alpha * delta); // sanity check: increase when delta >0
 	}
 	state = next_state;
 	action = next_action;
 	valid_state = true;
+	return delta;
 }
 real FeatureTD::getValue (const Vector& state, const int& action) const
 {
