@@ -130,6 +130,9 @@ SoftmaxContinuousPolicy::SoftmaxContinuousPolicy(int n_dimension_, int n_actions
 	logmsg("Initialising softmax continuous policy");
 	Vector w(n_actions*(bfs_.size() + 1));
 	weights = w;
+	for (uint i=0; i<weights.Size(); ++i) {
+		weights(i) = urandom() - 0.5;
+	}
 	p.Resize(n_actions);
 }
 
@@ -237,11 +240,13 @@ const Vector SoftmaxContinuousPolicy::GradientUpdate(const Vector& s, const int&
 			delta -= features * p;
 		}
 	}
-#if 0
-	printf("W:\n");
-	weights.print(stdout);
+#if 1
+	printf("F:\n");
+	phi.print(stdout);
 	printf("D:\n");
 	delta.print(stdout);
+	printf("W:\n");
+	weights.print(stdout);
 #endif
 	return delta;
 }

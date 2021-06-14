@@ -225,7 +225,10 @@ int main(int argc, char* argv[])
 	
     MersenneTwisterRNG mersenne_twister;
     rng = (RandomNumberGenerator*) &mersenne_twister;
-	
+
+	for ( uint run = 0; run < n_runs; ++run) {
+        std::cout << "# Run: " << run << std::endl;
+		
     srand48(34987235);
     srand(34987235);
     setRandomSeed(34987235);
@@ -310,8 +313,6 @@ int main(int argc, char* argv[])
 	
     printf("Number of rollouts = %d\n",n_train_episodes);
 	
-    for ( uint run = 0; run < n_runs; ++run) {
-        std::cout << "# Run: " << run << std::endl;
         //		algorithm->setGeometricSchedule(0.01,0.1);
         //		TrainingAlgorithm1(gamma, n_train_episodes, algorithm, environment, RSM);
 		
@@ -328,42 +329,13 @@ int main(int argc, char* argv[])
             train_steps += run_statistics.ep_stats[i].steps;
         }
         printf("Mean number of steps = %f\n", train_steps / n_test_episodes);
-        //for (uint i=0; i<run_statistics.ep_stats.size(); ++i) {
-        //		
-        //			statistics.ep_stats[i].total_reward += run_statistics.ep_stats[i].total_reward;
-        //			statistics.ep_stats[i].discounted_reward += run_statistics.ep_stats[i].discounted_reward;
-        //			statistics.ep_stats[i].steps += run_statistics.ep_stats[i].steps;
-        //			statistics.ep_stats[i].mse += run_statistics.ep_stats[i].mse;
-        //			statistics.ep_stats[i].n_runs++;
-        //		}
-        //
-        //		for (uint i=0; i<run_statistics.reward.size(); ++i) {
-        //			statistics.reward[i] += run_statistics.reward[i];
-        //			statistics.n_runs[i]++;
-        //		}
-
         algorithm->Reset();
-    }
+    
 
-    char buffer[100];
-    sprintf (buffer, "BRL_RESULTS_STEPS_%s->(Rollouts = %d)",environment_name,n_train_episodes);
-    FILE *output	= fopen(buffer,"w");
-    if(output!=NULL) { 
-        Stats.print(output);
-    }
-    fclose(output);
-    sprintf (buffer, "BRL_RESULTS_REWARDS_%s->(Rollouts = %d)",environment_name,n_train_episodes);
-    output	= fopen(buffer,"w");
-    if(output!=NULL) { 
-        Statr.print(output);
-    }
-    fclose(output);
-	
-    //Pointer clearness
-    delete environment;
-    delete RBFs;
-    delete algorithm;
-	
+		delete environment;
+		delete RBFs;
+		delete algorithm;
+	}
     //	for (uint i=0; i<statistics.ep_stats.size(); ++i) {
     //		statistics.ep_stats[i].total_reward /= (float) n_runs;
     //		statistics.ep_stats[i].discounted_reward /= (float) n_runs;

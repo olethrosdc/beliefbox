@@ -54,22 +54,23 @@ void Wishart::generate(Matrix& X) const
 Matrix Wishart::generate() const
 {
 	NormalDistribution norm;
-	Matrix T = Covariance.Cholesky();
-	Matrix B(k,k);
+	
+	Matrix D = Covariance.Cholesky();
+	Matrix A(k,k);
 	
 	for(int i = 0; i < k; ++i){
 	    real r = (real)genchi((real)(n - i));
-		B(i,i) = sqrt(r);
+		A(i,i) = sqrt(r);
 	}
 	
 	for(int i = 0; i < k; ++i){
 		for(int j = (i + 1); j < k; ++j){
-			B(i,j) = norm.generate();
+			A(i,j) = norm.generate();
 		}
 	}
     
-	Matrix X = B*T;
-	return (Transpose(X) * X);
+	Matrix X = A*D;
+	return (Transpose(X) * X); // D'A'AD = D'BD
 }
 
 /** the log pdf */
