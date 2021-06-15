@@ -55,7 +55,7 @@ Matrix Wishart::generate() const
 {
 	NormalDistribution norm;
 	
-	Matrix D = Covariance.Cholesky();
+	Matrix D = Covariance.Cholesky(); 
 	Matrix A(k,k);
 	
 	for(int i = 0; i < k; ++i){

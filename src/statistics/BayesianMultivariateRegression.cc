@@ -25,8 +25,10 @@ BayesianMultivariateRegression::BayesianMultivariateRegression(int m_, int d_, M
 	V = Matrix::Unity(d,d);
 	K = Matrix::Unity(m,m)*a;
 	Sxx = K;
+	inv_Sxx = Sxx.Inverse_LU();  
 	Syx = M*K;	
-	Syy = Syx * Transpose(M);	
+	Syy = Syx * Transpose(M);
+	Sy_x = Syy - M*Transpose(Syx); //Sy|x = Syy - Syx*Sxx^{-1}*Syx'	(Eq. 23)
 }
 
 // y ~ N(Sx, V)
@@ -47,7 +49,7 @@ void BayesianMultivariateRegression::AddElement(const Vector& y, const Vector& x
 Matrix BayesianMultivariateRegression::generate()
 {
 	Matrix S = A;
-	if(N > 0) {
+	if(N >= 0) {
 		iWishart iwishart(N + N0, Sy_x + S0, true); // Eq. 51
 		V = iwishart.generate();
 		MultivariateNormal multivariate_normal(M.Vec(), Kron(Sxx, V.Inverse())); // Eq. 10

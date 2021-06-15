@@ -73,6 +73,7 @@ int main(int argc, char* argv[])
 
 
 	int n_train = (int) ceil(n_points / 2);
+
 	BayesianMultivariateRegression bmr(n_dimensions_x, n_dimensions_y, N0 * Matrix::Unity(n_dimensions_y, n_dimensions_y), N0, a);
 	std::auto_ptr<Distribution> noise(new NormalDistribution(0.0,1.0));
 	Matrix A(n_dimensions_x, n_dimensions_y);
@@ -105,13 +106,13 @@ int main(int argc, char* argv[])
 	}
 	
 	const Matrix W1 = bmr.generate();
-	//W1.print(stdout);
+	W1.print(stdout);
 	
 	const Matrix W2 = bmr.generate();
-	//W2.print(stdout);
+	W2.print(stdout);
 	
 	const Matrix W3 = bmr.generate();
-	//W3.print(stdout);
+	W3.print(stdout);
 	
 	std::vector<Vector> R1(n_points); 
 	std::vector<Vector> R2(n_points); 
