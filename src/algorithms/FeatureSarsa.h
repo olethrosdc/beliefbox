@@ -1,5 +1,5 @@
 // -*- Mode: c++ -*-
-// copyright (c) 2008 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
+// copyright (c) 2017 by Christos Dimitrakakis <christos.dimitrakakis@gmail.com>
 // $Revision$
 /***************************************************************************
  *                                                                         *
@@ -10,8 +10,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SARSA_H
-#define SARSA_H
+#ifndef FEATURE_SARSA_H
+#define FEATURE_SARSA_H
 
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
@@ -19,10 +19,10 @@
 #include "Matrix.h"
 #include "real.h"
 #include "OnlineAlgorithm.h"
-#include "Critic.h"
+#include "Sarsa.h"
 #include <vector>
 
-class Sarsa : public OnlineAlgorithm<int, int>
+class FeatureSarsa : public OnlineAlgorithm<int, int>
 {
 protected:
     const int n_states; ///< number of states
@@ -34,41 +34,34 @@ protected:
     real initial_value; ///< initial value for Q values
     real baseline; ///< baseline reward
 
-	Vector V;
     Matrix Q;
     Matrix el;
 
     int state; ///< current state
     int action; ///< current action
-
 public:
-    Sarsa(int n_states_,
+    FeatureSarsa(int n_states_,
           int n_actions_,
           real gamma_,
-          real lambda_=0.0,
-          real alpha_=0.5,
-          VFExplorationPolicy* exploration_policy_=NULL,
+          real lambda_,
+          real alpha_,
+          VFExplorationPolicy* exploration_policy_,
           real initial_value_= 0.0,
           real baseline_ = 0.0);
-    virtual ~Sarsa();
+    virtual ~FeatureSarsa();
     virtual void Reset();
     /// Full SARSA observation (no eligibility traces)
-    virtual real Observe (const int& state, const int& action, real reward, const int& next_state, const int& next_action);
+    virtual real Observe (int state, int action, real reward, int next_state, int next_action);
     /// Partial SARSA observation (can be used with eligibility traces)
-    virtual real Observe (real reward, const int& next_state, const int& next_action);
+    virtual real Observe (real reward, int next_state, int next_action);
     /// Get an action using the current exploration policy.
     /// it calls Observe as a side-effect.
-    virtual int Act(real reward, const int& next_state);
+    virtual int Act(real reward, int next_state);
 
-    virtual real getValue (const int& state, const int& action) const
+    virtual real getValue (int state, int action)
     {
         return Q(state, action);
     }
-	virtual real getValue (const int& state) const
-    {
-        return V(state);
-    }
-
     
 };
 

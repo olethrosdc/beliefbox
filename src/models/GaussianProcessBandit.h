@@ -29,9 +29,9 @@ private:
 	SparseGaussianProcess gp;
 	Vector gp_scale_length; //scaling for kernel
 	Vector gp_scale_length_dic; //scaling for dictionary
-	real gp_noise_var;
-	real gp_sig_var;
-	real gp_threshold; 
+	//real gp_noise_var;
+	//real gp_sig_var;
+	//real gp_threshold; 
 	
 	real delta;
 	

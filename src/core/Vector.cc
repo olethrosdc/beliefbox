@@ -151,6 +151,14 @@ Vector::~Vector()
     }
 }
 
+void Vector::Insert(const Vector& rhs, int k)
+{
+	assert(n >= rhs.Size() + k);
+	for (int i=0; i<n; ++i, ++k) {
+		x[i] = rhs[i];
+	}
+}
+
 /// Print vector out at file f, make a new line
 void Vector::print(FILE* f) const
 {

@@ -133,9 +133,8 @@ public:
 		}
     }
     virtual void Reset();
-    virtual real Observe (int action, int next_state, real reward);
-    virtual real Observe (real reward, int next_state, int next_action);
-    virtual int Act(real reward, int next_state);
+    virtual real Observe (real reward, const int& action, const int& next_state);
+    virtual int Act(real reward, const int& next_state);
     virtual real getValue (int s, int a)
     {
         return Q(state, action);

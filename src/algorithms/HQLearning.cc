@@ -65,17 +65,13 @@ void HQLearning::Reset()
     }
 }
 
-real HQLearning::Observe (int action, int next_state, real reward)
+real HQLearning::Observe (real reward, const int& action, const int& next_state)
 {
 	return 0;
 }
 
-real HQLearning::Observe (real reward, int next_state, int next_action)
-{
-	return 0;
-}
 
-int HQLearning::Act(real reward, int next_state)
+int HQLearning::Act(real reward, const int& next_state)
 {
 	previous_observation = current_observation;
 	current_observation = next_state;

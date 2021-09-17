@@ -66,7 +66,7 @@ void TreeBRL::Reset(int state)
 }
 
 /// Full observation
-real TreeBRL::Observe (int state, int action, real reward, int next_state, int next_action)
+real TreeBRL::Observe (const int& state, const int& action, real reward, const int& next_state, const int& next_action)
 {
     if (state>=0) {
         belief->AddTransition(state, action, reward, next_state);
@@ -76,7 +76,7 @@ real TreeBRL::Observe (int state, int action, real reward, int next_state, int n
     return 0.0;
 }
 /// Partial observation 
-real TreeBRL::Observe (real reward, int next_state, int next_action)
+real TreeBRL::Observe (real reward, const int& next_state, const int& next_action)
 {
     if (current_state >= 0 && current_action >= 0) {
         belief->AddTransition(current_state, current_action, reward, next_state);
@@ -89,7 +89,7 @@ real TreeBRL::Observe (real reward, int next_state, int next_action)
 
 /// Get an action using the current exploration policy.
 /// it calls Observe as a side-effect.
-int TreeBRL::Act(real reward, int next_state)
+int TreeBRL::Act(real reward, const int& next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
 	//belief->ShowModelStatistics();

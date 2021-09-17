@@ -55,7 +55,7 @@ void UCRL2::Reset()
     //model->Reset();
 }
 /// Full observation
-real UCRL2::Observe (int state, int action, real reward, int next_state, int next_action)
+real UCRL2::Observe (const int& state, const int& action, real reward, const int& next_state, const int& next_action)
 {
     if (state>=0) {
         model->AddTransition(state, action, reward, next_state);
@@ -63,7 +63,7 @@ real UCRL2::Observe (int state, int action, real reward, int next_state, int nex
     return 0.0;
 }
 /// Partial observation 
-real UCRL2::Observe (real reward, int next_state, int next_action)
+real UCRL2::Observe (real reward, const int& next_state, const int& next_action)
 {
     if (state >= 0) {
         model->AddTransition(state, action, reward, next_state);
@@ -75,7 +75,7 @@ real UCRL2::Observe (real reward, int next_state, int next_action)
 }
 /// Get an action using the current exploration policy.
 /// it calls Observe as a side-effect.
-int UCRL2::Act(real reward, int next_state)
+int UCRL2::Act(real reward, const int& next_state)
 {
     assert(next_state >= 0 && next_state < n_states);
 

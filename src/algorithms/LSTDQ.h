@@ -22,7 +22,7 @@
 #include <vector>
 #include "Demonstrations.h"
 
-class LSTDQ
+class LSTDQ 
 {
 protected:
 	real gamma;
@@ -54,9 +54,10 @@ public:
 	Vector BasisFunction(const Vector& state, int action) const;
 	void Calculate();
 	void Calculate_Opt();
-	void Reset();
-	real getValue(const Vector& state, int action) const;
-	real getValue(const Vector& state) const
+	virtual void Reset();
+	virtual void Observe(real reward, const Vector& next_state, const int& next_action);
+	virtual real getValue(const Vector& state, int action) const;
+	virtual real getValue(const Vector& state) const
 	{
 		real V = getValue(state, 0);
 		for (int i=1; i<n_actions; ++i) {

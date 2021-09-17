@@ -35,12 +35,12 @@ protected:
 	Matrix A;
 	Vector b;
 	Vector w;
-	RBFBasisSet* bfs;
+	BasisSet<Vector, int>& bfs;
 	Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples;
 	FixedContinuousPolicy policy;
 public:	
-	LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_);
-	LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, RBFBasisSet* bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_);
+	LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, BasisSet<Vector, int>& bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_);
+	LSPI(real gamma_, real Delta_, int n_dimension_, int n_actions_, int max_iteration_, int algorithm_, BasisSet<Vector, int>& bfs_, Rollout<Vector,int,AbstractPolicy<Vector, int> >* Samples_);
 	~LSPI();
 	
 	Vector BasisFunction(const Vector& state, int action);

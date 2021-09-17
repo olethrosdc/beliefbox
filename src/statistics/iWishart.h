@@ -17,6 +17,7 @@
 
 
 /// Inverse Wishart probability distribution
+/// \BUG: Does not seem to converge, even though Wishart does
 class iWishart : public AbstractDistribution<Matrix>
 {
 protected:

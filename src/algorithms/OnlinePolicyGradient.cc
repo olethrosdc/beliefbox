@@ -13,10 +13,11 @@ PolicyGradientActorCritic::PolicyGradientActorCritic(int n_states_, int n_action
 	Reset();
 }
 
-real PolicyGradientActorCritic::Observe(real reward, int next_state, int next_action)
+real PolicyGradientActorCritic::Observe(real reward, const int& next_state, const int& next_action)
 {
+	real d = 0;
 	if (state >= 0) {
-		real d = GradientUpdate(state, action); // not sure how much difference it makes to update the next state-action pair instead
+		d = GradientUpdate(state, action); // not sure how much difference it makes to update the next state-action pair instead
 		//printf("%d %d %d %d%f\n", state, action, d);
 		Q(state, action) += step_size * (reward + gamma * Q(next_state, next_action) - Q(state, action));
 	}
@@ -24,11 +25,12 @@ real PolicyGradientActorCritic::Observe(real reward, int next_state, int next_ac
 	UpdatePolicy();
 	state = next_state;
 	action = next_action;
-	return 0;
+	return d;
 }
 
-int PolicyGradientActorCritic::Act(real reward, int next_state)
+int PolicyGradientActorCritic::Act(real reward, const int& next_state)
 {
+	policy.Observe(reward, next_state);
 	int next_action = policy.SelectAction();
 	Observe(reward, next_state, next_action);
 	return next_action;
@@ -63,4 +65,70 @@ void PolicyGradientActorCritic::UpdatePolicy()
 		Vector* pS = policy.getActionProbabilitiesPtr(s);
 		(*pS) = eW;
 	}
+}
+
+// --- PGAC with features --- //
+
+PolicyGradientActorCriticPhi::PolicyGradientActorCriticPhi(BasisSet<Vector, int>& basis_,
+														   int n_states_,
+														   int n_actions_,
+														   real gamma_,
+														   real step_size_) :
+	basis(basis_),
+	n_states(n_states_),
+	n_actions(n_actions_),
+	gamma(gamma_),
+	step_size(step_size_),
+	critic(n_states, n_actions, basis, gamma),
+	policy(n_states, n_actions, basis), // bug?
+	params(basis.size())
+
+{
+	Reset();
+}
+
+real PolicyGradientActorCriticPhi::Observe(real reward, const Vector& next_state, const int& next_action)
+{
+	basis.Observe(action, reward, next_state);
+	real d = 0;
+	if (valid_state) {
+		d = GradientUpdate(state, action);
+	}
+	critic.Observe(reward, next_state, next_action);
+	UpdatePolicy();
+	state = next_state;
+	action = next_action;
+	valid_state = true;
+	return d;
+}
+
+int PolicyGradientActorCriticPhi::Act(real reward, const Vector& next_state)
+{
+	basis.Observe(action, reward, next_state);
+	//Vector features = basis.F();
+	int next_action = policy.SelectAction(next_state);
+	Observe(reward, next_state, next_action);
+	return next_action;
+}
+
+real PolicyGradientActorCriticPhi::GradientUpdate(const Vector& s, int a)
+{
+	basis.Observe(s);
+	Vector phi = basis.F();
+	// copy the state-features into a larger state-action feature vector
+	Vector features(phi.Size()*n_actions);
+	int k = a * phi.Size();
+	for (int i=0; i<phi.Size(); ++i) {
+		features(k) = phi(i);
+	}
+	real U = critic.getValue(s);	
+	Vector delta = policy.GradientUpdate(s, a, U);
+	policy.GradientUpdateForward(delta, step_size);
+	return U;
+}
+
+
+void PolicyGradientActorCriticPhi::UpdatePolicy()
+{
+	
 }

@@ -77,19 +77,19 @@ public:
     virtual ~SampleBasedRL();
     virtual void Reset();
     /// Full observation
-    virtual real Observe (int state, int action, real reward, int next_state, int next_action);
+    virtual real Observe (const int& state, const int& action, real reward, const int& next_state, const int& next_action);
     /// Partial observation 
-    virtual real Observe (real reward, int next_state, int next_action);
+    virtual real Observe (real reward, const int& next_state, const int& next_action);
 
     /// Sample a new set of MDPs
     void Resample();
 
     /// Get an action using the current exploration policy.
     /// it calls Observe as a side-effect.
-    virtual int Act(real reward, int next_state);
+    virtual int Act(real reward, const int& next_state);
 
 
-    virtual real getValue (int state, int action)
+    virtual real getValue (const int& state, const int& action)
     {
         if (use_upper_bound) {
             return UpperBound(state, action);

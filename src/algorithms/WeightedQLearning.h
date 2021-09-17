@@ -73,9 +73,9 @@ public:
         //ShowModel();
     }
     virtual void Reset();
-    virtual real Observe (real reward, int next_state, int next_action);
-    virtual real UpdateModel (int m, real reward, int next_state, int next_action);
-    virtual int Act(real reward, int next_state);
+    virtual real Observe (real reward, const int& next_state, const int& next_action);
+    virtual real UpdateModel (const int& m, real reward, const int& next_state, const int& next_action);
+    virtual int Act(real reward, const int& next_state);
     void ShowModel()
     {
         for (int i=0; i<n_models; ++i) {
@@ -86,7 +86,7 @@ public:
     }
 
 	/// Get value of state-action
-	virtual real getValue (int s, int a)
+	virtual real getValue (const int& s, const int& a)
     {
         real Qsa = 0;
         for (int i=0; i<n_models; ++i) {

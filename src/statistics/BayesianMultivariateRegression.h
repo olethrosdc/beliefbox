@@ -50,6 +50,7 @@ class BayesianMultivariateRegression
 			return Posterior(x, y);
 		}
 		Matrix generate();
+		/// This just generates a vector Y=Ax given an already generated response matrix A
 		Vector generate(const Vector& x) const;
 		void generate(Matrix& Mean, Matrix& Covariance);
 		Matrix getSxx() { return Sxx; }

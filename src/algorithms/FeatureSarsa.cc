@@ -10,9 +10,10 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "Sarsa.h"
+/// TODO: NOT IMPLEMENTED
+#include "FeatureSarsa.h"
 
-Sarsa::Sarsa(int n_states_,
+FeatureSarsa::FeatureSarsa(int n_states_,
              int n_actions_,
              real gamma_,
              real lambda_,
@@ -28,33 +29,31 @@ Sarsa::Sarsa(int n_states_,
       exploration_policy(exploration_policy_),
       initial_value(initial_value_),
       baseline(baseline_),
-	  V(n_states_, Vector::CHECK_BOUNDS),
       Q(n_states_, n_actions_, Matrix::CHECK_BOUNDS),
       el(n_states_, n_actions_, Matrix::CHECK_BOUNDS)
 {
     assert (lambda >= 0 && lambda <= 1);
     assert (alpha >= 0 && alpha <= 1);
     assert (gamma >=0 && gamma <= 1);
+
+    Serror("Not implemented");
     
     for (int s=0; s<n_states; s++) {
-		V(s) = initial_value;
         for (int a=0; a<n_actions; a++) {
             Q(s, a) = initial_value;
         }
     }
-	if (exploration_policy) {
-		exploration_policy->setValueMatrix(&Q);
-	}
+    exploration_policy->setValueMatrix(&Q);
     Reset();
 }
 
 
-Sarsa::~Sarsa() 
+FeatureSarsa::~FeatureSarsa() 
 {
 }
 
-/// Use when starting a new episode.
-void Sarsa::Reset()
+
+void FeatureSarsa::Reset()
 {
     state = -1;
     action = -1;
@@ -66,30 +65,25 @@ void Sarsa::Reset()
 
 }
 
-/// Observe a state-action-reward-state-action tuplet.
-///
-/// No eligibility trace update!
-real Sarsa::Observe (const int& state, const int& action, real reward, const int& next_state, const int& next_action)
+real FeatureSarsa::Observe (int state, int action, real reward, int next_state, int next_action)
 {
     real n_R = (reward - baseline) + gamma*Q(next_state, next_action); // partially observed return
     real p_R = Q(state, action); // predicted return
     real TD = n_R - p_R;
 
     Q(state, action) += alpha * TD;
-    V(state) += alpha * (n_R - V(state));
+    
     return TD;
 }
 
 
 
-real Sarsa::Observe (real reward, const int& next_state, const int& next_action)
+real FeatureSarsa::Observe (real reward, int next_state, int next_action)
 {
     real n_R = (reward - baseline) + gamma*Q(next_state, next_action); // partially observed return
-
     //real p_R = 0.0;
     real TD = 0.0;
     if (state >= 0 && action >= 0) {
-		V(state) += alpha * (n_R - V(state));
         real p_R = Q(state, action); // predicted return
         TD = n_R - p_R;
     
@@ -100,40 +94,29 @@ real Sarsa::Observe (real reward, const int& next_state, const int& next_action)
             }
         }
 
-		el(state, action) = 1;
+        if (state >= 0 && action >= 0) {
+            el(state, action) = 1;
+        }
 
         for (int i=0; i<n_states; ++i) {
             for (int j=0; j<n_actions; ++j ) {
                 Q(i, j) += el(i, j) * alpha * TD;
             }
         }
-	}
+    }
     state = next_state; // fall back next state;
     action = next_action; // fall back next action
     
     return TD;
 }
 
-int Sarsa::Act(real reward, const int& next_state)
+int FeatureSarsa::Act(real reward, int next_state)
 {
-    int next_action = 0;
-	if (exploration_policy) {
-		exploration_policy->Observe(reward, next_state);
-		exploration_policy->setValueMatrix(&Q);
-		next_action = exploration_policy->SelectAction();
-	} else {
-		real Qa_max = getValue(next_state, 0);
-		next_action = 0;
-		for (int a=1; a<n_actions; ++a) {
-			real Qa = getValue(next_state, a);
-			if (Qa > Qa_max) {
-				next_action = a;
-				Qa_max = Qa;
-			}
-		}
-	}
+    exploration_policy->Observe(reward, next_state);
+    exploration_policy->setValueMatrix(&Q);
+    int next_action = exploration_policy->SelectAction();
     Observe(reward, next_state, next_action);
-    //printf ("Sarsa: %f %d %d\n", reward, next_state, next_action);
+    //printf ("FeatureSarsa: %f %d %d\n", reward, next_state, next_action);
     //Q.print(stdout);
     return next_action;
 }

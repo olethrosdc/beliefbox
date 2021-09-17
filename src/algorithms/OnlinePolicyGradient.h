@@ -16,8 +16,11 @@
 #include "PolicyEvaluation.h"
 #include "DiscreteMDP.h"
 #include "DiscretePolicy.h"
+#include "ContinuousPolicy.h"
+#include "BasisSet.h"
 #include "real.h"
 #include "Sarsa.h"
+#include "FeatureTD.h"
 #include <vector>
 
 /** Online policy gradient algorithms using an actor-critic architecture.
@@ -50,16 +53,16 @@ public:
 		policy.Reset();
 	}
     /// Update the actor and critic
-    virtual real Observe (real reward, int next_state, int next_action);
+    virtual real Observe (real reward, const int& next_state, const int& next_action);
     /// Get an action using the current policy.
     /// it calls Observe as a side-effect.
-    virtual int Act(real reward, int next_state);
+    virtual int Act(real reward, const int& next_state);
 
-    virtual real getValue (int state, int action)
+    virtual real getValue (const int& state, const int& action)
     {
         return critic.getValue(state, action);
     }
-	virtual real getValue (int state)
+	virtual real getValue (const int& state)
     {
         return critic.getValue(state);
     }
@@ -70,8 +73,68 @@ public:
 	real GradientUpdate(int s, int a);
 
 	void UpdatePolicy();
+};
+
+/** PGAC with features, for the continuous case.
+
+ */
+class PolicyGradientActorCriticPhi : public OnlineAlgorithm<int, Vector>
+{
+protected:
+	BasisSet<Vector, int>& basis;
+	int n_states;
+	int n_actions;
+	real gamma;
+	real step_size;
+	FeatureTD critic;
+	SoftmaxContinuousPolicy policy;
+	Vector params;
+	Vector state;
+	int action; ///< last state and action
+	bool valid_state;
+public:
+	PolicyGradientActorCriticPhi(BasisSet<Vector, int>& basis_,
+								 int n_states_,
+								 int n_actions_,
+								 real gamma_=0.95,
+								 real step_size_ = 0.1);
+	virtual ~PolicyGradientActorCriticPhi()
+	{
+	}
+    virtual void Reset()
+	{
+		valid_state = false;
+		action = -1;
+		critic.Reset();
+		policy.Reset();
+	}
+    /// Update the actor and critic
+    virtual real Observe (real reward, const Vector& next_state, const int& next_action);
+    /// Get an action using the current policy.
+    /// it calls Observe as a side-effect.
+    virtual int Act(real reward, const Vector& next_state);
+
+    virtual real getValue (const Vector& state, const int&  action) const
+    {
+        return critic.getValue(state, action);
+    }
+	virtual real getValue (const Vector& state) const
+    {
+        return critic.getValue(state);
+    }
+	/// Update the policy for a given state and action/
+	///
+	/// s, a: state-action pair observed
+	/// returns the gradient norm
+	///
+	/// For softmax policies, the gradient update is simply
+	/// phi(s,a) - \sum_b \phi(s,b) \pi(b|s)
+	real GradientUpdate(const Vector& s, int a);
+
+	void UpdatePolicy();
 
 };
+
 
 #endif
 

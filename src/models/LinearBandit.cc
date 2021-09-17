@@ -16,7 +16,7 @@ LinearBandit::~LinearBandit() {
 }
 void LinearBandit::run(int times) {
 	assert(times<rewardData.Size());
-	const int banditsToTry = 2;
+	//const int banditsToTry = 2;
 	tested = std::vector<int>(0);
 	std::cout << "Initializing LinearBandit and running " << times << " times.\n";
 	std::cout << rewardData.Size() << " examples, " << examples.Columns() << " dimensions.\n";

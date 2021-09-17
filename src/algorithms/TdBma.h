@@ -73,16 +73,16 @@ public:
 	virtual void Reset();
 
 	/// Full TD-BMA observation (no eligibility traces)
-	virtual real Observe(const int state, const int action, const real reward, const int next_state, const int next_action);
+	virtual real Observe(const int& state, const int& action,  real reward, const int& next_state, const int& next_action);
 
 	/// Partial TD-BMA observation (can be used with eligibility traces)
-	virtual real Observe(const real reward, const int next_state, const int next_action);
+	virtual real Observe(real reward, const int& next_state, const int& next_action);
 
 	/// Get an action using the current exploration policy.
 	/// It calls Observe as a side-effect.
-	virtual int Act(const real reward, const int next_state);
+	virtual int Act(real reward, const int& next_state);
 
-	virtual real getValue(const int state, const int action)
+	virtual real getValue(const int& state, const int& action)
 	{
 		return Q(state, action);
 	}

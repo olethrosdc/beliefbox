@@ -82,7 +82,7 @@ void WeightedQLearning::Reset()
 	@param next_state \f$s_{t+1}\f$
 	@param next_action \f$a_{t+1}\f$
 */
-real WeightedQLearning::UpdateModel(int m, real reward, int next_state, int next_action)
+real WeightedQLearning::UpdateModel(const int& m, real reward, const int& next_state, const int& next_action)
 {
     // select maximising action for the next state
     int a_max = 0;
@@ -103,7 +103,7 @@ real WeightedQLearning::UpdateModel(int m, real reward, int next_state, int next
     return TD;
 }
 
-real WeightedQLearning::Observe(real reward, int next_state, int next_action)
+real WeightedQLearning::Observe(real reward, const int& next_state, const int& next_action)
 {
     if (state >= 0 && action >= 0) {
         for (int i=0; i<n_models; ++i) {
@@ -115,7 +115,7 @@ real WeightedQLearning::Observe(real reward, int next_state, int next_action)
     return 0;
 }
 
-int WeightedQLearning::Act(real reward, int next_state)
+int WeightedQLearning::Act(real reward, const int& next_state)
 {
     if (t++ > T) {
         current_model = urandom(0, n_models);

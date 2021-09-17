@@ -8,9 +8,9 @@ FairClassifier::FairClassifier(int n_inputs_,
 	: n_inputs(n_classes_),
 	  n_classes(n_classes_),
 	  n_sensitive(n_sensitive_),
+	  n_actions(utility_.Rows()),
 	  dirichlet(n_sensitive),
-	  utility(utility_),
-	  n_actions(utility.Rows())
+	  utility(utility_)
 {
 	classifier.resize(n_sensitive);
 	Vector mu(n_inputs);
@@ -48,6 +48,7 @@ int FairClassifier::Classify(const Vector& x)
 	for (int z=0; z<n_sensitive; z++) {
 		
 	}
+	// TO-DO
 }
 
 

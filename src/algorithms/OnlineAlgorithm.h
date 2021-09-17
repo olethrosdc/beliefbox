@@ -48,11 +48,16 @@ public:
     {
     }
     /// Partial observation (when another algorithm is used to take the action, or as a helper function)
-    virtual real Observe (real reward, S next_state, A next_action) = 0;
+    virtual real Observe (real reward, const S& next_state, const A& next_action) = 0;
     /// Get an action using the current exploration policy.
     /// it calls Observe as a side-effect.
-    virtual A Act(real reward, S next_state) = 0;
-    virtual real getValue (S state, A action) = 0;
+    virtual A Act(real reward, const S& next_state) = 0;
+	/// Some algorithms may implement getting the value of a state and action. Implementation is optional.
+    virtual real getValue (const S& state, const A& action)
+	{
+		Swarning("not implemented\n");
+		return 0;
+	}
     /// Some algorithms may implement a different strategy when the reward matrix SxA is given. Implementation is not obligatory.
     virtual void setFixedRewards(const Matrix& rewards) 
     {
@@ -61,5 +66,10 @@ public:
 };
 
 /// @}
+
+typedef OnlineAlgorithm<int, int> DiscreteAlgorithm;
+typedef OnlineAlgorithm<Vector, int> ContinuousStateAlgorithm;
+typedef OnlineAlgorithm<int, Vector> ContinuousActionAlgorithm;
+typedef OnlineAlgorithm<Vector, Vector> ContinuousAlgorithm;
 
 #endif

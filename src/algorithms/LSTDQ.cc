@@ -20,7 +20,7 @@ LSTDQ::LSTDQ(real gamma_,
 	 n_dimension(n_dimension_), 
 	 n_actions(n_actions_), 
 	 bfs(bfs_), Samples(Samples_), 
-	 policy(n_dimension, n_actions, &bfs)
+	 policy(n_dimension, n_actions, bfs)
 {
     assert(gamma>=0 && gamma <=1);
     n_basis = n_actions*(bfs.size() + 1);
@@ -41,7 +41,7 @@ LSTDQ::LSTDQ(real gamma_,
 	 n_actions(n_actions_), 
 	 algorithm(algorithm_),
 	 bfs(bfs_), Samples(Samples_), 
-	 policy(n_dimension, n_actions, &bfs)
+	 policy(n_dimension, n_actions, bfs)
 {
     assert(gamma>=0 && gamma <=1);
     assert(algorithm>=1 && algorithm<=2);
