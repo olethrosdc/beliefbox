@@ -75,29 +75,26 @@ int main(int argc, char* argv[])
 	int n_train = (int) ceil(n_points / 2);
 
 	BayesianMultivariateRegression bmr(n_dimensions_x, n_dimensions_y, N0 * Matrix::Unity(n_dimensions_y, n_dimensions_y), N0, a);
-	std::auto_ptr<Distribution> noise(new NormalDistribution(0.0,1.0));
+	NormalDistribution generator(0.0,1.0);
 	Matrix A(n_dimensions_x, n_dimensions_y); // mean 
-	Matrix V(n_dimensions_y, n_dimensions_y); // covariance
+	Matrix P(n_dimensions_y, n_dimensions_y); // precision
 	for(int i = 0; i < n_dimensions_x; ++i) {
 		for(int j = 0; j < n_dimensions_y; ++j) {
-			A(i,j) = noise->generate();
-			V(i,j) = noise->generate();
+			A(i,j) = generator.generate();
+			P(i,j) = generator.generate();
 		}
 	}
-	V = V * Transpose(V);
+	P = P * Transpose(P);
+	MultivariateNormal noise(Vector::Null(n_dimensions_x), P);
 	std::vector<Vector> X(n_points); ///< Input vector
 	std::vector<Vector> Y(n_points); ///< Output vector
 	for( int i = 0; i < n_points; ++i) {
 		X[i].Resize(n_dimensions_x);
 		for(int j = 0; j < n_dimensions_x; ++j) {
-			X[i](j) = urandom(2.0,7.0);
+			X[i](j) = urandom(-1.0,5.0);
 		}
 		Y[i].Resize(n_dimensions_y);
-		Vector omega(n_dimensions_x);
-		for(int j = 0; j < n_dimensions_x; ++j) {
-			omega(j) = 0.0 * noise->generate();
-		}
-		Y[i] = A * (X[i] + omega);
+		Y[i] = A * X[i] + noise.generate();
 		printf("# X: ");
 		X[i].print(stdout);
 		printf("# Y: ");
