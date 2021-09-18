@@ -27,7 +27,7 @@ int main (int argc, char** argv)
 	    //printf("iWish\n"); iV.print(stdout);
 		//printf(" Wish\n"); V.print(stdout);
 		iAV += iV;
-		AV += V;
+		AV += V.Inverse();
 	}
 	iAV *= 1.0/(real) n;
 	AV *= 1.0/(real) n;
