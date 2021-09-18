@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 
 
 	if (argc != 6) {
-		fprintf(stderr, "Usage: Bayesian Multivariate Regression points dimensions a N_0\n");
+		fprintf(stderr, "Usage: bayesianMultivariateRegression points x_dim y_dim a N_0\n");
 		exit(-1);
 	}
 	int n_points = atoi(argv[1]);
@@ -117,6 +117,8 @@ int main(int argc, char* argv[])
 	std::vector<Vector> R1(n_points); 
 	std::vector<Vector> R2(n_points); 
 	std::vector<Vector> R3(n_points);
+	printf("# Predictions on test points\n");
+	printf("#===========================\n");
 	for(int i = n_train+1; i < n_points; ++i){
 		R1[i] = W1 * X[i];
 		R2[i] = W2 * X[i];

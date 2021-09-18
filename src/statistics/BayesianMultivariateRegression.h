@@ -18,7 +18,15 @@
 #include "Wishart.h"
 #include "MultivariateNormal.h"
 
-///** Bayesian Multivariate Linear Regression **/
+/** Bayesian Multivariate Linear Regression.
+
+	In this model, we have that 
+	\f$\Sigma \sim W(N_0, S)\f$ 
+	\f$A | V \sim N(M, \Sigma)\f$ 
+	\f$y | x, A, V \sim N(Ax, V)\f$ 
+
+*/
+
 class BayesianMultivariateRegression
 	{
 	protected:
@@ -50,9 +58,11 @@ class BayesianMultivariateRegression
 			AddElement(y, x);
 			return Posterior(x, y);
 		}
+		/// Generate a linear mean matrix
 		Matrix generate();
 		/// This just generates a vector Y=Ax given an already generated response matrix A
 		Vector generate(const Vector& x) const;
+		/// get the mean and covariance matrix
 		void generate(Matrix& Mean, Matrix& Covariance);
 		Matrix getSxx() { return Sxx; }
 		real Posterior(const Vector& x, const Vector& y);
