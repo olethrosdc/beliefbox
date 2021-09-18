@@ -95,16 +95,29 @@ int main(int argc, char* argv[])
 		}
 		Y[i].Resize(n_dimensions_y);
 		Y[i] = A * X[i] + noise.generate();
-		printf("# X: ");
-		X[i].print(stdout);
-		printf("# Y: ");
-		Y[i].print(stdout);
+		//printf("# X: ");
+		//X[i].print(stdout);
+		//printf("# Y: ");
+		//Y[i].print(stdout);
 	}
 
 	for( int i = 0; i < n_train; ++i) {
 		bmr.AddElement(Y[i],X[i]);
 	}
+
+	printf("A:\n"); A.print(stdout);
+	printf("P:\n"); P.Inverse().print(stdout);
+	for (int i=0; i<10; ++i) {
+		Matrix sA(n_dimensions_x, n_dimensions_y);
+		Matrix sP(n_dimensions_y, n_dimensions_y);
+		bmr.generate(sA, sP);
+		printf("sA:\n");
+		sA.print(stdout);
+		printf("sP:\n");
+		sP.print(stdout);
+	}
 	
+	printf("Generating matrices\n");
 	const Matrix W1 = bmr.generate();
 	W1.print(stdout);
 	
