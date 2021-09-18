@@ -14,11 +14,11 @@
 int main (int argc, char** argv)
 {
 	int n_dim = 2;
-	Matrix S0 = Matrix::Unity(n_dim, n_dim)*10;
-	int N =  n_dim + 1;
+	int N =  1000;
+	Matrix S0 = Matrix::Unity(n_dim, n_dim)*N;
     iWishart iwish = iWishart(N, S0, true);
     Wishart wish = Wishart(N, S0, true);
-	int n = 100000;
+	int n = 10000;
 	Matrix AV(n_dim, n_dim);
 	Matrix iAV(n_dim, n_dim);
 	for(int i = 0; i<n; ++i) {
