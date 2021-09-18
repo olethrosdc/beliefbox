@@ -50,6 +50,7 @@ void Wishart::generate(Matrix& X) const
 }
 
 
+///Generates a covariance matrix.
 ///Smith & Hocking, "Wishart Variate Generator"
 Matrix Wishart::generate() const
 {

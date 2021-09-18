@@ -47,7 +47,8 @@ void iWishart::generate(Matrix& X) const
     Serror("Not implemented\n");
 }
 
-///Smith & Hocking, "Wishart Variate Generator"
+/// Generates a covariance matrix.
+/// From Smith & Hocking, "Wishart Variate Generator".
 Matrix iWishart::generate() const
 {
 	NormalDistribution norm;
