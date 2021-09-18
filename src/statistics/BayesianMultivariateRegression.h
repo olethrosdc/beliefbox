@@ -15,6 +15,7 @@
 #include "BasisSet.h"
 #include "Matrix.h"
 #include "iWishart.h"
+#include "Wishart.h"
 #include "MultivariateNormal.h"
 
 ///** Bayesian Multivariate Linear Regression **/

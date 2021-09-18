@@ -71,7 +71,7 @@ void BayesianMultivariateRegression::generate(Matrix& MM, Matrix& VV)
 	Wishart wishart(N + N0, Sy_x + S0, true); // Eq. 51
 	VV = wishart.generate();
 	
-	MultivariateNormal multivariate_normal(M.Vec(), Kron(inv_Sxx,VV.Invert()).Inverse_LU()); // Eq. 10
+	MultivariateNormal multivariate_normal(M.Vec(), Kron(inv_Sxx,VV.Inverse()).Inverse_LU()); // Eq. 10
 	
 	Vector mean = multivariate_normal.generate();
 	MM.Vec(mean);
