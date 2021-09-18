@@ -70,7 +70,6 @@ void BayesianMultivariateRegression::generate(Matrix& MM, Matrix& VV)
 {
 	Wishart wishart(N + N0, Sy_x + S0, true); // Eq. 51
 	VV = wishart.generate();
-	VV.print(stdout);
 	MultivariateNormal multivariate_normal(M.Vec(), Kron(Sxx,VV)); // Eq. 10
 	
 	Vector mean = multivariate_normal.generate();
