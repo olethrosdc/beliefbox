@@ -52,7 +52,7 @@ Matrix BayesianMultivariateRegression::generate()
 	if(N >= 0) {
 		iWishart iwishart(N + N0, Sy_x + S0, true); // Eq. 51
 		V = iwishart.generate();
-		V.print(stdout);
+		//V.print(stdout);
 		MultivariateNormal multivariate_normal(M.Vec(), Kron(Sxx, V)); // Eq. 10
 		Vector mean = multivariate_normal.generate();
 		S.Vec(mean);
