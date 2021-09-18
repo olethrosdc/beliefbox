@@ -50,9 +50,9 @@ Matrix BayesianMultivariateRegression::generate()
 {
 	Matrix S = A;
 	if(N >= 0) {
-		iWishart iwishart(N + N0, Sy_x + S0, true); // Eq. 51
-		V = iwishart.generate();
-		MultivariateNormal multivariate_normal(M.Vec(), Kron(Sxx, V.Inverse())); // Eq. 10
+		Wishart wishart(N + N0, Sy_x + S0, true); // Eq. 51
+		V = wishart.generate();
+		MultivariateNormal multivariate_normal(M.Vec(), Kron(Sxx, V)); // Eq. 10
 		Vector mean = multivariate_normal.generate();
 		S.Vec(mean);
 	}	
@@ -70,8 +70,8 @@ void BayesianMultivariateRegression::generate(Matrix& MM, Matrix& VV)
 {
 	Wishart wishart(N + N0, Sy_x + S0, true); // Eq. 51
 	VV = wishart.generate();
-	
-	MultivariateNormal multivariate_normal(M.Vec(), Kron(inv_Sxx,VV.Inverse()).Inverse_LU()); // Eq. 10
+	VV.print(stdout);
+	MultivariateNormal multivariate_normal(M.Vec(), Kron(Sxx,VV)); // Eq. 10
 	
 	Vector mean = multivariate_normal.generate();
 	MM.Vec(mean);
