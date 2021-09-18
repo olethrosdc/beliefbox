@@ -53,7 +53,7 @@ Matrix BayesianMultivariateRegression::generate()
 		iWishart iwishart(N + N0, Sy_x + S0, true); // Eq. 51
 		V = iwishart.generate();
 		//V.print(stdout);
-		MultivariateNormal multivariate_normal(M.Vec(), Kron(Sxx, V.Inverse())); // Eq. 10
+		MultivariateNormal multivariate_normal(M.Vec(), Kron(inv_Sxx, V).Inverse()); // Eq. 10
 		Vector mean = multivariate_normal.generate();
 		S.Vec(mean);
 	}	
@@ -71,7 +71,7 @@ void BayesianMultivariateRegression::generate(Matrix& MM, Matrix& VV)
 {
 	iWishart iwishart(N + N0, Sy_x + S0, true); // Eq. 51
 	VV = iwishart.generate();
-	MultivariateNormal multivariate_normal(M.Vec(), Kron(Sxx,VV.Inverse())); // Eq. 10
+	MultivariateNormal multivariate_normal(M.Vec(), Kron(inv_Sxx,VV).Inverse()); // Eq. 10
 	
 	Vector mean = multivariate_normal.generate();
 	MM.Vec(mean);

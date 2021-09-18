@@ -103,6 +103,12 @@ int main(int argc, char* argv[])
 
 	for( int i = 0; i < n_train; ++i) {
 		bmr.AddElement(Y[i],X[i]);
+		Matrix sA(n_dimensions_x, n_dimensions_y);
+		Matrix sP(n_dimensions_y, n_dimensions_y);
+		bmr.generate(sA, sP);
+		printf("%f %f #err\n",
+			   (sA - A).L2Norm(),
+			   (sP - P.Inverse()).L2Norm());
 	}
 
 	printf("A:\n"); A.print(stdout);
@@ -157,7 +163,7 @@ int main(int argc, char* argv[])
 		err[3] +=  EuclideanNorm(R3[i], Y[i]);
 	}
 	err /= (real) (n_points - n_train);
-	printf("err: "); err.print(stdout);
+	printf("# test_err: "); err.print(stdout);
 	printf("A:\n");
 	A.print(stdout);
 	printf("W1:\n");
