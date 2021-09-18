@@ -132,12 +132,13 @@ int main(int argc, char* argv[])
 	std::vector<Vector> R3(n_points);
 	printf("# Predictions on test points\n");
 	printf("#===========================\n");
+	Vector err(4);
 	for(int i = n_train+1; i < n_points; ++i){
 		R1[i] = W1 * X[i];
 		R2[i] = W2 * X[i];
 		R3[i] = W3 * X[i];
-		printf("# Prediction1:");
-		R1[i].print(stdout);
+		//		printf("# Prediction1:");
+		//R1[i].print(stdout);
 		if (0) {
 			printf("Input|");
 			X[i].print(stdout);
@@ -150,9 +151,13 @@ int main(int argc, char* argv[])
 			printf("Prediction3|");
 			R3[i].print(stdout);
 		}
-		printf("# err: %f\n", EuclideanNorm(R1[i], Y[i]));
+		err[0] +=  EuclideanNorm((R1[i] + R2[i] + R3[i])/3.0, Y[i]);
+		err[1] +=  EuclideanNorm(R1[i], Y[i]);
+		err[2] +=  EuclideanNorm(R2[i], Y[i]);
+		err[3] +=  EuclideanNorm(R3[i], Y[i]);
 	}
-
+	err /= (real) (n_points - n_train);
+	printf("err: "); err.print(stdout);
 	printf("A:\n");
 	A.print(stdout);
 	printf("W1:\n");
