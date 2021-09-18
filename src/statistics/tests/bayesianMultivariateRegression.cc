@@ -76,12 +76,15 @@ int main(int argc, char* argv[])
 
 	BayesianMultivariateRegression bmr(n_dimensions_x, n_dimensions_y, N0 * Matrix::Unity(n_dimensions_y, n_dimensions_y), N0, a);
 	std::auto_ptr<Distribution> noise(new NormalDistribution(0.0,1.0));
-	Matrix A(n_dimensions_x, n_dimensions_y);
+	Matrix A(n_dimensions_x, n_dimensions_y); // mean 
+	Matrix V(n_dimensions_y, n_dimensions_y); // covariance
 	for(int i = 0; i < n_dimensions_x; ++i) {
 		for(int j = 0; j < n_dimensions_y; ++j) {
 			A(i,j) = noise->generate();
+			V(i,j) = noise->generate();
 		}
 	}
+	V = V * Transpose(V);
 	std::vector<Vector> X(n_points); ///< Input vector
 	std::vector<Vector> Y(n_points); ///< Output vector
 	for( int i = 0; i < n_points; ++i) {
