@@ -73,6 +73,10 @@ public:
 	FixedContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_);
 	FixedContinuousPolicy(int n_dimension_, int n_actions_, BasisSet<Vector, int>& bfs_, const Vector& weights_);
 	virtual ~FixedContinuousPolicy();
+	FixedContinuousPolicy& operator=(FixedContinuousPolicy& t)
+	{
+		return *this;
+	}
 	virtual int SelectAction();
 	virtual int SelectAction(const Vector& next_state);
 	virtual void Observe(const Vector& previous_state, const int& action, real r, const Vector& next_state);

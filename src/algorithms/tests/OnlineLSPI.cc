@@ -12,6 +12,7 @@
 #ifdef MAKE_MAIN
 
 #include "OnlineLSPI.h"
+#include "LSPI.h"
 #include "MersenneTwister.h"
 #include "Grid.h"
 #include "BasisSet.h"
@@ -251,7 +252,7 @@ int main(int argc, char* argv[])
 
 	
 	RBFBasisSet* RBFs = new RBFBasisSet(Discretisation,scale);
-	OnlineLSPI* lspi = new OnlineLSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs);
+	OnlineLSPI* lspi = new OnlineLSPI(gamma, delta, state_dimension, n_actions, max_iteration, *RBFs);
 	
 	Vector state;
 	Vector next_state;
