@@ -260,7 +260,7 @@ int main(int argc, char* argv[])
 //        
         RBFBasisSet* RBFs = new RBFBasisSet(Discretisation,scale);
 //		RBFBasisSet* RBFs = NULL;
-        LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, RBFs, rollout);
+        LSPI* lspi = new LSPI(gamma, delta, state_dimension, n_actions, max_iteration, *RBFs, rollout);
         lspi->PolicyIteration();
 
         //lspi->LSTDQ(0.1);
