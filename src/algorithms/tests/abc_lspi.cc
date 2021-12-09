@@ -16,6 +16,7 @@
 #include "UCTMCL.h"
 
 
+#include "NormalDistribution.h"
 #include "LSTDQ.h"
 #include "LSPI.h"
 #include "Grid.h"
@@ -292,7 +293,7 @@ getLSPIPolicy(Environment<Vector, int>* training_environment,
     
 	logmsg("Total number of collected rollout samples -> %d\n", rollout->getNSamples());
 	EvenGrid Discretisation(S_L, S_U, options.grid);
-	LSPI lspi(options.gamma, options.accuracy, state_dimension, n_actions, options.lspi_iterations, &RBFs, rollout);
+	LSPI lspi(options.gamma, options.accuracy, state_dimension, n_actions, options.lspi_iterations, RBFs, rollout);
 	lspi.PolicyIteration();
 	AbstractPolicy<Vector, int> * lspi_policy = new FixedContinuousPolicy(lspi.ReturnPolicy());
 	delete rollout;

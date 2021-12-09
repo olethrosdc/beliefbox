@@ -49,13 +49,19 @@ public:
 		 int algorithm_,
 		 RBFBasisSet& bfs_,
 		 Demonstrations<Vector, int>& Samples_);
-	~LSTDQ();
+	virtual ~LSTDQ();
 	
 	Vector BasisFunction(const Vector& state, int action) const;
 	void Calculate();
 	void Calculate_Opt();
-	virtual void Reset();
-	virtual void Observe(real reward, const Vector& next_state, const int& next_action);
+	virtual void Reset()
+	{
+		Serror("Not implemented\n");
+	}
+	virtual void Observe(real reward, const Vector& next_state, const int& next_action)
+	{
+		Serror("Not implemented\n");
+	}
 	virtual real getValue(const Vector& state, int action) const;
 	virtual real getValue(const Vector& state) const
 	{
